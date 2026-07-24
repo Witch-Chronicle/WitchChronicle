@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6df93aa8a2379f04abe3ffa4fcbdc37a, type: 3}
+  m_Name: rank1_dungeon
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonData
+  Id: hell1
+  DungeonName: "\uC9C0\uC625"
+  FloorPrefab: {fileID: 2968830504906926872, guid: 18d5d0e4a15adbd48882b4a8eca95943, type: 3}
+  WallPrefab: {fileID: 2968830504906926872, guid: e5f9b860d4f158041830633198ce81ee, type: 3}
+  CeilingPrefab: {fileID: 2968830504906926872, guid: e5f9b860d4f158041830633198ce81ee, type: 3}
+  MapSize: {x: 70, y: 70}
+  MinRoomSize: 17
+  MaxRoomSize: 20
+  MinPadding: 1
+  BSPDepth: 1
+  MaxConnectionPerRoom: 3
+  ExtraConnectionProbability: 0
+  RoomWeights:
+  - Type: 5
+    Weight: 100
+  RoomContentTable: {fileID: 11400000, guid: 0fb9a52ab0888dc459e7f7ce2fae815e, type: 2}
+  _decorationTable: {fileID: 11400000, guid: e66dc07bf0c420342ac30a1a2ed0ba01, type: 2}
+  BGM: {fileID: 0}
+  Skybox: {fileID: 0}
+  Icon: {fileID: 0}
+  DungeonAtmosphere: {fileID: 0}
+  HasBoss: 1
+  HasExit: 0

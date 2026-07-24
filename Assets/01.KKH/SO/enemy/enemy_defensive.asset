@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15fa27efa3f5725419aca6ec65b66bd4, type: 3}
+  m_Name: enemy_defensive
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
+  _enemyId: 
+  _enemyName: enemy_test2
+  _maxHp: 80
+  _attackPower: 12
+  _magicPower: 5
+  _defensePower: 4
+  _magicDefensePower: 3
+  _speed: 8
+  _weakElements: 
+  _resistElements: 
+  _nullElements: 
+  _absorbElements: 
+  _skillList:
+  - {fileID: 11400000, guid: 57db07508160ddb429565fda17f9ec9d, type: 2}
+  - {fileID: 11400000, guid: 97bef54e47cc9d1429fe59c26716f232, type: 2}
+  _aiProfileData: {fileID: 0}
+  _expReward: 10
+  _goldReward: 5
+  _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
+  _prefab: {fileID: 0}
+  _animatorController: {fileID: 0}

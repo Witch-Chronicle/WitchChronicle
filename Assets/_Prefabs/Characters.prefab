@@ -1,0 +1,712 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &583835507859745312
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2490099879576421381}
+  - component: {fileID: 5229610137429573325}
+  - component: {fileID: 6970596127933370978}
+  - component: {fileID: 6898662414027050237}
+  - component: {fileID: 7484932106621844280}
+  - component: {fileID: 5617472812674929614}
+  - component: {fileID: 6280492736990165163}
+  m_Layer: 0
+  m_Name: Player_Selene
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2490099879576421381
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 583835507859745312}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1036.7468, y: 45.73471, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2555571657083844740}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5229610137429573325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 583835507859745312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1084ba532f77f0458b84c8cd5f4fd0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterStats
+  _baseStats: {fileID: 11400000, guid: 6f73f78dece545a4c9d8d3570052ac53, type: 2}
+  _growthConfig: {fileID: 11400000, guid: f47e7c54984504a4ca964f3138fe3f45, type: 2}
+  _level: 1
+  _exp: 0
+  _availableStatPoints: 0
+  _allocatedStats:
+    maxHP: 0
+    maxMP: 0
+    magicPower: 0
+    intelligence: 0
+    defense: 0
+    speed: 0
+    luck: 0
+  _bonusStats:
+    maxHP: 0
+    maxMP: 0
+    magicPower: 0
+    intelligence: 0
+    defense: 0
+    speed: 0
+    luck: 0
+  _statModifiers: []
+  _combatStats:
+    _maxHp: 0
+    _maxMp: 0
+    _attackPower: 0
+    _magicPower: 0
+    _defense: 0
+    _magicDefense: 0
+    _speed: 0
+    _luck: 0
+  _baseSpellSlotCount: 3
+  _intelligencePerAdditionalSlot: 10
+  _maxSpellSlotCount: 6
+--- !u!114 &6970596127933370978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 583835507859745312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb22f537942dfa647ab059978bb12ec9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterEquipment
+  _character: 2
+  _characterStats: {fileID: 5229610137429573325}
+--- !u!114 &6898662414027050237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 583835507859745312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 362e8d7dc2e3b844fa58ac3298ac256c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatController
+  _stats: {fileID: 5229610137429573325}
+  _growthConfig: {fileID: 11400000, guid: f47e7c54984504a4ca964f3138fe3f45, type: 2}
+  _resetCost: 500
+--- !u!114 &7484932106621844280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 583835507859745312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ede211b2ff6d82b4b8747efc0af8a0dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterVitals
+  _characterStats: {fileID: 5229610137429573325}
+  _currentHp: 0
+  _currentMp: 0
+--- !u!114 &5617472812674929614
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 583835507859745312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b837feee763a741917e584325b6e1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSkillLoadout
+  _characterStats: {fileID: 0}
+  _equippedSkills: []
+--- !u!114 &6280492736990165163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 583835507859745312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9106ca27f9f6f043a9a94c2816ff483, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PersistentCharacterUnit
+  _isRecruited: 0
+  _characterStats: {fileID: 6185057143614253835}
+  _characterVitals: {fileID: 814868778594978375}
+  _characterEquipment: {fileID: 9162394575294419373}
+  _statController: {fileID: 979166263819822113}
+  _playerSkillLoadout: {fileID: 3938522416088052261}
+  _battleActorPrefab: {fileID: 0}
+  _fieldActorPrefab: {fileID: 0}
+--- !u!1 &5097857858289731730
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 141734591136972815}
+  - component: {fileID: 2982220759347977825}
+  - component: {fileID: 3048693474975953107}
+  - component: {fileID: 4157871408882285897}
+  - component: {fileID: 7115109202661859455}
+  - component: {fileID: 7718535723585717997}
+  - component: {fileID: 5140513909500149301}
+  m_Layer: 0
+  m_Name: Player_Fay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &141734591136972815
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5097857858289731730}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1036.7468, y: 45.73471, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2555571657083844740}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2982220759347977825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5097857858289731730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1084ba532f77f0458b84c8cd5f4fd0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterStats
+  _baseStats: {fileID: 11400000, guid: f0d17e8863e6f574992df3eca37619b5, type: 2}
+  _growthConfig: {fileID: 11400000, guid: f47e7c54984504a4ca964f3138fe3f45, type: 2}
+  _level: 1
+  _exp: 0
+  _availableStatPoints: 0
+  _allocatedStats:
+    maxHP: 0
+    maxMP: 0
+    magicPower: 0
+    intelligence: 0
+    defense: 0
+    speed: 0
+    luck: 0
+  _bonusStats:
+    maxHP: 0
+    maxMP: 0
+    magicPower: 0
+    intelligence: 0
+    defense: 0
+    speed: 0
+    luck: 0
+  _statModifiers: []
+  _combatStats:
+    _maxHp: 0
+    _maxMp: 0
+    _attackPower: 0
+    _magicPower: 0
+    _defense: 0
+    _magicDefense: 0
+    _speed: 0
+    _luck: 0
+  _baseSpellSlotCount: 3
+  _intelligencePerAdditionalSlot: 10
+  _maxSpellSlotCount: 6
+--- !u!114 &3048693474975953107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5097857858289731730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb22f537942dfa647ab059978bb12ec9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterEquipment
+  _character: 3
+  _characterStats: {fileID: 2982220759347977825}
+--- !u!114 &4157871408882285897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5097857858289731730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 362e8d7dc2e3b844fa58ac3298ac256c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatController
+  _stats: {fileID: 2982220759347977825}
+  _growthConfig: {fileID: 11400000, guid: f47e7c54984504a4ca964f3138fe3f45, type: 2}
+  _resetCost: 500
+--- !u!114 &7115109202661859455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5097857858289731730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ede211b2ff6d82b4b8747efc0af8a0dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterVitals
+  _characterStats: {fileID: 2982220759347977825}
+  _currentHp: 0
+  _currentMp: 0
+--- !u!114 &7718535723585717997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5097857858289731730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b837feee763a741917e584325b6e1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSkillLoadout
+  _characterStats: {fileID: 0}
+  _equippedSkills: []
+--- !u!114 &5140513909500149301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5097857858289731730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9106ca27f9f6f043a9a94c2816ff483, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PersistentCharacterUnit
+  _isRecruited: 0
+  _characterStats: {fileID: 6185057143614253835}
+  _characterVitals: {fileID: 814868778594978375}
+  _characterEquipment: {fileID: 9162394575294419373}
+  _statController: {fileID: 979166263819822113}
+  _playerSkillLoadout: {fileID: 3938522416088052261}
+  _battleActorPrefab: {fileID: 0}
+  _fieldActorPrefab: {fileID: 0}
+--- !u!1 &5515041053731311699
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3607632274231432025}
+  - component: {fileID: 6185057143614253835}
+  - component: {fileID: 9162394575294419373}
+  - component: {fileID: 979166263819822113}
+  - component: {fileID: 814868778594978375}
+  - component: {fileID: 3938522416088052261}
+  - component: {fileID: 5489915429902319045}
+  m_Layer: 0
+  m_Name: Player_Ariel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3607632274231432025
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5515041053731311699}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1036.7468, y: 45.73471, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2555571657083844740}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6185057143614253835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5515041053731311699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1084ba532f77f0458b84c8cd5f4fd0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterStats
+  _baseStats: {fileID: 11400000, guid: 6dd12dfee0c078648b287d6fdffa0f0e, type: 2}
+  _growthConfig: {fileID: 11400000, guid: f47e7c54984504a4ca964f3138fe3f45, type: 2}
+  _level: 1
+  _exp: 0
+  _availableStatPoints: 0
+  _allocatedStats:
+    maxHP: 0
+    maxMP: 0
+    magicPower: 0
+    intelligence: 0
+    defense: 0
+    speed: 0
+    luck: 0
+  _bonusStats:
+    maxHP: 0
+    maxMP: 0
+    magicPower: 0
+    intelligence: 0
+    defense: 0
+    speed: 0
+    luck: 0
+  _statModifiers: []
+  _combatStats:
+    _maxHp: 0
+    _maxMp: 0
+    _attackPower: 0
+    _magicPower: 0
+    _defense: 0
+    _magicDefense: 0
+    _speed: 0
+    _luck: 0
+  _baseSpellSlotCount: 3
+  _intelligencePerAdditionalSlot: 10
+  _maxSpellSlotCount: 6
+--- !u!114 &9162394575294419373
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5515041053731311699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb22f537942dfa647ab059978bb12ec9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterEquipment
+  _character: 0
+  _characterStats: {fileID: 6185057143614253835}
+--- !u!114 &979166263819822113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5515041053731311699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 362e8d7dc2e3b844fa58ac3298ac256c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatController
+  _stats: {fileID: 6185057143614253835}
+  _growthConfig: {fileID: 11400000, guid: f47e7c54984504a4ca964f3138fe3f45, type: 2}
+  _resetCost: 500
+--- !u!114 &814868778594978375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5515041053731311699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ede211b2ff6d82b4b8747efc0af8a0dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterVitals
+  _characterStats: {fileID: 6185057143614253835}
+  _currentHp: 0
+  _currentMp: 0
+--- !u!114 &3938522416088052261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5515041053731311699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b837feee763a741917e584325b6e1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSkillLoadout
+  _characterStats: {fileID: 0}
+  _equippedSkills: []
+--- !u!114 &5489915429902319045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5515041053731311699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9106ca27f9f6f043a9a94c2816ff483, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PersistentCharacterUnit
+  _isRecruited: 1
+  _characterStats: {fileID: 6185057143614253835}
+  _characterVitals: {fileID: 814868778594978375}
+  _characterEquipment: {fileID: 9162394575294419373}
+  _statController: {fileID: 979166263819822113}
+  _playerSkillLoadout: {fileID: 3938522416088052261}
+  _battleActorPrefab: {fileID: 3402574789876636115, guid: c6a080dbae31cf34498a8180c17f2a9c, type: 3}
+  _fieldActorPrefab: {fileID: 1560493996318386368, guid: 0c066fa7e0ac7be4f90a738ec320ef42, type: 3}
+--- !u!1 &5671487940412892752
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2555571657083844740}
+  - component: {fileID: 3835591453180147851}
+  - component: {fileID: 1722130132698512416}
+  m_Layer: 0
+  m_Name: Characters
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2555571657083844740
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5671487940412892752}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1249.2368, y: 529.64923, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3607632274231432025}
+  - {fileID: 137659487497100497}
+  - {fileID: 2490099879576421381}
+  - {fileID: 141734591136972815}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3835591453180147851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5671487940412892752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f19bb384ba4d1834aab067fc64c5d561, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PersistentRoot
+  _key: 2
+--- !u!114 &1722130132698512416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5671487940412892752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1d78178c490f1d42a1f9ffb7645054c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PersistentCharacterManager
+  _allCharacters: []
+  _activePartyCharacterIds:
+  - ariel
+  _maxActivePartyCount: 4
+--- !u!1 &6487708798759625992
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 137659487497100497}
+  - component: {fileID: 5142220810043557435}
+  - component: {fileID: 678091159225512529}
+  - component: {fileID: 4787033495946607932}
+  - component: {fileID: 3171284477235201163}
+  - component: {fileID: 2594742793219232973}
+  - component: {fileID: 2972516930102222515}
+  m_Layer: 0
+  m_Name: Player_Laia
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &137659487497100497
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6487708798759625992}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1036.7468, y: 45.73471, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2555571657083844740}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5142220810043557435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6487708798759625992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1084ba532f77f0458b84c8cd5f4fd0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterStats
+  _baseStats: {fileID: 11400000, guid: 48b51e93bb27252458cbfeddb80ec8fc, type: 2}
+  _growthConfig: {fileID: 11400000, guid: f47e7c54984504a4ca964f3138fe3f45, type: 2}
+  _level: 1
+  _exp: 0
+  _availableStatPoints: 0
+  _allocatedStats:
+    maxHP: 0
+    maxMP: 0
+    magicPower: 0
+    intelligence: 0
+    defense: 0
+    speed: 0
+    luck: 0
+  _bonusStats:
+    maxHP: 0
+    maxMP: 0
+    magicPower: 0
+    intelligence: 0
+    defense: 0
+    speed: 0
+    luck: 0
+  _statModifiers: []
+  _combatStats:
+    _maxHp: 1000
+    _maxMp: 100
+    _attackPower: 0
+    _magicPower: 0
+    _defense: 0
+    _magicDefense: 0
+    _speed: 0
+    _luck: 0
+  _baseSpellSlotCount: 3
+  _intelligencePerAdditionalSlot: 10
+  _maxSpellSlotCount: 6
+--- !u!114 &678091159225512529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6487708798759625992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb22f537942dfa647ab059978bb12ec9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterEquipment
+  _character: 1
+  _characterStats: {fileID: 5142220810043557435}
+--- !u!114 &4787033495946607932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6487708798759625992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 362e8d7dc2e3b844fa58ac3298ac256c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatController
+  _stats: {fileID: 5142220810043557435}
+  _growthConfig: {fileID: 11400000, guid: f47e7c54984504a4ca964f3138fe3f45, type: 2}
+  _resetCost: 500
+--- !u!114 &3171284477235201163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6487708798759625992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ede211b2ff6d82b4b8747efc0af8a0dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterVitals
+  _characterStats: {fileID: 5142220810043557435}
+  _currentHp: 0
+  _currentMp: 0
+--- !u!114 &2594742793219232973
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6487708798759625992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b837feee763a741917e584325b6e1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSkillLoadout
+  _characterStats: {fileID: 0}
+  _equippedSkills: []
+--- !u!114 &2972516930102222515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6487708798759625992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9106ca27f9f6f043a9a94c2816ff483, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PersistentCharacterUnit
+  _isRecruited: 0
+  _characterStats: {fileID: 6185057143614253835}
+  _characterVitals: {fileID: 814868778594978375}
+  _characterEquipment: {fileID: 9162394575294419373}
+  _statController: {fileID: 979166263819822113}
+  _playerSkillLoadout: {fileID: 3938522416088052261}
+  _battleActorPrefab: {fileID: 7817339475021989727, guid: 648431ac3ffe96649a3e58c868deebc2, type: 3}
+  _fieldActorPrefab: {fileID: 0}

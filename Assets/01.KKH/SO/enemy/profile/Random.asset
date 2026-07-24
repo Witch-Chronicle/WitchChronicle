@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 777a2bbef95f00647afabc6021a8cfb4, type: 3}
+  m_Name: Random
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAIProfileData
+  _profileId: random
+  _profileName: "\uB79C\uB364\uD615"
+  _archetype: 5
+  _lowHpTargetWeight: 1
+  _highThreatTargetWeight: 1
+  _randomTargetWeight: 4
+  _damageWeight: 1
+  _killWeight: 1
+  _weaknessWeight: 1
+  _healWeight: 1
+  _buffWeight: 1
+  _debuffWeight: 1
+  _statusEffectWeight: 1
+  _selfDefenseHpRatio: 0.4
+  _selfSurvivalWeight: 1
+  _randomActionWeight: 4

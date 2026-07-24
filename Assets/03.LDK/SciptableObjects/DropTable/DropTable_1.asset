@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4633605c67fe9534689cd4fbc251f8a4, type: 3}
+  m_Name: DropTable_1
+  m_EditorClassIdentifier: Assembly-CSharp::DropTable
+  drops:
+  - item: {fileID: 11400000, guid: adc72c819e792124597e12581dfbe117, type: 2}
+    chance: 16.5
+    minAmount: 1
+    maxAmount: 1
+  - item: {fileID: 11400000, guid: fd12b1a0c78674f4e80cf946338bbb07, type: 2}
+    chance: 16.5
+    minAmount: 1
+    maxAmount: 1
+  - item: {fileID: 11400000, guid: 7d6b2598fa89f9447ab022ad1f56ce86, type: 2}
+    chance: 11
+    minAmount: 1
+    maxAmount: 2
+  - item: {fileID: 11400000, guid: 110de84f0759f47488c2c44510af475f, type: 2}
+    chance: 13.4
+    minAmount: 2
+    maxAmount: 3
+  - item: {fileID: 11400000, guid: a103c517429ce734bbc0c891d6697f1b, type: 2}
+    chance: 11.8
+    minAmount: 1
+    maxAmount: 1

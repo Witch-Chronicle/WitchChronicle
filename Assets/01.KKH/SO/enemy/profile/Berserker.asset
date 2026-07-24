@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 777a2bbef95f00647afabc6021a8cfb4, type: 3}
+  m_Name: Berserker
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAIProfileData
+  _profileId: berserker
+  _profileName: "\uAD11\uC804\uC0AC\uD615"
+  _archetype: 4
+  _lowHpTargetWeight: 2
+  _highThreatTargetWeight: 0.5
+  _randomTargetWeight: 1
+  _damageWeight: 5
+  _killWeight: 3
+  _weaknessWeight: 1
+  _healWeight: 0
+  _buffWeight: 0
+  _debuffWeight: 0
+  _statusEffectWeight: 0.5
+  _selfDefenseHpRatio: 0.1
+  _selfSurvivalWeight: 0
+  _randomActionWeight: 0.8

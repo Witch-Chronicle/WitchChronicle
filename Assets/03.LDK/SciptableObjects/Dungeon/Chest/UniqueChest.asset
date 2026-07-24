@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40c1085a2fb84e943ae443d54ffc970b, type: 3}
+  m_Name: UniqueChest
+  m_EditorClassIdentifier: Assembly-CSharp::ChestRewardData
+  rewards:
+  - item: {fileID: 11400000, guid: dba65d531a5b32f499abe1dada108067, type: 2}
+    chance: 25
+  - item: {fileID: 11400000, guid: f141de9d56d48d442817d2508f325c85, type: 2}
+    chance: 25
+  - item: {fileID: 11400000, guid: fbb70f466f4471d41a6b2f3763622bb5, type: 2}
+    chance: 25
+  - item: {fileID: 11400000, guid: fdb9d5cac0b3746428c1255ac19b3ff1, type: 2}
+    chance: 25

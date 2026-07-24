@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 777a2bbef95f00647afabc6021a8cfb4, type: 3}
+  m_Name: Cunning
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAIProfileData
+  _profileId: cunning
+  _profileName: "\uAD50\uD65C\uD615"
+  _archetype: 3
+  _lowHpTargetWeight: 2
+  _highThreatTargetWeight: 3
+  _randomTargetWeight: 0.2
+  _damageWeight: 2
+  _killWeight: 4
+  _weaknessWeight: 4
+  _healWeight: 0.5
+  _buffWeight: 1
+  _debuffWeight: 3
+  _statusEffectWeight: 4
+  _selfDefenseHpRatio: 0.35
+  _selfSurvivalWeight: 1.5
+  _randomActionWeight: 0.2

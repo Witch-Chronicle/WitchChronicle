@@ -1,0 +1,138 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6498f13f35165ef49809baf01ee5d2f5, type: 3}
+  m_Name: nomar2
+  m_EditorClassIdentifier: Assembly-CSharp::DecorationTable
+  _entries:
+  - targetRoomType: 0
+    placement: 0
+    prefabs:
+    - {fileID: 1030989457, guid: abc00000000002555530024258881252, type: 3}
+    - {fileID: 1030989466, guid: abc00000000003265076345203326719, type: 3}
+    - {fileID: 1030989475, guid: abc00000000015551014311518056102, type: 3}
+    - {fileID: 1030989484, guid: abc00000000014769228373245733313, type: 3}
+    - {fileID: 1030989493, guid: abc00000000006059648354868032475, type: 3}
+    - {fileID: 1030989511, guid: abc00000000017159275746243615568, type: 3}
+    - {fileID: 1030989529, guid: abc00000000016342692100758664025, type: 3}
+    minCount: 3
+    maxCount: 3
+  - targetRoomType: 1
+    placement: 0
+    prefabs:
+    - {fileID: 1030992304, guid: abc00000000000166612956689332867, type: 3}
+    - {fileID: 1030992198, guid: abc00000000008076672260047248511, type: 3}
+    - {fileID: 1030992282, guid: abc00000000007320823481348160304, type: 3}
+    - {fileID: 1030989589, guid: abc00000000002433874197667696780, type: 3}
+    - {fileID: 1030989607, guid: abc00000000018087847933267347783, type: 3}
+    - {fileID: 1030989439, guid: abc00000000002574753563004702313, type: 3}
+    - {fileID: 1030989421, guid: abc00000000012296847848005985058, type: 3}
+    minCount: 5
+    maxCount: 8
+  - targetRoomType: 2
+    placement: 0
+    prefabs:
+    - {fileID: 1030998772, guid: abc00000000003914682676049659537, type: 3}
+    - {fileID: 1030998754, guid: abc00000000000344436937328165450, type: 3}
+    - {fileID: 1030989589, guid: abc00000000002433874197667696780, type: 3}
+    - {fileID: 1030989607, guid: abc00000000018087847933267347783, type: 3}
+    - {fileID: 1030989439, guid: abc00000000002574753563004702313, type: 3}
+    - {fileID: 1030989421, guid: abc00000000012296847848005985058, type: 3}
+    minCount: 5
+    maxCount: 8
+  - targetRoomType: 3
+    placement: 0
+    prefabs:
+    - {fileID: 3559493888467974101, guid: 1c0101bd04d09a945a97f563ffe98de2, type: 3}
+    - {fileID: 1030989589, guid: abc00000000002433874197667696780, type: 3}
+    - {fileID: 1030989607, guid: abc00000000018087847933267347783, type: 3}
+    - {fileID: 1030989439, guid: abc00000000002574753563004702313, type: 3}
+    - {fileID: 1030989421, guid: abc00000000012296847848005985058, type: 3}
+    minCount: 5
+    maxCount: 5
+  - targetRoomType: 4
+    placement: 0
+    prefabs:
+    - {fileID: 1030989589, guid: abc00000000002433874197667696780, type: 3}
+    - {fileID: 1030989607, guid: abc00000000018087847933267347783, type: 3}
+    - {fileID: 1030989439, guid: abc00000000002574753563004702313, type: 3}
+    - {fileID: 1030989421, guid: abc00000000012296847848005985058, type: 3}
+    minCount: 3
+    maxCount: 5
+  - targetRoomType: 5
+    placement: 0
+    prefabs:
+    - {fileID: 1030992326, guid: abc00000000018341995826438526174, type: 3}
+    - {fileID: 1030992348, guid: abc00000000009366842529473335653, type: 3}
+    - {fileID: 1030989589, guid: abc00000000002433874197667696780, type: 3}
+    - {fileID: 1030989607, guid: abc00000000018087847933267347783, type: 3}
+    - {fileID: 1030989439, guid: abc00000000002574753563004702313, type: 3}
+    - {fileID: 1030989421, guid: abc00000000012296847848005985058, type: 3}
+    minCount: 3
+    maxCount: 5
+  - targetRoomType: 6
+    placement: 0
+    prefabs:
+    - {fileID: 1030989589, guid: abc00000000002433874197667696780, type: 3}
+    - {fileID: 1030989607, guid: abc00000000018087847933267347783, type: 3}
+    - {fileID: 1030989439, guid: abc00000000002574753563004702313, type: 3}
+    - {fileID: 1030989421, guid: abc00000000012296847848005985058, type: 3}
+    minCount: 3
+    maxCount: 5
+  - targetRoomType: 6
+    placement: 2
+    prefabs:
+    - {fileID: 919132149155446097, guid: 0a916a835fbb9a84487a10caacf524ee, type: 3}
+    - {fileID: 919132149155446097, guid: 52414afe6d98372458476ce531af97d0, type: 3}
+    minCount: 4
+    maxCount: 4
+  - targetRoomType: 6
+    placement: 1
+    prefabs:
+    - {fileID: 7907789851246625934, guid: b1fdee6ca5c4f9d4d8f81fc6fa216fcf, type: 3}
+    minCount: 1
+    maxCount: 2
+  - targetRoomType: 5
+    placement: 1
+    prefabs:
+    - {fileID: 7907789851246625934, guid: b1fdee6ca5c4f9d4d8f81fc6fa216fcf, type: 3}
+    minCount: 1
+    maxCount: 2
+  - targetRoomType: 4
+    placement: 1
+    prefabs:
+    - {fileID: 7907789851246625934, guid: b1fdee6ca5c4f9d4d8f81fc6fa216fcf, type: 3}
+    minCount: 1
+    maxCount: 1
+  - targetRoomType: 3
+    placement: 1
+    prefabs:
+    - {fileID: 7907789851246625934, guid: b1fdee6ca5c4f9d4d8f81fc6fa216fcf, type: 3}
+    minCount: 1
+    maxCount: 1
+  - targetRoomType: 2
+    placement: 1
+    prefabs:
+    - {fileID: 7907789851246625934, guid: b1fdee6ca5c4f9d4d8f81fc6fa216fcf, type: 3}
+    minCount: 1
+    maxCount: 2
+  - targetRoomType: 1
+    placement: 1
+    prefabs:
+    - {fileID: 7907789851246625934, guid: b1fdee6ca5c4f9d4d8f81fc6fa216fcf, type: 3}
+    minCount: 1
+    maxCount: 2
+  - targetRoomType: 0
+    placement: 1
+    prefabs:
+    - {fileID: 7907789851246625934, guid: b1fdee6ca5c4f9d4d8f81fc6fa216fcf, type: 3}
+    minCount: 1
+    maxCount: 2

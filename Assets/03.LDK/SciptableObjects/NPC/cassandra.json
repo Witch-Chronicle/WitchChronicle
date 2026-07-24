@@ -1,0 +1,156 @@
+{
+    "npcId": "npc_cassandra",
+    "dialogues": [
+        {
+            "id": "default",
+            "speaker": "카산드라",
+            "text": "안녕? 혹시 잠시 이야기할 수 있을까?",
+            "startQuest": "",
+            "completeQuest": "",
+            "next": "request",
+            "choices": []
+        },
+        {
+            "id": "request",
+            "speaker": "카산드라",
+            "text": "최근 불의 지옥이라 불리는 던전에서 이상한 마력이 느껴지고 있어.",
+            "startQuest": "",
+            "completeQuest": "",
+            "next": "request_choice",
+            "choices": []
+        },
+        {
+            "id": "request_choice",
+            "speaker": "카산드라",
+            "text": "혹시 그 던전에 들어가 조사해줄 수 있을까?",
+            "startQuest": "",
+            "completeQuest": "",
+            "next": "",
+            "choices": [
+                {
+                    "text": "조사해볼게.",
+                    "next": "accept",
+                    "startQuest": "main_001",
+                    "completeQuest": ""
+                },
+                {
+                    "text": "미안하지만 어려울 것 같아.",
+                    "next": "reject",
+                    "startQuest": "",
+                    "completeQuest": ""
+                }
+            ]
+        },
+        {
+            "id": "accept",
+            "speaker": "카산드라",
+            "text": "고마워. 던전 깊은 곳까지 들어가서 무슨 일이 일어나고 있는지 확인해줘.",
+            "startQuest": "",
+            "completeQuest": "",
+            "next": "",
+            "choices": []
+        },
+        {
+            "id": "reject",
+            "speaker": "카산드라",
+            "text": "알겠어. 마음이 바뀌면 다시 찾아와줘.",
+            "startQuest": "",
+            "completeQuest": "",
+            "next": "",
+            "choices": []
+        },
+
+
+        {
+            "id": "running",
+            "speaker": "카산드라",
+            "text": "아직 던전 조사를 끝내지 못했구나. 무리하지 말고 조심해서 다녀와.",
+            "startQuest": "",
+            "completeQuest": "",
+            "next": "",
+            "choices": []
+        },
+
+
+        {
+            "id": "complete",
+            "speaker": "카산드라",
+            "text": "정말 해냈구나! 던전의 이상한 마력이 사라졌어.",
+            "startQuest": "",
+            "completeQuest": "main_001",
+            "next": "reward",
+            "choices": []
+        },
+        {
+            "id": "reward",
+            "speaker": "카산드라",
+            "text": "약속했던 보상을 줄게. 정말 고마워.",
+            "startQuest": "",
+            "completeQuest": "",
+            "next": "",
+            "choices": []
+        },
+
+
+        {
+            "id": "finished",
+            "speaker": "카산드라",
+            "text": "네가 던전을 조사해준 덕분에 마을도 안심할 수 있게 되었어.",
+            "startQuest": "",
+            "completeQuest": "",
+            "next": "recruit_request",
+            "choices": []
+        },
+
+
+        {
+            "id": "recruit_request",
+            "speaker": "카산드라",
+            "text": "네가 보여준 용기를 보니 함께 여행하고 싶어졌어.",
+            "startQuest": "",
+            "completeQuest": "",
+            "next": "recruit_choice",
+            "choices": []
+        },
+        {
+            "id": "recruit_choice",
+            "speaker": "카산드라",
+            "text": "혹시 나를 동료로 받아줄 수 있을까?",
+            "startQuest": "",
+            "completeQuest": "",
+            "next": "",
+            "choices": [
+                {
+                    "text": "함께 여행하자.",
+                    "next": "recruit_accept",
+                    "startQuest": "sub_001",
+                    "completeQuest": ""
+                },
+                {
+                    "text": "아직은 힘들 것 같아.",
+                    "next": "recruit_reject",
+                    "startQuest": "",
+                    "completeQuest": ""
+                }
+            ]
+        },
+        {
+            "id": "recruit_accept",
+            "speaker": "카산드라",
+            "text": "고마워. 앞으로 네 곁에서 힘이 되어줄게.",
+            "startQuest": "",
+            "completeQuest": "",
+            "next": "",
+            "choices": []
+        },
+        {
+            "id": "recruit_reject",
+            "speaker": "카산드라",
+            "text": "알겠어. 마음이 바뀌면 다시 이야기해줘.",
+            "startQuest": "",
+            "completeQuest": "",
+            "next": "",
+            "choices": []
+        }
+    ]
+}

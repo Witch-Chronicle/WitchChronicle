@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 777a2bbef95f00647afabc6021a8cfb4, type: 3}
+  m_Name: Defensive
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAIProfileData
+  _profileId: defensive
+  _profileName: "\uBC29\uC5B4\uD615"
+  _archetype: 1
+  _lowHpTargetWeight: 1
+  _highThreatTargetWeight: 1
+  _randomTargetWeight: 0.4
+  _damageWeight: 1
+  _killWeight: 1
+  _weaknessWeight: 1
+  _healWeight: 3
+  _buffWeight: 3
+  _debuffWeight: 1
+  _statusEffectWeight: 1
+  _selfDefenseHpRatio: 0.5
+  _selfSurvivalWeight: 4
+  _randomActionWeight: 0.3

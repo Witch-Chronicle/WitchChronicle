@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15fa27efa3f5725419aca6ec65b66bd4, type: 3}
+  m_Name: enemy_wolf
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
+  _enemyId: enemy_wolf
+  _enemyName: "\uB291\uB300"
+  _maxHp: 80
+  _attackPower: 15
+  _magicPower: 5
+  _defensePower: 4
+  _magicDefensePower: 3
+  _speed: 10
+  _weakElements: 02000000
+  _resistElements: 
+  _nullElements: 
+  _absorbElements: 
+  _skillList:
+  - {fileID: 11400000, guid: 202b6b67dc24a6d4197768238915b8d1, type: 2}
+  - {fileID: 11400000, guid: ebda891a8d634d94fb8eb16a314dfae8, type: 2}
+  _aiProfileData: {fileID: 11400000, guid: ff072b74071c57e43a37d7cecfd0b36f, type: 2}
+  _expReward: 10
+  _goldReward: 5
+  _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
+  _prefab: {fileID: 5785497811905594081, guid: 38b03aa261d560741b531d443231fd65, type: 3}
+  _animatorController: {fileID: 9100000, guid: 9386af1cead3415fa8f78e886a24978a, type: 2}

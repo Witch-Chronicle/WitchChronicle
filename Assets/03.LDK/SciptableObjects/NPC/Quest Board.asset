@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25f7fd47791a14f4f8b071b5055a8834, type: 3}
+  m_Name: Quest Board
+  m_EditorClassIdentifier: Assembly-CSharp::NPCData
+  id: npc_cassandra
+  npcName: "\uCE74\uC0B0\uB4DC\uB77C"
+  description: "\uCE74\uC0B0\uB4DC\uB77C "
+  portrait: {fileID: 21300000, guid: 5d9ba4e7d0964044ea54abe409d81dfd, type: 3}
+  prefab: {fileID: 0}
+  dialogueJson: {fileID: 4900000, guid: bf9ed8d9e4862dc459f51ac74ae4c3ca, type: 3}
+  defaultDialogueID: start
+  runningDialogueID: running
+  completeDialogueID: complete
+  finishedDialogueID: finished
+  startDialogueID: start
+  recruitQuest: {fileID: 0}
+  defaultState: 0

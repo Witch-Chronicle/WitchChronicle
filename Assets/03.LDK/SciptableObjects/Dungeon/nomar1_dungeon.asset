@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6df93aa8a2379f04abe3ffa4fcbdc37a, type: 3}
+  m_Name: nomar1_dungeon
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonData
+  Id: fire1
+  DungeonName: "\uBD88\uC758 \uB358\uC804"
+  FloorPrefab: {fileID: 2968830504906926872, guid: e6f5618dfc2deac438100ab15e8cda38, type: 3}
+  WallPrefab: {fileID: 2396082444373089105, guid: f2175a29cf2eb3f4aae9639e1de729be, type: 3}
+  CeilingPrefab: {fileID: 2396082444373089105, guid: f2175a29cf2eb3f4aae9639e1de729be, type: 3}
+  DecorPrefabs:
+  - {fileID: 1030998835, guid: abc00000000005616127562019153563, type: 3}
+  - {fileID: 1030998853, guid: abc00000000010481084240325690896, type: 3}
+  - {fileID: 1030998867, guid: abc00000000005201086704112631833, type: 3}
+  - {fileID: 1030998881, guid: abc00000000001447774881241271710, type: 3}
+  - {fileID: 1030992326, guid: abc00000000018341995826438526174, type: 3}
+  - {fileID: 1030992348, guid: abc00000000009366842529473335653, type: 3}
+  - {fileID: 1030992304, guid: abc00000000000166612956689332867, type: 3}
+  - {fileID: 1030992064, guid: abc00000000001424491044653731891, type: 3}
+  - {fileID: 1030992055, guid: abc00000000003602206591326685032, type: 3}
+  - {fileID: 1030992180, guid: abc00000000014745605174516167561, type: 3}
+  - {fileID: 1030992198, guid: abc00000000008076672260047248511, type: 3}
+  - {fileID: 1030992216, guid: abc00000000016882973811301943871, type: 3}
+  - {fileID: 1030992238, guid: abc00000000003778390058708688329, type: 3}
+  - {fileID: 1030992687, guid: abc00000000008799884702711077847, type: 3}
+  MapSize: {x: 100, y: 100}
+  MinRoomSize: 20
+  MaxRoomSize: 23
+  MinPadding: 2
+  BSPDepth: 4
+  MaxConnectionPerRoom: 3
+  ExtraConnectionProbability: 0
+  RoomWeights:
+  - Type: 2
+    Weight: 10
+  - Type: 1
+    Weight: 70
+  - Type: 4
+    Weight: 13
+  - Type: 3
+    Weight: 7
+  RoomContentTable: {fileID: 11400000, guid: afb95ba883bf32243a7f8ac84e1154fe, type: 2}
+  _decorationTable: {fileID: 11400000, guid: d250eabb332bb9246acc170c64b5bd52, type: 2}
+  BGM: {fileID: 0}
+  Skybox: {fileID: 0}
+  Icon: {fileID: 0}
+  DungeonAtmosphere: {fileID: 11400000, guid: 442f43698e9e3f3499a0ef8b870de691, type: 2}
+  HasBoss: 0
+  HasExit: 1
