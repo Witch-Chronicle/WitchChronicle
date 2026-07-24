@@ -60,6 +60,8 @@ public class DungeonManager : MonoBehaviour
 
         Debug.Log("[DungeonManager] 던전 스폰 완료");
 
+        _contentSpawner.SetCorridorTiles(_spawner.CorridorTiles);
+
         _contentSpawner.SpawnContent(rooms, _spawner.GetTileSize);
 
         Debug.Log("[DungeonManager] 방 콘덴츠 스폰 완료");

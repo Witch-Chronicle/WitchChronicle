@@ -17,12 +17,13 @@ MonoBehaviour:
   FloorPrefab: {fileID: 2968830504906926872, guid: b6eeea8ad0c672342af960ea4229b9ef, type: 3}
   WallPrefab: {fileID: 2968830504906926872, guid: 738a82f1abf45734bb1692df0cdbcca5, type: 3}
   CeilingPrefab: {fileID: 2968830504906926872, guid: 738a82f1abf45734bb1692df0cdbcca5, type: 3}
+  DecorPrefabs: []
   MapSize: {x: 100, y: 100}
   MinRoomSize: 20
   MaxRoomSize: 23
-  MinPadding: 2
+  MinPadding: 1
   BSPDepth: 4
-  MaxConnectionPerRoom: 3
+  MaxConnectionPerRoom: 1
   ExtraConnectionProbability: 0
   RoomWeights:
   - Type: 2

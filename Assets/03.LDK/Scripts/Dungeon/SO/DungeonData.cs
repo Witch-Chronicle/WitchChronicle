@@ -19,9 +19,6 @@ public class DungeonData : ScriptableObject
     [Header("Dungeon Setting")]
     public Vector2Int MapSize;
 
-    public int MinRoomSize;
-    public int MaxRoomSize;
-
     public int MinPadding;
 
     public int BSPDepth;
@@ -29,6 +26,13 @@ public class DungeonData : ScriptableObject
     public int MaxConnectionPerRoom;
 
     public float ExtraConnectionProbability;
+
+    [Header("Room Setting")]
+    public int MinRoomCount = 12;
+    public int MaxRoomCount = 18;
+
+    public int MinRoomSize;
+    public int MaxRoomSize;
 
     [System.Serializable]
     public struct RoomWeight // Room 의 생성 확률
