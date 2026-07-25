@@ -1859,7 +1859,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!114 &9195437560923937599
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2144,15 +2144,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillListController
   _skillBtn: {fileID: 3358580407872752587}
   _rectTransform: {fileID: 8700177898806446308}
-  _closeBtn: {fileID: 1105370723563369514}
   _duration: 0.25
   _openEase: 6
   _closeEase: 5
-  _contentParent: {fileID: 3617117612594802777}
-  _skillPrefab: {fileID: 2115021401151000119, guid: 958f1ac11fa1ea94b86e889b1dd0a231, type: 3}
+  _upPlace: {fileID: 0}
+  _middlePlace: {fileID: 0}
+  _downPlace: {fileID: 0}
   _actionBar: {fileID: 7976672273836001793}
   _targetCycler: {fileID: 3832061548272527923}
   _cameraDirector: {fileID: 0}
+  _skillPresentationPalette: {fileID: 0}
 --- !u!225 &3608416331796964507
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -2385,11 +2386,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41631b639d702994b9496391e5358baa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleTargetCycler
-  _actionBar: {fileID: 7976672273836001793}
-  _confirmCancelBar: {fileID: 0}
-  _confirmBtn: {fileID: 0}
-  _cancelBtn: {fileID: 0}
-  _skillListController: {fileID: 1423616160268354592}
+  _cameraDirector: {fileID: 0}
   _debugTargetTxt: {fileID: 7589809803449952477}
 --- !u!1 &6714499346846186183
 GameObject:
@@ -3368,12 +3365,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemListController
   _itemBtn: {fileID: 2692679399981501444}
   _rectTransform: {fileID: 3342462006584830856}
-  _closeBtn: {fileID: 6838491766213270293}
   _duration: 0.25
   _openEase: 6
   _closeEase: 5
-  _contentParent: {fileID: 2501094165400771858}
-  _itemPrefab: {fileID: 13528187792669358, guid: 59c42bddc938f964abaa5a7cfa957bff, type: 3}
+  _upPlace: {fileID: 0}
+  _middlePlace: {fileID: 0}
+  _downPlace: {fileID: 0}
   _actionBar: {fileID: 7976672273836001793}
 --- !u!225 &9190511786693975742
 CanvasGroup:
@@ -3712,6 +3709,7 @@ MonoBehaviour:
   _duration: 0.2
   _hideEase: 5
   _showEase: 6
+  _hiddenScale: {x: 0.85, y: 0.85, z: 0.85}
 --- !u!1 &9003889345946162546
 GameObject:
   m_ObjectHideFlags: 0
