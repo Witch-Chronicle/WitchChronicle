@@ -8,6 +8,7 @@ public class EnemyBattleData : ScriptableObject
     [Header("Enemy Info")]
     [SerializeField] private string _enemyId;
     [SerializeField] private string _enemyName;
+    [SerializeField] private Sprite _icon;
 
     [Header("Enemy Stats")]
     [SerializeField] private int _maxHp;
@@ -44,6 +45,7 @@ public class EnemyBattleData : ScriptableObject
 
     public string EnemyId => _enemyId;
     public string EnemyName => _enemyName;
+    public Sprite Icon => _icon;
 
     public int MaxHp => _maxHp;
     public float AttackPower => _attackPower;

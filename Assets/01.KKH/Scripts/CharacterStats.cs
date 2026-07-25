@@ -37,6 +37,7 @@ public class CharacterStats : MonoBehaviour
 
     public string CharacterId => _baseStats != null ? _baseStats.CharacterId : string.Empty;
     public string CharacterName => _baseStats != null ? _baseStats.CharacterName : string.Empty;
+    public Sprite Icon => _baseStats != null ? _baseStats.Icon : null;
 
     public int Level => _level;
     public int Exp => _exp;
