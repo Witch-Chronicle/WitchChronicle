@@ -6,6 +6,7 @@ using UnityEngine;
 public class CharacterRewardResult
 {
     public string CharacterName;
+    public Sprite Icon;
     public int ExpGained;
     public int LevelBefore;
     public int LevelAfter;
@@ -241,7 +242,7 @@ public class BattleRewardManager : MonoBehaviour
         List<PersistentCharacterUnit> activeParty = new List<PersistentCharacterUnit>();
         PersistentCharacterManager.Instance.GetActivePartyMembers(activeParty);
 
-        List<(string name, int level)> before = new List<(string, int)>();
+        List<(string name, int level, Sprite icon)> before = new List<(string, int, Sprite)>();
 
         for (int i = 0; i < activeParty.Count; i++)
         {
@@ -249,11 +250,13 @@ public class BattleRewardManager : MonoBehaviour
 
             if (unit == null || unit.StatController == null)
             {
-                before.Add((unit != null ? unit.CharacterName : "?", 0));
+                Sprite fallbackIcon = unit != null && unit.CharacterStats != null ? unit.CharacterStats.Icon : null;
+                before.Add((unit != null ? unit.CharacterName : "?", 0, fallbackIcon));
                 continue;
             }
 
-            before.Add((unit.CharacterName, unit.StatController.Level));
+            Sprite icon = unit.CharacterStats != null ? unit.CharacterStats.Icon : null;
+            before.Add((unit.CharacterName, unit.StatController.Level, icon));
         }
 
         if (exp > 0)
@@ -275,6 +278,7 @@ public class BattleRewardManager : MonoBehaviour
                 results.Add(new CharacterRewardResult
                 {
                     CharacterName = before[i].name,
+                    Icon = before[i].icon,
                     ExpGained = exp,
                     LevelBefore = before[i].level,
                     LevelAfter = before[i].level,
@@ -287,6 +291,7 @@ public class BattleRewardManager : MonoBehaviour
             results.Add(new CharacterRewardResult
             {
                 CharacterName = before[i].name,
+                Icon = before[i].icon,
                 ExpGained = exp,
                 LevelBefore = before[i].level,
                 LevelAfter = unit.StatController.Level,

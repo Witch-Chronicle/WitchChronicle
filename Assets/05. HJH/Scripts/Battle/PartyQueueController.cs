@@ -3,32 +3,29 @@ using UnityEngine;
 using DG.Tweening;
 
 /// <summary>
-/// Characters 오브젝트에 붙어서 아군 파티 상태를 "큐(대기열)" 형태로 표시.
-/// - 이번 라운드의 고정된 턴 순서(BattleCycleController._turnOrder, 라운드 내내 안 바뀜)를 기준으로 회전.
-///   -> 라운드 중간에 순서가 재조정되는 일이 없음. 다음 라운드가 되어야 갱신됨.
-/// - 단, 화면에 배치할 때는 죽은 아군을 항상 맨 위 쪽 자리에 고정하고,
-///   살아있는 아군만 맨 아래(선택 자리)부터 위로 채움.
-/// - 적 턴 중에는 완전히 무시하고 화면 그대로 유지.
+/// Characters 오브젝트에 붙어서 화면 하단에 아군 파티 상태를 가로로 표시.
+/// - 전투 시작 시 파티 인원수만큼 _statusViewPrefab을 동적으로 생성.
+///   HorizontalLayoutGroup이 알아서 간격 맞춰 정렬해줌.
+/// - 본인 턴이면 그 캐릭터 뷰의 Visual(BattleCharacterStatusView.VisualRoot)만 localScale로 확대,
+///   나머지는 기본 크기로 복귀.
+///   Slot(레이아웃이 관리하는 루트)은 스케일하지 않으므로 옆 캐릭터 위치가 흔들리지 않고,
+///   Visual 전체가 비율 그대로 커지므로 내부(Icon/Status) 배치도 깨지지 않음.
 /// </summary>
 public class PartyQueueController : MonoBehaviour
 {
-    [Header("Slots (순서 중요: 맨 위/가장 먼 자리 -> 맨 아래/선택 자리)")]
-    [SerializeField] private List<BattleCharacterStatusView> _views = new List<BattleCharacterStatusView>();
+    [Header("Dynamic Spawn")]
+    [SerializeField] private BattleCharacterStatusView _statusViewPrefab;
+    [SerializeField] private Transform _contentParent; // HorizontalLayoutGroup이 붙어있는 Characters 오브젝트
 
-    [Header("Animation")]
-    [SerializeField] private float _duration = 0.35f;
+    [Header("Scale Animation")]
+    [SerializeField] private float _duration = 0.25f;
     [SerializeField] private Ease _ease = Ease.OutQuad;
+    [SerializeField] private float _selectedScaleMultiplier = 1.15f;
 
-    private readonly List<Vector2> _slotPositions = new List<Vector2>();
-    private readonly List<Vector3> _slotScales = new List<Vector3>();
+    private readonly List<BattleCharacterStatusView> _spawnedViews = new List<BattleCharacterStatusView>();
+    private readonly List<Vector3> _baseScales = new List<Vector3>();
 
-    private bool _isSlotCacheReady;
     private bool _isSubscribed;
-
-    private void Awake()
-    {
-        CacheSlotTransforms();
-    }
 
     private void OnEnable()
     {
@@ -46,178 +43,110 @@ public class PartyQueueController : MonoBehaviour
         Unsubscribe();
     }
 
-    private void CacheSlotTransforms()
-    {
-        if (_isSlotCacheReady) return;
-
-        foreach (var view in _views)
-        {
-            if (view == null)
-            {
-                _slotPositions.Add(Vector2.zero);
-                _slotScales.Add(Vector3.one);
-                continue;
-            }
-
-            RectTransform rect = view.transform as RectTransform;
-            _slotPositions.Add(rect != null ? rect.anchoredPosition : Vector2.zero);
-            _slotScales.Add(rect != null ? rect.localScale : Vector3.one);
-        }
-
-        _isSlotCacheReady = true;
-    }
-
+    /// <summary>
+    /// 전투 시작 시 파티 인원수만큼 뷰를 동적으로 생성하고 순서대로 바인딩.
+    /// </summary>
     private void HandleBattleStarted()
     {
         if (BattleUIContext.Instance == null) return;
+        if (_statusViewPrefab == null || _contentParent == null)
+        {
+            Debug.LogWarning("[PartyQueueController] _statusViewPrefab 또는 _contentParent가 연결되지 않았습니다.");
+            return;
+        }
 
-        CacheSlotTransforms();
+        ClearSpawnedViews();
 
         IReadOnlyList<BattleUnit> party = BattleUIContext.Instance.PartyUnits;
-        int emptyCount = _views.Count - party.Count;
 
-        for (int i = 0; i < _views.Count; i++)
+        for (int i = 0; i < party.Count; i++)
         {
-            BattleCharacterStatusView view = _views[i];
-            if (view == null) continue;
-
-            int partyIndex = i - emptyCount;
-
-            if (partyIndex < 0 || partyIndex >= party.Count)
-            {
-                view.Clear();
-                view.gameObject.SetActive(false);
-                continue;
-            }
-
+            BattleCharacterStatusView view = Instantiate(_statusViewPrefab, _contentParent);
             view.gameObject.SetActive(true);
-            view.Bind(party[partyIndex]);
+            view.Bind(party[i]);
 
-            RectTransform rect = view.transform as RectTransform;
-            if (rect != null)
-            {
-                rect.DOKill();
-                rect.anchoredPosition = _slotPositions[i];
-                rect.localScale = _slotScales[i];
-            }
+            RectTransform visualRoot = view.VisualRoot;
+            Vector3 baseScale = visualRoot != null ? visualRoot.localScale : Vector3.one;
+
+            _spawnedViews.Add(view);
+            _baseScales.Add(baseScale);
         }
     }
 
+    private void ClearSpawnedViews()
+    {
+        for (int i = 0; i < _spawnedViews.Count; i++)
+        {
+            if (_spawnedViews[i] != null)
+            {
+                Destroy(_spawnedViews[i].gameObject);
+            }
+        }
+
+        _spawnedViews.Clear();
+        _baseScales.Clear();
+    }
+
     /// <summary>
-    /// 아군 턴 시작 시: 이번 라운드 고정 턴 순서(죽은 유닛 포함, 라운드 내내 안 바뀜)에서
-    /// 지금 유닛을 맨 앞으로 두고 회전. 이 순서 자체는 라운드 끝날 때까지 흔들리지 않음.
+    /// 아군 턴 시작 시: 그 캐릭터의 Visual만 스케일 업, 나머지는 기본 크기로 복귀.
+    /// 동시에 이번 라운드 턴 순서를 조회해서 각 뷰의 순번(OrderTxt)도 갱신.
     /// </summary>
     private void HandleTurnStarted(BattleUnit unit)
     {
-        if (unit == null || unit.TeamType != BattleTeamType.Player) return;
-        if (BattleUIContext.Instance == null) return;
+        bool isPlayerTurn = unit != null && unit.TeamType == BattleTeamType.Player;
 
-        List<BattleUnit> fullOrder = new List<BattleUnit>();
-        BattleUIContext.Instance.GetCurrentTurnOrder(fullOrder, true); // 죽은 유닛 포함 - 라운드 고정 순서 유지
+        Dictionary<BattleUnit, int> orderLookup = BuildTurnOrderLookup();
 
-        List<(BattleUnit unit, int roundOrderNumber)> allyEntries = new List<(BattleUnit, int)>();
-        for (int i = 0; i < fullOrder.Count; i++)
+        for (int i = 0; i < _spawnedViews.Count; i++)
         {
-            BattleUnit member = fullOrder[i];
-            if (member != null && member.TeamType == BattleTeamType.Player)
-            {
-                allyEntries.Add((member, i + 1));
-            }
+            BattleCharacterStatusView view = _spawnedViews[i];
+            if (view == null) continue;
+
+            bool isDead = view.BoundUnit != null && view.BoundUnit.IsAlive == false;
+            int roundOrderNumber = view.BoundUnit != null && orderLookup.TryGetValue(view.BoundUnit, out int order) ? order : 0;
+            view.UpdateOrder(roundOrderNumber, isDead);
+
+            RectTransform visualRoot = view.VisualRoot;
+            if (visualRoot == null) continue;
+
+            bool isSelected = isPlayerTurn && view.BoundUnit == unit;
+
+            Vector3 targetScale = isSelected
+                ? _baseScales[i] * _selectedScaleMultiplier
+                : _baseScales[i];
+
+            visualRoot.DOKill();
+            visualRoot.DOScale(targetScale, _duration).SetEase(_ease);
         }
-
-        int startIndex = allyEntries.FindIndex(entry => entry.unit == unit);
-        if (startIndex < 0) return;
-
-        List<(BattleUnit unit, int roundOrderNumber)> rotated = new List<(BattleUnit, int)>();
-        for (int i = 0; i < allyEntries.Count; i++)
-        {
-            rotated.Add(allyEntries[(startIndex + i) % allyEntries.Count]);
-        }
-
-        AnimateQueueToSlots(rotated);
     }
 
     /// <summary>
-    /// rotated(라운드 고정 순서 기준 회전 결과)를 죽음 여부로 나눠서 배치.
-    /// - 죽은 아군: 맨 위 자리부터 순서대로 고정
-    /// - 살아있는 아군: 맨 아래(선택 자리)부터 위로, rotated 순서(지금 턴 유닛이 맨 앞) 그대로 반영
+    /// 이번 라운드 전체 턴 순서를 조회해서 유닛 -> 순번(1-based) 딕셔너리로 변환.
     /// </summary>
-    private void AnimateQueueToSlots(List<(BattleUnit unit, int roundOrderNumber)> rotated)
+    private Dictionary<BattleUnit, int> BuildTurnOrderLookup()
     {
-        List<(BattleUnit unit, int roundOrderNumber)> deadEntries = new List<(BattleUnit, int)>();
-        List<(BattleUnit unit, int roundOrderNumber)> aliveEntries = new List<(BattleUnit, int)>();
+        Dictionary<BattleUnit, int> lookup = new Dictionary<BattleUnit, int>();
 
-        foreach (var entry in rotated)
+        if (BattleUIContext.Instance == null) return lookup;
+
+        List<BattleUnit> fullOrder = new List<BattleUnit>();
+        BattleUIContext.Instance.GetCurrentTurnOrder(fullOrder, true);
+
+        for (int i = 0; i < fullOrder.Count; i++)
         {
-            if (entry.unit != null && entry.unit.IsAlive == false)
+            if (fullOrder[i] != null)
             {
-                deadEntries.Add(entry);
-            }
-            else
-            {
-                aliveEntries.Add(entry);
-            }
-        }
-
-        int deadSlotIndex = 0;
-
-        for (int i = 0; i < deadEntries.Count; i++)
-        {
-            BattleCharacterStatusView view = _views.Find(v => v.BoundUnit == deadEntries[i].unit);
-            if (view == null) continue;
-
-            MoveViewToSlot(view, deadSlotIndex);
-            view.UpdateOrder(0, isDead: true);
-            deadSlotIndex++;
-        }
-
-        int slotCount = _views.Count;
-        for (int i = 0; i < aliveEntries.Count; i++)
-        {
-            var entry = aliveEntries[i];
-            BattleCharacterStatusView view = _views.Find(v => v.BoundUnit == entry.unit);
-            if (view == null) continue;
-
-            int slotIndex = slotCount - 1 - i;
-            MoveViewToSlot(view, slotIndex);
-            view.UpdateOrder(entry.roundOrderNumber);
-        }
-
-        // rotated(이번 라운드 턴 순서)에 아예 없는 캐릭터 -> 죽은 상태면 이어서 위쪽 슬롯에 배치
-        foreach (var view in _views)
-        {
-            if (view.BoundUnit != null && view.BoundUnit.IsAlive == false && rotated.Exists(e => e.unit == view.BoundUnit) == false)
-            {
-                MoveViewToSlot(view, deadSlotIndex);
-                view.UpdateOrder(0, isDead: true);
-                deadSlotIndex++;
+                lookup[fullOrder[i]] = i + 1;
             }
         }
-    }
 
-    private void MoveViewToSlot(BattleCharacterStatusView view, int slotIndex)
-    {
-        if (slotIndex < 0 || slotIndex >= _slotPositions.Count) return;
-
-        RectTransform rect = view.transform as RectTransform;
-        if (rect == null) return;
-
-        rect.DOKill();
-        rect.DOAnchorPos(_slotPositions[slotIndex], _duration).SetEase(_ease);
-        rect.DOScale(_slotScales[slotIndex], _duration).SetEase(_ease);
+        return lookup;
     }
 
     private void TrySubscribe()
     {
-        if (_isSubscribed)
-        {
-            return;
-        }
-
-        if (BattleUIContext.Instance == null)
-        {
-            return;
-        }
+        if (_isSubscribed) return;
+        if (BattleUIContext.Instance == null) return;
 
         BattleUIContext.Instance.OnBattleStarted += HandleBattleStarted;
         BattleUIContext.Instance.OnTurnStarted += HandleTurnStarted;
@@ -227,10 +156,7 @@ public class PartyQueueController : MonoBehaviour
 
     private void Unsubscribe()
     {
-        if (_isSubscribed == false)
-        {
-            return;
-        }
+        if (_isSubscribed == false) return;
 
         if (BattleUIContext.Instance == null)
         {
@@ -246,13 +172,9 @@ public class PartyQueueController : MonoBehaviour
 
     private void RefreshInitialState()
     {
-        if (BattleUIContext.Instance == null)
-        {
-            return;
-        }
+        if (BattleUIContext.Instance == null) return;
 
-        if (BattleUIContext.Instance.PartyUnits != null &&
-            BattleUIContext.Instance.PartyUnits.Count > 0)
+        if (BattleUIContext.Instance.PartyUnits != null && BattleUIContext.Instance.PartyUnits.Count > 0)
         {
             HandleBattleStarted();
         }

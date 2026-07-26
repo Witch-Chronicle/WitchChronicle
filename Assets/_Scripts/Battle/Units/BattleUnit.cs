@@ -1,0 +1,408 @@
+using System;
+using UnityEngine;
+using System.Collections.Generic;
+
+// 전투 중 체력,마나 등 계산용 (런타임)
+// 캐릭터 또는 적 SO값을 복사해 생성하며 전투 중 변경되는 상태를 관리
+public class BattleUnit
+{
+    private readonly string _unitId;
+    private readonly string _unitName;
+    private readonly BattleTeamType _teamType;
+    private readonly Sprite _icon;
+
+    private readonly int _maxHp;
+    private int _currentHp;
+
+    private readonly int _maxMp;
+    private int _currentMp;
+    private readonly bool _usesMp;
+
+    private readonly float _attackPower;
+    private readonly float _magicPower;
+    private readonly float _defensePower;
+    private readonly float _magicDefensePower;
+    private readonly float _speed;
+
+    private readonly List<ElementType> _weakElements;
+    private readonly List<ElementType> _resistElements;
+    private readonly List<ElementType> _nullElements;
+    private readonly List<ElementType> _absorbElements;
+
+    private readonly List<SkillData> _skillList;
+    private readonly EnemyAIProfileData _aiProfileData;
+
+    public EnemyAIProfileData AIProfileData => _aiProfileData;
+
+    public string UnitId => _unitId;
+    public string UnitName => _unitName;
+    public BattleTeamType TeamType => _teamType;
+    public Sprite Icon => _icon;
+
+    public int MaxHp => _maxHp;
+    public int CurrentHp => _currentHp;
+
+    public int MaxMp => _maxMp;
+    public int CurrentMp => _currentMp;
+    public bool UsesMp => _usesMp;
+
+    public float AttackPower => _attackPower;
+    public float MagicPower => _magicPower;
+    public float DefensePower => _defensePower;
+    public float MagicDefensePower => _magicDefensePower;
+    public float Speed => _speed;
+
+    public IReadOnlyList<ElementType> WeakElements => _weakElements;
+    public IReadOnlyList<ElementType> ResistElements => _resistElements;
+    public IReadOnlyList<ElementType> NullElements => _nullElements;
+    public IReadOnlyList<ElementType> AbsorbElements => _absorbElements;
+
+    public IReadOnlyList<SkillData> SkillList => _skillList;
+
+    public bool IsAlive => _currentHp > 0;
+
+    public event Action OnHpChanged;
+    public event Action OnMpChanged;
+
+    /// <summary>
+    /// BattleUnit 내부 데이터를 초기화
+    /// </summary>
+    private BattleUnit(
+        string unitId,
+        string unitName,
+        BattleTeamType teamType,
+        int maxHp,
+        int currentHp,
+        int maxMp,
+        int currentMp,
+        bool usesMp,
+        float attackPower,
+        float magicPower,
+        float defensePower,
+        float magicDefensePower,
+        float speed,
+        IReadOnlyList<ElementType> weakElements,
+        IReadOnlyList<ElementType> resistElements,
+        IReadOnlyList<ElementType> nullElements,
+        IReadOnlyList<ElementType> absorbElements,
+        IReadOnlyList<SkillData> skillList,
+        EnemyAIProfileData aiProfileData = null,
+        Sprite icon = null)
+    {
+        _unitId = unitId;
+        _unitName = unitName;
+        _teamType = teamType;
+        _icon = icon;
+
+        _maxHp = Mathf.Max(1, maxHp);
+        _currentHp = Mathf.Clamp(currentHp, 0, _maxHp);
+
+        _maxMp = Mathf.Max(0, maxMp);
+        _currentMp = Mathf.Clamp(currentMp, 0, _maxMp);
+        _usesMp = usesMp;
+
+        _attackPower = attackPower;
+        _magicPower = magicPower;
+        _defensePower = defensePower;
+        _magicDefensePower = magicDefensePower;
+        _speed = speed;
+
+        _weakElements = CreateElementList(weakElements);
+        _resistElements = CreateElementList(resistElements);
+        _nullElements = CreateElementList(nullElements);
+        _absorbElements = CreateElementList(absorbElements);
+
+        _skillList = CreateSkillList(skillList);
+
+        _aiProfileData = aiProfileData;
+    }
+
+    ///// <summary>
+    ///// 플레이어 캐릭터용 BattleUnit을 생성
+    ///// 추후 CharacterStats의 최종 계산값을 이 함수에 전달하면 됨
+    ///// </summary>
+    //public static BattleUnit CreatePlayer(
+    //    string unitId,
+    //    string unitName,
+    //    int maxHp,
+    //    int maxMp,
+    //    float attackPower,
+    //    float magicPower,
+    //    float defensePower,
+    //    float magicDefensePower,
+    //    float speed,
+    //    IReadOnlyList<SkillData> skillList)
+    //{
+    //    return new BattleUnit(
+    //        unitId,
+    //        unitName,
+    //        BattleTeamType.Player,
+    //        maxHp,
+    //        maxMp,
+    //        true,
+    //        attackPower,
+    //        magicPower,
+    //        defensePower,
+    //        magicDefensePower,
+    //        speed,
+    //        null,
+    //        null,
+    //        null,
+    //        null,
+    //        skillList);
+    //}
+
+    /// <summary>
+    /// 플레이어 전투 유닛을 생성합니다.
+    /// CharacterStats에서 계산된 최대 스탯과 CharacterVitals의 현재 HP/MP를 기반으로 초기화합니다.
+    /// </summary>
+    /// <param name="unitId">유닛 ID입니다.</param>
+    /// <param name="unitName">유닛 이름입니다.</param>
+    /// <param name="maxHp">최대 HP입니다.</param>
+    /// <param name="currentHp">현재 HP입니다.</param>
+    /// <param name="maxMp">최대 MP입니다.</param>
+    /// <param name="currentMp">현재 MP입니다.</param>
+    /// <param name="attackPower">물리 공격력입니다.</param>
+    /// <param name="magicPower">마법 공격력입니다.</param>
+    /// <param name="defensePower">물리 방어력입니다.</param>
+    /// <param name="magicDefensePower">마법 방어력입니다.</param>
+    /// <param name="speed">속도입니다.</param>
+    /// <param name="skillList">사용 가능한 스킬 목록입니다.</param>
+    /// <returns>생성된 플레이어 BattleUnit입니다.</returns>
+    public static BattleUnit CreatePlayer(
+        string unitId,
+        string unitName,
+        int maxHp,
+        int currentHp,
+        int maxMp,
+        int currentMp,
+        float attackPower,
+        float magicPower,
+        float defensePower,
+        float magicDefensePower,
+        float speed,
+        IReadOnlyList<SkillData> skillList,
+        Sprite icon = null)
+    {
+        return new BattleUnit(
+            unitId,
+            unitName,
+            BattleTeamType.Player,
+            maxHp,
+            currentHp,
+            maxMp,
+            currentMp,
+            true,
+            attackPower,
+            magicPower,
+            defensePower,
+            magicDefensePower,
+            speed,
+            null,
+            null,
+            null,
+            null,
+            skillList,
+            null,
+            icon);
+    }
+
+    /// <summary>
+    /// 적 데이터 SO를 기반으로 적 BattleUnit을 생성합니다.
+    /// 적은 MP 제한 없이 스킬을 사용하므로 UsesMp를 false로 설정합니다.
+    /// </summary>
+    /// <param name="enemyData">적 전투 데이터입니다.</param>
+    /// <returns>생성된 적 BattleUnit입니다.</returns>
+    public static BattleUnit CreateEnemy(EnemyBattleData enemyData)
+    {
+        if (enemyData == null)
+        {
+            Debug.LogError("EnemyBattleData가 null입니다. Enemy BattleUnit을 생성할 수 없습니다.");
+            return null;
+        }
+
+        return new BattleUnit(
+            enemyData.EnemyId,
+            enemyData.EnemyName,
+            BattleTeamType.Enemy,
+            enemyData.MaxHp,
+            enemyData.MaxHp,
+            0,
+            0,
+            false,
+            enemyData.AttackPower,
+            enemyData.MagicPower,
+            enemyData.DefensePower,
+            enemyData.MagicDefensePower,
+            enemyData.Speed,
+            enemyData.WeakElements,
+            enemyData.ResistElements,
+            enemyData.NullElements,
+            enemyData.AbsorbElements,
+            enemyData.SkillList,
+            enemyData.AIProfileData,
+            enemyData.Icon);
+    }
+
+    /// <summary>
+    /// 대상에게 데미지 적용
+    /// </summary>
+    public void TakeDamage(int damage)
+    {
+        int finalDamage = Mathf.Max(0, damage);
+        _currentHp = Mathf.Max(0, _currentHp - finalDamage);
+        OnHpChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// 대상의 HP 회복
+    /// </summary>
+    public void Heal(int amount)
+    {
+        int finalAmount = Mathf.Max(0, amount);
+        _currentHp = Mathf.Min(_maxHp, _currentHp + finalAmount);
+        OnHpChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// MP 소모
+    /// MP를 사용하지 않는 유닛은 항상 성공
+    /// </summary>
+    public bool UseMp(int amount)
+    {
+        if (_usesMp == false)
+        {
+            return true;
+        }
+
+        int finalAmount = Mathf.Max(0, amount);
+
+        if (_currentMp < finalAmount)
+        {
+            return false;
+        }
+
+        _currentMp -= finalAmount;
+
+        OnMpChanged?.Invoke();
+
+        return true;
+    }
+
+    /// <summary>
+    /// 해당 스킬을 사용할 수 있는지 확인
+    /// MP를 사용하는 유닛만 MP 소모량을 검사
+    /// </summary>
+    public bool CanUseSkill(SkillData skillData)
+    {
+        if (skillData == null)
+        {
+            return false;
+        }
+
+        if (_usesMp == false)
+        {
+            return true;
+        }
+
+        return _currentMp >= skillData.MpCost;
+    }
+
+    /// <summary>
+    /// 지정한 속성이 이 유닛의 약점인지 확인
+    /// </summary>
+    public bool IsWeakTo(ElementType elementType)
+    {
+        return ContainsElement(_weakElements, elementType);
+    }
+
+    /// <summary>
+    /// 지정한 속성에 이 유닛이 저항을 가지는지 확인
+    /// </summary>
+    public bool IsResistTo(ElementType elementType)
+    {
+        return ContainsElement(_resistElements, elementType);
+    }
+
+    /// <summary>
+    /// 지정한 속성을 이 유닛이 무효화하는지 확인
+    /// </summary>
+    public bool IsNullTo(ElementType elementType)
+    {
+        return ContainsElement(_nullElements, elementType);
+    }
+
+    /// <summary>
+    /// 지정한 속성을 이 유닛이 흡수하는지 확인
+    /// </summary>
+    public bool IsAbsorbTo(ElementType elementType)
+    {
+        return ContainsElement(_absorbElements, elementType);
+    }
+
+    /// <summary>
+    /// 전달된 속성 목록을 복사해 BattleUnit 내부 리스트로 변환
+    /// </summary>
+    private static List<ElementType> CreateElementList(IReadOnlyList<ElementType> elements)
+    {
+        List<ElementType> result = new List<ElementType>();
+
+        if (elements == null)
+        {
+            return result;
+        }
+
+        for (int i = 0; i < elements.Count; i++)
+        {
+            result.Add(elements[i]);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// 전달된 스킬 목록을 복사해 BattleUnit 내부 리스트로 변환
+    /// </summary>
+    private static List<SkillData> CreateSkillList(IReadOnlyList<SkillData> skillList)
+    {
+        List<SkillData> result = new List<SkillData>();
+
+        if (skillList == null)
+        {
+            return result;
+        }
+
+        for (int i = 0; i < skillList.Count; i++)
+        {
+            if (skillList[i] == null)
+            {
+                continue;
+            }
+
+            result.Add(skillList[i]);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// 속성 목록에 특정 속성이 포함되어 있는지 확인
+    /// </summary>
+    private static bool ContainsElement(IReadOnlyList<ElementType> elements, ElementType elementType)
+    {
+        if (elements == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < elements.Count; i++)
+        {
+            if (elements[i] == elementType)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}

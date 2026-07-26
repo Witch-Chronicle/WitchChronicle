@@ -1,0 +1,1466 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+/// <summary>
+/// 전투 턴 사이클 관리
+/// </summary>
+public class BattleCycleController : MonoBehaviour
+{
+    [Header("Debug")]
+    [SerializeField] private bool _autoPlay = true;
+    [SerializeField] private float _actionDelay = 0.5f;
+
+    [Header("Constellation")]
+    [SerializeField] private BattleCameraDirector _battleCameraDirector;
+    [SerializeField] private ConstellationBattleManager _constellationBattleManager;
+
+    private readonly List<BattleUnit> _battleUnits =
+        new List<BattleUnit>();
+
+    private readonly List<BattleUnit> _turnOrder =
+        new List<BattleUnit>();
+
+    private readonly List<BattleUnit> _skillTargets =
+        new List<BattleUnit>();
+
+    private readonly EnemyBattleAI _enemyBattleAI =
+        new EnemyBattleAI();
+
+    private Coroutine _battleRoutine;
+    private BattleState _battleState = BattleState.None;
+    private BattleTurnContext _currentTurnContext;
+
+    private int _roundCount;
+    private int _currentTurnOrderIndex = -1;
+
+    private BattleActionRequest _pendingActionRequest;
+
+    public event Action OnBattleStarted;
+    public event Action<int> OnRoundStarted;
+    public event Action<BattleUnit, int> OnTurnStarted;
+    public event Action<BattleUnit> OnTurnEnded;
+    public event Action<BattleTeamType> OnBattleEnded;
+    public event Action OnTurnOrderChanged;
+    public event Action<BattleActionRequest> OnActionExecuting;
+
+    public event Action<BattleActionRequest, ConstellationResult>
+        OnConstellationResolved;
+
+    public BattleState BattleState => _battleState;
+    public BattleTurnContext CurrentTurnContext => _currentTurnContext;
+
+    /// <summary>
+    /// 전투 카메라와 별자리 매니저 참조 자동 연결
+    /// </summary>
+    private void Awake()
+    {
+        if (_battleCameraDirector == null)
+        {
+            _battleCameraDirector =
+                FindFirstObjectByType<BattleCameraDirector>();
+        }
+
+        if (_constellationBattleManager == null)
+        {
+            _constellationBattleManager =
+                FindFirstObjectByType<ConstellationBattleManager>();
+        }
+    }
+
+    /// <summary>
+    /// 전투 시작
+    /// </summary>
+    /// <param name="battleUnits">전투 참여 유닛 목록</param>
+    public void StartBattle(
+        IEnumerable<BattleUnit> battleUnits)
+    {
+        if (battleUnits == null)
+        {
+            Debug.LogError(
+                "전투 유닛 목록이 비어 있습니다.");
+
+            return;
+        }
+
+        StopBattle();
+
+        _battleUnits.Clear();
+
+        _battleUnits.AddRange(
+            battleUnits.Where(unit => unit != null));
+
+        if (_battleUnits.Count == 0)
+        {
+            Debug.LogError(
+                "전투에 참여할 유닛이 없습니다.");
+
+            return;
+        }
+
+        _roundCount = 0;
+        _currentTurnOrderIndex = -1;
+
+        _battleRoutine =
+            StartCoroutine(BattleLoop());
+    }
+
+    /// <summary>
+    /// 전투 중단
+    /// </summary>
+    public void StopBattle()
+    {
+        if (_battleRoutine != null)
+        {
+            StopCoroutine(_battleRoutine);
+        }
+
+        _battleRoutine = null;
+
+        if (_constellationBattleManager != null)
+        {
+            _constellationBattleManager.StopConstellation();
+        }
+
+        _battleState = BattleState.None;
+        _currentTurnContext = null;
+        _pendingActionRequest = null;
+        _currentTurnOrderIndex = -1;
+
+        _turnOrder.Clear();
+        _skillTargets.Clear();
+
+        OnTurnOrderChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// 전투 루프
+    /// </summary>
+    private IEnumerator BattleLoop()
+    {
+        _battleState = BattleState.Starting;
+
+        OnBattleStarted?.Invoke();
+
+        yield return null;
+
+        BattleTeamType winner = default;
+
+        while (TryGetWinner(out winner) == false)
+        {
+            _roundCount++;
+            _battleState = BattleState.RoundStart;
+
+            BuildTurnOrder();
+
+            OnRoundStarted?.Invoke(_roundCount);
+
+            Debug.Log(
+                $"[Battle] Round {_roundCount} Start");
+
+            for (int i = 0; i < _turnOrder.Count; i++)
+            {
+                BattleUnit currentUnit =
+                    _turnOrder[i];
+
+                if (currentUnit == null ||
+                    currentUnit.IsAlive == false)
+                {
+                    continue;
+                }
+
+                _currentTurnOrderIndex = i;
+
+                OnTurnOrderChanged?.Invoke();
+
+                yield return RunUnitTurn(currentUnit);
+
+                if (TryGetWinner(out winner))
+                {
+                    EndBattle(winner);
+                    yield break;
+                }
+            }
+
+            _currentTurnOrderIndex = -1;
+
+            OnTurnOrderChanged?.Invoke();
+
+            yield return null;
+        }
+
+        EndBattle(winner);
+    }
+
+    /// <summary>
+    /// 유닛 턴 진행
+    /// </summary>
+    /// <param name="unit">턴 유닛</param>
+    private IEnumerator RunUnitTurn(
+        BattleUnit unit)
+    {
+        _battleState = BattleState.TurnStart;
+
+        int actionCount =
+            GetActionCountForTurn(unit);
+
+        _currentTurnContext =
+            new BattleTurnContext(
+                unit,
+                actionCount);
+
+        OnTurnStarted?.Invoke(
+            unit,
+            actionCount);
+
+        Debug.Log(
+            $"[Battle] {unit.UnitName} Turn Start / " +
+            $"Actions: {actionCount}");
+
+        while (_currentTurnContext.CanAct)
+        {
+            _battleState =
+                BattleState.ExecutingAction;
+
+            if (_autoPlay ||
+                unit.TeamType == BattleTeamType.Enemy)
+            {
+                BattleActionRequest actionRequest =
+                    CreateAutoActionRequest(unit);
+
+                yield return ExecuteActionRequest(
+                    actionRequest);
+
+                _currentTurnContext.ConsumeAction();
+            }
+            else
+            {
+                yield return WaitForPlayerAction(unit);
+            }
+
+            if (TryGetWinner(out _))
+            {
+                break;
+            }
+
+            if (_actionDelay > 0f)
+            {
+                yield return new WaitForSeconds(
+                    _actionDelay);
+            }
+        }
+
+        _battleState = BattleState.TurnEnd;
+
+        OnTurnEnded?.Invoke(unit);
+
+        Debug.Log(
+            $"[Battle] {unit.UnitName} Turn End");
+
+        yield return null;
+    }
+
+    /// <summary>
+    /// 턴 순서 생성
+    /// </summary>
+    private void BuildTurnOrder()
+    {
+        _turnOrder.Clear();
+
+        _turnOrder.AddRange(
+            _battleUnits
+                .Where(unit =>
+                    unit != null &&
+                    unit.IsAlive)
+                .OrderByDescending(unit =>
+                    unit.Speed));
+
+        _currentTurnOrderIndex = -1;
+
+        Debug.Log(
+            "[Battle] Turn Order: " +
+            string.Join(
+                " → ",
+                _turnOrder.Select(unit =>
+                    unit.UnitName)));
+
+        OnTurnOrderChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// 턴 행동 횟수 반환
+    /// </summary>
+    /// <param name="unit">대상 유닛</param>
+    /// <returns>행동 가능 횟수</returns>
+    private int GetActionCountForTurn(
+        BattleUnit unit)
+    {
+        if (unit == null ||
+            unit.IsAlive == false)
+        {
+            return 0;
+        }
+
+        // TODO: 가속 버프, 행동 추가 주문, 다음 턴 2회 행동
+        return 1;
+    }
+
+    /// <summary>
+    /// 첫 번째 생존 상대 검색
+    /// </summary>
+    /// <param name="attacker">공격 유닛</param>
+    /// <returns>첫 번째 생존 상대</returns>
+    private BattleUnit FindFirstAliveOpponent(
+        BattleUnit attacker)
+    {
+        if (attacker == null)
+        {
+            return null;
+        }
+
+        return _battleUnits.FirstOrDefault(
+            unit =>
+                unit != null &&
+                unit.IsAlive &&
+                unit.TeamType != attacker.TeamType);
+    }
+
+    /// <summary>
+    /// 첫 번째 생존 상대 반환
+    /// </summary>
+    /// <param name="actor">행동 유닛</param>
+    /// <param name="target">검색 대상</param>
+    /// <returns>검색 성공 여부</returns>
+    public bool TryGetFirstAliveOpponent(
+        BattleUnit actor,
+        out BattleUnit target)
+    {
+        target =
+            FindFirstAliveOpponent(actor);
+
+        return target != null;
+    }
+
+    /// <summary>
+    /// 기본 공격 피해 계산
+    /// </summary>
+    /// <param name="attacker">공격 유닛</param>
+    /// <param name="target">방어 유닛</param>
+    /// <returns>피해량</returns>
+    private int CalculateBasicAttackDamage(
+        BattleUnit attacker,
+        BattleUnit target)
+    {
+        if (attacker == null ||
+            target == null)
+        {
+            return 0;
+        }
+
+        float rawDamage =
+            attacker.AttackPower -
+            target.DefensePower * 0.5f;
+
+        return Mathf.Max(
+            1,
+            Mathf.RoundToInt(rawDamage));
+    }
+
+    /// <summary>
+    /// 승리 팀 확인
+    /// </summary>
+    /// <param name="winner">승리 팀</param>
+    /// <returns>승리 여부</returns>
+    private bool TryGetWinner(
+        out BattleTeamType winner)
+    {
+        bool hasAlivePlayer =
+            _battleUnits.Any(unit =>
+                unit != null &&
+                unit.IsAlive &&
+                unit.TeamType ==
+                BattleTeamType.Player);
+
+        bool hasAliveEnemy =
+            _battleUnits.Any(unit =>
+                unit != null &&
+                unit.IsAlive &&
+                unit.TeamType ==
+                BattleTeamType.Enemy);
+
+        if (hasAlivePlayer &&
+            hasAliveEnemy)
+        {
+            winner = default;
+            return false;
+        }
+
+        winner = hasAlivePlayer
+            ? BattleTeamType.Player
+            : BattleTeamType.Enemy;
+
+        return true;
+    }
+
+    /// <summary>
+    /// 전투 종료
+    /// </summary>
+    /// <param name="winner">승리 팀</param>
+    private void EndBattle(
+        BattleTeamType winner)
+    {
+        if (_constellationBattleManager != null)
+        {
+            _constellationBattleManager.StopConstellation();
+        }
+
+        _battleState = BattleState.BattleEnd;
+        _battleRoutine = null;
+        _currentTurnContext = null;
+        _pendingActionRequest = null;
+        _currentTurnOrderIndex = -1;
+
+        _skillTargets.Clear();
+
+        OnTurnOrderChanged?.Invoke();
+
+        Debug.Log(
+            $"[Battle] Battle End / Winner: {winner}");
+
+        OnBattleEnded?.Invoke(winner);
+    }
+
+    /// <summary>
+    /// 전투 행동 요청 등록
+    /// </summary>
+    /// <param name="actionRequest">실행 행동 요청</param>
+    public void SubmitAction(
+        BattleActionRequest actionRequest)
+    {
+        if (actionRequest == null)
+        {
+            return;
+        }
+
+        if (_currentTurnContext == null)
+        {
+            Debug.LogWarning(
+                "현재 진행 중인 턴이 없어 " +
+                "행동 요청을 받을 수 없습니다.");
+
+            return;
+        }
+
+        if (_currentTurnContext.Unit !=
+            actionRequest.Actor)
+        {
+            Debug.LogWarning(
+                "현재 턴 유닛과 " +
+                "행동 요청 유닛이 다릅니다.");
+
+            return;
+        }
+
+        _pendingActionRequest =
+            actionRequest;
+    }
+
+    /// <summary>
+    /// 자동 행동 요청 생성
+    /// </summary>
+    /// <param name="actor">행동 유닛</param>
+    /// <returns>자동 행동 요청</returns>
+    private BattleActionRequest CreateAutoActionRequest(
+        BattleUnit actor)
+    {
+        if (actor == null)
+        {
+            return null;
+        }
+
+        if (actor.TeamType ==
+            BattleTeamType.Enemy)
+        {
+            return _enemyBattleAI.CreateActionRequest(
+                actor,
+                _battleUnits);
+        }
+
+        BattleUnit target =
+            FindFirstAliveOpponent(actor);
+
+        if (target == null)
+        {
+            return null;
+        }
+
+        return BattleActionRequest.CreateAttack(
+            actor,
+            target);
+    }
+
+    /// <summary>
+    /// 플레이어 행동 요청 대기
+    /// </summary>
+    /// <param name="unit">현재 턴 플레이어 유닛</param>
+    private IEnumerator WaitForPlayerAction(
+        BattleUnit unit)
+    {
+        _pendingActionRequest = null;
+
+        Debug.Log(
+            $"[Battle] {unit.UnitName} 행동 입력 대기");
+
+        while (_pendingActionRequest == null)
+        {
+            yield return null;
+        }
+
+        yield return ExecuteActionRequest(
+            _pendingActionRequest);
+
+        _currentTurnContext.ConsumeAction();
+        _pendingActionRequest = null;
+    }
+
+    /// <summary>
+    /// 전투 행동 요청 실행
+    /// </summary>
+    /// <param name="actionRequest">실행 행동 요청</param>
+    private IEnumerator ExecuteActionRequest(
+        BattleActionRequest actionRequest)
+    {
+        if (actionRequest == null)
+        {
+            yield break;
+        }
+
+        switch (actionRequest.CommandType)
+        {
+            case CommandType.Attack:
+                OnActionExecuting?.Invoke(
+                    actionRequest);
+
+                ExecuteAttack(actionRequest);
+                break;
+
+            case CommandType.Skill:
+                yield return ExecuteSkill(
+                    actionRequest);
+
+                break;
+
+            case CommandType.Defense:
+                OnActionExecuting?.Invoke(
+                    actionRequest);
+
+                ExecuteDefense(actionRequest);
+                break;
+
+            case CommandType.Item:
+                OnActionExecuting?.Invoke(
+                    actionRequest);
+
+                ExecuteUsingItem(actionRequest);
+                break;
+
+            case CommandType.Escape:
+                OnActionExecuting?.Invoke(
+                    actionRequest);
+
+                ExecuteEscape(actionRequest);
+                break;
+
+            default:
+                Debug.LogWarning(
+                    $"처리되지 않은 커맨드 타입: " +
+                    $"{actionRequest.CommandType}");
+
+                break;
+        }
+
+        OnTurnOrderChanged?.Invoke();
+
+        yield return null;
+    }
+
+    /// <summary>
+    /// 기본 공격 실행
+    /// </summary>
+    /// <param name="actionRequest">공격 행동 요청</param>
+    private void ExecuteAttack(
+        BattleActionRequest actionRequest)
+    {
+        BattleUnit attacker =
+            actionRequest.Actor;
+
+        BattleUnit target =
+            actionRequest.Target;
+
+        if (attacker == null ||
+            target == null)
+        {
+            return;
+        }
+
+        if (attacker.IsAlive == false ||
+            target.IsAlive == false)
+        {
+            return;
+        }
+
+        int damage =
+            CalculateBasicAttackDamage(
+                attacker,
+                target);
+
+        target.TakeDamage(damage);
+
+        Debug.Log(
+            $"[Battle] {attacker.UnitName} attacks " +
+            $"{target.UnitName} / " +
+            $"Damage: {damage} / " +
+            $"Target HP: {target.CurrentHp}");
+    }
+
+    /// <summary>
+    /// 스킬 실행
+    /// 일반 스킬과 별자리 공격 분기
+    /// </summary>
+    /// <param name="actionRequest">스킬 행동 요청</param>
+    private IEnumerator ExecuteSkill(
+        BattleActionRequest actionRequest)
+    {
+        BattleUnit actor =
+            actionRequest.Actor;
+
+        SkillData skillData =
+            actionRequest.SkillData;
+
+        if (actor == null ||
+            skillData == null ||
+            actor.IsAlive == false)
+        {
+            yield break;
+        }
+
+        ResolveSkillTargets(
+            actionRequest,
+            _skillTargets);
+
+        if (_skillTargets.Count == 0)
+        {
+            Debug.LogWarning(
+                $"[Battle] {skillData.SkillName} 대상 없음");
+
+            yield break;
+        }
+
+        List<BattleUnit> resolvedTargets =
+            new List<BattleUnit>(_skillTargets);
+
+        _skillTargets.Clear();
+
+        if (actor.UseMp(
+                skillData.MpCost) == false)
+        {
+            Debug.LogWarning(
+                $"[Battle] {actor.UnitName} MP 부족");
+
+            yield break;
+        }
+
+        Debug.Log(
+            $"[Battle] {actor.UnitName} uses " +
+            $"{skillData.SkillName}");
+
+        bool isEnemyConstellationAttack =
+            actor.TeamType ==
+            BattleTeamType.Enemy &&
+            skillData.SkillType ==
+            SkillEffectType.Damage &&
+            skillData.IsConstellationAttack;
+
+        if (isEnemyConstellationAttack)
+        {
+            yield return ExecuteConstellationSkill(
+                actionRequest,
+                resolvedTargets);
+
+            yield break;
+        }
+
+        OnActionExecuting?.Invoke(
+            actionRequest);
+
+        ApplySkillEffects(
+            actor,
+            resolvedTargets,
+            skillData,
+            actionRequest.DamageMultiplier);
+    }
+
+    /// <summary>
+    /// 별자리 패리 스킬 실행
+    /// 카메라 연출 후 시퀀스 결과 대기
+    /// </summary>
+    /// <param name="actionRequest">스킬 행동 요청</param>
+    /// <param name="targets">스킬 대상 목록</param>
+    private IEnumerator ExecuteConstellationSkill(
+        BattleActionRequest actionRequest,
+        IReadOnlyList<BattleUnit> targets)
+    {
+        BattleUnit actor =
+            actionRequest.Actor;
+
+        SkillData skillData =
+            actionRequest.SkillData;
+
+        if (actor == null ||
+            skillData == null)
+        {
+            yield break;
+        }
+
+        if (_constellationBattleManager == null ||
+            _constellationBattleManager.isActiveAndEnabled == false)
+        {
+            Debug.LogWarning(
+                "[Battle] 별자리 매니저 참조 없음. " +
+                "기존 스킬로 실행",
+                this);
+
+            OnActionExecuting?.Invoke(
+                actionRequest);
+
+            ApplySkillEffects(
+                actor,
+                targets,
+                skillData,
+                actionRequest.DamageMultiplier);
+
+            yield break;
+        }
+
+        ConstellationSequenceData sequenceData =
+            skillData.ConstellationSequenceData;
+
+        if (sequenceData == null)
+        {
+            Debug.LogWarning(
+                $"[Battle] {skillData.SkillName}에 " +
+                "별자리 시퀀스가 연결되지 않았습니다.",
+                skillData);
+
+            OnActionExecuting?.Invoke(
+                actionRequest);
+
+            ApplySkillEffects(
+                actor,
+                targets,
+                skillData,
+                actionRequest.DamageMultiplier);
+
+            yield break;
+        }
+
+        if (sequenceData.TryValidate(
+                out string errorMessage) == false)
+        {
+            Debug.LogWarning(
+                $"[Battle] 별자리 데이터 오류: " +
+                $"{errorMessage}",
+                sequenceData);
+
+            OnActionExecuting?.Invoke(
+                actionRequest);
+
+            ApplySkillEffects(
+                actor,
+                targets,
+                skillData,
+                actionRequest.DamageMultiplier);
+
+            yield break;
+        }
+
+        bool isIntroCompleted = true;
+
+        if (_battleCameraDirector != null &&
+            _battleCameraDirector.isActiveAndEnabled)
+        {
+            isIntroCompleted = false;
+
+            BattleUnit cameraTarget =
+                targets != null &&
+                targets.Count > 0
+                    ? targets[0]
+                    : null;
+
+            _battleCameraDirector
+                .PlayConstellationAttackIntro(
+                    actor,
+                    cameraTarget,
+                    () => isIntroCompleted = true);
+        }
+
+        while (isIntroCompleted == false)
+        {
+            if (_battleState ==
+                BattleState.BattleEnd)
+            {
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        // 사전 카메라 연출 이후 실제 스킬 애니메이션 시작
+        OnActionExecuting?.Invoke(
+            actionRequest);
+
+        bool isStarted =
+            _constellationBattleManager
+                .StartConstellation(sequenceData);
+
+        if (isStarted == false)
+        {
+            Debug.LogWarning(
+                "[Battle] 별자리 시퀀스 시작 실패. " +
+                "기존 스킬 효과 적용",
+                this);
+
+            ApplySkillEffects(
+                actor,
+                targets,
+                skillData,
+                actionRequest.DamageMultiplier);
+
+            yield break;
+        }
+
+        while (_constellationBattleManager.IsRunning)
+        {
+            if (_battleState ==
+                BattleState.BattleEnd)
+            {
+                _constellationBattleManager
+                    .StopConstellation();
+
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        if (_constellationBattleManager.TryGetLastResult(
+                out ConstellationResult result) == false)
+        {
+            Debug.LogWarning(
+                "[Battle] 별자리 결과 수신 실패. " +
+                "기존 스킬 효과 적용",
+                this);
+
+            ApplySkillEffects(
+                actor,
+                targets,
+                skillData,
+                actionRequest.DamageMultiplier);
+
+            yield break;
+        }
+
+        OnConstellationResolved?.Invoke(
+            actionRequest,
+            result);
+
+        Debug.Log(
+            $"[Battle] 별자리 공격 결과" +
+            $"\nSkill: {skillData.SkillName}" +
+            $"\nSuccess: {result.IsSuccess}" +
+            $"\nScore: {result.Score:F1}",
+            this);
+
+        if (result.IsSuccess)
+        {
+            Debug.Log(
+                $"[Battle] {skillData.SkillName} " +
+                "패리 성공 / 스킬 효과 무효화",
+                this);
+
+            yield break;
+        }
+
+        Debug.Log(
+            $"[Battle] {skillData.SkillName} " +
+            "패리 실패 / 스킬 효과 적용",
+            this);
+
+        ApplySkillEffects(
+            actor,
+            targets,
+            skillData,
+            actionRequest.DamageMultiplier);
+    }
+
+    /// <summary>
+    /// 방어 실행
+    /// </summary>
+    /// <param name="actionRequest">방어 행동 요청</param>
+    private void ExecuteDefense(
+        BattleActionRequest actionRequest)
+    {
+        if (actionRequest.Actor == null)
+        {
+            return;
+        }
+
+        Debug.Log(
+            $"[Battle] {actionRequest.Actor.UnitName} defends");
+    }
+
+    /// <summary>
+    /// 아이템 사용 실행
+    /// </summary>
+    /// <param name="actionRequest">아이템 사용 행동 요청</param>
+    private void ExecuteUsingItem(
+        BattleActionRequest actionRequest)
+    {
+        if (actionRequest.Actor == null)
+        {
+            return;
+        }
+
+        Debug.Log(
+            $"[Battle] {actionRequest.Actor.UnitName} " +
+            "tries to use Item");
+    }
+
+    /// <summary>
+    /// 도망 실행
+    /// </summary>
+    /// <param name="actionRequest">도망 행동 요청</param>
+    private void ExecuteEscape(
+        BattleActionRequest actionRequest)
+    {
+        if (actionRequest.Actor == null)
+        {
+            return;
+        }
+
+        Debug.Log(
+            $"[Battle] {actionRequest.Actor.UnitName} " +
+            "tries to escape");
+    }
+
+    /// <summary>
+    /// 생존 상대 목록 생성
+    /// </summary>
+    /// <param name="actor">기준 유닛</param>
+    /// <param name="targets">생존 상대 목록</param>
+    public void GetAliveOpponents(
+        BattleUnit actor,
+        List<BattleUnit> targets)
+    {
+        if (targets == null)
+        {
+            return;
+        }
+
+        targets.Clear();
+
+        if (actor == null)
+        {
+            return;
+        }
+
+        for (int i = 0;
+             i < _battleUnits.Count;
+             i++)
+        {
+            BattleUnit unit =
+                _battleUnits[i];
+
+            if (unit == null ||
+                unit.IsAlive == false ||
+                unit.TeamType == actor.TeamType)
+            {
+                continue;
+            }
+
+            targets.Add(unit);
+        }
+    }
+
+    /// <summary>
+    /// 생존 아군 목록 생성
+    /// </summary>
+    /// <param name="actor">기준 유닛</param>
+    /// <param name="targets">생존 아군 목록</param>
+    /// <param name="includeSelf">자기 자신 포함 여부</param>
+    public void GetAliveAllies(
+        BattleUnit actor,
+        List<BattleUnit> targets,
+        bool includeSelf = true)
+    {
+        if (targets == null)
+        {
+            return;
+        }
+
+        targets.Clear();
+
+        if (actor == null)
+        {
+            return;
+        }
+
+        for (int i = 0;
+             i < _battleUnits.Count;
+             i++)
+        {
+            BattleUnit unit =
+                _battleUnits[i];
+
+            if (unit == null ||
+                unit.IsAlive == false ||
+                unit.TeamType != actor.TeamType)
+            {
+                continue;
+            }
+
+            if (includeSelf == false &&
+                unit == actor)
+            {
+                continue;
+            }
+
+            targets.Add(unit);
+        }
+    }
+
+    /// <summary>
+    /// 스킬 대상 선택 필요 여부
+    /// </summary>
+    /// <param name="skillData">스킬 데이터</param>
+    /// <returns>대상 선택 필요 여부</returns>
+    public bool DoesSkillRequireTargetSelection(
+        SkillData skillData)
+    {
+        if (skillData == null)
+        {
+            return false;
+        }
+
+        return
+            skillData.TargetType ==
+            TargetType.SingleEnemy ||
+            skillData.TargetType ==
+            TargetType.SingleAlly;
+    }
+
+    /// <summary>
+    /// 스킬 선택 대상 목록 생성
+    /// </summary>
+    /// <param name="actor">사용 유닛</param>
+    /// <param name="skillData">스킬 데이터</param>
+    /// <param name="targets">선택 대상 목록</param>
+    public void GetSelectableSkillTargets(
+        BattleUnit actor,
+        SkillData skillData,
+        List<BattleUnit> targets)
+    {
+        if (targets == null)
+        {
+            return;
+        }
+
+        targets.Clear();
+
+        if (actor == null ||
+            skillData == null)
+        {
+            return;
+        }
+
+        switch (skillData.TargetType)
+        {
+            case TargetType.SingleEnemy:
+                GetAliveOpponents(
+                    actor,
+                    targets);
+                break;
+
+            case TargetType.SingleAlly:
+                GetAliveAllies(
+                    actor,
+                    targets,
+                    true);
+                break;
+
+            case TargetType.Self:
+                targets.Add(actor);
+                break;
+
+            case TargetType.AllEnemies:
+                GetAliveOpponents(
+                    actor,
+                    targets);
+                break;
+
+            case TargetType.AllAllies:
+                GetAliveAllies(
+                    actor,
+                    targets,
+                    true);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 스킬 실제 대상 목록 생성
+    /// </summary>
+    /// <param name="actionRequest">스킬 행동 요청</param>
+    /// <param name="targets">적용 대상 목록</param>
+    private void ResolveSkillTargets(
+        BattleActionRequest actionRequest,
+        List<BattleUnit> targets)
+    {
+        targets.Clear();
+
+        if (actionRequest == null ||
+            actionRequest.SkillData == null)
+        {
+            return;
+        }
+
+        BattleUnit actor =
+            actionRequest.Actor;
+
+        SkillData skillData =
+            actionRequest.SkillData;
+
+        if (actor == null)
+        {
+            return;
+        }
+
+        switch (skillData.TargetType)
+        {
+            case TargetType.SingleEnemy:
+            case TargetType.SingleAlly:
+                AddSingleTarget(
+                    actionRequest.Target,
+                    targets);
+                break;
+
+            case TargetType.Self:
+                AddSingleTarget(
+                    actor,
+                    targets);
+                break;
+
+            case TargetType.AllEnemies:
+                GetAliveOpponents(
+                    actor,
+                    targets);
+                break;
+
+            case TargetType.AllAllies:
+                GetAliveAllies(
+                    actor,
+                    targets,
+                    true);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 단일 대상 추가
+    /// </summary>
+    /// <param name="target">추가 대상</param>
+    /// <param name="targets">대상 목록</param>
+    private void AddSingleTarget(
+        BattleUnit target,
+        List<BattleUnit> targets)
+    {
+        if (target == null ||
+            target.IsAlive == false)
+        {
+            return;
+        }
+
+        targets.Add(target);
+    }
+
+    /// <summary>
+    /// 대상 목록에 스킬 효과 일괄 적용
+    /// </summary>
+    /// <param name="actor">스킬 사용 유닛</param>
+    /// <param name="targets">스킬 대상 목록</param>
+    /// <param name="skillData">스킬 데이터</param>
+    /// <param name="damageMultiplier">데미지 배율 (Damage 타입 스킬에만 적용됨)</param>
+    private void ApplySkillEffects(
+        BattleUnit actor,
+        IReadOnlyList<BattleUnit> targets,
+        SkillData skillData,
+        float damageMultiplier = 1f)
+    {
+        if (actor == null ||
+            targets == null ||
+            skillData == null)
+        {
+            return;
+        }
+
+        for (int i = 0;
+             i < targets.Count;
+             i++)
+        {
+            BattleUnit target =
+                targets[i];
+
+            if (target == null ||
+                target.IsAlive == false)
+            {
+                continue;
+            }
+
+            ApplySkillEffect(
+                actor,
+                target,
+                skillData,
+                damageMultiplier);
+        }
+    }
+
+    /// <summary>
+    /// 스킬 효과 적용
+    /// </summary>
+    /// <param name="actor">사용 유닛</param>
+    /// <param name="target">대상 유닛</param>
+    /// <param name="skillData">스킬 데이터</param>
+    /// <param name="damageMultiplier">데미지 배율 (Damage 타입에만 적용, Heal은 영향 없음)</param>
+    private void ApplySkillEffect(
+        BattleUnit actor,
+        BattleUnit target,
+        SkillData skillData,
+        float damageMultiplier)
+    {
+        if (actor == null ||
+            target == null ||
+            skillData == null)
+        {
+            return;
+        }
+
+        switch (skillData.SkillType)
+        {
+            case SkillEffectType.Damage:
+                ApplyDamageSkill(
+                    actor,
+                    target,
+                    skillData,
+                    damageMultiplier);
+                break;
+
+            case SkillEffectType.Heal:
+                ApplyHealSkill(
+                    actor,
+                    target,
+                    skillData);
+                break;
+
+            default:
+                Debug.Log(
+                    $"[Battle] 아직 처리되지 않은 " +
+                    $"스킬 효과: {skillData.SkillType}");
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 데미지 스킬 적용
+    /// </summary>
+    /// <param name="actor">사용 유닛</param>
+    /// <param name="target">대상 유닛</param>
+    /// <param name="skillData">스킬 데이터</param>
+    /// <param name="damageMultiplier">데미지 배율 (마법진 그리기 판정 결과 등)</param>
+    private void ApplyDamageSkill(
+        BattleUnit actor,
+        BattleUnit target,
+        SkillData skillData,
+        float damageMultiplier)
+    {
+        int damage =
+            CalculateSkillDamage(
+                actor,
+                target,
+                skillData,
+                damageMultiplier);
+
+        target.TakeDamage(damage);
+
+        Debug.Log(
+            $"[Battle] {skillData.SkillName} hit " +
+            $"{target.UnitName} / " +
+            $"Damage: {damage} (x{damageMultiplier:0.00}) / " +
+            $"Target HP: {target.CurrentHp}");
+    }
+
+    /// <summary>
+    /// 회복 스킬 적용
+    /// </summary>
+    /// <param name="actor">사용 유닛</param>
+    /// <param name="target">대상 유닛</param>
+    /// <param name="skillData">스킬 데이터</param>
+    private void ApplyHealSkill(
+        BattleUnit actor,
+        BattleUnit target,
+        SkillData skillData)
+    {
+        int healAmount =
+            Mathf.Max(
+                1,
+                Mathf.RoundToInt(
+                    actor.MagicPower +
+                    skillData.Power));
+
+        target.Heal(healAmount);
+
+        Debug.Log(
+            $"[Battle] {skillData.SkillName} heal " +
+            $"{target.UnitName} / " +
+            $"Heal: {healAmount} / " +
+            $"Target HP: {target.CurrentHp}");
+    }
+
+    /// <summary>
+    /// 스킬 데미지 계산
+    /// </summary>
+    /// <param name="actor">사용 유닛</param>
+    /// <param name="target">대상 유닛</param>
+    /// <param name="skillData">스킬 데이터</param>
+    /// <param name="damageMultiplier">데미지 배율 (마법진 그리기 판정 결과 등, 기본 1f)</param>
+    /// <returns>계산 피해량</returns>
+    private int CalculateSkillDamage(
+        BattleUnit actor,
+        BattleUnit target,
+        SkillData skillData,
+        float damageMultiplier = 1f)
+    {
+        float rawDamage;
+
+        if (skillData.DamageType ==
+            DamageType.Fixed)
+        {
+            rawDamage = skillData.Power;
+        }
+        else
+        {
+            float attackValue =
+                skillData.DamageType ==
+                DamageType.Magical
+                    ? actor.MagicPower
+                    : actor.AttackPower;
+
+            float defenseValue =
+                skillData.DamageType ==
+                DamageType.Magical
+                    ? target.MagicDefensePower
+                    : target.DefensePower;
+
+            rawDamage =
+                attackValue +
+                skillData.Power -
+                defenseValue * 0.5f;
+        }
+
+        rawDamage *= damageMultiplier;
+
+        return Mathf.Max(
+            1,
+            Mathf.RoundToInt(rawDamage));
+    }
+
+    /// <summary>
+    /// 현재 턴 순서 복사
+    /// </summary>
+    /// <param name="result">복사 대상 목록</param>
+    /// <param name="includeDead">사망 유닛 포함 여부</param>
+    public void GetCurrentTurnOrder(
+        List<BattleUnit> result,
+        bool includeDead = true)
+    {
+        if (result == null)
+        {
+            return;
+        }
+
+        result.Clear();
+
+        for (int i = 0;
+             i < _turnOrder.Count;
+             i++)
+        {
+            BattleUnit unit =
+                _turnOrder[i];
+
+            if (unit == null)
+            {
+                continue;
+            }
+
+            if (includeDead == false &&
+                unit.IsAlive == false)
+            {
+                continue;
+            }
+
+            result.Add(unit);
+        }
+    }
+
+    /// <summary>
+    /// 현재 턴 순서 인덱스 반환
+    /// </summary>
+    /// <returns>현재 턴 순서 인덱스</returns>
+    public int GetCurrentTurnOrderIndex()
+    {
+        return _currentTurnOrderIndex;
+    }
+
+    /// <summary>
+    /// 현재 행동 유닛 반환
+    /// </summary>
+    /// <returns>현재 행동 유닛</returns>
+    public BattleUnit GetCurrentTurnUnit()
+    {
+        if (_currentTurnOrderIndex < 0 ||
+            _currentTurnOrderIndex >=
+            _turnOrder.Count)
+        {
+            return null;
+        }
+
+        return _turnOrder[
+            _currentTurnOrderIndex];
+    }
+
+    /// <summary>
+    /// 전투 강제 종료
+    /// </summary>
+    /// <param name="winner">승리 처리할 팀</param>
+    public void ForceEndBattle(
+        BattleTeamType winner)
+    {
+        StopBattle();
+
+        _battleState =
+            BattleState.BattleEnd;
+
+        OnBattleEnded?.Invoke(winner);
+    }
+}
