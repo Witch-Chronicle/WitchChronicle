@@ -89,6 +89,13 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
         {
             ShowMessageManager.Instance.ShowMessage($"함정이다..");
         }
+
+        BattleEncounter battleEncounter = GetComponent<BattleEncounter>();
+
+        battleEncounter.Initialize(_eventData.mimic);
+
+        battleEncounter.HandleCombatStarted();
+
         Debug.Log($"[EventGameObject] 함정 이벤트 실행: {_eventData.Value}");
     }
 

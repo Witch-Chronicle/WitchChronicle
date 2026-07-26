@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6df93aa8a2379f04abe3ffa4fcbdc37a, type: 3}
+  m_Name: dungeon_wild
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonData
+  Id: wild_1
+  DungeonName: "\uBD88\uC758 \uB358\uC804"
+  FloorPrefab: {fileID: 2968830504906926872, guid: 18d5d0e4a15adbd48882b4a8eca95943, type: 3}
+  WallPrefab: {fileID: 2968830504906926872, guid: 4e8c03054cf184245a7f659a586305b9, type: 3}
+  CeilingPrefab: {fileID: 2968830504906926872, guid: 4e8c03054cf184245a7f659a586305b9, type: 3}
+  DecorPrefabs:
+  - {fileID: 574122265314155589, guid: 27b8d777f92a2924b948860036e76e8b, type: 3}
+  - {fileID: 1238420552904637851, guid: abbdcd804372c7f42a6cf446cc66f1d0, type: 3}
+  - {fileID: 1155720430629540053, guid: db2f3437fef47654f9c9b6060582d6cd, type: 3}
+  - {fileID: 1680796509485812583, guid: 0881f28a2418a04479ec4f5513cdc16c, type: 3}
+  - {fileID: 8952341505920055549, guid: 74d74cda192e90049ae36132dfdb95a8, type: 3}
+  - {fileID: 1155720430629540053, guid: db2f3437fef47654f9c9b6060582d6cd, type: 3}
+  - {fileID: 1680796509485812583, guid: 0881f28a2418a04479ec4f5513cdc16c, type: 3}
+  MapSize: {x: 100, y: 100}
+  MinPadding: 3
+  BSPDepth: 4
+  MaxConnectionPerRoom: 1
+  ExtraConnectionProbability: 0
+  MinRoomCount: 10
+  MaxRoomCount: 15
+  MinRoomSize: 20
+  MaxRoomSize: 23
+  RoomWeights:
+  - Type: 2
+    Weight: 10
+  - Type: 1
+    Weight: 80
+  - Type: 4
+    Weight: 18
+  - Type: 3
+    Weight: 7
+  RoomContentTable: {fileID: 11400000, guid: bf774dbe3b46d2c4ebad7a1ced76da34, type: 2}
+  _decorationTable: {fileID: 11400000, guid: 58de64190cdb5124dad0bf8bab068c0a, type: 2}
+  BGM: {fileID: 0}
+  Skybox: {fileID: 0}
+  Icon: {fileID: 0}
+  Fog: {fileID: 9185907458619771004, guid: 4c0b71062be74f44688b6e21a8c1adb9, type: 3}
+  DungeonAtmosphere: {fileID: 11400000, guid: f9fc5dec8af5a2343858fccd4c87dc3a, type: 2}
+  HasBoss: 0
+  HasExit: 1

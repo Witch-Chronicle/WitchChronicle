@@ -149,42 +149,72 @@ public class DungeonMeshBuilder
     /// </summary>
     private Mesh GetVariationMesh(Mesh original)
     {
+        if (original == null) return null;
+
         if (!_variationCache.ContainsKey(original))
         {
             Mesh[] variants = new Mesh[VariationCount];
 
             for (int i = 0; i < VariationCount; i++)
             {
-                variants[i] = Object.Instantiate(original);
+                // 메모리 누수 방지를 위해 수동 인스턴스화 후 데이터 복제
+                Mesh variant = Object.Instantiate(original);
+                variant.name = $"{original.name}_Var_{i}";
 
                 // 1. UV 변형 (Tiling & Offset)
-                Vector2[] uvs = variants[i].uv;
-                float tileX = Random.Range(1.0f, 1.2f);
-                float tileY = Random.Range(1.0f, 1.2f);
-                Vector2 offset = new Vector2(Random.value, Random.value);
-
-                for (int j = 0; j < uvs.Length; j++)
+                Vector2[] uvs = variant.uv;
+                if (uvs != null && uvs.Length > 0)
                 {
-                    uvs[j].x = (uvs[j].x * tileX) + offset.x;
-                    uvs[j].y = (uvs[j].y * tileY) + offset.y;
+                    float tileX = Random.Range(1.0f, 1.2f);
+                    float tileY = Random.Range(1.0f, 1.2f);
+                    Vector2 offset = new Vector2(Random.value, Random.value);
+
+                    for (int j = 0; j < uvs.Length; j++)
+                    {
+                        uvs[j].x = (uvs[j].x * tileX) + offset.x;
+                        uvs[j].y = (uvs[j].y * tileY) + offset.y;
+                    }
+                    variant.uv = uvs;
                 }
-                variants[i].uv = uvs;
 
                 // 2. Vertex Color (명암 변형)
-                Color[] colors = new Color[variants[i].vertexCount];
+                Color[] colors = new Color[variant.vertexCount];
                 float brightness = Random.Range(0.7f, 1.0f);
                 for (int k = 0; k < colors.Length; k++)
                 {
                     colors[k] = new Color(brightness, brightness, brightness, 1f);
                 }
-                variants[i].colors = colors;
+                variant.colors = colors;
 
-                variants[i].name = $"{original.name}_Var_{i}";
+                variants[i] = variant;
             }
             _variationCache[original] = variants;
         }
 
-        return _variationCache[original][Random.Range(0, VariationCount)];
+        Mesh[] cachedVariants = _variationCache[original];
+        return cachedVariants[Random.Range(0, cachedVariants.Length)];
+    }
+
+    /// <summary>
+    /// 생성된 변형 메쉬 캐시 메모리를 안전하게 해제한다. (던전 재생성 시 호출 권장)
+    /// </summary>
+    public void ClearCache()
+    {
+        foreach (var kvp in _variationCache)
+        {
+            if (kvp.Value != null)
+            {
+                foreach (Mesh variant in kvp.Value)
+                {
+                    if (variant != null)
+                    {
+                        Object.Destroy(variant);
+                    }
+                }
+            }
+        }
+        _variationCache.Clear();
+        Debug.Log("[DungeonMeshBuilder] 메쉬 변형 캐시 메모리를 안전하게 정리했습니다.");
     }
 
     /// <summary>

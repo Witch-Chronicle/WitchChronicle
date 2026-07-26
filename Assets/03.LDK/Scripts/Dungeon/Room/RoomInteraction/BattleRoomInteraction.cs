@@ -27,7 +27,7 @@ public class BattleRoomInteraction : RoomInteraction
             roomCenter,
             Quaternion.identity);
 
-        monster.Initialize(_enemyDataList, _room);
+        monster.Initialize(_enemyDataList);
 
         DungeonMonster dungeonMonster = monster.GetComponent<DungeonMonster>();
 

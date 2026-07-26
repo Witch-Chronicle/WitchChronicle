@@ -58,6 +58,8 @@ public class DungeonData : ScriptableObject
     public Material Skybox;
     public Sprite Icon;
 
+    public GameObject Fog;
+
     public DungeonAtmosphereDataSO DungeonAtmosphere;
 
     [Header("Boss")]

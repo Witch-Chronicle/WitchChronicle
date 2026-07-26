@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 2200499506496251641}
   - component: {fileID: 6976980098593899636}
   - component: {fileID: 1765239396558785881}
-  - component: {fileID: 9174543082622734569}
   - component: {fileID: 4340154762371214922}
+  - component: {fileID: 9174543082622734569}
   m_Layer: 0
   m_Name: Boss
   m_TagString: Untagged
@@ -52,7 +52,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8601160308275728981}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -130,11 +130,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleEncounter
   _battleSceneName: Battle
-  _assignedEnemies:
-  - {fileID: 11400000, guid: c49a4e01326f2ee4eb3913605f9aff7e, type: 2}
+  _assignedEnemies: []
   _canEscape: 0
   _isPlayerAdvantage: 0
   _isEnemyAdvantage: 0
+--- !u!114 &4340154762371214922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8601160308275728981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c3d2e04639aa0647af6792242ded9c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterNavMeshChase
+  _detectionDistance: 10
+  _combatDistance: 3
+  _loseTargetDistance: 15
+  _pathUpdateInterval: 0.2
 --- !u!195 &9174543082622734569
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -157,19 +172,3 @@ NavMeshAgent:
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &4340154762371214922
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8601160308275728981}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c3d2e04639aa0647af6792242ded9c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MonsterNavMeshChase
-  _detectionDistance: 10
-  _combatDistance: 3
-  _loseTargetDistance: 15
-  _pathUpdateInterval: 0.2

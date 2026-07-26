@@ -88,6 +88,10 @@ public class RoomContentSpawner : MonoBehaviour
             Vector3 spawnPos = roomController.transform.position;
             spawnPos.y = _yOffset;
 
+            Vector3 newRoomCenter = new Vector3(room.Center.x, 0f, room.Center.y);
+
+            GameObject particleFog = Instantiate(_dungeon. Fog,newRoomCenter, Quaternion.identity);
+
             switch (room.Type)
             {
                 case RoomType.Start:
@@ -125,7 +129,8 @@ public class RoomContentSpawner : MonoBehaviour
                 case RoomType.Boss:
                 {
                     var bossComp = roomController.gameObject.AddComponent<BossRoomInteraction>();
-                    bossComp.Setup(_table.bossEncounterPrefab);
+                    EnemyGroupSO selectedGroup = GetRandomEnemyGroup(room.Depth);
+                    bossComp.Setup(_table.bossEncounterPrefab, _table.bossData, room);
                     roomController.InjectInteraction(bossComp);
                     roomController.SpawnRoomContent();
                     break;
@@ -494,6 +499,7 @@ public class RoomContentSpawner : MonoBehaviour
         return selectedEnemies;
     }
 
+    
     private EnemyGroupSO GetRandomEnemyGroup(int roomDepth)
     {
         List<EnemyGroupSO> validGroups = new List<EnemyGroupSO>();
