@@ -748,7 +748,10 @@ public class BattleCameraDirector : MonoBehaviour
 
     /// <summary>
     /// 별자리 공격 사전 카메라 연출
-    /// 공격자 강조 후 전투 부감 구도 전환
+    /// 공격자 강조 후 전투 부감 구도 전환.
+    /// - attacker가 아군이면: SkillLowAngle(근접 로우앵글) -> TargetOverview 순서로 연출.
+    /// - attacker가 적이면: SkillLowAngle은 원래 플레이어 스킬 선택용 연출이라 적에게 붙으면 어색하므로
+    ///   건너뛰고 바로 TargetOverview로만 전환.
     /// </summary>
     /// <param name="attacker">공격 유닛</param>
     /// <param name="target">공격 대상</param>
@@ -764,15 +767,24 @@ public class BattleCameraDirector : MonoBehaviour
             return;
         }
 
+        BattleUnit overviewUnit =
+            target != null
+                ? target
+                : attacker;
+
+        if (attacker.TeamType == BattleTeamType.Enemy)
+        {
+            PlayTargetOverview(
+                overviewUnit,
+                onComplete);
+
+            return;
+        }
+
         PlaySkillLowAngle(
             attacker,
             () =>
             {
-                BattleUnit overviewUnit =
-                    target != null
-                        ? target
-                        : attacker;
-
                 PlayTargetOverview(
                     overviewUnit,
                     onComplete);
