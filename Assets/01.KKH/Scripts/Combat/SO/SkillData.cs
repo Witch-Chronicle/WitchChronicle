@@ -50,6 +50,11 @@ public class SkillData : ScriptableObject
     [SerializeField]
     private ConstellationSequenceData _constellationSequenceData;
 
+    [Header("Presentation - Draw Guide (마법진 그리기)")]
+    [Tooltip("SkillDrawController가 사용할 궤적 가이드 JSON (fire_ball.json 등). " +
+             "SkillShapeTemplate.ParsePoints로 파싱되는 포맷과 동일해야 함.")]
+    [SerializeField] private TextAsset _drawGuideJson;
+
     public string SkillId => _skillId;
     public string SkillName => _skillName;
     public string Description => _description;
@@ -83,4 +88,6 @@ public class SkillData : ScriptableObject
 
     public bool IsConstellationAttack =>
         _constellationSequenceData != null;
+
+    public TextAsset DrawGuideJson => _drawGuideJson;
 }

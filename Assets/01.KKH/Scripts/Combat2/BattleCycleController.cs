@@ -698,7 +698,8 @@ public class BattleCycleController : MonoBehaviour
         ApplySkillEffects(
             actor,
             resolvedTargets,
-            skillData);
+            skillData,
+            actionRequest.DamageMultiplier);
     }
 
     /// <summary>
@@ -737,7 +738,8 @@ public class BattleCycleController : MonoBehaviour
             ApplySkillEffects(
                 actor,
                 targets,
-                skillData);
+                skillData,
+                actionRequest.DamageMultiplier);
 
             yield break;
         }
@@ -758,7 +760,8 @@ public class BattleCycleController : MonoBehaviour
             ApplySkillEffects(
                 actor,
                 targets,
-                skillData);
+                skillData,
+                actionRequest.DamageMultiplier);
 
             yield break;
         }
@@ -777,7 +780,8 @@ public class BattleCycleController : MonoBehaviour
             ApplySkillEffects(
                 actor,
                 targets,
-                skillData);
+                skillData,
+                actionRequest.DamageMultiplier);
 
             yield break;
         }
@@ -831,7 +835,8 @@ public class BattleCycleController : MonoBehaviour
             ApplySkillEffects(
                 actor,
                 targets,
-                skillData);
+                skillData,
+                actionRequest.DamageMultiplier);
 
             yield break;
         }
@@ -861,7 +866,8 @@ public class BattleCycleController : MonoBehaviour
             ApplySkillEffects(
                 actor,
                 targets,
-                skillData);
+                skillData,
+                actionRequest.DamageMultiplier);
 
             yield break;
         }
@@ -895,7 +901,8 @@ public class BattleCycleController : MonoBehaviour
         ApplySkillEffects(
             actor,
             targets,
-            skillData);
+            skillData,
+            actionRequest.DamageMultiplier);
     }
 
     /// <summary>
@@ -1194,10 +1201,12 @@ public class BattleCycleController : MonoBehaviour
     /// <param name="actor">스킬 사용 유닛</param>
     /// <param name="targets">스킬 대상 목록</param>
     /// <param name="skillData">스킬 데이터</param>
+    /// <param name="damageMultiplier">데미지 배율 (Damage 타입 스킬에만 적용됨)</param>
     private void ApplySkillEffects(
         BattleUnit actor,
         IReadOnlyList<BattleUnit> targets,
-        SkillData skillData)
+        SkillData skillData,
+        float damageMultiplier = 1f)
     {
         if (actor == null ||
             targets == null ||
@@ -1222,7 +1231,8 @@ public class BattleCycleController : MonoBehaviour
             ApplySkillEffect(
                 actor,
                 target,
-                skillData);
+                skillData,
+                damageMultiplier);
         }
     }
 
@@ -1232,10 +1242,12 @@ public class BattleCycleController : MonoBehaviour
     /// <param name="actor">사용 유닛</param>
     /// <param name="target">대상 유닛</param>
     /// <param name="skillData">스킬 데이터</param>
+    /// <param name="damageMultiplier">데미지 배율 (Damage 타입에만 적용, Heal은 영향 없음)</param>
     private void ApplySkillEffect(
         BattleUnit actor,
         BattleUnit target,
-        SkillData skillData)
+        SkillData skillData,
+        float damageMultiplier)
     {
         if (actor == null ||
             target == null ||
@@ -1250,7 +1262,8 @@ public class BattleCycleController : MonoBehaviour
                 ApplyDamageSkill(
                     actor,
                     target,
-                    skillData);
+                    skillData,
+                    damageMultiplier);
                 break;
 
             case SkillEffectType.Heal:
@@ -1274,23 +1287,26 @@ public class BattleCycleController : MonoBehaviour
     /// <param name="actor">사용 유닛</param>
     /// <param name="target">대상 유닛</param>
     /// <param name="skillData">스킬 데이터</param>
+    /// <param name="damageMultiplier">데미지 배율 (마법진 그리기 판정 결과 등)</param>
     private void ApplyDamageSkill(
         BattleUnit actor,
         BattleUnit target,
-        SkillData skillData)
+        SkillData skillData,
+        float damageMultiplier)
     {
         int damage =
             CalculateSkillDamage(
                 actor,
                 target,
-                skillData);
+                skillData,
+                damageMultiplier);
 
         target.TakeDamage(damage);
 
         Debug.Log(
             $"[Battle] {skillData.SkillName} hit " +
             $"{target.UnitName} / " +
-            $"Damage: {damage} / " +
+            $"Damage: {damage} (x{damageMultiplier:0.00}) / " +
             $"Target HP: {target.CurrentHp}");
     }
 
@@ -1327,36 +1343,42 @@ public class BattleCycleController : MonoBehaviour
     /// <param name="actor">사용 유닛</param>
     /// <param name="target">대상 유닛</param>
     /// <param name="skillData">스킬 데이터</param>
+    /// <param name="damageMultiplier">데미지 배율 (마법진 그리기 판정 결과 등, 기본 1f)</param>
     /// <returns>계산 피해량</returns>
     private int CalculateSkillDamage(
         BattleUnit actor,
         BattleUnit target,
-        SkillData skillData)
+        SkillData skillData,
+        float damageMultiplier = 1f)
     {
+        float rawDamage;
+
         if (skillData.DamageType ==
             DamageType.Fixed)
         {
-            return Mathf.Max(
-                1,
-                skillData.Power);
+            rawDamage = skillData.Power;
+        }
+        else
+        {
+            float attackValue =
+                skillData.DamageType ==
+                DamageType.Magical
+                    ? actor.MagicPower
+                    : actor.AttackPower;
+
+            float defenseValue =
+                skillData.DamageType ==
+                DamageType.Magical
+                    ? target.MagicDefensePower
+                    : target.DefensePower;
+
+            rawDamage =
+                attackValue +
+                skillData.Power -
+                defenseValue * 0.5f;
         }
 
-        float attackValue =
-            skillData.DamageType ==
-            DamageType.Magical
-                ? actor.MagicPower
-                : actor.AttackPower;
-
-        float defenseValue =
-            skillData.DamageType ==
-            DamageType.Magical
-                ? target.MagicDefensePower
-                : target.DefensePower;
-
-        float rawDamage =
-            attackValue +
-            skillData.Power -
-            defenseValue * 0.5f;
+        rawDamage *= damageMultiplier;
 
         return Mathf.Max(
             1,

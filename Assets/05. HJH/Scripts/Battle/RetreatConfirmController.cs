@@ -2,45 +2,25 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// RetreatConfirm 팝업 열고닫기 전담. RetreatBtn 클릭 시 열리고, ConfirmBtn/CancelBtn 클릭 시 닫힘.
-/// - ConfirmBtn 클릭 시 TransitionPanel을 FadeIn(화면 다시 덮음)해서 후퇴 연출 시작.
-/// * 실제 후퇴 처리 로직은 미정 - Confirm 클릭 시 처리 지점만 마련해둠.
+/// BattleHUDPanel 하위 RetreatConfirm에 부착. 후퇴 확인 팝업의 실제 소유자.
+/// 씬에 하나뿐인 오브젝트라 캐릭터 프리팹(RetreatBtnController)이 직접 참조하지 못하고,
+/// RetreatBtnController가 런타임에 이 컴포넌트를 찾아서 Open()만 호출해줌.
+/// - Cancel: 패널 닫고 + 요청했던 캐릭터의 WorldCanvas 복귀
+/// - Confirm: 패널 닫고 + 전투 강제 종료(후퇴). 전투가 끝나므로 WorldCanvas를 별도로 복귀시키지 않음
+///   (BattleCharacterUIManager가 OnBattleEnded로 어차피 전부 정리함).
 /// </summary>
 public class RetreatConfirmController : MonoBehaviour
 {
-    [Header("Trigger")]
-    [SerializeField] private Button _retreatBtn;
-
     [Header("Confirm Panel")]
     [SerializeField] private GameObject _retreatConfirmPanel;
     [SerializeField] private Button _confirmBtn;
     [SerializeField] private Button _cancelBtn;
 
-    [Header("Transition (후퇴 확정 시 화면 덮기)")]
-    [SerializeField] private TransitionController _transitionController;
-
     private void Awake()
     {
-        if (_retreatBtn != null) _retreatBtn.onClick.AddListener(Open);
         if (_confirmBtn != null) _confirmBtn.onClick.AddListener(HandleConfirm);
-        if (_cancelBtn != null) _cancelBtn.onClick.AddListener(Close);
+        if (_cancelBtn != null) _cancelBtn.onClick.AddListener(HandleCancel);
 
-        if (_retreatConfirmPanel != null)
-        {
-            _retreatConfirmPanel.SetActive(false);
-        }
-    }
-
-    private void Open()
-    {
-        if (_retreatConfirmPanel != null)
-        {
-            _retreatConfirmPanel.SetActive(true);
-        }
-    }
-
-    private void Close()
-    {
         if (_retreatConfirmPanel != null)
         {
             _retreatConfirmPanel.SetActive(false);
@@ -48,19 +28,43 @@ public class RetreatConfirmController : MonoBehaviour
     }
 
     /// <summary>
-    /// 후퇴 확정 처리. TransitionPanel을 FadeIn해서 화면을 덮음.
-    /// 실제 후퇴 로직(전투 종료 처리, 씬 전환 등)은 추후 구현 예정.
+    /// RetreatBtnController에서 호출. 패널을 켬.
     /// </summary>
+    public void Open()
+    {
+        if (_retreatConfirmPanel != null)
+        {
+            _retreatConfirmPanel.SetActive(true);
+        }
+    }
+
+    private void HandleCancel()
+    {
+        ClosePanel();
+
+        if (BattleCharacterUIManager.Instance != null)
+        {
+            BattleCharacterUIManager.Instance.ShowCurrentUI();
+        }
+    }
+
     private void HandleConfirm()
     {
-        Debug.Log("[RetreatConfirmController] 후퇴 확정 (실제 처리 로직 미구현)");
+        ClosePanel();
 
-        Close();
-        BattleUIContext.Instance.ForceEndBattle(BattleTeamType.Enemy);
-        //     if (_transitionController != null)
-        //     {
-        //         _transitionController.FadeIn();
-        //     }
-        // }
+        Debug.Log("[RetreatConfirmController] 후퇴 확정");
+
+        if (BattleUIContext.Instance != null)
+        {
+            BattleUIContext.Instance.ForceEndBattle(BattleTeamType.Enemy);
+        }
+    }
+
+    private void ClosePanel()
+    {
+        if (_retreatConfirmPanel != null)
+        {
+            _retreatConfirmPanel.SetActive(false);
+        }
     }
 }

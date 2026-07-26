@@ -11,6 +11,9 @@ public class CharacterBaseStats : ScriptableObject
     [Header("Base Stats")]
     [SerializeField] private StatBlock _baseStats;
 
+    [Header("Icon")]
+    [SerializeField] private Sprite _icon;
+
     // 레벨 오르면 받는 스탯 포인트
     [Header("Growth")]
     [SerializeField] private int _statPointPerLevel = 3;
@@ -20,6 +23,6 @@ public class CharacterBaseStats : ScriptableObject
     public int StartLevel => _startLevel;
 
     public StatBlock BaseStats => _baseStats;
-
+    public Sprite Icon => _icon;
     public int StatPointPerLevel => _statPointPerLevel;
 }

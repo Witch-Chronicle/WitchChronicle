@@ -9,6 +9,7 @@ public class BattleUnit
     private readonly string _unitId;
     private readonly string _unitName;
     private readonly BattleTeamType _teamType;
+    private readonly Sprite _icon;
 
     private readonly int _maxHp;
     private int _currentHp;
@@ -36,6 +37,7 @@ public class BattleUnit
     public string UnitId => _unitId;
     public string UnitName => _unitName;
     public BattleTeamType TeamType => _teamType;
+    public Sprite Icon => _icon;
 
     public int MaxHp => _maxHp;
     public int CurrentHp => _currentHp;
@@ -84,11 +86,13 @@ public class BattleUnit
         IReadOnlyList<ElementType> nullElements,
         IReadOnlyList<ElementType> absorbElements,
         IReadOnlyList<SkillData> skillList,
-        EnemyAIProfileData aiProfileData = null)
+        EnemyAIProfileData aiProfileData = null,
+        Sprite icon = null)
     {
         _unitId = unitId;
         _unitName = unitName;
         _teamType = teamType;
+        _icon = icon;
 
         _maxHp = Mathf.Max(1, maxHp);
         _currentHp = Mathf.Clamp(currentHp, 0, _maxHp);
@@ -177,7 +181,8 @@ public class BattleUnit
         float defensePower,
         float magicDefensePower,
         float speed,
-        IReadOnlyList<SkillData> skillList)
+        IReadOnlyList<SkillData> skillList,
+        Sprite icon = null)
     {
         return new BattleUnit(
             unitId,
@@ -197,7 +202,9 @@ public class BattleUnit
             null,
             null,
             null,
-            skillList);
+            skillList,
+            null,
+            icon);
     }
 
     /// <summary>
@@ -233,7 +240,8 @@ public class BattleUnit
             enemyData.NullElements,
             enemyData.AbsorbElements,
             enemyData.SkillList,
-            enemyData.AIProfileData);
+            enemyData.AIProfileData,
+            enemyData.Icon);
     }
 
     /// <summary>

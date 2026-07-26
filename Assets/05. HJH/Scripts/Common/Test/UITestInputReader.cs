@@ -44,12 +44,19 @@ public class UITestInputReader : MonoBehaviour
     {
         if (Keyboard.current == null) return;
 
-        if (Keyboard.current.iKey.wasPressedThisFrame && IsInBattleScene() == false)
+        // 배틀 씬에서는 이 스크립트가 아무 키 입력도 받지 않음.
+        // 배틀 씬의 모든 키 입력(스킬/아이템 리스트, 커맨드 UI 등)은 BattleUIInputReader가 전담.
+        if (IsInBattleScene())
+        {
+            return;
+        }
+
+        if (Keyboard.current.iKey.wasPressedThisFrame)
         {
             ToggleIntegrationPanel();
         }
 
-        if (Keyboard.current.cKey.wasPressedThisFrame && IsInBattleScene() == false)
+        if (Keyboard.current.cKey.wasPressedThisFrame)
         {
             ToggleStatPanel();
         }
@@ -62,29 +69,6 @@ public class UITestInputReader : MonoBehaviour
         if (Keyboard.current.tabKey.wasPressedThisFrame)
         {
             ToggleQuestList();
-        }
-
-        if (IsInBattleScene() && BattleTargetCycler.Instance != null)
-        {
-            if (Keyboard.current.qKey.wasPressedThisFrame)
-            {
-                BattleTargetCycler.Instance.CyclePrevious();
-            }
-
-            if (Keyboard.current.eKey.wasPressedThisFrame)
-            {
-                BattleTargetCycler.Instance.CycleNext();
-            }
-
-            if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.numpadEnterKey.wasPressedThisFrame)
-            {
-                BattleTargetCycler.Instance.Confirm();
-            }
-
-            if (Keyboard.current.escapeKey.wasPressedThisFrame)
-            {
-                BattleTargetCycler.Instance.Cancel();
-            }
         }
     }
 

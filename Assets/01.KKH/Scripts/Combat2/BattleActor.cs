@@ -138,7 +138,8 @@ public class BattleActor : MonoBehaviour
             _characterStats.CombatDefensePower,
             _characterStats.CombatMagicDefensePower,
             _characterStats.CombatSpeed,
-            _playerSkillLoadout.GetBattleSkillList());
+            _playerSkillLoadout.GetBattleSkillList(),
+            _characterStats.Icon);
     }
 
     /// <summary>
@@ -305,7 +306,7 @@ public class BattleActor : MonoBehaviour
 
         // 데이터에 정의된 고유 몬스터 프리팹을 VisualRoot 하위에 생성
         GameObject visualInstance = Instantiate(_enemyBattleData.Prefab, _visualRoot);
-        
+
         visualInstance.transform.localPosition = new Vector3(0f, -1f, 0f);
         visualInstance.transform.localRotation = Quaternion.identity;
 

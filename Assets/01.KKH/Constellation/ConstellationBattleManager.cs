@@ -21,6 +21,12 @@ public class ConstellationBattleManager : MonoBehaviour
     [SerializeField]
     private CanvasGroup _constellationCanvasGroup;
 
+    [Tooltip("Canvas/GraphicRaycaster가 실제로 붙어있는 루트 오브젝트(예: ConstellationCanvas). " +
+             "Screen Space-Overlay라서 CanvasGroup.blocksRaycasts=false만으로는 " +
+             "WorldSpace 버튼 클릭을 막는 경우가 있어, 아예 SetActive로 꺼버림.")]
+    [SerializeField]
+    private GameObject _constellationCanvasRoot;
+
     private bool _hasResult;
     private ConstellationResult _lastResult;
 
@@ -65,6 +71,10 @@ public class ConstellationBattleManager : MonoBehaviour
                 GetComponentInChildren<CanvasGroup>(
                     true);
         }
+
+        // _constellationCanvasRoot는 ConstellationBattleManager 하위가 아니라
+        // 씬 최상위(예: ConstellationCanvas)에 별도로 있을 수 있어 자동 탐색 대상에서 제외.
+        // 인스펙터에서 직접 연결 필요.
     }
 
     /// <summary>
@@ -232,8 +242,7 @@ public class ConstellationBattleManager : MonoBehaviour
         }
 
         if (!_sequenceController.isActiveAndEnabled ||
-            !_inputController.isActiveAndEnabled ||
-            !_uiController.isActiveAndEnabled)
+            !_inputController.isActiveAndEnabled)
         {
             Debug.LogWarning(
                 "[Constellation] 별자리 컨트롤러 비활성화 상태",
@@ -242,27 +251,37 @@ public class ConstellationBattleManager : MonoBehaviour
             return false;
         }
 
+        // _uiController(ConstellationPanel)는 캔버스 루트가 SetActive(false) 상태일 때
+        // 같이 비활성화되어 있는 게 정상이라 isActiveAndEnabled 체크에서 제외.
+        // (이전엔 CanvasGroup으로만 숨겼기 때문에 항상 활성 상태였음)
+
         return true;
     }
 
     /// <summary>
-    /// 별자리 Canvas 표시 상태 변경
+    /// 별자리 Canvas 표시 상태 변경.
+    /// CanvasGroup(alpha/interactable/blocksRaycasts)에 더해, 캔버스 루트를
+    /// SetActive로 완전히 꺼서 Screen Space-Overlay가 WorldSpace 버튼 클릭을
+    /// 가로채는 문제를 원천 차단.
     /// </summary>
     /// <param name="isVisible">표시 여부</param>
     private void SetCanvasVisible(bool isVisible)
     {
-        if (_constellationCanvasGroup == null)
+        if (_constellationCanvasGroup != null)
         {
-            return;
+            _constellationCanvasGroup.alpha =
+                isVisible ? 1f : 0f;
+
+            _constellationCanvasGroup.interactable =
+                isVisible;
+
+            _constellationCanvasGroup.blocksRaycasts =
+                isVisible;
         }
 
-        _constellationCanvasGroup.alpha =
-            isVisible ? 1f : 0f;
-
-        _constellationCanvasGroup.interactable =
-            isVisible;
-
-        _constellationCanvasGroup.blocksRaycasts =
-            isVisible;
+        if (_constellationCanvasRoot != null)
+        {
+            _constellationCanvasRoot.SetActive(isVisible);
+        }
     }
 }
