@@ -326,7 +326,7 @@ Animator:
   m_GameObject: {fileID: 2958174608505672778}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: d9de26fc1abd4272aac172175941aaf7, type: 3}
-  m_Controller: {fileID: 9100000, guid: af45970b649544b181f548cd991b934c, type: 2}
+  m_Controller: {fileID: 9100000, guid: 85f7d7a9baaeb854e8a9ef62f0009126, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -350,6 +350,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 751f91314a24e3a40a15c2114b1a3a82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MonsterAnimationController
+  _hashBoolIsDefending: 0
+  _hashTriggerTaunt: 0
 --- !u!1 &2958174608505672780
 GameObject:
   m_ObjectHideFlags: 0
