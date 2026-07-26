@@ -25,7 +25,7 @@ public class DungeonSpawner : MonoBehaviour
     [SerializeField] private float _tileSize = 1f;
 
     [Header("Corridor Settings")]
-    [SerializeField] private int _corridorWidth = 2;
+    [SerializeField] private int _corridorWidth = 4;
 
     [Header("Navigation")]
     [SerializeField] private NavMeshSurface _navMeshSurface;
@@ -33,6 +33,10 @@ public class DungeonSpawner : MonoBehaviour
     public float GetTileSize => _tileSize;
 
     private DungeonMeshBuilder _meshBuilder;
+
+    private readonly HashSet<Vector2Int> _corridorTiles = new();
+
+    public IReadOnlyCollection<Vector2Int> CorridorTiles => _corridorTiles;
 
     /// <summary>
     /// DungeonData에서 생성에 필요한 Prefab 데이터를 초기화한다.
@@ -47,18 +51,6 @@ public class DungeonSpawner : MonoBehaviour
         _meshBuilder = new DungeonMeshBuilder();
     }
 
-    /// <summary>
-    /// 전투 조우 오브젝트를 초기화한다.
-    /// </summary>
-    /// <param name="encounterObj">조우 오브젝트</param>
-    /// <param name="enemies">적 전투 데이터 목록</param>
-    /// <param name="room">방 노드</param>
-    public void SetupEncounter(GameObject encounterObj, List<EnemyBattleData> enemies, RoomNode room)
-    {
-        var battleEncounter = encounterObj.GetComponent<BattleEncounter>();
-        
-        battleEncounter.Initialize(enemies, room);
-    }
 
     /// <summary>
     /// 생성된 Dungeon Room 데이터를 실제 Scene 오브젝트로 생성한다.
@@ -71,6 +63,8 @@ public class DungeonSpawner : MonoBehaviour
         ClearEnvironment();
 
         HashSet<Vector2Int> floorPositions = GenerateFloorPositions(rooms);
+
+        _corridorTiles.Clear();
 
         GenerateCorridors(rooms, floorPositions);
 
@@ -154,7 +148,7 @@ public class DungeonSpawner : MonoBehaviour
     }
 
     /// <summary>
-    /// 두 Room을 연결하는 L자 형태 통로를 생성한다. (코너 회피 적용)
+    /// 두 Room을 연결하는 L자 형태 통로를 생성한다. (넓은 폭 4~5 및 코너 끊김 방지 적용)
     /// </summary>
     /// <param name="startRoom">시작 방 노드</param>
     /// <param name="endRoom">목표 방 노드</param>
@@ -164,29 +158,36 @@ public class DungeonSpawner : MonoBehaviour
         Vector2Int start = GetSafeWallConnectionPoint(endRoom.Center, startRoom.Bounds);
         Vector2Int end = GetSafeWallConnectionPoint(startRoom.Center, endRoom.Bounds);
 
-        Vector2Int current = start;
+        int minX = Mathf.Min(start.x, end.x);
+        int maxX = Mathf.Max(start.x, end.x);
+        int minY = Mathf.Min(start.y, end.y);
+        int maxY = Mathf.Max(start.y, end.y);
 
         int halfWidth = _corridorWidth / 2;
-        int startOffset = -halfWidth;
-        int endOffset = startOffset + _corridorWidth;
+        int offsetStart = -halfWidth;
+        int offsetEnd = offsetStart + _corridorWidth;
 
-        while (current.x != end.x)
+        // 수평 구간 전체 채우기
+        for (int x = minX; x <= maxX; x++)
         {
-            current.x += end.x > current.x ? 1 : -1;
-
-            for (int width = startOffset; width < endOffset; width++)
+            for (int w = offsetStart; w < offsetEnd; w++)
             {
-                AddFloorPosition(new Vector2Int(current.x, current.y + width), floorPositions);
+                Vector2Int pos = new Vector2Int(x, start.y + w);
+
+                floorPositions.Add(pos);
+                _corridorTiles.Add(pos);
             }
         }
 
-        while (current.y != end.y)
+        // 수직 구간 전체 채우기 (코너 교차 영역 포함)
+        for (int y = minY; y <= maxY; y++)
         {
-            current.y += end.y > current.y ? 1 : -1;
-
-            for (int width = startOffset; width < endOffset; width++)
+            for (int w = offsetStart; w < offsetEnd; w++)
             {
-                AddFloorPosition(new Vector2Int(current.x + width, current.y), floorPositions);
+                Vector2Int pos = new Vector2Int(end.x + w, y);
+
+                floorPositions.Add(pos);
+                _corridorTiles.Add(pos);
             }
         }
     }
@@ -199,7 +200,6 @@ public class DungeonSpawner : MonoBehaviour
     /// <returns>안전한 벽 연결 좌표</returns>
     private Vector2Int GetSafeWallConnectionPoint(Vector2Int fromCenter, RectInt targetBounds)
     {
-        // 모서리(코너)를 피하기 위해 벽의 범위를 안쪽으로 1칸씩 축소합니다.
         int xMin = targetBounds.xMin + 1;
         int xMax = targetBounds.xMax - 2;
         int yMin = targetBounds.yMin + 1;
@@ -208,7 +208,6 @@ public class DungeonSpawner : MonoBehaviour
         int clampedX = Mathf.Clamp(fromCenter.x, xMin, xMax);
         int clampedY = Mathf.Clamp(fromCenter.y, yMin, yMax);
 
-        // 상대 방의 위치가 어느 방향에 있느냐에 따라 안쪽 벽면 좌표를 반환합니다.
         if (fromCenter.x < targetBounds.xMin)
         {
             return new Vector2Int(targetBounds.xMin, clampedY);
@@ -225,21 +224,6 @@ public class DungeonSpawner : MonoBehaviour
         {
             return new Vector2Int(clampedX, targetBounds.yMax - 1);
         }
-    }
-
-    /// <summary>
-    /// 통로 위치를 바닥 데이터에 추가한다.
-    /// </summary>
-    /// <param name="position">추가할 위치</param>
-    /// <param name="floorPositions">바닥 좌표 목록</param>
-    private void AddFloorPosition(Vector2Int position, HashSet<Vector2Int> floorPositions)
-    {
-        if (floorPositions.Contains(position))
-        {
-            return;
-        }
-
-        floorPositions.Add(position);
     }
 
     /// <summary>
@@ -348,7 +332,7 @@ public class DungeonSpawner : MonoBehaviour
     }
 
     /// <summary>
-    /// 생성된 던전 기반으로 NavMesh를 생성한다.
+    ///생성된 던전 기반으로 NavMesh를 생성한다.
     /// </summary>
     private void BuildDungeonNavMesh()
     {

@@ -19,11 +19,16 @@ public class RoomContentSpawner : MonoBehaviour
     [SerializeField] private float _yOffset = 2f;
     [SerializeField] private float _yOffsetDeco = 2f;
     [SerializeField] private float _yOffsetWallDeco = 2f;
-    [SerializeField] private int _baseMonstersPerRoom = 4;
     [SerializeField] private float _wallPadding = 0.5f;
+    [SerializeField] private float _cornerPadding = 1.5f; // 코너 데코레이션을 방 안쪽으로 밀어내는 오프셋 값
+
+    [Header("Wall Check Settings")]
+    [SerializeField] private LayerMask _wallLayerMask; // 벽 판정을 위한 레이어 (인스펙터에서 설정 필요)
+    [SerializeField] private float _wallCheckMaxDistance = 1.5f; // 벽을 찾기 위한 레이 거리
 
     private DungeonData _dungeon;
     private RoomContentTable _table;
+    private readonly HashSet<Vector2Int> _corridorTiles = new();
 
     /// <summary>
     /// 외부에서 던전 데이터를 주입받아 초기화한다.
@@ -33,6 +38,22 @@ public class RoomContentSpawner : MonoBehaviour
     {
         _dungeon = dungeon;
         _table = dungeon.RoomContentTable;
+    }
+
+    /// <summary>
+    /// DungeonSpawner가 생성한 Corridor Tile 정보를 전달받는다.
+    /// </summary>
+    /// <param name="corridorTiles">통로 타일 목록</param>
+    public void SetCorridorTiles(IEnumerable<Vector2Int> corridorTiles)
+    {
+        _corridorTiles.Clear();
+
+        foreach (Vector2Int tile in corridorTiles)
+        {
+            _corridorTiles.Add(tile);
+        }
+
+        Debug.Log($"[RoomContentSpawner] Corridor Tile 등록 : {_corridorTiles.Count}");
     }
 
     /// <summary>
@@ -66,6 +87,10 @@ public class RoomContentSpawner : MonoBehaviour
 
             Vector3 spawnPos = roomController.transform.position;
             spawnPos.y = _yOffset;
+
+            Vector3 newRoomCenter = new Vector3(room.Center.x, 0f, room.Center.y);
+
+            GameObject particleFog = Instantiate(_dungeon. Fog,newRoomCenter, Quaternion.identity);
 
             switch (room.Type)
             {
@@ -104,7 +129,8 @@ public class RoomContentSpawner : MonoBehaviour
                 case RoomType.Boss:
                 {
                     var bossComp = roomController.gameObject.AddComponent<BossRoomInteraction>();
-                    bossComp.Setup(_table.bossEncounterPrefab);
+                    EnemyGroupSO selectedGroup = GetRandomEnemyGroup(room.Depth);
+                    bossComp.Setup(_table.bossEncounterPrefab, _table.bossData, room);
                     roomController.InjectInteraction(bossComp);
                     roomController.SpawnRoomContent();
                     break;
@@ -160,71 +186,84 @@ public class RoomContentSpawner : MonoBehaviour
                 int yMin = room.Bounds.yMin;
                 int yMax = room.Bounds.yMax - 1;
 
-                HashSet<Vector2Int> doorways = GetDoorwayPositions(room);
                 List<WallCandidate> candidates = new List<WallCandidate>();
 
+                // 1. 아래쪽 벽 (yMin)
                 for (int x = xMin + 1; x < xMax; x++)
                 {
                     Vector2Int gridPos = new Vector2Int(x, yMin);
-                    if (!doorways.Contains(gridPos))
+                    if (IsCorridorPosition(gridPos))
                     {
-                        candidates.Add(new WallCandidate {
-                            position = new Vector3(gridPos.x * tileSize, _yOffsetWallDeco, (gridPos.y * tileSize) + _wallPadding),
-                            rotation = Quaternion.Euler(0f, 0f, 0f)
-                        });
+                        continue;
                     }
+
+                    Vector3 pos = new Vector3(gridPos.x * tileSize, _yOffsetWallDeco, (gridPos.y * tileSize) + _wallPadding);
+                    candidates.Add(new WallCandidate { position = pos, rotation = Quaternion.Euler(0f, 0f, 0f) });
                 }
 
+                // 2. 위쪽 벽 (yMax)
                 for (int x = xMin + 1; x < xMax; x++)
                 {
                     Vector2Int gridPos = new Vector2Int(x, yMax);
-                    if (!doorways.Contains(gridPos))
+                    if (IsCorridorPosition(gridPos))
                     {
-                        candidates.Add(new WallCandidate {
-                            position = new Vector3(gridPos.x * tileSize, _yOffsetWallDeco, (gridPos.y * tileSize) - _wallPadding),
-                            rotation = Quaternion.Euler(0f, 180f, 0f)
-                        });
+                        continue;
                     }
+
+                    Vector3 pos = new Vector3(gridPos.x * tileSize, _yOffsetWallDeco, (gridPos.y * tileSize) - _wallPadding);
+                    candidates.Add(new WallCandidate { position = pos, rotation = Quaternion.Euler(0f, 180f, 0f) });
                 }
 
+                // 3. 왼쪽 벽 (xMin)
                 for (int y = yMin + 1; y < yMax; y++)
                 {
                     Vector2Int gridPos = new Vector2Int(xMin, y);
-                    if (!doorways.Contains(gridPos))
+                    if (IsCorridorPosition(gridPos))
                     {
-                        candidates.Add(new WallCandidate {
-                            position = new Vector3((gridPos.x * tileSize) + _wallPadding, _yOffsetWallDeco, gridPos.y * tileSize),
-                            rotation = Quaternion.Euler(0f, 90f, 0f)
-                        });
+                        continue;
                     }
+
+                    Vector3 pos = new Vector3((gridPos.x * tileSize) + _wallPadding, _yOffsetWallDeco, gridPos.y * tileSize);
+                    candidates.Add(new WallCandidate { position = pos, rotation = Quaternion.Euler(0f, 90f, 0f) });
                 }
 
+                // 4. 오른쪽 벽 (xMax)
                 for (int y = yMin + 1; y < yMax; y++)
                 {
                     Vector2Int gridPos = new Vector2Int(xMax, y);
-                    if (!doorways.Contains(gridPos))
+                    if (IsCorridorPosition(gridPos))
                     {
-                        candidates.Add(new WallCandidate {
-                            position = new Vector3((gridPos.x * tileSize) - _wallPadding, _yOffsetWallDeco, gridPos.y * tileSize),
-                            rotation = Quaternion.Euler(0f, 270f, 0f)
-                        });
+                        continue;
+                    }
+
+                    Vector3 pos = new Vector3((gridPos.x * tileSize) - _wallPadding, _yOffsetWallDeco, gridPos.y * tileSize);
+                    candidates.Add(new WallCandidate { position = pos, rotation = Quaternion.Euler(0f, 270f, 0f) });
+                }
+
+                List<WallCandidate> validatedCandidates = new List<WallCandidate>();
+                foreach (var candidate in candidates)
+                {
+                    if (HasActualWall(candidate.position, candidate.rotation))
+                    {
+                        validatedCandidates.Add(candidate);
                     }
                 }
 
-                for (int i = 0; i < candidates.Count; i++)
+                // 셔플
+                for (int i = 0; i < validatedCandidates.Count; i++)
                 {
-                    int randIdx = Random.Range(i, candidates.Count);
-                    var temp = candidates[i];
-                    candidates[i] = candidates[randIdx];
-                    candidates[randIdx] = temp;
+                    int randIdx = Random.Range(i, validatedCandidates.Count);
+                    var temp = validatedCandidates[i];
+                    validatedCandidates[i] = validatedCandidates[randIdx];
+                    validatedCandidates[randIdx] = temp;
                 }
 
-                int spawnCount = Mathf.Clamp(Random.Range(entry.minCount, entry.maxCount + 1), 0, candidates.Count);
+                int spawnCount = Mathf.Clamp(Random.Range(entry.minCount, entry.maxCount + 1), 0, validatedCandidates.Count);
 
                 for (int i = 0; i < spawnCount; i++)
                 {
                     GameObject selectedPrefab = entry.prefabs[Random.Range(0, entry.prefabs.Count)];
-                    Instantiate(selectedPrefab, candidates[i].position, candidates[i].rotation, controller.transform);
+                    Instantiate(selectedPrefab, validatedCandidates[i].position, validatedCandidates[i].rotation, controller.transform);
                 }
 
                 Debug.Log($"[RoomContentSpawner] 벽(Wall) 데코레이션 배치 완료: 방 타입 [{room.Type}] / 생성 수: {spawnCount}");
@@ -246,7 +285,7 @@ public class RoomContentSpawner : MonoBehaviour
                 continue;
             }
 
-            // 바닥(Floor) 데코레이션 생성 (통로 및 입구 인접 영역 제외)
+            // 바닥(Floor) 데코레이션 생성 (통로 및 인접 영역 제외)
             int floorSpawnCount = Random.Range(entry.minCount, entry.maxCount + 1);
             List<Vector2Int> validFloorPositions = GetValidFloorPositions(room);
 
@@ -272,6 +311,24 @@ public class RoomContentSpawner : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 해당 후보 위치 근처에 실제 벽(콜라이더 등)이 존재하는지 검증한다.
+    /// </summary>
+    private bool HasActualWall(Vector3 position, Quaternion rotation)
+    {
+        Vector3 rayOrigin = position + Vector3.up * 0.5f;
+        Vector3 rayDirection = rotation * Vector3.back;
+
+        if (_wallLayerMask.value != 0)
+        {
+            return Physics.Raycast(rayOrigin, rayDirection, _wallCheckMaxDistance, _wallLayerMask);
+        }
+        else
+        {
+            return Physics.Raycast(rayOrigin, rayDirection, _wallCheckMaxDistance);
+        }
+    }
+
     private struct WallCandidate
     {
         public Vector3 position;
@@ -279,76 +336,13 @@ public class RoomContentSpawner : MonoBehaviour
     }
 
     /// <summary>
-    /// 연결된 방(ConnectedRooms)과의 상대적인 위치 및 경계(Bounds)를 기반으로 출입구 위치를 계산한다.
-    /// </summary>
-    /// <param name="room">방 노드</param>
-    /// <returns>출입구 좌표 목록</returns>
-    private HashSet<Vector2Int> GetDoorwayPositions(RoomNode room)
-    {
-        HashSet<Vector2Int> doorways = new HashSet<Vector2Int>();
-        if (room.ConnectedRooms == null)
-        {
-            return doorways;
-        }
-
-        int xMin = room.Bounds.xMin;
-        int xMax = room.Bounds.xMax - 1;
-        int yMin = room.Bounds.yMin;
-        int yMax = room.Bounds.yMax - 1;
-
-        foreach (var other in room.ConnectedRooms)
-        {
-            if (room.Bounds.xMax == other.Bounds.xMin || room.Bounds.xMin == other.Bounds.xMax ||
-                room.Bounds.yMax == other.Bounds.yMin || room.Bounds.yMin == other.Bounds.yMax)
-            {
-                int overlapXMin = Mathf.Max(room.Bounds.xMin, other.Bounds.xMin);
-                int overlapXMax = Mathf.Min(room.Bounds.xMax, other.Bounds.xMax);
-                int overlapYMin = Mathf.Max(room.Bounds.yMin, other.Bounds.yMin);
-                int overlapYMax = Mathf.Min(room.Bounds.yMax, other.Bounds.yMax);
-
-                if (room.Bounds.xMax == other.Bounds.xMin)
-                {
-                    for (int y = overlapYMin; y < overlapYMax; y++)
-                    {
-                        doorways.Add(new Vector2Int(xMax, y));
-                    }
-                }
-                else if (room.Bounds.xMin == other.Bounds.xMax)
-                {
-                    for (int y = overlapYMin; y < overlapYMax; y++)
-                    {
-                        doorways.Add(new Vector2Int(xMin, y));
-                    }
-                }
-                else if (room.Bounds.yMax == other.Bounds.yMin)
-                {
-                    for (int x = overlapXMin; x < overlapXMax; x++)
-                    {
-                        doorways.Add(new Vector2Int(x, yMax));
-                    }
-                }
-                else if (room.Bounds.yMin == other.Bounds.yMax)
-                {
-                    for (int x = overlapXMin; x < overlapXMax; x++)
-                    {
-                        doorways.Add(new Vector2Int(x, yMin));
-                    }
-                }
-            }
-        }
-
-        return doorways;
-    }
-
-    /// <summary>
-    /// 방 내부 바닥 좌표 중 출입구 및 통로 인접 영역을 제외한 유효한 바닥 좌표 목록을 반환한다.
+    /// 방 내부 바닥 좌표 중 통로 및 인접 영역을 제외한 유효한 바닥 좌표 목록을 반환한다.
     /// </summary>
     /// <param name="room">방 노드</param>
     /// <returns>유효한 바닥 좌표 목록</returns>
     private List<Vector2Int> GetValidFloorPositions(RoomNode room)
     {
         List<Vector2Int> validPositions = new List<Vector2Int>();
-        HashSet<Vector2Int> doorways = GetDoorwayPositions(room);
 
         for (int x = room.Bounds.xMin; x < room.Bounds.xMax; x++)
         {
@@ -356,22 +350,7 @@ public class RoomContentSpawner : MonoBehaviour
             {
                 Vector2Int pos = new Vector2Int(x, y);
 
-                if (doorways.Contains(pos))
-                {
-                    continue;
-                }
-
-                bool isNearDoorway = false;
-                foreach (var doorway in doorways)
-                {
-                    if (Mathf.Abs(pos.x - doorway.x) + Mathf.Abs(pos.y - doorway.y) <= 1)
-                    {
-                        isNearDoorway = true;
-                        break;
-                    }
-                }
-
-                if (isNearDoorway)
+                if (IsCorridorPosition(pos))
                 {
                     continue;
                 }
@@ -384,7 +363,31 @@ public class RoomContentSpawner : MonoBehaviour
     }
 
     /// <summary>
-    /// 방의 4개 코너 위치를 계산한다. 단, 통로(출입구) 및 인근 영역에 위치하여 통로를 막는 코너는 제외한다.
+    /// Corridor 위 또는 Corridor 근처인지 검사한다.
+    /// </summary>
+    private bool IsCorridorPosition(Vector2Int position)
+    {
+        if (_corridorTiles.Contains(position))
+        {
+            return true;
+        }
+
+        for (int x = -2; x <= 2; x++)
+        {
+            for (int y = -2; y <= 2; y++)
+            {
+                if (_corridorTiles.Contains(position + new Vector2Int(x, y)))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 방의 4개 코너 위치를 계산한다. 통로와 인접한 코너는 차단하며, 방 안쪽 방향으로 오프셋을 적용한다.
     /// </summary>
     /// <param name="room">방 노드</param>
     /// <param name="tileSize">타일 크기</param>
@@ -404,43 +407,49 @@ public class RoomContentSpawner : MonoBehaviour
             new Vector2Int(xMax, yMax)
         };
 
-        HashSet<Vector2Int> doorways = GetDoorwayPositions(room);
         List<Vector3> corners = new List<Vector3>();
 
         foreach (var cornerPos in cornerGridPositions)
         {
-            bool isBlocked = doorways.Contains(cornerPos);
-
-            if (isBlocked == false)
+            if (IsCorridorPosition(cornerPos))
             {
-                foreach (var doorway in doorways)
-                {
-                    // 통로 너비(약 4타일) 및 진입 공간 확보를 위해 코너와 출입구 간의 거리가 3타일 이내인 경우 간섭하는 것으로 판단
-                    if (Mathf.Abs(cornerPos.x - doorway.x) + Mathf.Abs(cornerPos.y - doorway.y) <= 3)
-                    {
-                        isBlocked = true;
-                        break;
-                    }
-                }
+                Debug.Log($"[RoomContentSpawner] Corridor와 인접하여 Corner 생성 제외 : {cornerPos}");
+                continue;
             }
 
-            if (isBlocked == false)
+            // 코너 지점에서 방 안쪽 방향으로 레이를 쏴 실제 벽이 존재하는지 검증
+            Vector3 cornerWorldPos = new Vector3(cornerPos.x * tileSize, 0f, cornerPos.y * tileSize);
+            Vector3 roomCenterWorld = new Vector3(room.Center.x * tileSize, 0f, room.Center.y * tileSize);
+            Vector3 dirToCenter = (roomCenterWorld - cornerWorldPos).normalized;
+            Vector3 rayOrigin = cornerWorldPos + Vector3.up * 0.5f;
+
+            bool hasWall = _wallLayerMask.value != 0 
+                ? Physics.Raycast(rayOrigin, dirToCenter, _wallCheckMaxDistance, _wallLayerMask)
+                : Physics.Raycast(rayOrigin, dirToCenter, _wallCheckMaxDistance);
+
+            if (!hasWall)
             {
-                corners.Add(new Vector3(cornerPos.x * tileSize, _yOffsetDeco, cornerPos.y * tileSize));
+                Debug.Log($"[RoomContentSpawner] 코너 위치 {cornerPos}에서 실제 벽 검출 실패로 코너 생성 제외됨.");
+                continue;
             }
-            else
-            {
-                Debug.Log($"[RoomContentSpawner] 코너 데코레이션 생성 제외 (통로 간섭 지역): 코너 좌표 ({cornerPos.x}, {cornerPos.y})");
-            }
+
+            // 코너 위치에서 방 안쪽 방향으로 오프셋 적용
+            float offsetX = (cornerPos.x == xMin) ? _cornerPadding : -_cornerPadding;
+            float offsetZ = (cornerPos.y == yMin) ? _cornerPadding : -_cornerPadding;
+
+            Vector3 adjustedPos = new Vector3(
+                (cornerPos.x * tileSize) + offsetX, 
+                _yOffsetDeco - 0.5f, 
+                (cornerPos.y * tileSize) + offsetZ
+            );
+
+            corners.Add(adjustedPos);
+            Debug.Log($"[RoomContentSpawner] 안쪽으로 오프셋된 유효 코너 위치 확정: {adjustedPos}");
         }
 
         return corners;
     }
 
-    /// <summary>
-    /// 플레이어 오브젝트를 생성한다.
-    /// </summary>
-    /// <param name="position">생성 위치</param>
     private void SpawnPlayer(Vector3 position)
     {
         bool isReturningFromBattle = BattleEncounterContext.Instance != null && BattleEncounterContext.Instance.HasEncounter;
@@ -462,12 +471,6 @@ public class RoomContentSpawner : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 무작위 적 전투 목록을 생성한다.
-    /// </summary>
-    /// <param name="group">적 그룹 데이터</param>
-    /// <param name="roomDepth">방 깊이(층)</param>
-    /// <returns>적 전투 데이터 목록</returns>
     private List<EnemyBattleData> GenerateRandomEnemyList(EnemyGroupSO group, int roomDepth)
     {
         List<EnemyBattleData> selectedEnemies = new List<EnemyBattleData>();
@@ -481,7 +484,6 @@ public class RoomContentSpawner : MonoBehaviour
 
         if (group.Enemies.Count == 0)
         {
-            Debug.LogWarning($"[RoomContentSpawner] {group.name} 그룹 내부에 등록된 몬스터 엔트리가 없습니다.");
             return selectedEnemies;
         }
 
@@ -494,15 +496,10 @@ public class RoomContentSpawner : MonoBehaviour
             }
         }
 
-        Debug.Log($"[RoomContentSpawner] 전투방 생성 완료 / 그룹: {group.name} / 최종 배치 몬스터 수: {selectedEnemies.Count} (깊이 보정 포함)");
         return selectedEnemies;
     }
 
-    /// <summary>
-    /// 방 깊이에 맞는 무작위 적 그룹을 반환한다.
-    /// </summary>
-    /// <param name="roomDepth">방 깊이(층)</param>
-    /// <returns>적 그룹 데이터</returns>
+    
     private EnemyGroupSO GetRandomEnemyGroup(int roomDepth)
     {
         List<EnemyGroupSO> validGroups = new List<EnemyGroupSO>();
@@ -517,7 +514,6 @@ public class RoomContentSpawner : MonoBehaviour
 
         if (validGroups.Count == 0)
         {
-            Debug.LogWarning($"[RoomContentSpawner] {roomDepth}층에 맞는 적 그룹이 없습니다. 기본 그룹을 반환합니다.");
             return _table.monsterGroupPool.Count > 0 ? _table.monsterGroupPool[0] : null;
         }
 

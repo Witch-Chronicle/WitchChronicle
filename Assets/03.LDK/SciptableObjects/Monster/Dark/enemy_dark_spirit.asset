@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15fa27efa3f5725419aca6ec65b66bd4, type: 3}
+  m_Name: enemy_dark_spirit
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
+  _enemyId: enemy_dark_spirit
+  _enemyName: "\uC5B4\uB460\uC758 \uC815\uB839"
+  _maxHp: 65
+  _attackPower: 6
+  _magicPower: 18
+  _defensePower: 3
+  _magicDefensePower: 8
+  _speed: 12
+  _weakElements: 0600000004000000
+  _resistElements: 07000000
+  _nullElements: 
+  _absorbElements: 
+  _skillList:
+  - {fileID: 11400000, guid: 7bc6091c7b4237b409917b7777172190, type: 2}
+  - {fileID: 11400000, guid: 478c56b2b125f0b4a8dc5e2a66d168f8, type: 2}
+  _aiProfileData: {fileID: 11400000, guid: 936d543f6091ae54f86b4027dc5bf994, type: 2}
+  _expReward: 14
+  _goldReward: 8
+  _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
+  _prefab: {fileID: 4530003306004163418, guid: 7b59bf762b8b07c4d9cadebd0b03f62b, type: 3}

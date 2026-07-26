@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 2200499506496251641}
   - component: {fileID: 6976980098593899636}
   - component: {fileID: 7889696718632018497}
-  - component: {fileID: 5609394376195666091}
   - component: {fileID: 2012660740074821880}
+  - component: {fileID: 5609394376195666091}
   m_Layer: 0
   m_Name: Monster
   m_TagString: Untagged
@@ -34,7 +34,8 @@ Transform:
   m_LocalPosition: {x: -1.19447, y: -0, z: 1.99377}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 3403884564929283885}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &9001887838144377081
@@ -134,6 +135,23 @@ MonoBehaviour:
   _canEscape: 1
   _isPlayerAdvantage: 0
   _isEnemyAdvantage: 0
+--- !u!114 &2012660740074821880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8601160308275728981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c3d2e04639aa0647af6792242ded9c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterNavMeshChase
+  _noticePaticle: {fileID: 3403884564929283884}
+  _detectionDistance: 10
+  _combatDistance: 1.5
+  _loseTargetDistance: 15
+  _pathUpdateInterval: 0.2
 --- !u!195 &5609394376195666091
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -156,19 +174,102 @@ NavMeshAgent:
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &2012660740074821880
-MonoBehaviour:
+--- !u!1001 &4846891006904766848
+PrefabInstance:
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 8553349645571553364}
+    m_Modifications:
+    - target: {fileID: 7817856748425651003, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: playOnAwake
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856748987973263, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: playOnAwake
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749099435018, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: playOnAwake
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749401303048, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: playOnAwake
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512428, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: playOnAwake
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7817856749428512430, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+      propertyPath: m_Name
+      value: HCFX_Sign_ExclamationMark
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+--- !u!198 &3403884564929283884 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 7817856749428512428, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+  m_PrefabInstance: {fileID: 4846891006904766848}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8601160308275728981}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c3d2e04639aa0647af6792242ded9c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MonsterNavMeshChase
-  _detectionDistance: 10
-  _combatDistance: 3
-  _loseTargetDistance: 15
-  _pathUpdateInterval: 0.2
+--- !u!4 &3403884564929283885 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7817856749428512429, guid: c44b4218317f11b4e8b6d2695e0e1ce8, type: 3}
+  m_PrefabInstance: {fileID: 4846891006904766848}
+  m_PrefabAsset: {fileID: 0}

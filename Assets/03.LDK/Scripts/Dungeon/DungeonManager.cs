@@ -47,7 +47,26 @@ public class DungeonManager : MonoBehaviour
         Generate();
     }
 
-    [ContextMenu("던전 생성")]
+    private void Update()
+    {
+        if (CurrentDungeonData == null)
+        {
+            return;
+        }
+
+        DungeonAtmosphereDataSO atmosphere = CurrentDungeonData.DungeonAtmosphere;
+
+        if (!atmosphere.UseFog || !atmosphere.AnimateFog)
+        {
+            return;
+        }
+
+        RenderSettings.fogDensity =
+            atmosphere.FogDensity +
+            Mathf.Sin(Time.time * atmosphere.FogDensitySpeed) *
+            atmosphere.FogDensityAmplitude;
+    }
+
     public void Generate()
     {
         Debug.Log("[DungeonManager] 던전 생성 시작");
@@ -60,12 +79,14 @@ public class DungeonManager : MonoBehaviour
 
         Debug.Log("[DungeonManager] 던전 스폰 완료");
 
+        _contentSpawner.SetCorridorTiles(_spawner.CorridorTiles);
+
         _contentSpawner.SpawnContent(rooms, _spawner.GetTileSize);
 
         Debug.Log("[DungeonManager] 방 콘덴츠 스폰 완료");
 
-        //_dungeonAtmosphereController.ApplyAtmosphere(CurrentDungeonData);
+        _dungeonAtmosphereController.ApplyAtmosphere(CurrentDungeonData);
 
-        //Debug.Log("[DungeonManager] 던전 효과 적용 완료");
+        Debug.Log("[DungeonManager] 던전 효과 적용 완료");
     }
 }
