@@ -51,21 +51,6 @@ public class DungeonSpawner : MonoBehaviour
         _meshBuilder = new DungeonMeshBuilder();
     }
 
-    /// <summary>
-    /// 전투 조우 오브젝트를 초기화한다.
-    /// </summary>
-    /// <param name="encounterObj">조우 오브젝트</param>
-    /// <param name="enemies">적 전투 데이터 목록</param>
-    /// <param name="room">방 노드</param>
-    public void SetupEncounter(GameObject encounterObj, List<EnemyBattleData> enemies, RoomNode room)
-    {
-        var battleEncounter = encounterObj.GetComponent<BattleEncounter>();
-        
-        if (battleEncounter != null)
-        {
-            battleEncounter.Initialize(enemies, room);
-        }
-    }
 
     /// <summary>
     /// 생성된 Dungeon Room 데이터를 실제 Scene 오브젝트로 생성한다.

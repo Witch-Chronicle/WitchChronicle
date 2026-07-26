@@ -37,6 +37,8 @@ public class PortalUIController : MonoBehaviour
         // 추가, 현재 들어갈 던전 저장
         DungeonSelection.CurrentDungeonData = _targetDungeon;
 
+        ShowMessageManager.Instance.ShowMessage($"{_targetDungeon.DungeonName} 에 입장 합니다.");
+
         SceneTransitionManager.Instance.LoadScene(SceneId.Dungeon);
     }
 

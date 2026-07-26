@@ -27,6 +27,7 @@ public class RoomContentTable : ScriptableObject
 
     [Header("Boss")]
     public BattleEncounter bossEncounterPrefab;
+    public List<EnemyBattleData> bossData;
 
     [Header("Event")]
     public EventRoomTableSO eventRoomTableSO;

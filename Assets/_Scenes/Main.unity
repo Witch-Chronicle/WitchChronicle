@@ -17199,6 +17199,7 @@ GameObject:
   - component: {fileID: 1817478476}
   - component: {fileID: 1817478478}
   - component: {fileID: 1817478477}
+  - component: {fileID: 1817478479}
   m_Layer: 5
   m_Name: Message
   m_TagString: Untagged
@@ -17214,7 +17215,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1817478475}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 1}
   m_LocalScale: {x: 0.99998933, y: 0.99998933, z: 0.99998933}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -17325,6 +17326,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1817478475}
   m_CullTransparentMesh: 1
+--- !u!223 &1817478479
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1817478475}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 1
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 2
+  m_TargetDisplay: 0
 --- !u!1 &1837125122
 GameObject:
   m_ObjectHideFlags: 0
@@ -58469,11 +58494,11 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1817478476}
   - {fileID: 1279353490}
   - {fileID: 1154137201504481239}
   - {fileID: 1705179156641630014}
   - {fileID: 1633182624}
-  - {fileID: 1817478476}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

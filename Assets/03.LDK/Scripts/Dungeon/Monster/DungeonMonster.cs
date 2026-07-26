@@ -8,6 +8,8 @@ public class DungeonMonster : MonoBehaviour
 {
     public enum AIState { Idle, Chasing, Combat }
 
+    [SerializeField] private ParticleSystem _noticePaticle;
+
     [Header("Chase Settings")]
     [SerializeField] private float _detectionDistance = 10.0f;
     [SerializeField] private float _combatDistance = 2.0f;
@@ -147,6 +149,10 @@ public class DungeonMonster : MonoBehaviour
             case AIState.Chasing:
                 if (_agent.isActiveAndEnabled)
                 {
+                    if(_noticePaticle != null)
+                    {
+                        _noticePaticle.Play();
+                    }
                     _agent.isStopped = false;
                     _chaseCoroutine = StartCoroutine(ChaseTargetRoutine());
                     _monsterAnimation.SetIsMoving(true);
@@ -160,6 +166,7 @@ public class DungeonMonster : MonoBehaviour
                     ResetAgentPath();
                 }
                 _monsterAnimation.SetIsMoving(false);
+                ShowMessageManager.Instance.ShowMessage("전투 개시");
                 Debug.Log("1. 몬스터가 전투 이벤트를 호출함");
                 OnCombatStarted?.Invoke(); 
                 break;

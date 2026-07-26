@@ -21,7 +21,6 @@ public class BattleEncounter : MonoBehaviour
 
     public IReadOnlyList<EnemyBattleData> AssignedEnemies => _assignedEnemies;
 
-    private RoomNode _assignedRoom;
     /// <summary>
     /// 몬스터 이벤트 등록
     /// </summary>
@@ -50,10 +49,8 @@ public class BattleEncounter : MonoBehaviour
     /// 조우 적 데이터 초기화
     /// </summary>
     /// <param name="enemies">조우 적 목록</param>
-    public void Initialize( List<EnemyBattleData> enemyGroup, RoomNode roomNode)
+    public void Initialize( List<EnemyBattleData> enemyGroup)
     {
-        _assignedRoom = roomNode;
-
         _assignedEnemies.Clear();
 
         if (enemyGroup != null)
@@ -68,9 +65,9 @@ public class BattleEncounter : MonoBehaviour
                 }
 
                 _assignedEnemies.Add(enemy);
-                
             }
         }
+
         SpawnRepresentativeMonster();
         RegisterMonsterEvents();
 
@@ -99,12 +96,6 @@ public class BattleEncounter : MonoBehaviour
 
         GameObject monsterInstance = Instantiate(strongestEnemy.Prefab, spawnPosition, transform.rotation, transform);
         
-        DungeonMonster dungeonMonster = monsterInstance.GetComponent<DungeonMonster>();
-        if (dungeonMonster != null && _assignedRoom != null)
-        {
-            dungeonMonster.Initialize(_assignedRoom);
-        }
-
         Debug.Log($"[BattleEncounter] 가장 강한 적 [{strongestEnemy.EnemyName}] 프리팹 생성 완료 (스탯 총합 기반)");
     }
 
@@ -185,7 +176,7 @@ public class BattleEncounter : MonoBehaviour
     /// <summary>
     /// 전투 시작 이벤트 처리
     /// </summary>
-    private void HandleCombatStarted()
+    public void HandleCombatStarted()
     {
         Debug.Log("2. BattleEncounter가 신호를 받음");
         if (_isBattleStarted)
@@ -220,10 +211,7 @@ public class BattleEncounter : MonoBehaviour
 
         string returnSceneName = SceneManager.GetActiveScene().name;
         Vector3 returnPosition = GetReturnPosition();
-        Quaternion returnRotation = GetReturnRotation();
-        
-        // 추가, 배틀 씬 중심점으로
-        Vector3 roomCenter = CalculateRoomCenter();
+        Quaternion returnRotation = GetReturnRotation(); 
 
         
         BattleEncounterContext.Instance.SetEncounter(this,
@@ -242,9 +230,6 @@ public class BattleEncounter : MonoBehaviour
         }
 
         Debug.Log($"[BattleEncounter] Load Battle Scene (Additive): {_battleSceneName}");
-        
-        // 추가, 배틀 씬 중심점으로
-        BattleEncounterContext.Instance.SetBattlePosition(roomCenter);
 
         DestroyEncounter();
 
@@ -257,15 +242,6 @@ public class BattleEncounter : MonoBehaviour
         {
             SceneManager.LoadScene(_battleSceneName, LoadSceneMode.Additive);
         }
-    }
-
-    private Vector3 CalculateRoomCenter()
-    {
-        if (_assignedRoom != null)
-        {
-            return new Vector3(_assignedRoom.Bounds.center.x, 0, _assignedRoom.Bounds.center.y);
-        }
-        return transform.position; // 실패 시 자기 위치
     }
 
     /// <summary>

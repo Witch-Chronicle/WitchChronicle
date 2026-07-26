@@ -80,7 +80,6 @@ public class BattleScene : MonoBehaviour
             container.SetParent(transform);
             container.localPosition = Vector3.zero;
             container.localRotation = Quaternion.identity;
-            container.localScale = Vector3.one;
         }
 
         return container;
@@ -114,7 +113,6 @@ public class BattleScene : MonoBehaviour
 
                 floorInstance.transform.localPosition = new Vector3(posX, -2f, posZ);
                 floorInstance.transform.localRotation = Quaternion.identity;
-                floorInstance.transform.localScale = Vector3.one;
 
                 ApplyMeshVariation(floorInstance);
             }
@@ -159,7 +157,6 @@ public class BattleScene : MonoBehaviour
 
                     wallInstance.transform.localPosition = new Vector3(posX, posY, posZ);
                     wallInstance.transform.localRotation = Quaternion.identity;
-                    wallInstance.transform.localScale = Vector3.one;
 
                     ApplyMeshVariation(wallInstance);
                 }
@@ -194,7 +191,6 @@ public class BattleScene : MonoBehaviour
 
                 roofInstance.transform.localPosition = new Vector3(posX, -2f + _roofHeight, posZ);
                 roofInstance.transform.localRotation = Quaternion.identity;
-                roofInstance.transform.localScale = Vector3.one;
 
                 ApplyMeshVariation(roofInstance);
             }
@@ -241,7 +237,6 @@ public class BattleScene : MonoBehaviour
 
                 decorInstance.transform.localPosition = new Vector3(posX, -2f, posZ);
                 decorInstance.transform.localRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
-                decorInstance.transform.localScale = Vector3.one;
             }
         }
     }
@@ -292,7 +287,6 @@ public class BattleScene : MonoBehaviour
 
             decorInstance.transform.localPosition = new Vector3(posX, -2f, posZ);
             decorInstance.transform.localRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
-            decorInstance.transform.localScale = Vector3.one;
         }
     }
 

@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6df93aa8a2379f04abe3ffa4fcbdc37a, type: 3}
+  m_Name: dungeon_boss
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonData
+  Id: hell_1
+  DungeonName: "\uBC1C\uB85D \uC758 \uC9C0\uC625"
+  FloorPrefab: {fileID: 2968830504906926872, guid: 18d5d0e4a15adbd48882b4a8eca95943, type: 3}
+  WallPrefab: {fileID: 2968830504906926872, guid: e5f9b860d4f158041830633198ce81ee, type: 3}
+  CeilingPrefab: {fileID: 2968830504906926872, guid: e5f9b860d4f158041830633198ce81ee, type: 3}
+  DecorPrefabs:
+  - {fileID: 3156876585393967602, guid: e18cff2ebcc349842bf323f40366542a, type: 3}
+  - {fileID: 4457281828551312260, guid: dcf762f7ec1701e49bf5077af2823068, type: 3}
+  - {fileID: 3156876585393967602, guid: e18cff2ebcc349842bf323f40366542a, type: 3}
+  - {fileID: 4457281828551312260, guid: dcf762f7ec1701e49bf5077af2823068, type: 3}
+  - {fileID: 3156876585393967602, guid: e18cff2ebcc349842bf323f40366542a, type: 3}
+  - {fileID: 4457281828551312260, guid: dcf762f7ec1701e49bf5077af2823068, type: 3}
+  - {fileID: 3454579332353423851, guid: 8a35c7b924bf9d04d9960732782215e2, type: 3}
+  - {fileID: 3454579332353423851, guid: 8a35c7b924bf9d04d9960732782215e2, type: 3}
+  - {fileID: 1030992216, guid: abc00000000016882973811301943871, type: 3}
+  - {fileID: 1030992198, guid: abc00000000008076672260047248511, type: 3}
+  - {fileID: 1030992180, guid: abc00000000014745605174516167561, type: 3}
+  - {fileID: 1030992238, guid: abc00000000003778390058708688329, type: 3}
+  - {fileID: 1030992282, guid: abc00000000007320823481348160304, type: 3}
+  - {fileID: 1030992304, guid: abc00000000000166612956689332867, type: 3}
+  - {fileID: 1030992348, guid: abc00000000009366842529473335653, type: 3}
+  - {fileID: 1030992326, guid: abc00000000018341995826438526174, type: 3}
+  - {fileID: 1030992370, guid: abc00000000014921817115746232092, type: 3}
+  MapSize: {x: 70, y: 70}
+  MinPadding: 3
+  BSPDepth: 1
+  MaxConnectionPerRoom: 3
+  ExtraConnectionProbability: 0
+  MinRoomCount: 2
+  MaxRoomCount: 2
+  MinRoomSize: 17
+  MaxRoomSize: 20
+  RoomWeights:
+  - Type: 5
+    Weight: 100
+  RoomContentTable: {fileID: 11400000, guid: a37dafe046607df43bf8a646e45c07fa, type: 2}
+  _decorationTable: {fileID: 11400000, guid: 2b5226e0008d8594587c99cefb1c356a, type: 2}
+  BGM: {fileID: 0}
+  Skybox: {fileID: 0}
+  Icon: {fileID: 0}
+  Fog: {fileID: 9185907458619771004, guid: d405d644646a9e3478af075d50dcb89c, type: 3}
+  DungeonAtmosphere: {fileID: 11400000, guid: f065114b9a9cdfa45830d14ca710782c, type: 2}
+  HasBoss: 1
+  HasExit: 0

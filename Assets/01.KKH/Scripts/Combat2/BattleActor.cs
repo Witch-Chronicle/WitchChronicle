@@ -310,6 +310,12 @@ public class BattleActor : MonoBehaviour
         visualInstance.transform.localPosition = new Vector3(0f, -1f, 0f);
         visualInstance.transform.localRotation = Quaternion.identity;
 
+        if(_enemyBattleData.IsBoss)
+        {
+            visualInstance.transform.localPosition = new Vector3(0f, -1f, -1.5f);
+            visualInstance.transform.localScale = new Vector3(2f, 2f, 2f);
+        }
+
         SetupOutlineForVisual(visualInstance);
 
         Debug.Log($"[BattleActor] 적 외형 프리팹 생성 완료: {_enemyBattleData.Prefab.name}");

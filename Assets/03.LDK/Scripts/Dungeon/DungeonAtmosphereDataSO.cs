@@ -14,6 +14,11 @@ public class DungeonAtmosphereDataSO : ScriptableObject
     [SerializeField] private float _fogStartDistance = 0f;
     [SerializeField] private float _fogEndDistance = 30f;
 
+    [Header("Fog Animation")]
+    [SerializeField] private bool _animateFog = true;
+    [SerializeField] private float _fogDensityAmplitude = 0.003f;
+    [SerializeField] private float _fogDensitySpeed = 0.2f;
+
     [Header("Ambient Light")]
     [SerializeField] private Color _ambientLight = new Color(0.15f, 0.15f, 0.2f);
 
@@ -23,5 +28,10 @@ public class DungeonAtmosphereDataSO : ScriptableObject
     public float FogDensity => _fogDensity;
     public float FogStartDistance => _fogStartDistance;
     public float FogEndDistance => _fogEndDistance;
+
+    public bool AnimateFog => _animateFog;
+    public float FogDensityAmplitude => _fogDensityAmplitude;
+    public float FogDensitySpeed => _fogDensitySpeed;
+
     public Color AmbientLight => _ambientLight;
 }
