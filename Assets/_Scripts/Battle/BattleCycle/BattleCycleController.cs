@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Battle.Rules;
 
 /// <summary>
 /// 전투 턴 사이클 관리
@@ -38,6 +39,10 @@ public class BattleCycleController : MonoBehaviour
 
     private BattleActionRequest _pendingActionRequest;
 
+    [Header("Status Effect (상태이상 적용/알림용)")]
+    [SerializeField] private StatusEffectDatabase _statusEffectDatabase;
+    private readonly StatusEffectController _statusEffectController = new StatusEffectController();
+
     public event Action OnBattleStarted;
     public event Action<int> OnRoundStarted;
     public event Action<BattleUnit, int> OnTurnStarted;
@@ -48,6 +53,10 @@ public class BattleCycleController : MonoBehaviour
 
     public event Action<BattleActionRequest, ConstellationResult>
         OnConstellationResolved;
+
+    // 연출용: 상태이상 부여/해제 알림 (StatusEffectController에서 중계)
+    public event Action<BattleUnit, StatusEffectType> OnStatusApplied;
+    public event Action<BattleUnit, StatusEffectType> OnStatusRemoved;
 
     public BattleState BattleState => _battleState;
     public BattleTurnContext CurrentTurnContext => _currentTurnContext;
@@ -68,6 +77,56 @@ public class BattleCycleController : MonoBehaviour
             _constellationBattleManager =
                 FindFirstObjectByType<ConstellationBattleManager>();
         }
+
+        // 상태이상 부여/해제를 연출 이벤트로 중계
+        _statusEffectController.OnApplied += HandleStatusApplied;
+        _statusEffectController.OnRemoved += HandleStatusRemoved;
+    }
+
+    private void HandleStatusApplied(BattleUnit unit, StatusEffectType type)
+    {
+        OnStatusApplied?.Invoke(unit, type);
+    }
+
+    private void HandleStatusRemoved(BattleUnit unit, StatusEffectType type)
+    {
+        OnStatusRemoved?.Invoke(unit, type);
+    }
+
+    /// <summary>
+    /// 스킬의 상태이상 확률을 판정해 대상에게 부여한다.
+    /// 데이터베이스 미설정 시 조용히 무시(기존 전투에 영향 없음).
+    /// </summary>
+    private void TryApplyStatusEffect(BattleUnit target, SkillData skillData)
+    {
+        if (target == null || skillData == null)
+        {
+            return;
+        }
+
+        if (skillData.StatusEffectType == StatusEffectType.None || skillData.StatusChance <= 0f)
+        {
+            return;
+        }
+
+        if (_statusEffectDatabase == null)
+        {
+            return;
+        }
+
+        if (UnityEngine.Random.value > skillData.StatusChance)
+        {
+            return;
+        }
+
+        StatusEffectData data = _statusEffectDatabase.GetData(skillData.StatusEffectType);
+
+        if (data == null)
+        {
+            return;
+        }
+
+        _statusEffectController.ApplyStatusEffect(target, data);
     }
 
     /// <summary>
@@ -253,6 +312,9 @@ public class BattleCycleController : MonoBehaviour
         }
 
         _battleState = BattleState.TurnEnd;
+
+        // 턴 종료: 상태이상 지속턴 감소 및 만료 처리 (지속피해 tick·행동불가 판정은 미포함)
+        _statusEffectController.ProcessTurnEnd(unit);
 
         OnTurnEnded?.Invoke(unit);
 
@@ -1279,6 +1341,9 @@ public class BattleCycleController : MonoBehaviour
                     $"스킬 효과: {skillData.SkillType}");
                 break;
         }
+
+        // 스킬의 상태이상 확률 판정 및 부여 (데미지/힐과 별개로 적용)
+        TryApplyStatusEffect(target, skillData);
     }
 
     /// <summary>
