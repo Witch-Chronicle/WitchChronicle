@@ -1,25 +1,41 @@
 using UnityEngine;
 
+/// <summary>
+/// 미니맵 카메라가 플레이어 위치를 따라간다.
+/// </summary>
 public class MinimapCameraFollow : MonoBehaviour
 {
-    [SerializeField] private Transform _playerTransform; // 추적할 플레이어 트랜스폼
-    [SerializeField] private float _cameraHeight = 30f;   // 미니맵 카메라의 고정 높이
+    [SerializeField] private Transform _playerTransform;
+    [SerializeField] private float _cameraHeight = 30f;
 
     [SerializeField] private GameObject _minimapPanel;
 
+
+    private void Start()
+    {
+        if (_playerTransform == null)
+        {
+            PlayerInteractor player = FindAnyObjectByType<PlayerInteractor>();
+
+            if (player != null)
+            {
+                _playerTransform = player.transform;
+            }
+        }
+    }
+
     private void LateUpdate()
     {
-        if (_playerTransform == null) 
+        if (_playerTransform == null)
         {
-            _playerTransform = FindAnyObjectByType<PlayerInteractor>().transform;
+            return;
         }
 
-        // 플레이어의 X, Z 좌표만 따라가고 Y축 높이는 고정하여 위에서 아래로 내려다보는 시점을 유지함.
-        Vector3 targetPosition = new Vector3(_playerTransform.position.x, _cameraHeight, _playerTransform.position.z);
-        transform.position = targetPosition;
+        transform.position = new Vector3(_playerTransform.position.x, _cameraHeight,  _playerTransform.position.z);
 
         UpdateVisibility();
     }
+
 
     private void UpdateVisibility()
     {

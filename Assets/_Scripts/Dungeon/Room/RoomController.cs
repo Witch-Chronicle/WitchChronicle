@@ -1,92 +1,106 @@
 using UnityEngine;
 
+/// <summary>
+/// 개별 방의 상태와 플레이어 진입 이벤트를 관리한다.
+/// </summary>
 public class RoomController : MonoBehaviour
 {
     private RoomNode _roomData;
     private float _tileSize;
-    private MinimapMarker _minimapMarker; 
-    private RoomInteraction _roomInteraction; 
-    private bool _hasVisited = false;
+    private RoomInteraction _roomInteraction;
+    private bool _hasVisited;
     private Vector3 _roomCenterFloor;
 
-    private RectInt _bounds;
-
     /// <summary>
-    /// 박스 콜라이더를 추가하고 방 크기에 맞게(판정을 위해 y 춛에 0.5) 생성됨, 플레이어가 방에 들어왔는지 판별
+    /// 방 데이터와 트리거 영역을 초기화한다.
     /// </summary>
-    /// <param name="roomData">방의 데이터</param>
-    /// <param name="tileSize">타일 의 크기</param>
+    /// <param name="roomData">방 데이터</param>
+    /// <param name="tileSize">타일 크기</param>
     public void Initialize(RoomNode roomData, float tileSize)
     {
         _roomData = roomData;
         _tileSize = tileSize;
+        _roomCenterFloor = transform.position;
 
-        BoxCollider trigger = gameObject.AddComponent<BoxCollider>();
-        trigger.isTrigger = true;
-
-        Vector3 size = new Vector3(roomData.Bounds.width * _tileSize, 5f, roomData.Bounds.height * _tileSize);
-        trigger.size = size;
-        trigger.center = Vector3.zero;
-
-        // 기준 좌표 정의를 이곳에서 단일화
-        _roomCenterFloor = new Vector3(transform.position.x, transform.position.y, transform.position.z);
-    }
-
-    public bool IsInsideRoom(Vector3 worldPos, float tileSize)
-    {
-        Vector2Int gridPos = new Vector2Int(
-            Mathf.RoundToInt(worldPos.x / tileSize),
-            Mathf.RoundToInt(worldPos.z / tileSize)
-        );
-
-
-        return _bounds.Contains(gridPos);
+        CreateTrigger();
     }
 
     /// <summary>
-    /// 외부(Spawner)에서 결합이 완료된 전략 컴포넌트의 참조를 주입받음 
+    /// 방 상호작용 전략을 주입한다.
     /// </summary>
+    /// <param name="interaction">방 행동 인터랙션</param>
     public void InjectInteraction(RoomInteraction interaction)
     {
         _roomInteraction = interaction;
     }
 
-    // 참조 받아 재등록하는 함수
-    public void RegisterMinimapMarker(MinimapMarker marker)
+    /// <summary>
+    /// 방 진입 감지를 위한 BoxCollider 트리거를 생성한다.
+    /// </summary>
+    private void CreateTrigger()
     {
-        _minimapMarker = marker;
+        BoxCollider trigger = gameObject.AddComponent<BoxCollider>();
+        
+        trigger.isTrigger = true;
+        trigger.size = new Vector3(
+            _roomData.Bounds.width * _tileSize,
+            5f,
+            _roomData.Bounds.height * _tileSize
+        );
+
+        Debug.Log($"[RoomController] 방 트리거 생성 완료: {_roomData.Type} (크기: {trigger.size})");
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (_hasVisited) return;
+        Debug.Log($"[RoomController] 충돌 감지됨 - 오브젝트: {other.name}, 태그: {other.tag}");
 
-        if (other.CompareTag("Player"))
+        if (!other.CompareTag("Player"))
         {
-            OnPlayerEnterRoom();
+            Debug.Log("[RoomController] 충돌한 오브젝트의 태그가 'Player'가 아닙니다.");
+            return;
         }
+
+        if (_hasVisited)
+        {
+            Debug.Log($"[RoomController] 이미 방문했던 방입니다: {_roomData.Type}");
+            return;
+        }
+
+        DiscoverRoom();
     }
 
     /// <summary>
-    /// 방에 플레이어가 들어왔을때, 미니맵의 마커를 드러내는 함수
+    /// 플레이어가 처음 방에 진입했을 때 실행된다.
     /// </summary>
-    /// <param name="playerTransform">플레이어 위치</param>
-    private void OnPlayerEnterRoom()
+    private void DiscoverRoom()
     {
         _hasVisited = true;
+        _roomData.Discover();
 
-        if (_minimapMarker != null)
+        MinimapIconManager minimap = MinimapIconManager.Instance;
+        if (minimap != null)
         {
-            _minimapMarker.Reveal();
+            minimap.RefreshRoom(_roomData);
         }
+        else
+        {
+            Debug.LogWarning("[RoomController] 씬에 MinimapIconManager 인스턴스가 존재하지 않습니다.");
+        }
+
+        Debug.Log($"[RoomController] 방 발견 처리 완료 및 미니맵 아이콘 갱신 요청: {_roomData.Type}");
     }
 
+    /// <summary>
+    /// 방 내부의 상호작용 콘텐츠를 실행한다.
+    /// </summary>
     public void SpawnRoomContent()
     {
-        if (_roomInteraction != null )
+        if (_roomInteraction == null)
         {
-            _roomInteraction.Execute(_roomCenterFloor);
+            return;
         }
-    }
 
+        _roomInteraction.Execute(_roomCenterFloor);
+    }
 }
