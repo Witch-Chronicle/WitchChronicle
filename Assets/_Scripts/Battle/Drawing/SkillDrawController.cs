@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,12 +10,22 @@ using UnityEngine.InputSystem;
 /// ShapeTracing과 동일하게 Canvas 없이 순수 LineRenderer + Camera.main 기준으로 동작.
 /// SkillDrawCamera가 활성화된 동안 Camera.main이 그 시점을 렌더링하므로(Cinemachine Brain),
 /// 별도로 SkillDrawCamera를 직접 참조하지 않고 Camera.main만 사용.
-/// 좌표는 화면 뷰포트(0~1) 기준으로 저장 - JSON 포맷과 동일한 좌표계라 가이드/플레이어 입력이
+///
+/// * 그리기 영역 제한(_drawAreaRect): 지정하면 화면 전체가 아니라 그 UI Image(RectTransform)의
+///   사각형 안에서만 좌표를 정규화(0~1)해서 사용. 미지정 시 기존처럼 화면 전체 기준으로 동작(하위 호환).
+///   내부적으로 궤적 판정(GestureMatcher)은 중심점+크기로 정규화해서 비교하므로,
+///   좌표계를 화면 전체 대신 Rect 기준으로 바꿔도 판정 정확도에는 영향 없음.
+///
+/// * 진행 흐름: Play() -> SkillDrawCanvas 활성화 + 가이드라인 즉시 표시 -> DrawingPlace(패널)
+///   CanvasGroup Fade In -> Fade In 완료 시점부터 타이머(_timeLimit) 카운트 시작 + 입력 활성화.
+///   종료 시: 판정 -> DrawingPlace Fade Out -> Fade Out 완료 후 SkillDrawCanvas 비활성화 + 콜백.
+///
+/// 좌표는 지정된 영역(또는 화면) 기준 0~1로 저장 - JSON 포맷과 동일한 좌표계라 가이드/플레이어 입력이
 /// 그대로 정합됨. 실제 화면 표시는 Camera.ViewportToWorldPoint로 카메라 앞 고정 거리 평면에 투영.
 ///
 /// 가이드라인은 표시된 지 _guideVisibleDuration이 지나면 사라지고(전체 제한시간 _timeLimit과 별개),
 /// 그 이후에도 플레이어는 계속 그릴 수 있음. 가이드 표시 위치/크기는 판정에 영향 없이 순수 표시용으로만
-/// _guideViewportCenter / _guideDisplayScale로 조정 가능.
+/// _guideViewportCenter / _guideDisplayScale로 조정 가능 (_drawAreaRect 기준 상대 좌표).
 ///
 /// 타이머 UI만 별도 Canvas(_timerRoot)로 표시.
 /// New Input System 기준(Mouse.current)으로 폴링. Active Input Handling이
@@ -33,14 +44,29 @@ public class SkillDrawController : MonoBehaviour
     [SerializeField] private LineRenderer _guideLinePrefab;
     [SerializeField] private LineRenderer _playerLinePrefab;
 
+    [Header("Draw Area (지정 시 이 UI Image 안에서만 그려짐, 미지정 시 화면 전체)")]
+    [Tooltip("SkillDrawCanvas 루트 오브젝트. 평소 비활성화 상태로 두고, 그리는 동안만 켬.")]
+    [SerializeField] private GameObject _skillDrawCanvasRoot;
+    [Tooltip("그리기를 국한시킬 UI Image의 RectTransform (예: DrawPanel/DrawImage)")]
+    [SerializeField] private RectTransform _drawAreaRect;
+    [Tooltip("_drawAreaRect가 속한 Canvas의 Render Camera. Screen Space-Overlay면 비워둬도 됨.")]
+    [SerializeField] private Camera _drawAreaUICamera;
+
     [Header("Draw Plane")]
     [Tooltip("Camera.main 기준, 그리기 도형을 투영할 평면까지의 거리")]
     [SerializeField] private float _drawDistance = 5f;
 
+    [Header("DrawingPlace Fade (패널 페이드 인/아웃)")]
+    [Tooltip("DrawingPlace(BG+Header+DrawingRect 전체)에 붙은 CanvasGroup. " +
+             "Fade In이 끝난 시점부터 타이머가 흐르고 입력이 활성화됨.")]
+    [SerializeField] private CanvasGroup _drawingPlaceCanvasGroup;
+    [SerializeField] private float _fadeDuration = 0.25f;
+    [SerializeField] private Ease _fadeEase = Ease.OutQuad;
+
     [Header("가이드라인 표시 설정")]
     [Tooltip("가이드라인이 사라지기까지 걸리는 시간 (_timeLimit과 별개, 이 시간이 지나면 가이드만 사라지고 그리기는 계속 가능)")]
     [SerializeField] private float _guideVisibleDuration = 1.5f;
-    [Tooltip("가이드 도형이 화면 어디에 표시될지 (뷰포트 기준, 0.5,0.5 = 화면 중앙)")]
+    [Tooltip("가이드 도형이 그리기 영역 어디에 표시될지 (영역 기준 0~1, 0.5,0.5 = 영역 중앙)")]
     [SerializeField] private Vector2 _guideViewportCenter = new Vector2(0.5f, 0.5f);
     [Tooltip("가이드 도형 표시 크기 배율 (판정 점수에는 영향 없음, 순수 표시용)")]
     [SerializeField] private float _guideDisplayScale = 1f;
@@ -76,11 +102,24 @@ public class SkillDrawController : MonoBehaviour
 
     private System.Action<float> _onComplete;
 
+    // 그리기 영역의 화면 픽셀 사각형. Play() 시작 시 한 번 계산해서 캐싱.
+    private Rect _drawAreaScreenRect;
+
+    private Tween _fadeTween;
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         if (_timerRoot != null) _timerRoot.SetActive(false);
+        if (_skillDrawCanvasRoot != null) _skillDrawCanvasRoot.SetActive(false);
+
+        if (_drawingPlaceCanvasGroup != null)
+        {
+            _drawingPlaceCanvasGroup.alpha = 0f;
+            _drawingPlaceCanvasGroup.interactable = false;
+            _drawingPlaceCanvasGroup.blocksRaycasts = false;
+        }
     }
 
     private void Update()
@@ -140,6 +179,12 @@ public class SkillDrawController : MonoBehaviour
             return;
         }
 
+        _fadeTween?.Kill();
+
+        if (_skillDrawCanvasRoot != null) _skillDrawCanvasRoot.SetActive(true);
+
+        _drawAreaScreenRect = CalculateDrawAreaScreenRect();
+
         _onComplete = onComplete;
 
         _allPoints.Clear();
@@ -148,13 +193,129 @@ public class SkillDrawController : MonoBehaviour
         _isPointerDrawing = false;
         _hasStroke = false;
         _guideHidden = false;
-        _gestureStartTime = Time.time;
-        _isActive = true;
+
+        // 타이머/입력은 아직 시작하지 않음 (Fade In 완료 후 시작)
+        _isActive = false;
+
+        _guideRawCentroid = ComputeCentroid(_guidePoints);
+        DrawGuideLines(); // 가이드는 Fade In 중에도 이미 표시되어 있어도 무방
+
+        PlayFadeIn();
+    }
+
+    // ---------- DrawingPlace Fade In/Out ----------
+
+    private void PlayFadeIn()
+    {
+        if (_drawingPlaceCanvasGroup == null)
+        {
+            StartTimerAndInput();
+            return;
+        }
+
+        _drawingPlaceCanvasGroup.alpha = 0f;
+        _drawingPlaceCanvasGroup.interactable = false;
+        _drawingPlaceCanvasGroup.blocksRaycasts = false;
+
+        _fadeTween = _drawingPlaceCanvasGroup
+            .DOFade(1f, _fadeDuration)
+            .SetEase(_fadeEase)
+            .OnComplete(StartTimerAndInput);
+    }
+
+    /// <summary>
+    /// Fade In 완료 시점. 여기서부터 타이머가 흐르고 입력이 활성화됨.
+    /// </summary>
+    private void StartTimerAndInput()
+    {
+        if (_drawingPlaceCanvasGroup != null)
+        {
+            _drawingPlaceCanvasGroup.interactable = true;
+            _drawingPlaceCanvasGroup.blocksRaycasts = true;
+        }
 
         if (_timerRoot != null) _timerRoot.SetActive(true);
 
-        _guideRawCentroid = ComputeCentroid(_guidePoints);
-        DrawGuideLines();
+        _gestureStartTime = Time.time;
+        _isActive = true;
+    }
+
+    private void PlayFadeOut(float multiplier)
+    {
+        if (_drawingPlaceCanvasGroup == null)
+        {
+            FinalizeFinish(multiplier);
+            return;
+        }
+
+        _drawingPlaceCanvasGroup.interactable = false;
+        _drawingPlaceCanvasGroup.blocksRaycasts = false;
+
+        _fadeTween?.Kill();
+
+        _fadeTween = _drawingPlaceCanvasGroup
+            .DOFade(0f, _fadeDuration)
+            .SetEase(_fadeEase)
+            .OnComplete(() => FinalizeFinish(multiplier));
+    }
+
+    private void FinalizeFinish(float multiplier)
+    {
+        if (_skillDrawCanvasRoot != null) _skillDrawCanvasRoot.SetActive(false);
+
+        var callback = _onComplete;
+        _onComplete = null;
+        callback?.Invoke(multiplier);
+    }
+
+    // ---------- 그리기 영역 (지정 시 화면 전체가 아니라 그 Rect 안에서만) ----------
+
+    /// <summary>
+    /// _drawAreaRect의 화면 픽셀 사각형을 계산. 미지정 시 화면 전체를 반환(기존 동작 유지).
+    /// </summary>
+    private Rect CalculateDrawAreaScreenRect()
+    {
+        if (_drawAreaRect == null)
+        {
+            return new Rect(0f, 0f, Screen.width, Screen.height);
+        }
+
+        Vector3[] corners = new Vector3[4];
+        _drawAreaRect.GetWorldCorners(corners); // 0: bottom-left, 2: top-right
+
+        Vector2 min = RectTransformUtility.WorldToScreenPoint(_drawAreaUICamera, corners[0]);
+        Vector2 max = RectTransformUtility.WorldToScreenPoint(_drawAreaUICamera, corners[2]);
+
+        return new Rect(min.x, min.y, Mathf.Max(1f, max.x - min.x), Mathf.Max(1f, max.y - min.y));
+    }
+
+    /// <summary>
+    /// 화면 픽셀 좌표를 그리기 영역 기준 0~1 로컬 좌표로 변환 (영역 밖은 0~1로 클램프).
+    /// </summary>
+    private Vector2 ScreenToAreaLocal(Vector2 screenPos)
+    {
+        float u = _drawAreaScreenRect.width > 0f
+            ? (screenPos.x - _drawAreaScreenRect.xMin) / _drawAreaScreenRect.width
+            : 0f;
+
+        float v = _drawAreaScreenRect.height > 0f
+            ? (screenPos.y - _drawAreaScreenRect.yMin) / _drawAreaScreenRect.height
+            : 0f;
+
+        return new Vector2(Mathf.Clamp01(u), Mathf.Clamp01(v));
+    }
+
+    /// <summary>
+    /// 그리기 영역 기준 0~1 로컬 좌표를 실제 화면 전체 기준 뷰포트(0~1)로 환산.
+    /// (Camera.ViewportToWorldPoint는 화면 전체 기준 뷰포트를 요구하므로 필요한 변환)
+    /// </summary>
+    private Vector2 AreaLocalToViewport(Vector2 areaLocal)
+    {
+        Vector2 screenPixel = new Vector2(
+            _drawAreaScreenRect.xMin + areaLocal.x * _drawAreaScreenRect.width,
+            _drawAreaScreenRect.yMin + areaLocal.y * _drawAreaScreenRect.height);
+
+        return new Vector2(screenPixel.x / Screen.width, screenPixel.y / Screen.height);
     }
 
     // ---------- 입력 (New Input System, Mouse.current 폴링) ----------
@@ -188,18 +349,18 @@ public class SkillDrawController : MonoBehaviour
 
     private void AddPoint(Vector2 screenPos)
     {
-        Vector2 viewport = new Vector2(screenPos.x / Screen.width, screenPos.y / Screen.height);
+        Vector2 areaLocal = ScreenToAreaLocal(screenPos);
 
         for (int i = _allPoints.Count - 1; i >= 0; i--)
         {
             if (_allPoints[i].strokeId != _currentStrokeId) break;
-            if (Vector2.Distance(_allPoints[i].pos, viewport) < 0.005f) return;
+            if (Vector2.Distance(_allPoints[i].pos, areaLocal) < 0.005f) return;
             break;
         }
 
-        _allPoints.Add(new SkillPoint(viewport, _currentStrokeId));
+        _allPoints.Add(new SkillPoint(areaLocal, _currentStrokeId));
 
-        Vector3 worldPos = ViewportToDrawWorld(viewport);
+        Vector3 worldPos = ViewportToDrawWorld(AreaLocalToViewport(areaLocal));
         _currentPlayerLine.positionCount++;
         _currentPlayerLine.SetPosition(_currentPlayerLine.positionCount - 1, worldPos);
     }
@@ -230,8 +391,8 @@ public class SkillDrawController : MonoBehaviour
 
         foreach (var p in _guidePoints)
         {
-            Vector2 displayViewport = _guideViewportCenter + (p.pos - _guideRawCentroid) * _guideDisplayScale;
-            strokeWorldPoints[p.strokeId].Add(ViewportToDrawWorld(displayViewport));
+            Vector2 displayAreaLocal = _guideViewportCenter + (p.pos - _guideRawCentroid) * _guideDisplayScale;
+            strokeWorldPoints[p.strokeId].Add(ViewportToDrawWorld(AreaLocalToViewport(displayAreaLocal)));
         }
 
         for (int i = 0; i < strokeWorldPoints.Count; i++)
@@ -266,9 +427,7 @@ public class SkillDrawController : MonoBehaviour
         ClearGuideLines();
         ClearPlayerLines();
 
-        var callback = _onComplete;
-        _onComplete = null;
-        callback?.Invoke(multiplier);
+        PlayFadeOut(multiplier);
     }
 
     /// <summary>
