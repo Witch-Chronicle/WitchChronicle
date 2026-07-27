@@ -2,15 +2,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+/// <summary>
+/// 던전 메쉬 청크 결합 및 변형을 담당하는 클래스.
+/// </summary>
 public class DungeonMeshBuilder
 {
     private const int ChunkSize = 1000;
     private const int VariationCount = 5;
 
-    // 메쉬 변형 캐시 (원본 메쉬 당 여러 변형 메쉬 보유)
     private readonly Dictionary<Mesh, Mesh[]> _variationCache = new Dictionary<Mesh, Mesh[]>();
-    
-    // 셰이더 속성 ID 캐싱 (성능 최적화)
     private static readonly int MainTexST = Shader.PropertyToID("_MainTex_ST");
 
     /// <summary>
@@ -53,7 +53,7 @@ public class DungeonMeshBuilder
                     0f,
                     floorPrefab.transform.rotation,
                     floorPrefab.transform.localScale,
-                    true // 변형 활성화
+                    true
                 ));
             }
 
@@ -75,10 +75,18 @@ public class DungeonMeshBuilder
     /// </summary>
     public void BuildWallMesh(GameObject wallPrefab, HashSet<Vector2Int> positions, float tileSize, float height, Transform parent)
     {
-        if (wallPrefab == null) return;
+        if (wallPrefab == null)
+        {
+            return;
+        }
 
         MeshFilter sourceMeshFilter = wallPrefab.GetComponent<MeshFilter>();
         MeshRenderer sourceRenderer = wallPrefab.GetComponent<MeshRenderer>();
+
+        if (sourceMeshFilter == null || sourceRenderer == null)
+        {
+            return;
+        }
 
         List<CombineInstance> combines = new List<CombineInstance>();
 
@@ -106,10 +114,18 @@ public class DungeonMeshBuilder
     /// </summary>
     public void BuildCeilingMesh(GameObject ceilingPrefab, HashSet<Vector2Int> positions, float tileSize, float height, Transform parent)
     {
-        if (ceilingPrefab == null) return;
+        if (ceilingPrefab == null)
+        {
+            return;
+        }
 
         MeshFilter sourceMeshFilter = ceilingPrefab.GetComponent<MeshFilter>();
         MeshRenderer sourceRenderer = ceilingPrefab.GetComponent<MeshRenderer>();
+
+        if (sourceMeshFilter == null || sourceRenderer == null)
+        {
+            return;
+        }
 
         List<CombineInstance> combines = new List<CombineInstance>();
 
@@ -149,7 +165,10 @@ public class DungeonMeshBuilder
     /// </summary>
     private Mesh GetVariationMesh(Mesh original)
     {
-        if (original == null) return null;
+        if (original == null)
+        {
+            return null;
+        }
 
         if (!_variationCache.ContainsKey(original))
         {
@@ -157,11 +176,9 @@ public class DungeonMeshBuilder
 
             for (int i = 0; i < VariationCount; i++)
             {
-                // 메모리 누수 방지를 위해 수동 인스턴스화 후 데이터 복제
                 Mesh variant = Object.Instantiate(original);
                 variant.name = $"{original.name}_Var_{i}";
 
-                // 1. UV 변형 (Tiling & Offset)
                 Vector2[] uvs = variant.uv;
                 if (uvs != null && uvs.Length > 0)
                 {
@@ -177,7 +194,6 @@ public class DungeonMeshBuilder
                     variant.uv = uvs;
                 }
 
-                // 2. Vertex Color (명암 변형)
                 Color[] colors = new Color[variant.vertexCount];
                 float brightness = Random.Range(0.7f, 1.0f);
                 for (int k = 0; k < colors.Length; k++)
@@ -222,7 +238,10 @@ public class DungeonMeshBuilder
     /// </summary>
     private void BuildChunkMesh(string name, List<CombineInstance> combines, Material material, Transform parent, bool addCollider, int layer)
     {
-        if (combines.Count == 0) return;
+        if (combines.Count == 0)
+        {
+            return;
+        }
 
         Mesh mesh = new Mesh { indexFormat = IndexFormat.UInt32, name = name };
         mesh.CombineMeshes(combines.ToArray());
