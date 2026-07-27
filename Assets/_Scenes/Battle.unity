@@ -827,6 +827,7 @@ MonoBehaviour:
   _actionDelay: 1
   _battleCameraDirector: {fileID: 1867479331}
   _constellationBattleManager: {fileID: 562806760}
+  _statusEffectDatabase: {fileID: 11400000, guid: 717e46805c562334d84f64b0ad47202e, type: 2}
 --- !u!114 &338119914
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -899,7 +900,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillVfxPlayer
   _casterHeight: 1
-  _targetHeight: -0.5
+  _targetHeight: -0.6
   _projectileTravelTime: 0.4
   _hitDelay: 0.2
   _vfxLifetime: 3
