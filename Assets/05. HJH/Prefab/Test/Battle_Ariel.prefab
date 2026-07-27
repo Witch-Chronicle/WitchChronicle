@@ -708,6 +708,7 @@ Transform:
   - {fileID: 1254351088844119874}
   - {fileID: 2621313872056385509}
   - {fileID: 3951057191588497210}
+  - {fileID: 7528799124346513672}
   m_Father: {fileID: 765052776153631150}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &1225852485558496439
@@ -2435,6 +2436,8 @@ GameObject:
   - component: {fileID: 1541503134147651112}
   - component: {fileID: 8370468499015878152}
   - component: {fileID: 6644305102824327850}
+  - component: {fileID: 931377065080996335}
+  - component: {fileID: 1716428770010625584}
   m_Layer: 0
   m_Name: Battle_Ariel
   m_TagString: Player
@@ -3094,6 +3097,46 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &931377065080996335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560493996318386368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2e06cfb6b0d0e14f9400bc4ed8a8394, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatusEffectView
+  _attachPoint: {fileID: 7528799124346513672}
+  _offset: {x: 0, y: 0, z: 0}
+  _scale: 0.2
+  _entries:
+  - Type: 6
+    VfxPrefab: {fileID: 2692375763741349971, guid: a047b1cf5e54c6b43a92f67dd966d4b1, type: 3}
+  - Type: 1
+    VfxPrefab: {fileID: 6530448752386012335, guid: db8a26dbfe6511b4a86e870b66ca27b8, type: 3}
+  - Type: 2
+    VfxPrefab: {fileID: 2987979887945417987, guid: 30311f0e7d5b3e04f9d1d9b728e6642c, type: 3}
+  - Type: 3
+    VfxPrefab: {fileID: 207745087118991948, guid: e656699b143494148a872961a9feb410, type: 3}
+  - Type: 5
+    VfxPrefab: {fileID: 749093556639959766, guid: cdd278b04e3bb0747b84d49e8b7138b9, type: 3}
+  - Type: 4
+    VfxPrefab: {fileID: 3879890615736701425, guid: d6e1ae9b9b630554eba9f865a531ee5e, type: 3}
+--- !u!114 &1716428770010625584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560493996318386368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5350375fa2ffa6c4d8b74f60ebdd5a87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatusEffectViewDebug
 --- !u!1 &1562030576368215012
 GameObject:
   m_ObjectHideFlags: 0
@@ -4236,6 +4279,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034bc47afcbf5e141a58d5c20b7808e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: EPO::EPOOutline.TargetStateListener
+--- !u!1 &2670420426946495111
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7528799124346513672}
+  m_Layer: 0
+  m_Name: EffectTrans
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7528799124346513672
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2670420426946495111}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2036867488533385812}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2819996046506974156
 GameObject:
   m_ObjectHideFlags: 0

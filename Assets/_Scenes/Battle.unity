@@ -169,6 +169,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2792522952fd21f4e8d8e86c9d89b54e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleScene
+  _gridWidth: 30
+  _gridDepth: 30
+  _wallHeightLayers: 20
+  _roofHeight: 20
+  _variationCount: 4
+  _decorSpawnChance: 0.1
 --- !u!1 &95647713
 GameObject:
   m_ObjectHideFlags: 0
@@ -447,6 +453,7 @@ MonoBehaviour:
   _actionDelay: 1
   _battleCameraDirector: {fileID: 1867479331}
   _constellationBattleManager: {fileID: 562806760}
+  _statusEffectDatabase: {fileID: 11400000, guid: 717e46805c562334d84f64b0ad47202e, type: 2}
 --- !u!114 &338119914
 MonoBehaviour:
   m_ObjectHideFlags: 0
