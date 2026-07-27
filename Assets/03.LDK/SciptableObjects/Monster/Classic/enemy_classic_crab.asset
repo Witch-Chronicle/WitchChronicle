@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_wild_crab
   _enemyName: "\uAC8C"
+  _icon: {fileID: 0}
+  _isBoss: 0
   _maxHp: 80
   _attackPower: 10
   _magicPower: 10
@@ -24,7 +26,8 @@ MonoBehaviour:
   _resistElements: 0100000005000000
   _nullElements: 
   _absorbElements: 
-  _skillList: []
+  _skillList:
+  - {fileID: 11400000, guid: 7bc6091c7b4237b409917b7777172190, type: 2}
   _aiProfileData: {fileID: 11400000, guid: ee2405d3365f1184c926b34e0c5b5d13, type: 2}
   _expReward: 15
   _goldReward: 8

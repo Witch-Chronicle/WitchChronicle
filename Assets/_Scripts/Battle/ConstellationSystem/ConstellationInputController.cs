@@ -254,7 +254,7 @@ public class ConstellationInputController : MonoBehaviour
 
         _beatResults.Add(result);
 
-        _uiController.ResolveStar(beatIndex);
+        _uiController.ResolveStar(beatIndex, judgement);
 
         _nextBeatIndex++;
 
