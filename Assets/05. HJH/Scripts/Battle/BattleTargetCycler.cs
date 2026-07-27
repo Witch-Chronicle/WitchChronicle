@@ -329,7 +329,49 @@ public class BattleTargetCycler : MonoBehaviour
             return;
         }
 
-        SkillDrawController.Instance.Play(_pendingSkill, ConfirmSkill);
+        SetOutlinedTargetVisualsSuppressed(true);
+
+        SkillDrawController.Instance.Play(_pendingSkill, damageMultiplier =>
+        {
+            SetOutlinedTargetVisualsSuppressed(false);
+            ConfirmSkill(damageMultiplier);
+        });
+    }
+
+    /// <summary>
+    /// SkillDrawCanvas가 떠 있는 동안, 지금 아웃라인된 대상들의 Outline/EnemyTargetOverlay(WorldCanvas)를
+    /// 잠깐 숨김(suppressed=true) / 복원(suppressed=false). _outlinedUnits 추적 상태 자체는 건드리지 않아서
+    /// 드로잉이 끝나면 원래 아웃라인 상태 그대로 복원됨.
+    /// </summary>
+    private void SetOutlinedTargetVisualsSuppressed(bool suppressed)
+    {
+        if (BattleUIContext.Instance == null) return;
+
+        foreach (var unit in _outlinedUnits)
+        {
+            if (BattleUIContext.Instance.TryGetActor(unit, out BattleActor actor) == false || actor == null) continue;
+
+            Outlinable outlinable = actor.GetComponent<Outlinable>();
+
+            if (outlinable != null)
+            {
+                outlinable.enabled = suppressed == false;
+            }
+
+            EnemyTargetOverlay overlay = actor.GetComponentInChildren<EnemyTargetOverlay>(true);
+
+            if (overlay != null)
+            {
+                if (suppressed)
+                {
+                    overlay.Hide();
+                }
+                else
+                {
+                    overlay.Show();
+                }
+            }
+        }
     }
 
     public void Cancel()
