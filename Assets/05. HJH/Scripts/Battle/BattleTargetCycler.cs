@@ -380,9 +380,12 @@ public class BattleTargetCycler : MonoBehaviour
 
         bool wasSkill = _mode == Mode.PendingSkill;
 
-        RestoreIdleSnapshot();
-
+        // RestoreIdleSnapshot()이 내부에서 SetOutline()을 호출하는데, 그 시점에 _mode가 아직
+        // PendingSkill/PendingAttack이면 UpdateElementIndicator가 "아직 스킬 조준 중"으로 착각해서
+        // 약점/저항 표시기가 잘못 뜰 수 있음 -> 먼저 Idle로 전환한 뒤 복원.
         _mode = Mode.Idle;
+
+        RestoreIdleSnapshot();
 
         if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Hide();
 
@@ -582,6 +585,10 @@ public class BattleTargetCycler : MonoBehaviour
 
         bool isSingleTarget = skillData.TargetType == TargetType.SingleEnemy || skillData.TargetType == TargetType.SingleAlly;
 
+        // SetOutline() 호출들(약점/저항 표시기 판단에 _mode를 참조함)보다 먼저 PendingSkill로 전환해둬야
+        // 처음 진입 시부터 표시기가 정상적으로 뜸.
+        _mode = Mode.PendingSkill;
+
         if (isSingleTarget)
         {
             _cycleCandidates.AddRange(candidates);
@@ -601,8 +608,6 @@ public class BattleTargetCycler : MonoBehaviour
                 SetOutline(unit, true);
             }
         }
-
-        _mode = Mode.PendingSkill;
 
         if (BattleCharacterUIManager.Instance != null) BattleCharacterUIManager.Instance.HideCurrentUI();
         if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Show(Confirm, Cancel);
@@ -724,6 +729,8 @@ public class BattleTargetCycler : MonoBehaviour
             }
         }
 
+        UpdateElementIndicator(unit, actor, enabled);
+
         if (enabled)
         {
             _outlinedUnits.Add(unit);
@@ -734,6 +741,64 @@ public class BattleTargetCycler : MonoBehaviour
         }
 
         UpdateDebugTargetText();
+    }
+
+    /// <summary>
+    /// 스킬 대상 지정 중(PendingSkill)이고 대상이 적일 때만, 그 스킬 속성이 이 적의 약점/저항인지
+    /// ElementAffinityIndicatorView로 표시. 기본 공격/Idle 상태거나 대상이 아군이면 표시 안 함(숨김).
+    /// </summary>
+    private void UpdateElementIndicator(BattleUnit unit, BattleActor actor, bool enabled)
+    {
+        ElementAffinityIndicatorView indicator = actor.GetComponentInChildren<ElementAffinityIndicatorView>(true);
+
+        if (indicator == null) return;
+
+        if (enabled == false)
+        {
+            indicator.Hide();
+            return;
+        }
+
+        if (_mode != Mode.PendingSkill || _pendingSkill == null || unit.TeamType != BattleTeamType.Enemy)
+        {
+            indicator.Hide();
+            return;
+        }
+
+        EnemyBattleData enemyData = actor.EnemyBattleData;
+
+        if (enemyData == null)
+        {
+            indicator.Hide();
+            return;
+        }
+
+        ElementType skillElement = _pendingSkill.ElementType;
+
+        if (ContainsElement(enemyData.WeakElements, skillElement))
+        {
+            indicator.ShowWeak();
+        }
+        else if (ContainsElement(enemyData.ResistElements, skillElement))
+        {
+            indicator.ShowResist();
+        }
+        else
+        {
+            indicator.Hide();
+        }
+    }
+
+    private static bool ContainsElement(System.Collections.Generic.IReadOnlyList<ElementType> elements, ElementType element)
+    {
+        if (elements == null) return false;
+
+        for (int i = 0; i < elements.Count; i++)
+        {
+            if (elements[i] == element) return true;
+        }
+
+        return false;
     }
 
     private void ClearAllOutlines()

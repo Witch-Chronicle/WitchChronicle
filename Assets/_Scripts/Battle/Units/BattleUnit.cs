@@ -65,6 +65,18 @@ public class BattleUnit
     public event Action OnMpChanged;
 
     /// <summary>
+    /// 실제로 HP가 감소한 양(양수)을 실어서 발동. 데미지 팝업 등에서 사용.
+    /// (요청 데미지가 아니라 "실제로 깎인 HP"라 오버킬 상황에서도 정확한 수치를 보장함)
+    /// </summary>
+    public event Action<int> OnDamaged;
+
+    /// <summary>
+    /// 실제로 HP가 회복된 양(양수)을 실어서 발동. 힐 팝업 등에서 사용.
+    /// (요청 회복량이 아니라 "실제로 채워진 HP"라 만피 상태의 오버힐은 0으로 처리되어 발동 안 함)
+    /// </summary>
+    public event Action<int> OnHealed;
+
+    /// <summary>
     /// BattleUnit 내부 데이터를 초기화
     /// </summary>
     private BattleUnit(
@@ -116,41 +128,6 @@ public class BattleUnit
 
         _aiProfileData = aiProfileData;
     }
-
-    ///// <summary>
-    ///// 플레이어 캐릭터용 BattleUnit을 생성
-    ///// 추후 CharacterStats의 최종 계산값을 이 함수에 전달하면 됨
-    ///// </summary>
-    //public static BattleUnit CreatePlayer(
-    //    string unitId,
-    //    string unitName,
-    //    int maxHp,
-    //    int maxMp,
-    //    float attackPower,
-    //    float magicPower,
-    //    float defensePower,
-    //    float magicDefensePower,
-    //    float speed,
-    //    IReadOnlyList<SkillData> skillList)
-    //{
-    //    return new BattleUnit(
-    //        unitId,
-    //        unitName,
-    //        BattleTeamType.Player,
-    //        maxHp,
-    //        maxMp,
-    //        true,
-    //        attackPower,
-    //        magicPower,
-    //        defensePower,
-    //        magicDefensePower,
-    //        speed,
-    //        null,
-    //        null,
-    //        null,
-    //        null,
-    //        skillList);
-    //}
 
     /// <summary>
     /// 플레이어 전투 유닛을 생성합니다.
@@ -245,23 +222,41 @@ public class BattleUnit
     }
 
     /// <summary>
-    /// 대상에게 데미지 적용
+    /// 대상에게 데미지 적용. 실제로 깎인 HP만큼 OnDamaged를 발동.
     /// </summary>
     public void TakeDamage(int damage)
     {
         int finalDamage = Mathf.Max(0, damage);
+
+        int previousHp = _currentHp;
         _currentHp = Mathf.Max(0, _currentHp - finalDamage);
+        int actualDamage = previousHp - _currentHp;
+
         OnHpChanged?.Invoke();
+
+        if (actualDamage > 0)
+        {
+            OnDamaged?.Invoke(actualDamage);
+        }
     }
 
     /// <summary>
-    /// 대상의 HP 회복
+    /// 대상의 HP 회복. 실제로 채워진 HP만큼 OnHealed를 발동 (만피 상태의 오버힐은 발동 안 함).
     /// </summary>
     public void Heal(int amount)
     {
         int finalAmount = Mathf.Max(0, amount);
+
+        int previousHp = _currentHp;
         _currentHp = Mathf.Min(_maxHp, _currentHp + finalAmount);
+        int actualHeal = _currentHp - previousHp;
+
         OnHpChanged?.Invoke();
+
+        if (actualHeal > 0)
+        {
+            OnHealed?.Invoke(actualHeal);
+        }
     }
 
     /// <summary>
