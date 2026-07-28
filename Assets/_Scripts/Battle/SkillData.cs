@@ -54,6 +54,8 @@ public class SkillData : ScriptableObject
     [Tooltip("SkillDrawController가 사용할 궤적 가이드 JSON (fire_ball.json 등). " +
              "SkillShapeTemplate.ParsePoints로 파싱되는 포맷과 동일해야 함.")]
     [SerializeField] private TextAsset _drawGuideJson;
+    [Tooltip("그리기 화면 Header에 표시할 예시 이미지 (LineRenderer 가이드라인 대신 이걸로 모양을 보여줌)")]
+    [SerializeField] private Sprite _drawExampleSprite;
 
     public string SkillId => _skillId;
     public string SkillName => _skillName;
@@ -90,4 +92,5 @@ public class SkillData : ScriptableObject
         _constellationSequenceData != null;
 
     public TextAsset DrawGuideJson => _drawGuideJson;
+    public Sprite DrawExampleSprite => _drawExampleSprite;
 }
