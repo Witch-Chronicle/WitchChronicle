@@ -5,7 +5,7 @@ using UnityEngine;
 
 /// <summary>
 /// 별자리 UI 컨트롤러
-/// 시퀀스 이벤트 기반 별 생성과 입력 전달
+/// 별 생성, 입력 전달, 연결선, 최종 결과 연출 관리
 /// </summary>
 public class ConstellationUIController : MonoBehaviour
 {
@@ -14,38 +14,56 @@ public class ConstellationUIController : MonoBehaviour
     private ConstellationSequenceController _sequenceController;
 
     [Header("UI")]
-    [SerializeField] private RectTransform _constellationPanel;
-    [SerializeField] private ConstellationStarView _starPrefab;
+    [SerializeField]
+    private RectTransform _constellationPanel;
+
+    [SerializeField]
+    private RectTransform _constellationVisualRoot;
+
+    [SerializeField]
+    private ConstellationStarView _starPrefab;
 
     [Header("Connection Line")]
-    [SerializeField] private RectTransform _lineContainer;
-    [SerializeField] private ConstellationLineView _linePrefab;
+    [SerializeField]
+    private RectTransform _lineContainer;
+
+    [SerializeField]
+    private ConstellationLineView _linePrefab;
 
     [Header("Completion")]
+    [Tooltip("성공 화면 연출 컨트롤러가 없을 때 사용하는 대기 시간")]
     [SerializeField, Min(0f)]
     private float _successCompletionDuration = 0.5f;
 
     [SerializeField, Min(0f)]
     private float _failureHoldDuration = 0.25f;
 
-    private readonly Dictionary<int, ConstellationStarView> _starViews =
-        new Dictionary<int, ConstellationStarView>();
+    [Header("Success Presentation")]
+    [SerializeField]
+    private ConstellationSuccessPresentationController
+        _successPresentationController;
 
-    private readonly List<ConstellationLineView> _lineViews =
-    new List<ConstellationLineView>();
+    private readonly Dictionary<int, ConstellationStarView>
+        _starViews =
+            new Dictionary<int, ConstellationStarView>();
+
+    private readonly List<ConstellationLineView>
+        _lineViews =
+            new List<ConstellationLineView>();
 
     private readonly Dictionary<
         int,
-        ConstellationJudgementType> _judgements =
-        new Dictionary<
-            int,
-            ConstellationJudgementType>();
+        ConstellationJudgementType>
+        _judgements =
+            new Dictionary<
+                int,
+                ConstellationJudgementType>();
 
     private ConstellationSequenceData _currentSequenceData;
 
-    private bool _hasPlayedCompletionFlash;
-
     private Coroutine _completionRoutine;
+
+    private bool _hasPlayedCompletionFlash;
 
     public event Action<int> OnStarClicked;
     public event Action OnCompletionPresentationFinished;
@@ -94,10 +112,15 @@ public class ConstellationUIController : MonoBehaviour
                 HandleSequenceCompleted;
         }
 
+        StopCompletionPresentation();
+
         ClearStars();
         ClearLines();
 
         _judgements.Clear();
+
+        _currentSequenceData = null;
+        _hasPlayedCompletionFlash = false;
     }
 
     /// <summary>
@@ -122,6 +145,7 @@ public class ConstellationUIController : MonoBehaviour
 
         if (_lineContainer != null)
         {
+            // 연결선을 생성되는 별보다 뒤에 표시
             _lineContainer.SetAsFirstSibling();
         }
     }
@@ -129,16 +153,22 @@ public class ConstellationUIController : MonoBehaviour
     /// <summary>
     /// 별 표시 요청 처리
     /// </summary>
+    /// <param name="beatIndex">박자 인덱스</param>
+    /// <param name="beat">박자 데이터</param>
     private void HandleStarShowRequested(
         int beatIndex,
         ConstellationBeatData beat)
     {
-        CreateStar(beatIndex, beat);
+        CreateStar(
+            beatIndex,
+            beat);
     }
 
     /// <summary>
     /// 투사체 충돌 시점 처리
     /// </summary>
+    /// <param name="beatIndex">박자 인덱스</param>
+    /// <param name="beat">박자 데이터</param>
     private void HandleImpactReached(
         int beatIndex,
         ConstellationBeatData beat)
@@ -160,27 +190,45 @@ public class ConstellationUIController : MonoBehaviour
     private void HandleSequenceCompleted(
         ConstellationSequenceData sequenceData)
     {
-        // 최종 별자리 연출을 위해 현재 별 유지
+        // 최종 결과 연출을 위해 별과 연결선 유지
     }
 
     /// <summary>
     /// 지정 위치에 별 생성
     /// </summary>
+    /// <param name="beatIndex">박자 인덱스</param>
+    /// <param name="beat">박자 데이터</param>
     private void CreateStar(
         int beatIndex,
         ConstellationBeatData beat)
     {
-        if (_constellationPanel == null ||
+        RectTransform starParent =
+            _constellationVisualRoot != null
+                ? _constellationVisualRoot
+                : _constellationPanel;
+
+        if (starParent == null ||
             _starPrefab == null)
         {
             Debug.LogWarning(
-                "별자리 UI 참조가 연결되지 않았습니다.",
+                "[Constellation] 별자리 UI 참조 없음",
                 this);
 
             return;
         }
 
-        if (_starViews.ContainsKey(beatIndex))
+        if (beat == null)
+        {
+            Debug.LogWarning(
+                $"[Constellation] Beat 데이터 없음: " +
+                $"{beatIndex}",
+                this);
+
+            return;
+        }
+
+        if (_starViews.ContainsKey(
+                beatIndex))
         {
             return;
         }
@@ -188,10 +236,21 @@ public class ConstellationUIController : MonoBehaviour
         ConstellationStarView starView =
             Instantiate(
                 _starPrefab,
-                _constellationPanel);
+                starParent,
+                false);
 
         RectTransform starRectTransform =
-            starView.GetComponent<RectTransform>();
+            starView.RectTransform;
+
+        if (starRectTransform == null)
+        {
+            Debug.LogWarning(
+                "[Constellation] StarView RectTransform 없음",
+                starView);
+
+            Destroy(starView.gameObject);
+            return;
+        }
 
         Vector2 normalizedPosition =
             new Vector2(
@@ -207,10 +266,18 @@ public class ConstellationUIController : MonoBehaviour
             normalizedPosition;
 
         starRectTransform.pivot =
-            new Vector2(0.5f, 0.5f);
+            new Vector2(
+                0.5f,
+                0.5f);
 
         starRectTransform.anchoredPosition =
             Vector2.zero;
+
+        starRectTransform.localRotation =
+            Quaternion.identity;
+
+        starRectTransform.localScale =
+            Vector3.one;
 
         starView.Initialize(
             beatIndex,
@@ -228,9 +295,12 @@ public class ConstellationUIController : MonoBehaviour
     /// <summary>
     /// 별 클릭 이벤트 전달
     /// </summary>
-    private void HandleStarClicked(int beatIndex)
+    /// <param name="beatIndex">클릭 박자 인덱스</param>
+    private void HandleStarClicked(
+        int beatIndex)
     {
-        OnStarClicked?.Invoke(beatIndex);
+        OnStarClicked?.Invoke(
+            beatIndex);
     }
 
     /// <summary>
@@ -255,7 +325,8 @@ public class ConstellationUIController : MonoBehaviour
         starView.OnClicked -=
             HandleStarClicked;
 
-        starView.Resolve(judgement);
+        starView.Resolve(
+            judgement);
 
         if (judgement ==
             ConstellationJudgementType.Miss)
@@ -263,7 +334,7 @@ public class ConstellationUIController : MonoBehaviour
             return;
         }
 
-        // 마지막 연결선 생성 후 전체 섬광 판정
+        // 마지막 연결선까지 생성한 후 전체 완성 판정
         TryCreateConnectionLine(
             beatIndex);
 
@@ -288,7 +359,8 @@ public class ConstellationUIController : MonoBehaviour
             starView.OnClicked -=
                 HandleStarClicked;
 
-            Destroy(starView.gameObject);
+            Destroy(
+                starView.gameObject);
         }
 
         _starViews.Clear();
@@ -311,7 +383,8 @@ public class ConstellationUIController : MonoBehaviour
 
         if (!_judgements.TryGetValue(
                 previousBeatIndex,
-                out ConstellationJudgementType previousJudgement))
+                out ConstellationJudgementType
+                    previousJudgement))
         {
             return;
         }
@@ -361,14 +434,16 @@ public class ConstellationUIController : MonoBehaviour
         ConstellationLineView lineView =
             Instantiate(
                 _linePrefab,
-                _lineContainer);
+                _lineContainer,
+                false);
 
         lineView.Initialize(
             startStar.RectTransform,
             endStar.RectTransform,
             _lineContainer);
 
-        _lineViews.Add(lineView);
+        _lineViews.Add(
+            lineView);
     }
 
     /// <summary>
@@ -388,7 +463,8 @@ public class ConstellationUIController : MonoBehaviour
                 continue;
             }
 
-            Destroy(lineView.gameObject);
+            Destroy(
+                lineView.gameObject);
         }
 
         _lineViews.Clear();
@@ -401,7 +477,9 @@ public class ConstellationUIController : MonoBehaviour
     public void PlayCompletionPresentation(
         ConstellationResult result)
     {
-        StopCompletionPresentation();
+        // 즉시 실행 중인 성공 연출은 유지하고
+        // 최종 결과 대기 코루틴만 재시작
+        StopCompletionRoutine();
 
         _completionRoutine =
             StartCoroutine(
@@ -413,6 +491,20 @@ public class ConstellationUIController : MonoBehaviour
     /// 별자리 최종 결과 연출 정지
     /// </summary>
     public void StopCompletionPresentation()
+    {
+        StopCompletionRoutine();
+
+        if (_successPresentationController != null)
+        {
+            _successPresentationController
+                .ResetPresentation();
+        }
+    }
+
+    /// <summary>
+    /// 최종 결과 대기 코루틴 정지
+    /// </summary>
+    private void StopCompletionRoutine()
     {
         if (_completionRoutine == null)
         {
@@ -434,20 +526,35 @@ public class ConstellationUIController : MonoBehaviour
     {
         if (result.IsSuccess)
         {
-            // 즉시 섬광이 실행되지 않은 경우의 안전 처리
+            // 마지막 입력에서 즉시 연출이 실행되지 않은 경우
             if (!_hasPlayedCompletionFlash)
             {
-                _hasPlayedCompletionFlash = true;
+                _hasPlayedCompletionFlash =
+                    true;
 
-                PlayCompletionFlashOnAll();
-
-                OnSuccessFlashStarted?.Invoke();
+                PlaySuccessCompletionEffects();
             }
 
-            yield return new WaitForSecondsRealtime(
-                _successCompletionDuration);
+            bool hasSuccessPresentation =
+                _successPresentationController != null &&
+                _successPresentationController
+                    .isActiveAndEnabled;
+
+            if (hasSuccessPresentation)
+            {
+                // 화면 균열과 잔상 연출 종료까지 대기
+                while (_successPresentationController.IsPlaying)
+                {
+                    yield return null;
+                }
+            }
+            else if (_successCompletionDuration > 0f)
+            {
+                yield return new WaitForSecondsRealtime(
+                    _successCompletionDuration);
+            }
         }
-        else
+        else if (_failureHoldDuration > 0f)
         {
             yield return new WaitForSecondsRealtime(
                 _failureHoldDuration);
@@ -459,7 +566,7 @@ public class ConstellationUIController : MonoBehaviour
     }
 
     /// <summary>
-    /// 마지막 성공 입력 즉시 완성 섬광 실행
+    /// 마지막 성공 입력 즉시 완성 연출 실행
     /// </summary>
     /// <param name="beatIndex">판정 완료 박자 인덱스</param>
     private void TryPlayImmediateCompletionFlash(
@@ -489,7 +596,8 @@ public class ConstellationUIController : MonoBehaviour
         {
             if (!_judgements.TryGetValue(
                     i,
-                    out ConstellationJudgementType judgement))
+                    out ConstellationJudgementType
+                        judgement))
             {
                 return;
             }
@@ -501,9 +609,26 @@ public class ConstellationUIController : MonoBehaviour
             }
         }
 
-        _hasPlayedCompletionFlash = true;
+        _hasPlayedCompletionFlash =
+            true;
 
+        PlaySuccessCompletionEffects();
+    }
+
+    /// <summary>
+    /// 성공 완성 연출 일괄 실행
+    /// </summary>
+    private void PlaySuccessCompletionEffects()
+    {
         PlayCompletionFlashOnAll();
+
+        if (_successPresentationController != null &&
+            _successPresentationController
+                .isActiveAndEnabled)
+        {
+            _successPresentationController
+                .PlaySuccessPresentation();
+        }
 
         OnSuccessFlashStarted?.Invoke();
     }
