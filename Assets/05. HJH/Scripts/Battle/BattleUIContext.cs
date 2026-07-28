@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Battle.Rules;
 using UnityEngine;
 
 /// <summary>
@@ -100,6 +101,26 @@ public class BattleUIContext : MonoBehaviour
         if (_battleCycleController == null || request == null) return;
 
         _battleCycleController.SubmitAction(request);
+    }
+
+    /// <summary>
+    /// 침묵 등으로 이 유닛이 스킬을 사용할 수 있는지 여부(스킬 버튼 잠금 판단용).
+    /// </summary>
+    public bool CanUseSkill(BattleUnit unit)
+    {
+        if (_battleCycleController == null || unit == null) return true;
+
+        return _battleCycleController.CanUseSkill(unit);
+    }
+
+    /// <summary>
+    /// 포션 사용(HP/MP 회복·상태이상 해제). 배틀의 실제 실행부로 위임한다.
+    /// </summary>
+    public BattleItemResult UsePotion(BattleUnit user, PotionItemData potion)
+    {
+        if (_battleCycleController == null) return default;
+
+        return _battleCycleController.UsePotion(user, potion);
     }
 
     /// <summary>
