@@ -12,15 +12,21 @@ public class StatusEffectView : MonoBehaviour
     {
         public StatusEffectType Type;
         public GameObject VfxPrefab;
+
+        [Tooltip("이 상태이상 VFX만의 크기 배율(1=원본). 0이면 아래 전역 Scale을 사용")]
+        public float Scale;
+
+        [Tooltip("이 상태이상 VFX만의 위치 오프셋(로컬). 전역 Offset에 더해진다. 0이면 전역만 적용")]
+        public Vector3 Offset;
     }
 
     [Tooltip("VFX를 붙일 위치. 몸을 따라가려면 척추/가슴 본을 넣는다. 비우면 이 오브젝트 기준")]
     [SerializeField] private Transform _attachPoint;
 
-    [Tooltip("붙일 위치 오프셋(로컬)")]
+    [Tooltip("전역 위치 오프셋(로컬). 모든 VFX의 기준 위치. 각 entry의 Offset이 여기에 더해진다")]
     [SerializeField] private Vector3 _offset = Vector3.zero;
 
-    [Tooltip("VFX 크기 배율(1=원본, 0.5=절반). 파티클 Scaling Mode가 Hierarchy/Local이어야 반영됨")]
+    [Tooltip("전역 VFX 크기 배율(1=원본). 각 entry의 Scale이 0일 때 이 값이 쓰인다. 파티클 Scaling Mode가 Hierarchy/Local이어야 반영됨")]
     [SerializeField] private float _scale = 1.0f;
 
     [Tooltip("상태이상 종류별 루프 VFX 프리팹")]
@@ -47,20 +53,24 @@ public class StatusEffectView : MonoBehaviour
             return;
         }
 
-        GameObject prefab = FindPrefab(type);
+        int index = FindEntryIndex(type);
 
-        if (prefab == null)
+        if (index < 0 || _entries[index].VfxPrefab == null)
         {
             return;
         }
 
-        GameObject vfx = Instantiate(prefab, _attachPoint);
-        vfx.transform.localPosition = _offset;
+        GameObject vfx = Instantiate(_entries[index].VfxPrefab, _attachPoint);
+        // 전역 Offset을 기준으로 entry별 Offset을 더해 위치 미세조정
+        vfx.transform.localPosition = _offset + _entries[index].Offset;
         vfx.transform.localRotation = Quaternion.identity;
 
-        if (Mathf.Approximately(_scale, 1.0f) == false)
+        // entry별 Scale이 있으면 그것, 없으면(0) 전역 _scale 사용
+        float scale = _entries[index].Scale > 0f ? _entries[index].Scale : _scale;
+
+        if (Mathf.Approximately(scale, 1.0f) == false)
         {
-            vfx.transform.localScale *= _scale;
+            vfx.transform.localScale *= scale;
         }
 
         _active.Add(type, vfx);
@@ -129,21 +139,21 @@ public class StatusEffectView : MonoBehaviour
         _active.Clear();
     }
 
-    private GameObject FindPrefab(StatusEffectType type)
+    private int FindEntryIndex(StatusEffectType type)
     {
         if (_entries == null)
         {
-            return null;
+            return -1;
         }
 
         for (int i = 0; i < _entries.Length; i++)
         {
             if (_entries[i].Type == type)
             {
-                return _entries[i].VfxPrefab;
+                return i;
             }
         }
 
-        return null;
+        return -1;
     }
 }

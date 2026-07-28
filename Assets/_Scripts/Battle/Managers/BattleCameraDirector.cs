@@ -47,13 +47,14 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private float _overviewRoll = 0f;
     [SerializeField] private float _overviewWaitDuration = 0.35f;
 
-    [Header("Skill Low Angle View")]
-    [SerializeField] private float _skillFrontDistance = 1.6f;
-    [SerializeField] private float _skillSideOffset = -0.5f;
-    [SerializeField] private float _skillHeight = 0.45f;
-    [SerializeField] private float _skillLookHeight = 1.8f;
-    [SerializeField] private float _skillFov = 68f;
-    [SerializeField] private float _skillRoll = -10f;
+    [Header("Skill Battlefield View")]
+    [SerializeField] private float _skillBackDistance = 2.2f;
+    [SerializeField] private float _skillSideOffset = 1.45f;
+    [SerializeField] private float _skillHeight = 0.55f;
+    [SerializeField] private float _skillFocusHeight = 1.05f;
+    [Range(0f, 1f)] [SerializeField] private float _skillTargetFocusWeight = 0.72f;
+    [SerializeField] private float _skillFov = 78f;
+    [SerializeField] private float _skillRoll = 0f;
     [SerializeField] private float _skillWaitDuration = 0.4f;
 
     [Header("Skill Draw View (마법진 그리기)")]
@@ -246,7 +247,7 @@ public class BattleCameraDirector : MonoBehaviour
     }
 
     /// <summary>
-    /// 스킬 선택 로우앵글 구도 재생
+    /// 스킬 선택 전장 로우앵글 구도 재생
     /// </summary>
     /// <param name="unit">기준 유닛</param>
     /// <param name="onComplete">완료 콜백</param>
@@ -258,15 +259,27 @@ public class BattleCameraDirector : MonoBehaviour
             return;
         }
 
-        Vector3 focusPosition =
-            actorTransform.position +
-            Vector3.up * _skillLookHeight;
+        BattleTeamType opponentTeam = GetOpposingTeam(unit.TeamType);
 
-        Vector3 cameraPosition =
+        Vector3 fallbackTargetPosition =
             actorTransform.position +
-            actorTransform.forward * _skillFrontDistance +
-            actorTransform.right * _skillSideOffset +
-            Vector3.up * _skillHeight;
+            actorTransform.forward * 6f;
+
+        Vector3 targetCenter =
+            GetTeamCenter(
+                opponentTeam,
+                fallbackTargetPosition);
+
+        CalculateBattleRelativePose(
+            actorTransform,
+            targetCenter,
+            _skillBackDistance,
+            _skillSideOffset,
+            _skillHeight,
+            _skillTargetFocusWeight,
+            _skillFocusHeight,
+            out Vector3 cameraPosition,
+            out Vector3 focusPosition);
 
         ApplyCameraPose(
             _skillLowAngleCamera,
@@ -789,5 +802,82 @@ public class BattleCameraDirector : MonoBehaviour
                     overviewUnit,
                     onComplete);
             });
+    }
+
+    /// <summary>
+    /// 행동자와 대상 위치 기준 전투 카메라 위치 계산
+    /// </summary>
+    /// <param name="actorTransform">행동자 Transform</param>
+    /// <param name="targetPosition">대상 위치</param>
+    /// <param name="backDistance">뒤쪽 거리</param>
+    /// <param name="sideOffset">좌우 오프셋</param>
+    /// <param name="cameraHeight">카메라 높이</param>
+    /// <param name="targetFocusWeight">대상 주시 비중</param>
+    /// <param name="focusHeight">주시점 높이</param>
+    /// <param name="cameraPosition">계산된 카메라 위치</param>
+    /// <param name="focusPosition">계산된 주시 위치</param>
+    private void CalculateBattleRelativePose(
+        Transform actorTransform,
+        Vector3 targetPosition,
+        float backDistance,
+        float sideOffset,
+        float cameraHeight,
+        float targetFocusWeight,
+        float focusHeight,
+        out Vector3 cameraPosition,
+        out Vector3 focusPosition)
+    {
+        Vector3 planarTargetPosition = targetPosition;
+        planarTargetPosition.y = actorTransform.position.y;
+
+        Vector3 viewForward =
+            planarTargetPosition -
+            actorTransform.position;
+
+        if (viewForward.sqrMagnitude <= 0.0001f)
+        {
+            viewForward = actorTransform.forward;
+            viewForward.y = 0f;
+        }
+
+        if (viewForward.sqrMagnitude <= 0.0001f)
+        {
+            viewForward = Vector3.forward;
+        }
+
+        viewForward.Normalize();
+
+        Vector3 viewRight =
+            Vector3.Cross(
+                Vector3.up,
+                viewForward).normalized;
+
+        cameraPosition =
+            actorTransform.position -
+            viewForward * backDistance +
+            viewRight * sideOffset +
+            Vector3.up * cameraHeight;
+
+        Vector3 focusGroundPosition =
+            Vector3.Lerp(
+                actorTransform.position,
+                planarTargetPosition,
+                Mathf.Clamp01(targetFocusWeight));
+
+        focusPosition =
+            focusGroundPosition +
+            Vector3.up * focusHeight;
+    }
+
+    /// <summary>
+    /// 상대 팀 타입 반환
+    /// </summary>
+    /// <param name="teamType">기준 팀</param>
+    /// <returns>상대 팀</returns>
+    private BattleTeamType GetOpposingTeam(BattleTeamType teamType)
+    {
+        return teamType == BattleTeamType.Player
+            ? BattleTeamType.Enemy
+            : BattleTeamType.Player;
     }
 }
