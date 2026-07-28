@@ -1,53 +1,96 @@
+using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// 스킬 확정 시, 그 스킬의 JSON 궤적을 화면(뷰포트) 기준으로 가이드라인으로 보여주고
-/// 플레이어가 마우스로 따라 그리게 한 뒤 GestureMatcher로 판정, 데미지 배율을 콜백으로 돌려줌.
+/// 스킬 확정 시, Header의 예시 이미지(DrawImg)로 그려야 할 모양을 보여주고
+/// 플레이어가 마우스로 따라 그리게 한 뒤, 그 궤적을 SkillData.DrawGuideJson과 GestureMatcher로 판정,
+/// 데미지 배율을 콜백으로 돌려줌.
 ///
-/// ShapeTracing과 동일하게 Canvas 없이 순수 LineRenderer + Camera.main 기준으로 동작.
-/// SkillDrawCamera가 활성화된 동안 Camera.main이 그 시점을 렌더링하므로(Cinemachine Brain),
-/// 별도로 SkillDrawCamera를 직접 참조하지 않고 Camera.main만 사용.
+/// * 라인은 Fill(얇음, 그리는 동안 계속 보임)과 Outline(두꺼움, 뒤에 깔림, 그리는 동안엔 숨김) 두 개를
+///   같은 궤적으로 동시에 그림. 판정 후 결과 색 와이프가 시작될 때 Outline이 알파 0->1로 드러나면서
+///   같이 물듦 ("색이 입혀지며 나타나는" 느낌). Fill도 같이 물들지는 _applyColorWipeToFill로 선택 가능.
+///
+/// * TimerFillImage도 판정 결과 색(resultColor)으로 같은 타이밍에 부드럽게 색이 바뀜.
 ///
 /// * 그리기 영역 제한(_drawAreaRect): 지정하면 화면 전체가 아니라 그 UI Image(RectTransform)의
-///   사각형 안에서만 좌표를 정규화(0~1)해서 사용. 미지정 시 기존처럼 화면 전체 기준으로 동작(하위 호환).
-///   내부적으로 궤적 판정(GestureMatcher)은 중심점+크기로 정규화해서 비교하므로,
-///   좌표계를 화면 전체 대신 Rect 기준으로 바꿔도 판정 정확도에는 영향 없음.
+///   사각형 안에서만 좌표를 정규화(0~1)해서 사용.
 ///
-/// * 진행 흐름: Play() -> SkillDrawCanvas 활성화 + 가이드라인 즉시 표시 -> DrawingPlace(패널)
+/// * 진행 흐름:
+///   Play() -> SkillDrawCanvas 활성화 + Header의 DrawImg에 예시 이미지 표시 -> DrawingPlace(패널)
 ///   CanvasGroup Fade In -> Fade In 완료 시점부터 타이머(_timeLimit) 카운트 시작 + 입력 활성화.
-///   종료 시: 판정 -> DrawingPlace Fade Out -> Fade Out 완료 후 SkillDrawCanvas 비활성화 + 콜백.
+///   시간 종료(또는 스트로크 타임아웃) -> 판정 -> 배율 텍스트 표시 + _resultHoldDuration 유지
+///   -> Header 비활성화
+///   -> Outline이 그린 순서대로 알파 0->1로 드러나며 resultColor로 물듦 (Fill은 _applyColorWipeToFill에 따라)
+///      + TimerFillImage도 같은 시간에 걸쳐 resultColor로 색이 바뀜
+///   -> 다 채워지면 두께 펄스(살짝 커졌다 작아짐)
+///   -> Fill/Outline 모두 각자의 색을 유지한 채로 알파+두께 페이드아웃, TimerFillImage도 알파 페이드아웃
+///   -> DrawingPlace Fade Out -> Fade Out 완료 후 SkillDrawCanvas 비활성화 + 콜백.
 ///
-/// 좌표는 지정된 영역(또는 화면) 기준 0~1로 저장 - JSON 포맷과 동일한 좌표계라 가이드/플레이어 입력이
-/// 그대로 정합됨. 실제 화면 표시는 Camera.ViewportToWorldPoint로 카메라 앞 고정 거리 평면에 투영.
+/// 좌표는 지정된 영역(또는 화면) 기준 0~1로 저장 - JSON 포맷과 동일한 좌표계라 판정에 그대로 사용됨.
+/// 실제 플레이어가 그린 라인의 화면 표시는 Camera.ViewportToWorldPoint로 카메라 앞 고정 거리 평면에 투영.
 ///
-/// 가이드라인은 표시된 지 _guideVisibleDuration이 지나면 사라지고(전체 제한시간 _timeLimit과 별개),
-/// 그 이후에도 플레이어는 계속 그릴 수 있음. 가이드 표시 위치/크기는 판정에 영향 없이 순수 표시용으로만
-/// _guideViewportCenter / _guideDisplayScale로 조정 가능 (_drawAreaRect 기준 상대 좌표).
-///
-/// 타이머 UI만 별도 Canvas(_timerRoot)로 표시.
-/// New Input System 기준(Mouse.current)으로 폴링. Active Input Handling이
-/// "Input System Package (New)" 또는 "Both"로 설정되어 있어야 함.
+/// New Input System 기준(Mouse.current)으로 폴링.
 /// </summary>
 public class SkillDrawController : MonoBehaviour
 {
     public static SkillDrawController Instance { get; private set; }
 
-    [Header("Timer UI (Canvas, 그리기 도형 자체와는 별개)")]
-    [SerializeField] private GameObject _timerRoot;
+    [Header("Timer UI (DrawingCanvas 하위, 캔버스 자체가 켜지고/꺼질 때 같이 보임)")]
     [SerializeField] private TMPro.TMP_Text _timerText;
     [SerializeField] private UnityEngine.UI.Image _timerFillImage;
+    [Tooltip("스트로크 타임아웃으로 조기 종료됐을 때, Fill이 중간값에서 멈추지 않고 100%까지 마저 채워지는 시간")]
+    [SerializeField] private float _timerCompleteFillDuration = 0.2f;
+    [Tooltip("판정 후 TimerFillImage 원래 색상")]
+    [SerializeField] private Color _timerFillDefaultColor = Color.white;
+
+    [Header("Header (점수 나온 뒤 비활성화)")]
+    [SerializeField] private GameObject _headerObject;
+
+    [Header("예시 이미지 (Header/DrawImg)")]
+    [Tooltip("이번에 그릴 모양을 미리 보여주는 이미지. SkillData.DrawExampleSprite가 여기에 세팅됨.")]
+    [SerializeField] private UnityEngine.UI.Image _drawExampleImage;
+
+    [Header("Tooltip (그리기 전에만 표시, 첫 라인을 그리는 순간 즉시 숨김)")]
+    [SerializeField] private GameObject _tooltipObject;
+
+    [Header("Result (배율 표시, DrawCanvas 하위)")]
+    [SerializeField] private TMPro.TMP_Text _multiplierText;
+    [Tooltip("배율 텍스트가 뜬 채로 유지되는 시간 (이 시간이 지난 뒤 사라짐 연출 시작)")]
+    [SerializeField] private float _resultHoldDuration = 1f;
+
+    [Header("Disappear (라인/FilledImg 페이드아웃)")]
+    [Tooltip("점수 확인 후 라인/FilledImg가 서서히 사라지는 데 걸리는 시간")]
+    [SerializeField] private float _disappearDuration = 1f;
+
+    [Header("Result Color Wipe (그린 순서대로 결과 색이 채워짐)")]
+    [Tooltip("점수(0~100)를 이 Gradient로 매핑해서 라인/아웃라인/TimerFillImage가 물드는 색상 결정. 왼쪽=낮은 점수, 오른쪽=높은 점수.")]
+    [SerializeField] private Gradient _resultColorGradient;
+
+    [Tooltip("색이 채워지는 데 걸리는 시간 (그린 순서대로 진행, TimerFillImage 색 전환도 같은 시간 사용)")]
+    [SerializeField] private float _colorWipeDuration = 0.6f;
+
+    [Tooltip("true: Fill과 Outline 모두 Color Wipe 적용 / false: Outline에만 적용")]
+    [SerializeField] private bool _applyColorWipeToFill = false;
+
+    [Header("Pulse (색 다 채워진 뒤 두께가 잠깐 커졌다 작아짐)")]
+    [SerializeField] private float _pulseWidthMultiplier = 1.4f;
+    [Tooltip("커졌다가 원래대로 돌아오는 전체 시간 (반씩 나눠서 사용)")]
+    [SerializeField] private float _pulseDuration = 0.25f;
 
     [Header("Line Renderer Prefabs")]
-    [SerializeField] private LineRenderer _guideLinePrefab;
+    [Tooltip("얇은 Fill 라인 - 그리는 동안 계속 보임")]
     [SerializeField] private LineRenderer _playerLinePrefab;
+    [Tooltip("두꺼운 Outline 라인 - 그리는 동안엔 숨겨져 있다가, 판정 후 색 와이프 시작 시 알파 0->1로 드러남. " +
+             "Fill보다 뒤에 그려지도록 Sorting Order를 더 낮게 잡아둘 것.")]
+    [SerializeField] private LineRenderer _outlineLinePrefab;
 
     [Header("Draw Area (지정 시 이 UI Image 안에서만 그려짐, 미지정 시 화면 전체)")]
     [Tooltip("SkillDrawCanvas 루트 오브젝트. 평소 비활성화 상태로 두고, 그리는 동안만 켬.")]
     [SerializeField] private GameObject _skillDrawCanvasRoot;
-    [Tooltip("그리기를 국한시킬 UI Image의 RectTransform (예: DrawPanel/DrawImage)")]
+    [Tooltip("그리기를 국한시킬 UI Image의 RectTransform (예: DrawPanel/DrawingRect)")]
     [SerializeField] private RectTransform _drawAreaRect;
     [Tooltip("_drawAreaRect가 속한 Canvas의 Render Camera. Screen Space-Overlay면 비워둬도 됨.")]
     [SerializeField] private Camera _drawAreaUICamera;
@@ -57,19 +100,11 @@ public class SkillDrawController : MonoBehaviour
     [SerializeField] private float _drawDistance = 5f;
 
     [Header("DrawingPlace Fade (패널 페이드 인/아웃)")]
-    [Tooltip("DrawingPlace(BG+Header+DrawingRect 전체)에 붙은 CanvasGroup. " +
+    [Tooltip("DrawingPlace(BG+DrawingRect 전체)에 붙은 CanvasGroup. " +
              "Fade In이 끝난 시점부터 타이머가 흐르고 입력이 활성화됨.")]
     [SerializeField] private CanvasGroup _drawingPlaceCanvasGroup;
     [SerializeField] private float _fadeDuration = 0.25f;
     [SerializeField] private Ease _fadeEase = Ease.OutQuad;
-
-    [Header("가이드라인 표시 설정")]
-    [Tooltip("가이드라인이 사라지기까지 걸리는 시간 (_timeLimit과 별개, 이 시간이 지나면 가이드만 사라지고 그리기는 계속 가능)")]
-    [SerializeField] private float _guideVisibleDuration = 1.5f;
-    [Tooltip("가이드 도형이 그리기 영역 어디에 표시될지 (영역 기준 0~1, 0.5,0.5 = 영역 중앙)")]
-    [SerializeField] private Vector2 _guideViewportCenter = new Vector2(0.5f, 0.5f);
-    [Tooltip("가이드 도형 표시 크기 배율 (판정 점수에는 영향 없음, 순수 표시용)")]
-    [SerializeField] private float _guideDisplayScale = 1f;
 
     [Header("공통 판정 설정 (모든 스킬 동일 적용)")]
     [SerializeField] private float _timeLimit = 3f;
@@ -86,16 +121,16 @@ public class SkillDrawController : MonoBehaviour
     private bool _isActive;
     private bool _isPointerDrawing;
     private bool _hasStroke;
-    private bool _guideHidden;
 
     private readonly List<SkillPoint> _allPoints = new List<SkillPoint>();
-    private List<SkillPoint> _guidePoints;
-    private Vector2 _guideRawCentroid; // JSON 원본 좌표 기준 중심점 (재배치 계산용)
+    private List<SkillPoint> _guidePoints; // 화면에 그리진 않지만 판정용으로는 계속 사용
 
-    private readonly List<LineRenderer> _guideLines = new List<LineRenderer>();
     private readonly List<LineRenderer> _playerLines = new List<LineRenderer>();
+    private readonly List<LineRenderer> _outlineLines = new List<LineRenderer>();
     private LineRenderer _currentPlayerLine;
+    private LineRenderer _currentOutlineLine;
     private int _currentStrokeId = -1;
+    private bool _pendingNewStroke;
 
     private float _gestureStartTime;
     private float _strokeEndTime;
@@ -111,7 +146,6 @@ public class SkillDrawController : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-        if (_timerRoot != null) _timerRoot.SetActive(false);
         if (_skillDrawCanvasRoot != null) _skillDrawCanvasRoot.SetActive(false);
 
         if (_drawingPlaceCanvasGroup != null)
@@ -129,13 +163,7 @@ public class SkillDrawController : MonoBehaviour
         HandleInput();
 
         float elapsed = Time.time - _gestureStartTime;
-        UpdateTimerUI(Mathf.Max(0f, _timeLimit - elapsed));
-
-        if (_guideHidden == false && elapsed > _guideVisibleDuration)
-        {
-            ClearGuideLines();
-            _guideHidden = true;
-        }
+        UpdateTimerUI(Mathf.Max(0f, _timeLimit - elapsed), elapsed);
 
         if (elapsed > _timeLimit)
         {
@@ -180,6 +208,7 @@ public class SkillDrawController : MonoBehaviour
         }
 
         _fadeTween?.Kill();
+        StopAllCoroutines();
 
         if (_skillDrawCanvasRoot != null) _skillDrawCanvasRoot.SetActive(true);
 
@@ -192,15 +221,41 @@ public class SkillDrawController : MonoBehaviour
         _currentStrokeId = -1;
         _isPointerDrawing = false;
         _hasStroke = false;
-        _guideHidden = false;
+        _pendingNewStroke = false;
+
+        // Fade In 도중에 이전 판정의 잔여 Fill 값/색이 잠깐 보이는 것 방지 (미리 리셋)
+        if (_timerFillImage != null)
+        {
+            _timerFillImage.DOKill();
+            _timerFillImage.fillAmount = 0f;
+
+            Color resetColor = _timerFillDefaultColor;
+            resetColor.a = 1f; // 지난 판정의 사라짐 연출에서 0으로 페이드아웃했을 수 있으니 복원
+            _timerFillImage.color = resetColor;
+        }
+        if (_timerText != null) _timerText.text = _timeLimit.ToString("0.0");
+
+        UpdateExampleImage(skillData.DrawExampleSprite);
+
+        if (_tooltipObject != null) _tooltipObject.SetActive(true);
+        if (_headerObject != null) _headerObject.SetActive(true);
+        if (_multiplierText != null) _multiplierText.gameObject.SetActive(false);
 
         // 타이머/입력은 아직 시작하지 않음 (Fade In 완료 후 시작)
         _isActive = false;
 
-        _guideRawCentroid = ComputeCentroid(_guidePoints);
-        DrawGuideLines(); // 가이드는 Fade In 중에도 이미 표시되어 있어도 무방
-
         PlayFadeIn();
+    }
+
+    /// <summary>
+    /// Header의 DrawImg에 이번 스킬의 예시 이미지를 세팅. 없으면 이미지 비활성화.
+    /// </summary>
+    private void UpdateExampleImage(Sprite exampleSprite)
+    {
+        if (_drawExampleImage == null) return;
+
+        _drawExampleImage.sprite = exampleSprite;
+        _drawExampleImage.enabled = exampleSprite != null;
     }
 
     // ---------- DrawingPlace Fade In/Out ----------
@@ -233,8 +288,6 @@ public class SkillDrawController : MonoBehaviour
             _drawingPlaceCanvasGroup.interactable = true;
             _drawingPlaceCanvasGroup.blocksRaycasts = true;
         }
-
-        if (_timerRoot != null) _timerRoot.SetActive(true);
 
         _gestureStartTime = Time.time;
         _isActive = true;
@@ -327,12 +380,12 @@ public class SkillDrawController : MonoBehaviour
 
         if (mouse.leftButton.wasPressedThisFrame)
         {
-            _currentStrokeId++;
             _isPointerDrawing = true;
-            _hasStroke = true;
 
-            _currentPlayerLine = GetOrCreatePlayerLine(_currentStrokeId);
-            _currentPlayerLine.positionCount = 0;
+            // 아직 실제 스트로크(라인)를 시작하지 않음 - Rect 안에 첫 유효한 점이 찍힐 때
+            // AddPoint 내부에서 지연 시작함. 이래야 Rect 바깥 클릭이 스트로크로 인정돼서
+            // 손 뗀 뒤 _interStrokeTimeout 카운트다운이 도는 것을 방지할 수 있음.
+            _pendingNewStroke = true;
 
             AddPoint(mouse.position.ReadValue());
         }
@@ -343,12 +396,42 @@ public class SkillDrawController : MonoBehaviour
         else if (mouse.leftButton.wasReleasedThisFrame && _isPointerDrawing)
         {
             _isPointerDrawing = false;
-            _strokeEndTime = Time.time;
+
+            // 실제로 유효한 점이 한 번이라도 찍힌 경우에만 스트로크 종료 시각을 기록
+            // (Rect 바깥에서만 클릭했다 뗀 경우는 _hasStroke가 여전히 false라 타임아웃 대상이 아님)
+            if (_hasStroke)
+            {
+                _strokeEndTime = Time.time;
+            }
         }
     }
 
     private void AddPoint(Vector2 screenPos)
     {
+        // 그리기 영역(Rect) 바깥이면 아예 점을 추가하지 않음 (가장자리에 라인이 눌어붙는 것 방지)
+        // + 아직 스트로크가 시작되지 않은 상태라면, 스트로크 시작 자체도 보류됨.
+        if (_drawAreaScreenRect.Contains(screenPos) == false)
+        {
+            return;
+        }
+
+        if (_pendingNewStroke)
+        {
+            _pendingNewStroke = false;
+            _currentStrokeId++;
+            _hasStroke = true;
+
+            // 플레이어가 실제로 라인을 그리기 시작하는 순간 즉시 숨김 (이후 스트로크에도 계속 숨김 유지)
+            if (_tooltipObject != null) _tooltipObject.SetActive(false);
+
+            _currentPlayerLine = GetOrCreatePlayerLine(_currentStrokeId);
+            _currentPlayerLine.positionCount = 0;
+
+            _currentOutlineLine = GetOrCreateOutlineLine(_currentStrokeId);
+            _currentOutlineLine.positionCount = 0;
+            _currentOutlineLine.enabled = false; // 그리는 동안엔 숨김, 판정 후 와이프 시작 시 드러남
+        }
+
         Vector2 areaLocal = ScreenToAreaLocal(screenPos);
 
         for (int i = _allPoints.Count - 1; i >= 0; i--)
@@ -361,46 +444,17 @@ public class SkillDrawController : MonoBehaviour
         _allPoints.Add(new SkillPoint(areaLocal, _currentStrokeId));
 
         Vector3 worldPos = ViewportToDrawWorld(AreaLocalToViewport(areaLocal));
+
         _currentPlayerLine.positionCount++;
         _currentPlayerLine.SetPosition(_currentPlayerLine.positionCount - 1, worldPos);
+
+        _currentOutlineLine.positionCount++;
+        _currentOutlineLine.SetPosition(_currentOutlineLine.positionCount - 1, worldPos);
     }
 
     private Vector3 ViewportToDrawWorld(Vector2 viewport)
     {
         return _cam.ViewportToWorldPoint(new Vector3(viewport.x, viewport.y, _drawDistance));
-    }
-
-    // ---------- 가이드라인 (한번에 전체 표시, 여러 획 지원, 위치/크기 재배치) ----------
-
-    private Vector2 ComputeCentroid(List<SkillPoint> points)
-    {
-        Vector2 sum = Vector2.zero;
-        foreach (var p in points) sum += p.pos;
-        return sum / points.Count;
-    }
-
-    private void DrawGuideLines()
-    {
-        ClearGuideLines();
-
-        int strokeCount = 0;
-        foreach (var p in _guidePoints) strokeCount = Mathf.Max(strokeCount, p.strokeId + 1);
-
-        List<List<Vector3>> strokeWorldPoints = new List<List<Vector3>>();
-        for (int i = 0; i < strokeCount; i++) strokeWorldPoints.Add(new List<Vector3>());
-
-        foreach (var p in _guidePoints)
-        {
-            Vector2 displayAreaLocal = _guideViewportCenter + (p.pos - _guideRawCentroid) * _guideDisplayScale;
-            strokeWorldPoints[p.strokeId].Add(ViewportToDrawWorld(AreaLocalToViewport(displayAreaLocal)));
-        }
-
-        for (int i = 0; i < strokeWorldPoints.Count; i++)
-        {
-            LineRenderer line = GetOrCreateGuideLine(i);
-            line.positionCount = strokeWorldPoints[i].Count;
-            line.SetPositions(strokeWorldPoints[i].ToArray());
-        }
     }
 
     // ---------- 판정 ----------
@@ -410,11 +464,16 @@ public class SkillDrawController : MonoBehaviour
         _isActive = false;
         _isPointerDrawing = false;
 
+        // 스트로크 타임아웃으로 조기 종료된 경우 Fill이 중간값에서 멈춰버리는 것 방지 -
+        // 짧게 100%까지 마저 채워주는 트윈 (시간 종료로 자연 종료된 경우엔 이미 1에 가까우니 무해함)
+        CompleteTimerFill();
+
+        float score = 0f;
         float multiplier = 1f;
 
         if (_allPoints.Count >= 2)
         {
-            float score = GestureMatcher.ComputeSimilarityScore(_allPoints, _guidePoints);
+            score = GestureMatcher.ComputeSimilarityScore(_allPoints, _guidePoints);
             multiplier = ScoreToMultiplier(score);
             Debug.Log($"[SkillDrawController] 유사도 {score:0} / 배율 x{multiplier:0.00}");
         }
@@ -423,11 +482,385 @@ public class SkillDrawController : MonoBehaviour
             Debug.Log("[SkillDrawController] 그린 게 없음 / 배율 x1");
         }
 
-        if (_timerRoot != null) _timerRoot.SetActive(false);
-        ClearGuideLines();
+        // 여기서 라인/FilledImg를 지우지 않음 - 점수가 나오기 전까지 그대로 유지되어야 함.
+        ShowMultiplierResult(score, multiplier);
+    }
+
+    /// <summary>
+    /// TimerFillImage를 짧은 시간에 걸쳐 100%까지 마저 채움. 조기 종료(스트로크 타임아웃) 시
+    /// 중간값에서 뚝 멈춘 것처럼 보이는 걸 방지.
+    /// </summary>
+    private void CompleteTimerFill()
+    {
+        if (_timerFillImage == null) return;
+
+        _timerFillImage.DOKill();
+        _timerFillImage.DOFillAmount(1f, _timerCompleteFillDuration).SetEase(Ease.OutQuad);
+    }
+
+    /// <summary>
+    /// 배율 텍스트를 표시하고 _resultHoldDuration만큼 유지한 뒤, 사라짐 연출로 넘어감.
+    /// </summary>
+    private void ShowMultiplierResult(float score, float multiplier)
+    {
+        if (_multiplierText != null)
+        {
+            _multiplierText.text = $"x{multiplier:0.00}";
+            _multiplierText.gameObject.SetActive(true);
+        }
+
+        StartCoroutine(HoldResultThenDisappear(score, multiplier));
+    }
+
+    private IEnumerator HoldResultThenDisappear(float score, float multiplier)
+    {
+        yield return new WaitForSeconds(_resultHoldDuration);
+
+        if (_headerObject != null) _headerObject.SetActive(false);
+        if (_multiplierText != null) _multiplierText.gameObject.SetActive(false);
+
+        Color resultColor = _resultColorGradient.Evaluate(Mathf.Clamp01(score / 100f));
+
+        // TimerFillImage 색상도 같은 시간(_colorWipeDuration)에 걸쳐 resultColor로 부드럽게 전환
+        // (알파는 건드리지 않음 - 이후 사라짐 단계에서 별도로 페이드아웃됨)
+        if (_timerFillImage != null)
+        {
+            _timerFillImage.DOKill();
+
+            Color targetColor = resultColor;
+            targetColor.a = _timerFillImage.color.a;
+
+            _timerFillImage.DOColor(targetColor, _colorWipeDuration);
+        }
+
+        // 1. Outline이 그린 순서대로 알파 0->1 드러나며 resultColor로 물듦 (Fill은 _applyColorWipeToFill에 따라)
+        yield return StartCoroutine(ColorWipeRoutine(resultColor));
+
+        // 2. 다 채워지면 두께가 살짝 커졌다가 되돌아옴 (Fill+Outline 둘 다)
+        yield return StartCoroutine(PulseLinesRoutine());
+
+        // 3. 최종 페이드아웃 (두께+알파를 0으로, 색은 각자 유지한 채로, Fill+Outline 둘 다)
+        yield return StartCoroutine(FinalFadeOutRoutine(resultColor, _disappearDuration));
+
+        if (_timerFillImage != null)
+        {
+            _timerFillImage.DOKill();
+            _timerFillImage.DOFade(0f, _disappearDuration);
+        }
+
         ClearPlayerLines();
 
         PlayFadeOut(multiplier);
+    }
+
+    /// <summary>
+    /// Fill은 _applyColorWipeToFill이 true일 때만 resultColor로 그린 순서대로 와이프.
+    /// Outline은 항상 cutoff 진행도에 맞춰 알파 0(숨김) -> 1(resultColor로 드러남)로 변함.
+    /// </summary>
+    private IEnumerator ColorWipeRoutine(Color resultColor)
+    {
+        if (_outlineLines.Count == 0 && _playerLines.Count == 0)
+            yield break;
+
+        // Fill의 원래 색상을 Color Wipe 시작 전에 저장 (ColorGradient 적용 시 startColor도 바뀔 수 있어 미리 보관)
+        List<Color> originalFillColors = new List<Color>(_playerLines.Count);
+
+        for (int i = 0; i < _playerLines.Count; i++)
+        {
+            LineRenderer fillLine = _playerLines[i];
+
+            originalFillColors.Add(
+                fillLine != null
+                    ? fillLine.startColor
+                    : Color.white);
+        }
+
+        // Outline은 와이프 시작 시 렌더러를 켜서 드러나기 시작
+        for (int i = 0; i < _outlineLines.Count; i++)
+        {
+            if (_outlineLines[i] != null)
+                _outlineLines[i].enabled = true;
+        }
+
+        float elapsed = 0f;
+
+        while (elapsed < _colorWipeDuration)
+        {
+            elapsed += Time.deltaTime;
+
+            float cutoff = _colorWipeDuration > 0f
+                ? Mathf.Clamp01(elapsed / _colorWipeDuration)
+                : 1f;
+
+            if (_applyColorWipeToFill)
+            {
+                for (int i = 0; i < _playerLines.Count; i++)
+                {
+                    LineRenderer fillLine = _playerLines[i];
+                    if (fillLine == null) continue;
+
+                    ApplyWipeGradient(
+                        fillLine,
+                        cutoff,
+                        originalFillColors[i],
+                        resultColor,
+                        1f);
+                }
+            }
+
+            for (int i = 0; i < _outlineLines.Count; i++)
+            {
+                LineRenderer outlineLine = _outlineLines[i];
+                if (outlineLine == null) continue;
+
+                ApplyOutlineWipeGradient(
+                    outlineLine,
+                    cutoff,
+                    resultColor);
+            }
+
+            yield return null;
+        }
+
+        // 마지막 프레임에서 정확하게 100% 상태로 고정
+        if (_applyColorWipeToFill)
+        {
+            for (int i = 0; i < _playerLines.Count; i++)
+            {
+                LineRenderer fillLine = _playerLines[i];
+                if (fillLine == null) continue;
+
+                ApplyWipeGradient(
+                    fillLine,
+                    1f,
+                    originalFillColors[i],
+                    resultColor,
+                    1f);
+            }
+        }
+
+        for (int i = 0; i < _outlineLines.Count; i++)
+        {
+            LineRenderer outlineLine = _outlineLines[i];
+            if (outlineLine == null) continue;
+
+            ApplyOutlineWipeGradient(
+                outlineLine,
+                1f,
+                resultColor);
+        }
+    }
+
+    /// <summary>
+    /// cutoff(0~1) 지점을 경계로, 그 이전(포인트 인덱스 기준 앞쪽)은 resultColor, 이후는 originalColor로
+    /// 칠해지는 Gradient를 라인에 적용. alpha는 균일하게 적용(페이드아웃 단계에서 별도로 사용).
+    /// </summary>
+    private void ApplyWipeGradient(LineRenderer line, float cutoff, Color originalColor, Color resultColor, float alpha)
+    {
+        const float epsilon = 0.001f;
+
+        GradientColorKey[] colorKeys;
+
+        if (cutoff <= 0f)
+        {
+            colorKeys = new GradientColorKey[]
+            {
+                new GradientColorKey(originalColor, 0f),
+                new GradientColorKey(originalColor, 1f)
+            };
+        }
+        else if (cutoff >= 1f)
+        {
+            colorKeys = new GradientColorKey[]
+            {
+                new GradientColorKey(resultColor, 0f),
+                new GradientColorKey(resultColor, 1f)
+            };
+        }
+        else
+        {
+            colorKeys = new GradientColorKey[]
+            {
+                new GradientColorKey(resultColor, 0f),
+                new GradientColorKey(resultColor, Mathf.Max(0f, cutoff - epsilon)),
+                new GradientColorKey(originalColor, Mathf.Min(1f, cutoff + epsilon)),
+                new GradientColorKey(originalColor, 1f)
+            };
+        }
+
+        GradientAlphaKey[] alphaKeys = new GradientAlphaKey[]
+        {
+            new GradientAlphaKey(alpha, 0f),
+            new GradientAlphaKey(alpha, 1f)
+        };
+
+        Gradient gradient = new Gradient();
+        gradient.SetKeys(colorKeys, alphaKeys);
+        line.colorGradient = gradient;
+    }
+
+    /// <summary>
+    /// Outline 전용: 색은 항상 resultColor 고정, cutoff 이전(그린 순서 기준 앞쪽)은 알파 1(보임),
+    /// 이후는 알파 0(숨김)으로 - 와이프가 지나가는 부분만 드러나 보이게 함.
+    /// </summary>
+    private void ApplyOutlineWipeGradient(LineRenderer line, float cutoff, Color resultColor)
+    {
+        const float epsilon = 0.001f;
+
+        GradientColorKey[] colorKeys = new GradientColorKey[]
+        {
+            new GradientColorKey(resultColor, 0f),
+            new GradientColorKey(resultColor, 1f)
+        };
+
+        GradientAlphaKey[] alphaKeys;
+
+        if (cutoff <= 0f)
+        {
+            alphaKeys = new GradientAlphaKey[]
+            {
+                new GradientAlphaKey(0f, 0f),
+                new GradientAlphaKey(0f, 1f)
+            };
+        }
+        else if (cutoff >= 1f)
+        {
+            alphaKeys = new GradientAlphaKey[]
+            {
+                new GradientAlphaKey(1f, 0f),
+                new GradientAlphaKey(1f, 1f)
+            };
+        }
+        else
+        {
+            alphaKeys = new GradientAlphaKey[]
+            {
+                new GradientAlphaKey(1f, 0f),
+                new GradientAlphaKey(1f, Mathf.Max(0f, cutoff - epsilon)),
+                new GradientAlphaKey(0f, Mathf.Min(1f, cutoff + epsilon)),
+                new GradientAlphaKey(0f, 1f)
+            };
+        }
+
+        Gradient gradient = new Gradient();
+        gradient.SetKeys(colorKeys, alphaKeys);
+        line.colorGradient = gradient;
+    }
+
+    /// <summary>
+    /// 색이 다 채워진 뒤, Fill+Outline 모든 라인의 두께(widthMultiplier)가 잠깐 커졌다가 원래 크기로 돌아오는 펄스.
+    /// </summary>
+    private IEnumerator PulseLinesRoutine()
+    {
+        int totalCount = _playerLines.Count + _outlineLines.Count;
+        if (totalCount == 0 || _pulseDuration <= 0f) yield break;
+
+        float halfDuration = _pulseDuration * 0.5f;
+
+        List<LineRenderer> allLines = new List<LineRenderer>();
+        allLines.AddRange(_playerLines);
+        allLines.AddRange(_outlineLines);
+
+        List<float> originalWidths = new List<float>();
+        for (int i = 0; i < allLines.Count; i++)
+        {
+            originalWidths.Add(allLines[i] != null ? allLines[i].widthMultiplier : 1f);
+        }
+
+        Sequence sequence = DOTween.Sequence();
+
+        for (int i = 0; i < allLines.Count; i++)
+        {
+            LineRenderer line = allLines[i];
+            if (line == null) continue;
+
+            sequence.Join(DOTween.To(() => line.widthMultiplier, x => line.widthMultiplier = x, originalWidths[i] * _pulseWidthMultiplier, halfDuration));
+        }
+
+        yield return sequence.WaitForCompletion();
+
+        Sequence sequenceBack = DOTween.Sequence();
+
+        for (int i = 0; i < allLines.Count; i++)
+        {
+            LineRenderer line = allLines[i];
+            if (line == null) continue;
+
+            sequenceBack.Join(DOTween.To(() => line.widthMultiplier, x => line.widthMultiplier = x, originalWidths[i], halfDuration));
+        }
+
+        yield return sequenceBack.WaitForCompletion();
+    }
+
+    /// <summary>
+    /// Fill은 각자의 색(_applyColorWipeToFill에 따라 resultColor 또는 원래 색)을 유지한 채로,
+    /// Outline은 resultColor를 유지한 채로, 둘 다 알파와 두께를 duration에 걸쳐 0으로 페이드아웃.
+    /// </summary>
+    private IEnumerator FinalFadeOutRoutine(Color resultColor, float duration)
+    {
+        int totalCount = _playerLines.Count + _outlineLines.Count;
+        if (totalCount == 0 || duration <= 0f) yield break;
+
+        // Fill은 지금 유지 중인 색을 그대로 페이드아웃에 사용
+        List<Color> fillColors = new List<Color>();
+        for (int i = 0; i < _playerLines.Count; i++)
+        {
+            fillColors.Add(_playerLines[i] != null ? _playerLines[i].startColor : Color.white);
+        }
+
+        List<LineRenderer> allLines = new List<LineRenderer>();
+        allLines.AddRange(_playerLines);
+        allLines.AddRange(_outlineLines);
+
+        List<float> startWidths = new List<float>();
+        for (int i = 0; i < allLines.Count; i++)
+        {
+            startWidths.Add(allLines[i] != null ? allLines[i].widthMultiplier : 1f);
+        }
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float alpha = 1f - t;
+
+            for (int i = 0; i < allLines.Count; i++)
+            {
+                LineRenderer line = allLines[i];
+                if (line == null) continue;
+
+                bool isFill = i < _playerLines.Count;
+
+                Color lineColor;
+
+                if (isFill)
+                {
+                    lineColor = _applyColorWipeToFill
+                        ? resultColor
+                        : fillColors[i];
+                }
+                else
+                {
+                    lineColor = resultColor;
+                }
+
+                ApplyWipeGradient(
+                    line,
+                    1f,
+                    lineColor,
+                    lineColor,
+                    alpha);
+
+                line.widthMultiplier = Mathf.Lerp(
+                    startWidths[i],
+                    0f,
+                    t);
+            }
+
+            yield return null;
+        }
     }
 
     /// <summary>
@@ -441,24 +874,15 @@ public class SkillDrawController : MonoBehaviour
         return Mathf.Lerp(_minDamageMultiplier, _maxDamageMultiplier, t);
     }
 
-    private void UpdateTimerUI(float remaining)
+    private void UpdateTimerUI(float remaining, float elapsed)
     {
         if (_timerText != null) _timerText.text = remaining.ToString("0.0");
-        if (_timerFillImage != null) _timerFillImage.fillAmount = _timeLimit > 0f ? remaining / _timeLimit : 0f;
+
+        // Fill은 "남은 시간"이 아니라 "경과 시간" 기준 0 -> 1로 채워지도록 (반대 방향)
+        if (_timerFillImage != null) _timerFillImage.fillAmount = _timeLimit > 0f ? Mathf.Clamp01(elapsed / _timeLimit) : 0f;
     }
 
-    // ---------- LineRenderer 풀 관리 ----------
-
-    private LineRenderer GetOrCreateGuideLine(int index)
-    {
-        while (_guideLines.Count <= index)
-        {
-            LineRenderer clone = Instantiate(_guideLinePrefab, transform);
-            clone.gameObject.SetActive(true);
-            _guideLines.Add(clone);
-        }
-        return _guideLines[index];
-    }
+    // ---------- LineRenderer 풀 관리 (Fill + Outline) ----------
 
     private LineRenderer GetOrCreatePlayerLine(int index)
     {
@@ -471,15 +895,24 @@ public class SkillDrawController : MonoBehaviour
         return _playerLines[index];
     }
 
-    private void ClearGuideLines()
+    private LineRenderer GetOrCreateOutlineLine(int index)
     {
-        foreach (var line in _guideLines) if (line != null) Destroy(line.gameObject);
-        _guideLines.Clear();
+        while (_outlineLines.Count <= index)
+        {
+            LineRenderer clone = Instantiate(_outlineLinePrefab, transform);
+            clone.gameObject.SetActive(true);
+            clone.enabled = false; // 그리는 동안엔 숨김
+            _outlineLines.Add(clone);
+        }
+        return _outlineLines[index];
     }
 
     private void ClearPlayerLines()
     {
         foreach (var line in _playerLines) if (line != null) Destroy(line.gameObject);
         _playerLines.Clear();
+
+        foreach (var line in _outlineLines) if (line != null) Destroy(line.gameObject);
+        _outlineLines.Clear();
     }
 }

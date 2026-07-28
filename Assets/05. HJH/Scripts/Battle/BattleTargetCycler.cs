@@ -23,6 +23,10 @@ public class BattleTargetCycler : MonoBehaviour
     [Header("Camera (씬 오브젝트라 인스펙터 연결 대신 런타임 자동 탐색)")]
     [SerializeField] private BattleCameraDirector _cameraDirector;
 
+    [Header("Battle Canvas (마법진 그리기 도중 잠깐 비활성화)")]
+    [Tooltip("메인 배틀 HUD 캔버스 루트. 같은 씬 오브젝트라 직접 연결 가능.")]
+    [SerializeField] private GameObject _battleCanvasRoot;
+
     [Header("Debug (임시, 확인 끝나면 제거)")]
     [SerializeField] private TMPro.TMP_Text _debugTargetTxt;
 
@@ -331,8 +335,12 @@ public class BattleTargetCycler : MonoBehaviour
 
         SetOutlinedTargetVisualsSuppressed(true);
 
+        if (_battleCanvasRoot != null) _battleCanvasRoot.SetActive(false);
+
         SkillDrawController.Instance.Play(_pendingSkill, damageMultiplier =>
         {
+            if (_battleCanvasRoot != null) _battleCanvasRoot.SetActive(true);
+
             SetOutlinedTargetVisualsSuppressed(false);
             ConfirmSkill(damageMultiplier);
         });
@@ -369,6 +377,21 @@ public class BattleTargetCycler : MonoBehaviour
                 else
                 {
                     overlay.Show();
+                }
+            }
+
+            ElementAffinityIndicatorView indicator = actor.GetComponentInChildren<ElementAffinityIndicatorView>(true);
+
+            if (indicator != null)
+            {
+                if (suppressed)
+                {
+                    indicator.Hide();
+                }
+                else
+                {
+                    // 그리는 동안 모드/스킬이 바뀌지 않으므로, 숨기기 전 상태를 그대로 재계산해서 복원.
+                    UpdateElementIndicator(unit, actor, true);
                 }
             }
         }
