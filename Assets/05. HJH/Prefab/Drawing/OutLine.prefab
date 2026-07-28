@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5614360194568609061}
   - component: {fileID: 3229732690520246199}
   m_Layer: 0
-  m_Name: OutLine
+  m_Name: Outline
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -58,7 +58,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 32d02cb6eb5a329439e0ddd3f43c9695, type: 2}
+  - {fileID: 2100000, guid: 660f6c5c4535dfe4b8f66a05143f947e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -85,26 +85,53 @@ LineRenderer:
   - {x: 0, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.028344516
+    widthMultiplier: 0.02015312
     widthCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
+        value: 0.13795817
+        inSlope: 5.3703117
+        outSlope: 5.3703117
+        tangentMode: 34
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.120182015
+        value: 0.78337306
+        inSlope: -0.0058119646
+        outSlope: -0.0058119646
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.6032604
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.81122506
+        value: 0.7817261
+        inSlope: 0.018984538
+        outSlope: 0.018984538
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.08062241
+        outWeight: 0.46189812
+      - serializedVersion: 3
+        time: 1
+        value: 0.13804898
+        inSlope: -3.4097593
+        outSlope: -3.4097593
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.46226418, g: 0.46226418, b: 0.46226418, a: 0.5529412}
-      key1: {r: 0.46226418, g: 0.46226418, b: 0.46226418, a: 0.5529412}
+      key0: {r: 0.908663, g: 0.6786668, b: 0.9528302, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 1}
       key2: {r: 1, g: 1, b: 1, a: 1}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}

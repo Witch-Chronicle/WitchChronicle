@@ -376,22 +376,9 @@ public class BattleTargetCycler : MonoBehaviour
                 }
                 else
                 {
-                    overlay.Show();
-                }
-            }
-
-            ElementAffinityIndicatorView indicator = actor.GetComponentInChildren<ElementAffinityIndicatorView>(true);
-
-            if (indicator != null)
-            {
-                if (suppressed)
-                {
-                    indicator.Hide();
-                }
-                else
-                {
-                    // 그리는 동안 모드/스킬이 바뀌지 않으므로, 숨기기 전 상태를 그대로 재계산해서 복원.
-                    UpdateElementIndicator(unit, actor, true);
+                    // 그리는 동안 스킬/모드가 바뀌지 않으므로, 숨기기 전과 동일한 스킬 정보로 복원.
+                    SkillData skillForAffinity = _mode == Mode.PendingSkill ? _pendingSkill : null;
+                    overlay.Show(skillForAffinity);
                 }
             }
         }
@@ -744,15 +731,15 @@ public class BattleTargetCycler : MonoBehaviour
         {
             if (enabled)
             {
-                overlay.Show();
+                // 스킬 조준 중일 때만 약점/저항 판정용 스킬 정보를 같이 넘김. 기본 공격/Idle이면 null.
+                SkillData skillForAffinity = _mode == Mode.PendingSkill ? _pendingSkill : null;
+                overlay.Show(skillForAffinity);
             }
             else
             {
                 overlay.Hide();
             }
         }
-
-        UpdateElementIndicator(unit, actor, enabled);
 
         if (enabled)
         {
