@@ -4936,7 +4936,7 @@ MonoBehaviour:
   _groupTargetOverviewCamera: {fileID: 706365938}
   _activePriority: 30
   _inactivePriority: 0
-  _backDistance: 7
+  _backDistance: 4.5
   _backHeight: 0.4
   _backLookHeight: 1.2
   _backLookForward: 4
@@ -4945,7 +4945,7 @@ MonoBehaviour:
   _backRoll: 0
   _backWaitDuration: 0.35
   _backTweenDuration: 0.4
-  _overviewBackDistance: 5
+  _overviewBackDistance: 3
   _overviewHeight: 6.5
   _overviewFocusHeight: 0.8
   _overviewFov: 55
@@ -4953,12 +4953,13 @@ MonoBehaviour:
   _overviewFocusForward: 1.5
   _overviewRoll: 0
   _overviewWaitDuration: 0.35
-  _skillFrontDistance: -3
+  _skillBackDistance: 0.5
   _skillSideOffset: 2
-  _skillHeight: -0.5
-  _skillLookHeight: 1.8
+  _skillHeight: -0.55
+  _skillFocusHeight: 1.05
+  _skillTargetFocusWeight: 0.5
   _skillFov: 90
-  _skillRoll: -5
+  _skillRoll: 3.5
   _skillWaitDuration: 0.4
   _skillDrawDistance: 7
   _skillDrawHeight: 0.4
