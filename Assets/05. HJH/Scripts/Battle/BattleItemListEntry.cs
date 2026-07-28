@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -76,7 +77,7 @@ public class BattleItemListEntry : MonoBehaviour,
     private Material _frontParticleMaterial;
 
     private Tween _revealTween;
-    private Sequence _idleSequence;
+    private readonly List<Tween> _idleTweens = new List<Tween>();
 
     private float _revealValue;
 
@@ -307,10 +308,6 @@ public class BattleItemListEntry : MonoBehaviour,
             return;
         }
 
-        _idleSequence =
-            DOTween.Sequence()
-                .SetUpdate(true);
-
         //----------------------------------------
         // BackParticle1
         //----------------------------------------
@@ -329,7 +326,7 @@ public class BattleItemListEntry : MonoBehaviour,
             rectTransform.localRotation =
                 Quaternion.identity;
 
-            _idleSequence.Join(
+            _idleTweens.Add(
                 rectTransform
                     .DOLocalMoveX(10f, 1.8f)
                     .SetLoops(
@@ -337,9 +334,10 @@ public class BattleItemListEntry : MonoBehaviour,
                         LoopType.Yoyo
                     )
                     .SetEase(Ease.InOutSine)
+                    .SetUpdate(true)
             );
 
-            _idleSequence.Join(
+            _idleTweens.Add(
                 rectTransform
                     .DOLocalRotate(
                         new Vector3(
@@ -354,6 +352,7 @@ public class BattleItemListEntry : MonoBehaviour,
                         LoopType.Yoyo
                     )
                     .SetEase(Ease.InOutSine)
+                    .SetUpdate(true)
             );
         }
 
@@ -375,7 +374,7 @@ public class BattleItemListEntry : MonoBehaviour,
             rectTransform.localRotation =
                 Quaternion.identity;
 
-            _idleSequence.Join(
+            _idleTweens.Add(
                 rectTransform
                     .DOLocalMoveX(-8f, 2.3f)
                     .SetLoops(
@@ -383,9 +382,10 @@ public class BattleItemListEntry : MonoBehaviour,
                         LoopType.Yoyo
                     )
                     .SetEase(Ease.InOutSine)
+                    .SetUpdate(true)
             );
 
-            _idleSequence.Join(
+            _idleTweens.Add(
                 rectTransform
                     .DOLocalRotate(
                         new Vector3(
@@ -400,6 +400,7 @@ public class BattleItemListEntry : MonoBehaviour,
                         LoopType.Yoyo
                     )
                     .SetEase(Ease.InOutSine)
+                    .SetUpdate(true)
             );
         }
 
@@ -415,7 +416,7 @@ public class BattleItemListEntry : MonoBehaviour,
             rectTransform.localScale =
                 Vector3.one;
 
-            _idleSequence.Join(
+            _idleTweens.Add(
                 rectTransform
                     .DOScale(1.05f, 0.8f)
                     .SetLoops(
@@ -423,17 +424,19 @@ public class BattleItemListEntry : MonoBehaviour,
                         LoopType.Yoyo
                     )
                     .SetEase(Ease.InOutSine)
+                    .SetUpdate(true)
             );
         }
     }
 
     private void StopIdleEffect()
     {
-        if (_idleSequence != null)
+        for (int i = 0; i < _idleTweens.Count; i++)
         {
-            _idleSequence.Kill();
-            _idleSequence = null;
+            _idleTweens[i]?.Kill();
         }
+
+        _idleTweens.Clear();
 
         ResetParticleTransforms();
     }

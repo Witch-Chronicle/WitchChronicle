@@ -49,7 +49,7 @@ public class BattleEncounter : MonoBehaviour
     /// 조우 적 데이터 초기화
     /// </summary>
     /// <param name="enemies">조우 적 목록</param>
-    public void Initialize( List<EnemyBattleData> enemyGroup)
+    public void Initialize(List<EnemyBattleData> enemyGroup)
     {
         _assignedEnemies.Clear();
 
@@ -92,10 +92,10 @@ public class BattleEncounter : MonoBehaviour
             return;
         }
 
-        Vector3 spawnPosition = new Vector3( transform.position.x,  transform.position.y - 1f,  transform.position.z);  
+        Vector3 spawnPosition = new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z);
 
         GameObject monsterInstance = Instantiate(strongestEnemy.Prefab, spawnPosition, transform.rotation, transform);
-        
+
         Debug.Log($"[BattleEncounter] 가장 강한 적 [{strongestEnemy.EnemyName}] 프리팹 생성 완료 (스탯 총합 기반)");
     }
 
@@ -196,7 +196,7 @@ public class BattleEncounter : MonoBehaviour
     private void StartBattleTransition()
     {
         Debug.Log("3. 전환 함수 진입 시작");
-        
+
         if (_assignedEnemies.Count <= 0)
         {
             Debug.LogWarning($"{name}에 조우 적 데이터 없음");
@@ -211,9 +211,9 @@ public class BattleEncounter : MonoBehaviour
 
         string returnSceneName = SceneManager.GetActiveScene().name;
         Vector3 returnPosition = GetReturnPosition();
-        Quaternion returnRotation = GetReturnRotation(); 
+        Quaternion returnRotation = GetReturnRotation();
 
-        
+
         BattleEncounterContext.Instance.SetEncounter(this,
             _assignedEnemies,
             returnSceneName,

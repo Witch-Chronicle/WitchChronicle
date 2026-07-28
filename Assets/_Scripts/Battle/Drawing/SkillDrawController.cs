@@ -58,8 +58,25 @@ public class SkillDrawController : MonoBehaviour
 
     [Header("Result (배율 표시, DrawCanvas 하위)")]
     [SerializeField] private TMPro.TMP_Text _multiplierText;
-    [Tooltip("배율 텍스트가 뜬 채로 유지되는 시간 (이 시간이 지난 뒤 사라짐 연출 시작)")]
+    [Tooltip("판정 후 라인이 사라지기 시작하기 전 잠깐 멈춰있는 시간 (더 이상 배율 텍스트 표시용이 아님)")]
     [SerializeField] private float _resultHoldDuration = 1f;
+
+    [Header("Multiplier Result Area (마법진이 다 사라진 뒤 배율을 보여주는 영역)")]
+    [Tooltip("HeaderTxt/MultiplierTxt/MultiplierSlider를 담은 영역의 CanvasGroup. 평소 alpha 0으로 숨겨둠. " +
+         "MultiplierArea 오브젝트에 CanvasGroup 컴포넌트를 추가해서 연결할 것.")]
+    [SerializeField] private CanvasGroup _multiplierAreaCanvasGroup;
+    [SerializeField] private float _multiplierAreaFadeDuration = 0.25f;
+    [SerializeField] private Ease _multiplierAreaFadeEase = Ease.OutQuad;
+
+    [Tooltip("0~_maxDamageMultiplier 범위로 채워지는 슬라이더 Fill 이미지 (MultiplierSlider/Fill)")]
+    [SerializeField] private UnityEngine.UI.Image _multiplierSliderFillImage;
+
+    [Tooltip("슬라이더/텍스트가 0에서 목표 배율까지 차오르는 데 걸리는 시간 (둘이 같은 시간 사용, 동시에 끝남)")]
+    [SerializeField] private float _multiplierRevealDuration = 0.6f;
+    [SerializeField] private Ease _multiplierRevealEase = Ease.OutQuad;
+
+    [Tooltip("배율이 다 채워진 뒤 MultiplierArea가 사라지기 전 유지되는 시간")]
+    [SerializeField] private float _multiplierHoldDuration = 0.6f;
 
     [Header("Disappear (라인/FilledImg 페이드아웃)")]
     [Tooltip("점수 확인 후 라인/FilledImg가 서서히 사라지는 데 걸리는 시간")]
@@ -112,8 +129,8 @@ public class SkillDrawController : MonoBehaviour
     [Range(0f, 100f)]
     [SerializeField] private float _scoreThreshold = 70f;
 
-    [Header("데미지 배율 (threshold 미만 x1, threshold~100을 min~max로 선형 매핑)")]
-    [SerializeField] private float _minDamageMultiplier = 1f;
+    [Header("데미지 배율 (0~threshold를 min~1로, threshold~100을 1~max로 선형 매핑)")]
+    [SerializeField] private float _minDamageMultiplier = 0f;
     [SerializeField] private float _maxDamageMultiplier = 2f;
 
     private Camera _cam;
@@ -153,6 +170,13 @@ public class SkillDrawController : MonoBehaviour
             _drawingPlaceCanvasGroup.alpha = 0f;
             _drawingPlaceCanvasGroup.interactable = false;
             _drawingPlaceCanvasGroup.blocksRaycasts = false;
+        }
+
+        if (_multiplierAreaCanvasGroup != null)
+        {
+            _multiplierAreaCanvasGroup.alpha = 1f;
+            _multiplierAreaCanvasGroup.interactable = false;
+            _multiplierAreaCanvasGroup.blocksRaycasts = false;
         }
     }
 
@@ -239,7 +263,27 @@ public class SkillDrawController : MonoBehaviour
 
         if (_tooltipObject != null) _tooltipObject.SetActive(true);
         if (_headerObject != null) _headerObject.SetActive(true);
-        if (_multiplierText != null) _multiplierText.gameObject.SetActive(false);
+
+        // MultiplierArea는 매 판정마다 깨끗한 상태(x0.00, Fill 0)로 리셋, alpha는 항상 1 유지
+        if (_multiplierAreaCanvasGroup != null)
+        {
+            _multiplierAreaCanvasGroup.DOKill();
+            _multiplierAreaCanvasGroup.alpha = 1f;
+            _multiplierAreaCanvasGroup.interactable = false;
+            _multiplierAreaCanvasGroup.blocksRaycasts = false;
+        }
+
+        if (_multiplierText != null)
+        {
+            _multiplierText.DOKill();
+            _multiplierText.text = "x 0.00";
+        }
+
+        if (_multiplierSliderFillImage != null)
+        {
+            _multiplierSliderFillImage.DOKill();
+            _multiplierSliderFillImage.fillAmount = 0f;
+        }
 
         // 타이머/입력은 아직 시작하지 않음 (Fade In 완료 후 시작)
         _isActive = false;
@@ -371,6 +415,8 @@ public class SkillDrawController : MonoBehaviour
         return new Vector2(screenPixel.x / Screen.width, screenPixel.y / Screen.height);
     }
 
+
+
     // ---------- 입력 (New Input System, Mouse.current 폴링) ----------
 
     private void HandleInput()
@@ -464,12 +510,10 @@ public class SkillDrawController : MonoBehaviour
         _isActive = false;
         _isPointerDrawing = false;
 
-        // 스트로크 타임아웃으로 조기 종료된 경우 Fill이 중간값에서 멈춰버리는 것 방지 -
-        // 짧게 100%까지 마저 채워주는 트윈 (시간 종료로 자연 종료된 경우엔 이미 1에 가까우니 무해함)
         CompleteTimerFill();
 
         float score = 0f;
-        float multiplier = 1f;
+        float multiplier;
 
         if (_allPoints.Count >= 2)
         {
@@ -479,10 +523,10 @@ public class SkillDrawController : MonoBehaviour
         }
         else
         {
-            Debug.Log("[SkillDrawController] 그린 게 없음 / 배율 x1");
+            multiplier = ScoreToMultiplier(score); // score는 0이므로 _minDamageMultiplier로 자연스럽게 매핑됨
+            Debug.Log($"[SkillDrawController] 그린 게 없음 / 배율 x{multiplier:0.00}");
         }
 
-        // 여기서 라인/FilledImg를 지우지 않음 - 점수가 나오기 전까지 그대로 유지되어야 함.
         ShowMultiplierResult(score, multiplier);
     }
 
@@ -498,17 +542,8 @@ public class SkillDrawController : MonoBehaviour
         _timerFillImage.DOFillAmount(1f, _timerCompleteFillDuration).SetEase(Ease.OutQuad);
     }
 
-    /// <summary>
-    /// 배율 텍스트를 표시하고 _resultHoldDuration만큼 유지한 뒤, 사라짐 연출로 넘어감.
-    /// </summary>
     private void ShowMultiplierResult(float score, float multiplier)
     {
-        if (_multiplierText != null)
-        {
-            _multiplierText.text = $"x{multiplier:0.00}";
-            _multiplierText.gameObject.SetActive(true);
-        }
-
         StartCoroutine(HoldResultThenDisappear(score, multiplier));
     }
 
@@ -517,12 +552,10 @@ public class SkillDrawController : MonoBehaviour
         yield return new WaitForSeconds(_resultHoldDuration);
 
         if (_headerObject != null) _headerObject.SetActive(false);
-        if (_multiplierText != null) _multiplierText.gameObject.SetActive(false);
+        // ↑ 여기서 _multiplierText.gameObject.SetActive(false) 줄은 삭제 (더 이상 여기서 안 다룸)
 
         Color resultColor = _resultColorGradient.Evaluate(Mathf.Clamp01(score / 100f));
 
-        // TimerFillImage 색상도 같은 시간(_colorWipeDuration)에 걸쳐 resultColor로 부드럽게 전환
-        // (알파는 건드리지 않음 - 이후 사라짐 단계에서 별도로 페이드아웃됨)
         if (_timerFillImage != null)
         {
             _timerFillImage.DOKill();
@@ -533,13 +566,13 @@ public class SkillDrawController : MonoBehaviour
             _timerFillImage.DOColor(targetColor, _colorWipeDuration);
         }
 
-        // 1. Outline이 그린 순서대로 알파 0->1 드러나며 resultColor로 물듦 (Fill은 _applyColorWipeToFill에 따라)
+        // 1. Outline이 그린 순서대로 알파 0->1 드러나며 resultColor로 물듦
         yield return StartCoroutine(ColorWipeRoutine(resultColor));
 
-        // 2. 다 채워지면 두께가 살짝 커졌다가 되돌아옴 (Fill+Outline 둘 다)
+        // 2. 다 채워지면 두께가 살짝 커졌다가 되돌아옴
         yield return StartCoroutine(PulseLinesRoutine());
 
-        // 3. 최종 페이드아웃 (두께+알파를 0으로, 색은 각자 유지한 채로, Fill+Outline 둘 다)
+        // 3. 최종 페이드아웃 (마법진 라인)
         yield return StartCoroutine(FinalFadeOutRoutine(resultColor, _disappearDuration));
 
         if (_timerFillImage != null)
@@ -550,7 +583,67 @@ public class SkillDrawController : MonoBehaviour
 
         ClearPlayerLines();
 
+        // 4. 마법진이 완전히 사라진 뒤에야 MultiplierArea 등장 + 슬라이더/텍스트 카운트업
+        yield return StartCoroutine(RevealMultiplierArea(multiplier));
+
+        // 5. 다 채워진 배율을 잠깐 보여준 뒤
+        yield return new WaitForSeconds(_multiplierHoldDuration);
+
+        // 6. MultiplierArea 페이드아웃
+        yield return StartCoroutine(FadeOutMultiplierArea());
+
         PlayFadeOut(multiplier);
+    }
+
+    /// <summary>
+    /// MultiplierArea를 페이드 인하고, 슬라이더 Fill과 텍스트를 x0.0에서 targetMultiplier까지
+    /// 같은 시간(_multiplierRevealDuration)에 걸쳐 동시에 채움 - 둘이 정확히 같은 타이밍에 끝남.
+    /// </summary>
+    private IEnumerator RevealMultiplierArea(float targetMultiplier)
+    {
+        if (_multiplierSliderFillImage != null) _multiplierSliderFillImage.fillAmount = 0f;
+        if (_multiplierText != null) _multiplierText.text = "x 0.00";
+
+        float maxRange = Mathf.Max(0.0001f, _maxDamageMultiplier);
+        float targetFill = Mathf.Clamp01(targetMultiplier / maxRange);
+
+        if (_multiplierSliderFillImage != null)
+        {
+            _multiplierSliderFillImage.DOKill();
+            _multiplierSliderFillImage.DOFillAmount(targetFill, _multiplierRevealDuration).SetEase(_multiplierRevealEase);
+        }
+
+        float value = 0f;
+
+        Tween textTween = DOTween.To(
+            () => value,
+            x =>
+            {
+                value = x;
+                if (_multiplierText != null) _multiplierText.text = $"x {value:0.00}";
+            },
+            targetMultiplier,
+            _multiplierRevealDuration).SetEase(_multiplierRevealEase);
+
+        yield return textTween.WaitForCompletion();
+
+        if (_multiplierText != null) _multiplierText.text = $"x {targetMultiplier:0.00}";
+        if (_multiplierSliderFillImage != null) _multiplierSliderFillImage.fillAmount = targetFill;
+    }
+
+    /// <summary>
+    /// 배율 확인이 끝난 뒤 MultiplierArea를 페이드아웃.
+    /// </summary>
+    private IEnumerator FadeOutMultiplierArea()
+    {
+        if (_multiplierAreaCanvasGroup == null) yield break;
+
+        _multiplierAreaCanvasGroup.DOKill();
+
+        yield return _multiplierAreaCanvasGroup
+            .DOFade(0f, _multiplierAreaFadeDuration)
+            .SetEase(_multiplierAreaFadeEase)
+            .WaitForCompletion();
     }
 
     /// <summary>
@@ -864,14 +957,22 @@ public class SkillDrawController : MonoBehaviour
     }
 
     /// <summary>
-    /// threshold 미만이면 _minDamageMultiplier, threshold~100 구간을
-    /// _minDamageMultiplier~_maxDamageMultiplier로 선형 매핑.
+    /// 0~threshold 구간은 _minDamageMultiplier~1로, threshold~100 구간은 1~_maxDamageMultiplier로
+    /// 각각 선형 매핑 (threshold 지점이 배율 1.0이 되는 경계).
     /// </summary>
     private float ScoreToMultiplier(float score)
     {
-        if (score < _scoreThreshold) return _minDamageMultiplier;
-        float t = Mathf.InverseLerp(_scoreThreshold, 100f, score);
-        return Mathf.Lerp(_minDamageMultiplier, _maxDamageMultiplier, t);
+        if (score < _scoreThreshold)
+        {
+            float t = _scoreThreshold > 0f
+                ? Mathf.InverseLerp(0f, _scoreThreshold, score)
+                : 1f;
+
+            return Mathf.Lerp(_minDamageMultiplier, 1f, t);
+        }
+
+        float tHigh = Mathf.InverseLerp(_scoreThreshold, 100f, score);
+        return Mathf.Lerp(1f, _maxDamageMultiplier, tHigh);
     }
 
     private void UpdateTimerUI(float remaining, float elapsed)

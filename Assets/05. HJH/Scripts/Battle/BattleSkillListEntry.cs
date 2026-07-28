@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -72,6 +73,8 @@ public class BattleSkillListEntry : MonoBehaviour,
     public bool IsBound => _isBound;
     private Sequence _idleSequence;
     private SkillPresentationPalette _presentationPalette;
+    private readonly List<Tween> _idleTweens = new List<Tween>();
+
 
     private void Awake()
     {
@@ -239,34 +242,29 @@ public class BattleSkillListEntry : MonoBehaviour,
             .OnComplete(StartIdleEffect);
     }
 
+
     private void StartIdleEffect()
     {
         StopIdleEffect();
-
-        _idleSequence = DOTween.Sequence();
 
         //----------------------------------------
         // BackParticle1
         //----------------------------------------
 
-        if (_backParticleImages.Length > 0 &&
-            _backParticleImages[0] != null)
+        if (_backParticleImages.Length > 0 && _backParticleImages[0] != null)
         {
-            RectTransform rt =
-                _backParticleImages[0].rectTransform;
+            RectTransform rt = _backParticleImages[0].rectTransform;
 
             rt.localPosition = Vector3.zero;
             rt.localRotation = Quaternion.identity;
 
-            _idleSequence.Join(
+            _idleTweens.Add(
                 rt.DOLocalMoveX(10f, 1.8f)
                     .SetLoops(-1, LoopType.Yoyo)
                     .SetEase(Ease.InOutSine));
 
-            _idleSequence.Join(
-                rt.DOLocalRotate(
-                        new Vector3(0, 0, 6),
-                        2.5f)
+            _idleTweens.Add(
+                rt.DOLocalRotate(new Vector3(0, 0, 6), 2.5f)
                     .SetLoops(-1, LoopType.Yoyo)
                     .SetEase(Ease.InOutSine));
         }
@@ -275,24 +273,20 @@ public class BattleSkillListEntry : MonoBehaviour,
         // BackParticle2
         //----------------------------------------
 
-        if (_backParticleImages.Length > 1 &&
-            _backParticleImages[1] != null)
+        if (_backParticleImages.Length > 1 && _backParticleImages[1] != null)
         {
-            RectTransform rt =
-                _backParticleImages[1].rectTransform;
+            RectTransform rt = _backParticleImages[1].rectTransform;
 
             rt.localPosition = Vector3.zero;
             rt.localRotation = Quaternion.identity;
 
-            _idleSequence.Join(
+            _idleTweens.Add(
                 rt.DOLocalMoveX(-8f, 2.3f)
                     .SetLoops(-1, LoopType.Yoyo)
                     .SetEase(Ease.InOutSine));
 
-            _idleSequence.Join(
-                rt.DOLocalRotate(
-                        new Vector3(0, 0, -8),
-                        3.0f)
+            _idleTweens.Add(
+                rt.DOLocalRotate(new Vector3(0, 0, -8), 3.0f)
                     .SetLoops(-1, LoopType.Yoyo)
                     .SetEase(Ease.InOutSine));
         }
@@ -303,12 +297,11 @@ public class BattleSkillListEntry : MonoBehaviour,
 
         if (_frontParticleImage != null)
         {
-            RectTransform rt =
-                _frontParticleImage.rectTransform;
+            RectTransform rt = _frontParticleImage.rectTransform;
 
             rt.localScale = Vector3.one;
 
-            _idleSequence.Join(
+            _idleTweens.Add(
                 rt.DOScale(1.05f, 0.8f)
                     .SetLoops(-1, LoopType.Yoyo)
                     .SetEase(Ease.InOutSine));
@@ -317,11 +310,12 @@ public class BattleSkillListEntry : MonoBehaviour,
 
     private void StopIdleEffect()
     {
-        if (_idleSequence != null)
+        for (int i = 0; i < _idleTweens.Count; i++)
         {
-            _idleSequence.Kill();
-            _idleSequence = null;
+            _idleTweens[i]?.Kill();
         }
+
+        _idleTweens.Clear();
 
         ResetParticleTransforms();
     }

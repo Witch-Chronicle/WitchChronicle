@@ -29,6 +29,10 @@ public class BattleCharacterStatusView : MonoBehaviour
     [SerializeField] private Slider _mpSlider;
     [SerializeField] private TMP_Text _mpTxt;
 
+    [Header("Dead State")]
+    [Tooltip("이 캐릭터가 죽었을 때 활성화되는 오버레이 이미지. 평소엔 비활성.")]
+    [SerializeField] private Image _deadOverlayImg;
+
     public BattleUnit BoundUnit { get; private set; }
 
     /// <summary>
@@ -43,7 +47,11 @@ public class BattleCharacterStatusView : MonoBehaviour
 
         BoundUnit = unit;
 
-        if (unit == null) return;
+        if (unit == null)
+        {
+            UpdateDeadState(false);
+            return;
+        }
 
         if (_nameTxt != null) _nameTxt.text = unit.UnitName;
 
@@ -54,6 +62,7 @@ public class BattleCharacterStatusView : MonoBehaviour
 
         UpdateHp(unit.CurrentHp, unit.MaxHp);
         UpdateMp(unit.CurrentMp, unit.MaxMp);
+        UpdateDeadState(unit.IsAlive == false);
     }
 
     /// <summary>
@@ -96,6 +105,16 @@ public class BattleCharacterStatusView : MonoBehaviour
         _orderTxt.text = roundOrderNumber > 0 ? roundOrderNumber.ToString() : string.Empty;
     }
 
+    /// <summary>
+    /// 캐릭터가 죽었을 때 오버레이 이미지를 활성화, 살아있으면 비활성화.
+    /// </summary>
+    private void UpdateDeadState(bool isDead)
+    {
+        if (_deadOverlayImg == null) return;
+
+        _deadOverlayImg.gameObject.SetActive(isDead);
+    }
+
     public void Clear()
     {
         UnsubscribeCurrent();
@@ -109,11 +128,15 @@ public class BattleCharacterStatusView : MonoBehaviour
         if (_mpTxt != null) _mpTxt.text = string.Empty;
 
         UpdateIcon(null);
+        UpdateDeadState(false);
     }
 
     private void HandleHpChanged()
     {
-        if (BoundUnit != null) UpdateHp(BoundUnit.CurrentHp, BoundUnit.MaxHp);
+        if (BoundUnit == null) return;
+
+        UpdateHp(BoundUnit.CurrentHp, BoundUnit.MaxHp);
+        UpdateDeadState(BoundUnit.IsAlive == false);
     }
 
     private void HandleMpChanged()
