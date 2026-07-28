@@ -32,6 +32,8 @@ public class SkillData : ScriptableObject
     [SerializeField] private SkillPresentationType _presentationType;
     [SerializeField] private Sprite _skillIcon;
     [SerializeField] private AudioClip _voiceClip;
+    [Tooltip("연출 시작 후 데미지가 들어가기까지 지연(초). 이펙트가 대상에 닿는 시점에 맞춘다. 0이면 컨트롤러의 전역 Impact Delay 사용")]
+    [SerializeField] private float _impactDelay = 0f;
 
     [Header("Presentation - Sound")]
     [SerializeField] private AudioClip _castSfx;
@@ -77,6 +79,7 @@ public class SkillData : ScriptableObject
     public SkillPresentationType PresentationType => _presentationType;
     public Sprite SkillIcon => _skillIcon;
     public AudioClip VoiceClip => _voiceClip;
+    public float ImpactDelay => _impactDelay;
 
     public AudioClip CastSfx => _castSfx;
     public AudioClip HitSfx => _hitSfx;

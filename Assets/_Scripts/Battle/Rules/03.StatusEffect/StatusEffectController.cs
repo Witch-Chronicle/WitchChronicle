@@ -340,6 +340,25 @@ namespace Battle.Rules
             return true;
         }
 
+        /// <summary>
+        /// 혼란 상태에서 공격이 빗나가는지 판정한다(행동은 하되 데미지 없이 헛침).
+        /// 행동 자체를 막는 CanAct와 달리 연출은 그대로 재생된다.
+        /// </summary>
+        /// <param name="unit">공격 유닛</param>
+        /// <returns>true면 빗나감(데미지 없음)</returns>
+        public bool RollConfusionMiss(BattleUnit unit)
+        {
+            ActiveStatusEffect effect =
+                GetActiveEffect(unit, StatusEffectType.Confusion);
+
+            if (effect == null || effect.Data == null)
+            {
+                return false;
+            }
+
+            return Random.value < effect.Data.ConfusionMissChance;
+        }
+
         // ============ 피격 시 처리 ============
 
         /// <summary>

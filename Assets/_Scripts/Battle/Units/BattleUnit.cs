@@ -285,6 +285,23 @@ public class BattleUnit
     }
 
     /// <summary>
+    /// MP 회복. MP를 사용하지 않는 유닛은 효과 없음. 최대 MP를 넘지 않는다.
+    /// </summary>
+    public void RestoreMp(int amount)
+    {
+        if (_usesMp == false)
+        {
+            return;
+        }
+
+        int finalAmount = Mathf.Max(0, amount);
+
+        _currentMp = Mathf.Min(_maxMp, _currentMp + finalAmount);
+
+        OnMpChanged?.Invoke();
+    }
+
+    /// <summary>
     /// 해당 스킬을 사용할 수 있는지 확인
     /// MP를 사용하는 유닛만 MP 소모량을 검사
     /// </summary>

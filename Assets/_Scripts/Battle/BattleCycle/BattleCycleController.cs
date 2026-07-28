@@ -14,6 +14,10 @@ public class BattleCycleController : MonoBehaviour
     [SerializeField] private bool _autoPlay = true;
     [SerializeField] private float _actionDelay = 0.5f;
 
+    [Header("Impact Timing")]
+    [Tooltip("행동 연출(OnActionExecuting) 후 실제 데미지가 적용되기까지 지연(초). 스킬 이펙트가 대상에 닿는 시점에 맞춘다")]
+    [SerializeField] private float _impactDelay = 0.3f;
+
     [Header("Constellation")]
     [SerializeField] private BattleCameraDirector _battleCameraDirector;
     [SerializeField] private ConstellationBattleManager _constellationBattleManager;
@@ -42,6 +46,7 @@ public class BattleCycleController : MonoBehaviour
     [Header("Status Effect (상태이상 적용/알림용)")]
     [SerializeField] private StatusEffectDatabase _statusEffectDatabase;
     private readonly StatusEffectController _statusEffectController = new StatusEffectController();
+    private BattleItemExecutor _itemExecutor;
 
     public event Action OnBattleStarted;
     public event Action<int> OnRoundStarted;
@@ -81,6 +86,9 @@ public class BattleCycleController : MonoBehaviour
         // 상태이상 부여/해제를 연출 이벤트로 중계
         _statusEffectController.OnApplied += HandleStatusApplied;
         _statusEffectController.OnRemoved += HandleStatusRemoved;
+
+        // 아이템(포션) 실행부 — 배틀의 실제 상태이상 컨트롤러를 공유
+        _itemExecutor = new BattleItemExecutor(_statusEffectController);
     }
 
     private void HandleStatusApplied(BattleUnit unit, StatusEffectType type)
@@ -278,10 +286,29 @@ public class BattleCycleController : MonoBehaviour
             $"[Battle] {unit.UnitName} Turn Start / " +
             $"Actions: {actionCount}");
 
-        while (_currentTurnContext.CanAct)
+        // 턴 시작: 화상·독 등 지속 피해 tick 적용
+        _statusEffectController.ProcessTurnStart(unit);
+
+        while (_currentTurnContext.CanAct && unit.IsAlive)
         {
             _battleState =
                 BattleState.ExecutingAction;
+
+            // 상태이상 행동 판정: 수면(항상 불가)·마비(확률 불가)
+            if (_statusEffectController.CanAct(unit) == false)
+            {
+                Debug.Log(
+                    $"[Battle] {unit.UnitName} 행동불가(상태이상)");
+
+                _currentTurnContext.ConsumeAction();
+
+                if (_actionDelay > 0f)
+                {
+                    yield return new WaitForSeconds(_actionDelay);
+                }
+
+                continue;
+            }
 
             if (_autoPlay ||
                 unit.TeamType == BattleTeamType.Enemy)
@@ -403,6 +430,18 @@ public class BattleCycleController : MonoBehaviour
             FindFirstAliveOpponent(actor);
 
         return target != null;
+    }
+
+    /// <summary>침묵 등으로 스킬을 사용할 수 있는지(UI 스킬 버튼 잠금 판단용).</summary>
+    public bool CanUseSkill(BattleUnit unit)
+    {
+        return _statusEffectController.CanUseSkill(unit);
+    }
+
+    /// <summary>포션 사용(HP/MP 회복·상태이상 해제). 배틀의 실제 상태 컨트롤러를 공유한다. UI에서 호출.</summary>
+    public BattleItemResult UsePotion(BattleUnit user, PotionItemData potion)
+    {
+        return _itemExecutor.UsePotion(user, potion);
     }
 
     /// <summary>
@@ -602,10 +641,8 @@ public class BattleCycleController : MonoBehaviour
         switch (actionRequest.CommandType)
         {
             case CommandType.Attack:
-                OnActionExecuting?.Invoke(
+                yield return ExecutePresentedAttack(
                     actionRequest);
-
-                ExecuteAttack(actionRequest);
                 break;
 
             case CommandType.Skill:
@@ -649,6 +686,47 @@ public class BattleCycleController : MonoBehaviour
     }
 
     /// <summary>
+    /// 기본 공격을 연출(OnActionExecuting) → 임팩트 딜레이 → 데미지 순으로 실행.
+    /// </summary>
+    /// <param name="actionRequest">공격 행동 요청</param>
+    private IEnumerator ExecutePresentedAttack(
+        BattleActionRequest actionRequest)
+    {
+        OnActionExecuting?.Invoke(
+            actionRequest);
+
+        yield return WaitImpact();
+
+        // 혼란: 일정 확률로 공격이 빗나가 데미지가 들어가지 않음(연출은 그대로 재생)
+        if (_statusEffectController.RollConfusionMiss(
+                actionRequest.Actor))
+        {
+            Debug.Log(
+                $"[Battle] {actionRequest.Actor?.UnitName} 혼란: 공격이 빗나감(MISS)");
+
+            yield break;
+        }
+
+        ExecuteAttack(actionRequest);
+    }
+
+    /// <summary>
+    /// 연출 후 데미지 적용까지의 임팩트 딜레이 대기.
+    /// 스킬 SO에 개별 ImpactDelay(>0)가 있으면 그 값, 없으면 전역 _impactDelay 사용.
+    /// </summary>
+    private IEnumerator WaitImpact(SkillData skill = null)
+    {
+        float delay = (skill != null && skill.ImpactDelay > 0f)
+            ? skill.ImpactDelay
+            : _impactDelay;
+
+        if (delay > 0f)
+        {
+            yield return new WaitForSeconds(delay);
+        }
+    }
+
+    /// <summary>
     /// 기본 공격 실행
     /// </summary>
     /// <param name="actionRequest">공격 행동 요청</param>
@@ -679,6 +757,9 @@ public class BattleCycleController : MonoBehaviour
                 target);
 
         target.TakeDamage(damage);
+
+        // 피격 시 자동 해제 상태이상 처리(수면 등)
+        _statusEffectController.OnUnitHit(target);
 
         Debug.Log(
             $"[Battle] {attacker.UnitName} attacks " +
@@ -725,6 +806,32 @@ public class BattleCycleController : MonoBehaviour
 
         _skillTargets.Clear();
 
+        // 침묵: 스킬 사용 불가 → 공격 스킬은 기본공격 대체, 지원 스킬은 불발 (MP 소모 전에 판정)
+        if (_statusEffectController.CanUseSkill(actor) == false)
+        {
+            if (skillData.SkillType == SkillEffectType.Damage &&
+                resolvedTargets.Count > 0 &&
+                resolvedTargets[0] != null)
+            {
+                Debug.Log(
+                    $"[Battle] {actor.UnitName} 침묵: 스킬 불가 → 기본공격 대체");
+
+                BattleActionRequest attackRequest =
+                    BattleActionRequest.CreateAttack(
+                        actor,
+                        resolvedTargets[0]);
+
+                yield return ExecutePresentedAttack(attackRequest);
+            }
+            else
+            {
+                Debug.Log(
+                    $"[Battle] {actor.UnitName} 침묵: 지원 스킬 불발");
+            }
+
+            yield break;
+        }
+
         if (actor.UseMp(
                 skillData.MpCost) == false)
         {
@@ -756,6 +863,8 @@ public class BattleCycleController : MonoBehaviour
 
         OnActionExecuting?.Invoke(
             actionRequest);
+
+        yield return WaitImpact(skillData);
 
         ApplySkillEffects(
             actor,
@@ -1367,6 +1476,9 @@ public class BattleCycleController : MonoBehaviour
                 damageMultiplier);
 
         target.TakeDamage(damage);
+
+        // 피격 시 자동 해제 상태이상 처리(수면 등)
+        _statusEffectController.OnUnitHit(target);
 
         Debug.Log(
             $"[Battle] {skillData.SkillName} hit " +

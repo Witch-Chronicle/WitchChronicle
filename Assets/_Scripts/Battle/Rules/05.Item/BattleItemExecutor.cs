@@ -161,11 +161,7 @@ namespace Battle.Rules
         /// </summary>
         private void RestoreMp(BattleUnit user, int amount)
         {
-            // BattleUnit에 Heal 메서드는 있지만 MP 회복 메서드는 없음
-            // 코어 담당자에게 RestoreMp 메서드 추가 요청 필요
-            // 임시: UseMp에 음수를 넘겨 회복 시도 (BattleUnit 구현에 따라 실패 가능)
-            Debug.LogWarning("[BattleItemExecutor] BattleUnit.RestoreMp 메서드 필요. 현재는 MP 회복 미작동");
-            // TODO: 코어 담당자에게 BattleUnit.RestoreMp(int amount) 메서드 요청
+            user.RestoreMp(amount);
         }
     }
 

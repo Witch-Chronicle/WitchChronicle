@@ -10,20 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 68af0523054818143bd739d6d0de7114, type: 3}
-  m_Name: 02.Poison_status
+  m_Name: 06.Confusion_status
   m_EditorClassIdentifier: Assembly-CSharp::Battle.Rules.StatusEffectData
-  _statusEffectType: 1
-  _statusName: "\uB3C5"
-  _description: "\uB9E4\uD134 \uCD5C\uB300 HP\uC758 3%\uB9CC\uD07C \uD53C\uD574\uB97C
-    \uBC1B\uB294\uB2E4. \uC9C0\uC18D \uC2DC\uAC04\uC774 \uAE38\uB2E4."
+  _statusEffectType: 5
+  _statusName: "혼란"
+  _description: "혼란 상태. 공격이 빗나가 자신이나
+    아군을 칠 수 있다."
   _icon: {fileID: 0}
-  _duration: 5
-  _canStack: 1
+  _duration: 2
+  _canStack: 0
   _maxStack: 1
-  _hasTickDamage: 1
-  _tickDamageRatio: 0.03
+  _hasTickDamage: 0
+  _tickDamageRatio: 0
   _tickDamageFixed: 0
   _preventsAction: 0
   _actionFailChance: 0
   _preventsSkill: 0
+  _confusionMissChance: 0.5
   _removeOnHit: 0
