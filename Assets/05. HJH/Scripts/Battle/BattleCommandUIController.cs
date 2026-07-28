@@ -22,6 +22,9 @@ public class BattleCommandUIController : MonoBehaviour
     [Header("Selection")]
     [SerializeField] private int _defaultIndex = 0;
 
+    // 커맨드 순서: Attack0 / Skill1 / Item2 / Retreat3
+    private const int SkillCommandIndex = 1;
+
     private int _currentIndex = -1;
     private bool _isInputActive;
 
@@ -31,7 +34,32 @@ public class BattleCommandUIController : MonoBehaviour
     public void ActivateInput()
     {
         _isInputActive = true;
+        RefreshSkillLock();
         ResetToDefault();
+    }
+
+    /// <summary>
+    /// 침묵 상태면 스킬 커맨드 버튼을 비활성화(입력 차단)한다.
+    /// interactable=false면 MoveSelection/SubmitCurrent가 IsSelectable로 자동 제외한다.
+    /// </summary>
+    private void RefreshSkillLock()
+    {
+        if (_commands == null || _commands.Length <= SkillCommandIndex)
+            return;
+
+        Button skillButton = _commands[SkillCommandIndex].Button;
+        if (skillButton == null)
+            return;
+
+        bool canUseSkill = true;
+
+        if (BattleUIContext.Instance != null)
+        {
+            BattleUnit unit = BattleUIContext.Instance.CurrentUnit;
+            canUseSkill = unit == null || BattleUIContext.Instance.CanUseSkill(unit);
+        }
+
+        skillButton.interactable = canUseSkill;
     }
 
     public void DeactivateInput()
@@ -93,6 +121,10 @@ public class BattleCommandUIController : MonoBehaviour
         {
             if (_commands[i].HoverButton == hoverButton)
             {
+                // 비활성(침묵 등) 커맨드는 마우스 hover로도 선택/하이라이트되지 않도록 차단
+                if (!IsSelectable(_commands[i].Button))
+                    return;
+
                 SelectIndex(i);
                 return;
             }

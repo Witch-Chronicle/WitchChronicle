@@ -102,17 +102,6 @@ public class ItemListController : MonoBehaviour
     private bool _isInitialized;
     private bool _isClosing;
 
-    /*
-     * TODO:
-     * BattleCycleController와 아이템 시스템이 통합되면
-     * BattleUIContext 등을 통해 실제 인스턴스를 받도록 변경한다.
-     */
-    private StatusEffectController
-        _tempStatusEffectController;
-
-    private BattleItemExecutor
-        _tempItemExecutor;
-
     public bool IsOpen { get; private set; }
 
     public bool IsInputActive =>
@@ -134,18 +123,6 @@ public class ItemListController : MonoBehaviour
         {
             _itemBtn.onClick.AddListener(Open);
         }
-
-        /*
-         * TODO:
-         * BattleCycleController와 통합되면 제거한다.
-         */
-        _tempStatusEffectController =
-            new StatusEffectController();
-
-        _tempItemExecutor =
-            new BattleItemExecutor(
-                _tempStatusEffectController
-            );
     }
 
     private void Start()
@@ -680,19 +657,8 @@ public class ItemListController : MonoBehaviour
             return;
         }
 
-        if (_tempItemExecutor == null)
-        {
-            Debug.LogWarning(
-                "[ItemListController] " +
-                "BattleItemExecutor가 없습니다.",
-                this
-            );
-
-            return;
-        }
-
         BattleItemResult result =
-            _tempItemExecutor.UsePotion(
+            BattleUIContext.Instance.UsePotion(
                 currentUnit,
                 potionData
             );
