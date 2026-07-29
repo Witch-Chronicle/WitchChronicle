@@ -11,6 +11,8 @@ public class BattleUnit
     private readonly BattleTeamType _teamType;
     private readonly Sprite _icon;
 
+    private readonly int _level;
+
     private readonly int _maxHp;
     private int _currentHp;
 
@@ -38,6 +40,8 @@ public class BattleUnit
     public string UnitName => _unitName;
     public BattleTeamType TeamType => _teamType;
     public Sprite Icon => _icon;
+
+    public int Level => _level;
 
     public int MaxHp => _maxHp;
     public int CurrentHp => _currentHp;
@@ -99,12 +103,14 @@ public class BattleUnit
         IReadOnlyList<ElementType> absorbElements,
         IReadOnlyList<SkillData> skillList,
         EnemyAIProfileData aiProfileData = null,
-        Sprite icon = null)
+        Sprite icon = null,
+        int level = 1)
     {
         _unitId = unitId;
         _unitName = unitName;
         _teamType = teamType;
         _icon = icon;
+        _level = Mathf.Max(1, level);
 
         _maxHp = Mathf.Max(1, maxHp);
         _currentHp = Mathf.Clamp(currentHp, 0, _maxHp);
@@ -145,6 +151,8 @@ public class BattleUnit
     /// <param name="magicDefensePower">마법 방어력입니다.</param>
     /// <param name="speed">속도입니다.</param>
     /// <param name="skillList">사용 가능한 스킬 목록입니다.</param>
+    /// <param name="icon">캐릭터 아이콘입니다.</param>
+    /// <param name="level">캐릭터 레벨입니다.</param>
     /// <returns>생성된 플레이어 BattleUnit입니다.</returns>
     public static BattleUnit CreatePlayer(
         string unitId,
@@ -159,7 +167,8 @@ public class BattleUnit
         float magicDefensePower,
         float speed,
         IReadOnlyList<SkillData> skillList,
-        Sprite icon = null)
+        Sprite icon = null,
+        int level = 1)
     {
         return new BattleUnit(
             unitId,
@@ -181,7 +190,8 @@ public class BattleUnit
             null,
             skillList,
             null,
-            icon);
+            icon,
+            level);
     }
 
     /// <summary>

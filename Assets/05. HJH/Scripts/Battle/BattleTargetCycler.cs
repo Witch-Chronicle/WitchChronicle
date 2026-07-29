@@ -209,22 +209,37 @@ public class BattleTargetCycler : MonoBehaviour
             return;
         }
 
-        if (_idleTarget == null || _idleTarget.IsAlive == false || opponents.Contains(_idleTarget) == false)
+        bool currentTargetInvalid = _idleTarget == null || _idleTarget.IsAlive == false || opponents.Contains(_idleTarget) == false;
+
+        if (currentTargetInvalid)
         {
             if (previousTarget != null) SetOutline(previousTarget, false);
 
             _idleTarget = opponents[0];
+            SetOutline(_idleTarget, true);
+            return;
+        }
+
+        // 타겟 자체는 여전히 유효하지만, 적 턴 동안 ClearAllOutlines()로 아웃라인이 꺼졌을 수 있으니
+        // 실제로 지금 켜져있는지 확인해서 안 켜져있으면 다시 켜줌.
+        if (_outlinedUnits.Contains(_idleTarget) == false)
+        {
             SetOutline(_idleTarget, true);
         }
     }
 
     private void HandleTurnStarted(BattleUnit unit)
     {
-        // BattleStarted 시점엔 아직 턴 순서/CurrentUnit이 없어 구독이 비어있을 수 있으니,
-        // 매 턴 시작마다 한 번 더 갱신해서 확실히 전체 유닛의 HP 변화를 구독하도록 보정.
         SubscribeAllUnitHp();
 
-        if (unit == null || unit.TeamType != BattleTeamType.Player) return;
+        if (unit == null || unit.TeamType != BattleTeamType.Player)
+        {
+            // 적 턴: 이전에 떠있던 아군의 idle 타겟 아웃라인/EnemyWorldSpaceCanvas를 전부 숨김
+            _mode = Mode.Idle;
+            ClearAllOutlines();
+            return;
+        }
+
         if (BattleUIContext.Instance == null) return;
 
         _mode = Mode.Idle;
@@ -238,6 +253,8 @@ public class BattleTargetCycler : MonoBehaviour
 
     private void CycleTarget(int direction)
     {
+        if (IsCurrentUnitPlayerControlled() == false) return;
+
         if (_mode == Mode.Idle)
         {
             CycleIdleTarget(direction);
@@ -252,8 +269,6 @@ public class BattleTargetCycler : MonoBehaviour
 
         SetOutline(_cycleCandidates[_cycleIndex], true);
 
-        // 기본 공격 또는 SingleEnemy 스킬로 대상을 순환 중일 때만 SingleTargetOverview 카메라도 같이 재조준.
-        // (AllEnemies/SingleAlly/AllAllies는 GroupTargetOverview라 카메라가 대상 하나에 붙어있지 않음)
         bool isSingleEnemyTargeting = _mode == Mode.PendingAttack
             || (_mode == Mode.PendingSkill && _pendingSkill != null && _pendingSkill.TargetType == TargetType.SingleEnemy);
 
@@ -262,6 +277,15 @@ public class BattleTargetCycler : MonoBehaviour
             EnsureCameraDirector();
             _cameraDirector?.RetargetSingleTargetOverview(_cycleCandidates[_cycleIndex]);
         }
+    }
+
+    /// <summary>
+    /// 지금 턴인 유닛이 플레이어 진영인지 여부. Q/E 타겟 순환은 이때만 허용.
+    /// </summary>
+    private bool IsCurrentUnitPlayerControlled()
+    {
+        BattleUnit currentUnit = BattleUIContext.Instance != null ? BattleUIContext.Instance.CurrentUnit : null;
+        return currentUnit != null && currentUnit.TeamType == BattleTeamType.Player;
     }
 
     private void CycleIdleTarget(int direction)
@@ -311,6 +335,15 @@ public class BattleTargetCycler : MonoBehaviour
         // 확인/취소 버튼은 그리는 동안 방해되니 미리 숨김 (그리기 끝나면 FinishPending에서 다시 정리)
         if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Hide();
 
+        // 이 스킬에 그리기 가이드가 없으면 SkillDrawCamera로 전환할 필요 자체가 없음
+        // (SkillDrawController.Play()가 DrawGuideJson 없을 때 즉시 배율 1로 콜백만 부르고 카메라는 안 건드리므로,
+        //  여기서 미리 걸러야 TargetView -> DrawCamera -> BackView로 잠깐 튀는 게 방지됨)
+        if (_pendingSkill.DrawGuideJson == null)
+        {
+            StartSkillDraw();
+            return;
+        }
+
         EnsureCameraDirector();
 
         if (_cameraDirector == null)
@@ -319,7 +352,6 @@ public class BattleTargetCycler : MonoBehaviour
             return;
         }
 
-        // TODO: BattleCameraDirector에 PlaySkillDrawView(BattleUnit, Action) 추가 필요
         _cameraDirector.PlaySkillDrawView(actor, StartSkillDraw);
     }
 
@@ -376,9 +408,8 @@ public class BattleTargetCycler : MonoBehaviour
                 }
                 else
                 {
-                    // 그리는 동안 스킬/모드가 바뀌지 않으므로, 숨기기 전과 동일한 스킬 정보로 복원.
                     SkillData skillForAffinity = _mode == Mode.PendingSkill ? _pendingSkill : null;
-                    overlay.Show(skillForAffinity);
+                    overlay.Show(true, skillForAffinity);
                 }
             }
         }
@@ -506,10 +537,12 @@ public class BattleTargetCycler : MonoBehaviour
 
         _cycleIndex = _idleTarget != null ? Mathf.Max(0, _cycleCandidates.IndexOf(_idleTarget)) : 0;
 
+        // SetOutline() 호출(내부에서 overlay.Show(isTargeting,...)의 isTargeting 판단에 _mode를 참조함)보다
+        // 먼저 PendingAttack으로 전환해둬야 처음 진입 시부터 EnemyWorldSpaceCanvas가 전체(프레임/이름/파티클) 표시됨.
+        _mode = Mode.PendingAttack;
+
         ClearAllOutlines();
         SetOutline(_cycleCandidates[_cycleIndex], true);
-
-        _mode = Mode.PendingAttack;
 
         if (BattleCharacterUIManager.Instance != null) BattleCharacterUIManager.Instance.HideCurrentUI();
         if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Show(Confirm, Cancel);
@@ -731,9 +764,9 @@ public class BattleTargetCycler : MonoBehaviour
         {
             if (enabled)
             {
-                // 스킬 조준 중일 때만 약점/저항 판정용 스킬 정보를 같이 넘김. 기본 공격/Idle이면 null.
+                bool isTargeting = _mode != Mode.Idle;
                 SkillData skillForAffinity = _mode == Mode.PendingSkill ? _pendingSkill : null;
-                overlay.Show(skillForAffinity);
+                overlay.Show(isTargeting, skillForAffinity);
             }
             else
             {

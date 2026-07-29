@@ -2102,11 +2102,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdfa969abd680984380c7731475235bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PartyQueueController
-  _statusViewPrefab: {fileID: 5890753736307342920, guid: b574077d30bf94a4883aa78ba262aa8f, type: 3}
+  _statusViewPrefab: {fileID: 2666404821719487205, guid: 32e10029be8d08e4e8be69f811c7c961, type: 3}
   _contentParent: {fileID: 871055237640376415}
-  _duration: 0.35
+  _duration: 0.5
   _ease: 6
-  _selectedSizeMultiplier: 1.15
+  _selectedScaleMultiplier: 1.2
 --- !u!114 &478148271348244338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2123,9 +2123,9 @@ MonoBehaviour:
     m_Left: 0
     m_Right: 10
     m_Top: 10
-    m_Bottom: 10
+    m_Bottom: 0
   m_ChildAlignment: 8
-  m_Spacing: 20
+  m_Spacing: 0
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 0

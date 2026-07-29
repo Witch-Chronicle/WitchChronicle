@@ -16,11 +16,11 @@ public class PartyQueueController : MonoBehaviour
     [SerializeField] private BattleCharacterStatusView _statusViewPrefab;
     [SerializeField] private Transform _contentParent; // HorizontalLayoutGroup이 붙어있는 Characters 오브젝트
 
-    [Header("Size Animation")]
+    [Header("Scale Animation")]
     [SerializeField] private float _duration = 0.25f;
     [SerializeField] private Ease _ease = Ease.OutQuad;
-    [Tooltip("본인 턴일 때 VisualRoot의 sizeDelta에 곱해지는 배율 (예: 1.15 -> 300x150이면 345x172.5)")]
-    [SerializeField] private float _selectedSizeMultiplier = 1.15f;
+    [Tooltip("본인 턴일 때 VisualRoot의 localScale 배율")]
+    [SerializeField] private float _selectedScaleMultiplier = 1.15f;
 
     private readonly List<BattleCharacterStatusView> _spawnedViews = new List<BattleCharacterStatusView>();
     private readonly List<Vector2> _baseSizes = new List<Vector2>();
@@ -65,11 +65,7 @@ public class PartyQueueController : MonoBehaviour
             view.gameObject.SetActive(true);
             view.Bind(party[i]);
 
-            RectTransform visualRoot = view.VisualRoot;
-            Vector2 baseSize = visualRoot != null ? visualRoot.sizeDelta : Vector2.zero;
-
             _spawnedViews.Add(view);
-            _baseSizes.Add(baseSize);
         }
     }
 
@@ -84,63 +80,32 @@ public class PartyQueueController : MonoBehaviour
         }
 
         _spawnedViews.Clear();
-        _baseSizes.Clear();
     }
 
     /// <summary>
     /// 아군 턴 시작 시: 그 캐릭터의 Visual만 실제 크기(sizeDelta) 확대, 나머지는 기본 크기로 복귀.
-    /// 동시에 이번 라운드 턴 순서를 조회해서 각 뷰의 순번(OrderTxt)도 갱신.
     /// </summary>
     private void HandleTurnStarted(BattleUnit unit)
     {
         bool isPlayerTurn = unit != null && unit.TeamType == BattleTeamType.Player;
-
-        Dictionary<BattleUnit, int> orderLookup = BuildTurnOrderLookup();
 
         for (int i = 0; i < _spawnedViews.Count; i++)
         {
             BattleCharacterStatusView view = _spawnedViews[i];
             if (view == null) continue;
 
-            bool isDead = view.BoundUnit != null && view.BoundUnit.IsAlive == false;
-            int roundOrderNumber = view.BoundUnit != null && orderLookup.TryGetValue(view.BoundUnit, out int order) ? order : 0;
-            view.UpdateOrder(roundOrderNumber, isDead);
-
             RectTransform visualRoot = view.VisualRoot;
             if (visualRoot == null) continue;
 
             bool isSelected = isPlayerTurn && view.BoundUnit == unit;
 
-            Vector2 targetSize = isSelected
-                ? _baseSizes[i] * _selectedSizeMultiplier
-                : _baseSizes[i];
+            float targetScale = isSelected ? _selectedScaleMultiplier : 1f;
 
             visualRoot.DOKill();
-            visualRoot.DOSizeDelta(targetSize, _duration).SetEase(_ease);
+            visualRoot.DOScale(targetScale, _duration).SetEase(_ease);
+
+            view.SetSelected(isSelected);
         }
-    }
-
-    /// <summary>
-    /// 이번 라운드 전체 턴 순서를 조회해서 유닛 -> 순번(1-based) 딕셔너리로 변환.
-    /// </summary>
-    private Dictionary<BattleUnit, int> BuildTurnOrderLookup()
-    {
-        Dictionary<BattleUnit, int> lookup = new Dictionary<BattleUnit, int>();
-
-        if (BattleUIContext.Instance == null) return lookup;
-
-        List<BattleUnit> fullOrder = new List<BattleUnit>();
-        BattleUIContext.Instance.GetCurrentTurnOrder(fullOrder, true);
-
-        for (int i = 0; i < fullOrder.Count; i++)
-        {
-            if (fullOrder[i] != null)
-            {
-                lookup[fullOrder[i]] = i + 1;
-            }
-        }
-
-        return lookup;
     }
 
     private void TrySubscribe()

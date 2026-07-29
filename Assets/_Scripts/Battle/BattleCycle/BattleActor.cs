@@ -20,6 +20,14 @@ public class BattleActor : MonoBehaviour
     [Header("View")]
     [SerializeField] private Transform _visualRoot;
 
+    [Header("World Space Canvas (동적 높이 배치)")]
+    [Tooltip("적 비주얼 Bounds 계산 후 위치를 맞출 EnemyWorldSpaceCanvas의 Transform")]
+    [SerializeField] private Transform _worldSpaceCanvasTransform;
+    [Tooltip("비주얼 최고점(Bounds.max.y)에서 이만큼 더 위로 띄움")]
+    [SerializeField] private float _canvasHeightOffset = 0.2f;
+
+
+
     [Header("Persistent Source")]
     [SerializeField] private PersistentCharacterUnit _persistentCharacterUnit;
 
@@ -139,7 +147,8 @@ public class BattleActor : MonoBehaviour
             _characterStats.CombatMagicDefensePower,
             _characterStats.CombatSpeed,
             _playerSkillLoadout.GetBattleSkillList(),
-            _characterStats.Icon);
+            _characterStats.Icon,
+            _characterStats.Level);
     }
 
     /// <summary>
@@ -304,21 +313,47 @@ public class BattleActor : MonoBehaviour
             _visualRoot = transform;
         }
 
-        // 데이터에 정의된 고유 몬스터 프리팹을 VisualRoot 하위에 생성
         GameObject visualInstance = Instantiate(_enemyBattleData.Prefab, _visualRoot);
 
         visualInstance.transform.localPosition = new Vector3(0f, -1f, 0f);
         visualInstance.transform.localRotation = Quaternion.identity;
 
-        if(_enemyBattleData.IsBoss)
+        if (_enemyBattleData.IsBoss)
         {
             visualInstance.transform.localPosition = new Vector3(0f, -1f, -1.5f);
             visualInstance.transform.localScale = new Vector3(2f, 2f, 2f);
         }
 
         SetupOutlineForVisual(visualInstance);
+        PositionWorldSpaceCanvas(visualInstance);
 
         Debug.Log($"[BattleActor] 적 외형 프리팹 생성 완료: {_enemyBattleData.Prefab.name}");
+    }
+
+    /// <summary>
+    /// 스폰된 비주얼(EnemyBattleData.Prefab 인스턴스)의 렌더러 Bounds를 합산해서,
+    /// 그 꼭대기(max.y) + 오프셋 위치로 EnemyWorldSpaceCanvas를 배치.
+    /// 스폰 시점에 한 번만 계산 (이후 애니메이션에 따른 흔들림은 반영하지 않음).
+    /// </summary>
+    private void PositionWorldSpaceCanvas(GameObject visualInstance)
+    {
+        if (_worldSpaceCanvasTransform == null) return;
+
+        Renderer[] renderers = visualInstance.GetComponentsInChildren<Renderer>();
+
+        if (renderers.Length == 0) return;
+
+        Bounds combinedBounds = renderers[0].bounds;
+
+        for (int i = 1; i < renderers.Length; i++)
+        {
+            combinedBounds.Encapsulate(renderers[i].bounds);
+        }
+
+        Vector3 canvasPosition = _worldSpaceCanvasTransform.position;
+        canvasPosition.y = combinedBounds.max.y + _canvasHeightOffset;
+
+        _worldSpaceCanvasTransform.position = canvasPosition;
     }
 
     /// <summary>
