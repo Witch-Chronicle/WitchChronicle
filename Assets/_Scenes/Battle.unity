@@ -860,6 +860,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 338119914}
     - target: {fileID: 6570236002967437683, guid: dfbc6e9fa0a72b946b1bf143c25d0d14, type: 3}
+      propertyPath: _elementIconDatabase
+      value: 
+      objectReference: {fileID: 11400000, guid: 37c882d795a3e3643ab39c8087552135, type: 2}
+    - target: {fileID: 6570236002967437683, guid: dfbc6e9fa0a72b946b1bf143c25d0d14, type: 3}
       propertyPath: _battleCycleController
       value: 
       objectReference: {fileID: 338119913}
@@ -1973,7 +1977,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4633134990229440591, guid: 32e10029be8d08e4e8be69f811c7c961, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -24.43
+      value: -24.429993
       objectReference: {fileID: 0}
     - target: {fileID: 4884473112104838701, guid: 32e10029be8d08e4e8be69f811c7c961, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -5344,20 +5348,20 @@ MonoBehaviour:
   _skillDrawSideOffset: 5
   _skillDrawRoll: 0
   _skillDrawWaitDuration: 0.35
-  _singleFrontDistance: 3
+  _singleFrontDistance: 3.5
   _singleSideOffset: 0
-  _singleHeight: 0
-  _singleLookHeight: 1
+  _singleHeight: 1
+  _singleLookHeight: 0.5
   _singleFov: 70
   _singleRoll: 0
   _singleWaitDuration: 0.35
-  _groupEnemyFrontDistance: 6
+  _groupEnemyFrontDistance: 7
   _groupEnemySideOffset: 0
   _groupEnemyHeight: 4
   _groupEnemyFocusHeight: 1
   _groupEnemyFov: 80
   _groupEnemyRoll: 0
-  _groupAllyBackDistance: 6
+  _groupAllyBackDistance: 8
   _groupAllySideOffset: 0
   _groupAllyHeight: 2.5
   _groupAllyFocusHeight: 1
@@ -23117,7 +23121,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 727274207315526643, guid: 91bd9ecc1c3ffeb409f93031fd74464a, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.0009765625
+      value: 0.00035095215
       objectReference: {fileID: 0}
     - target: {fileID: 871055237640376415, guid: 91bd9ecc1c3ffeb409f93031fd74464a, type: 3}
       propertyPath: m_SizeDelta.x
