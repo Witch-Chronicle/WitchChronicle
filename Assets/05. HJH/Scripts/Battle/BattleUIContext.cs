@@ -16,6 +16,9 @@ public class BattleUIContext : MonoBehaviour
     [SerializeField] private BattleCycleController _battleCycleController;
     [SerializeField] private BattleManager _battleManager;
 
+    [Header("Status Effect (아이콘 조회용, StatusEffectData.Icon 사용)")]
+    [SerializeField] private Battle.Rules.StatusEffectDatabase _statusEffectDatabase;
+
     public BattleUnit CurrentUnit { get; private set; }
     public IReadOnlyList<BattleUnit> PartyUnits { get; private set; } = new List<BattleUnit>();
 
@@ -23,6 +26,13 @@ public class BattleUIContext : MonoBehaviour
     public event Action<BattleUnit> OnTurnEnded;
     public event Action OnBattleStarted;
     public event Action<BattleTeamType> OnBattleEnded;
+
+    /// <summary>
+    /// 상태이상이 유닛에게 부여/해제될 때 중계. UI(BattleCharacterStatusView, EnemyTargetOverlay 등)는
+    /// BattleCycleController를 몰라도 이걸로 구독 가능.
+    /// </summary>
+    public event Action<BattleUnit, StatusEffectType> OnStatusApplied;
+    public event Action<BattleUnit, StatusEffectType> OnStatusRemoved;
 
     private void Awake()
     {
@@ -43,6 +53,8 @@ public class BattleUIContext : MonoBehaviour
         _battleCycleController.OnTurnStarted += HandleTurnStarted;
         _battleCycleController.OnTurnEnded += HandleTurnEnded;
         _battleCycleController.OnBattleEnded += HandleBattleEnded;
+        _battleCycleController.OnStatusApplied += HandleStatusApplied;
+        _battleCycleController.OnStatusRemoved += HandleStatusRemoved;
     }
 
     private void OnDisable()
@@ -53,6 +65,8 @@ public class BattleUIContext : MonoBehaviour
         _battleCycleController.OnTurnStarted -= HandleTurnStarted;
         _battleCycleController.OnTurnEnded -= HandleTurnEnded;
         _battleCycleController.OnBattleEnded -= HandleBattleEnded;
+        _battleCycleController.OnStatusApplied -= HandleStatusApplied;
+        _battleCycleController.OnStatusRemoved -= HandleStatusRemoved;
     }
 
     private void HandleBattleStarted()
@@ -184,5 +198,27 @@ public class BattleUIContext : MonoBehaviour
         }
 
         return _battleManager.TryGetActor(unit, out actor);
+    }
+
+    private void HandleStatusApplied(BattleUnit unit, StatusEffectType type)
+    {
+        OnStatusApplied?.Invoke(unit, type);
+    }
+
+    private void HandleStatusRemoved(BattleUnit unit, StatusEffectType type)
+    {
+        OnStatusRemoved?.Invoke(unit, type);
+    }
+
+    /// <summary>
+    /// 상태이상 종류에 해당하는 아이콘 스프라이트 조회. 데이터베이스 미설정/데이터 없으면 null.
+    /// </summary>
+    public Sprite GetStatusIcon(StatusEffectType type)
+    {
+        if (_statusEffectDatabase == null) return null;
+
+        Battle.Rules.StatusEffectData data = _statusEffectDatabase.GetData(type);
+
+        return data != null ? data.Icon : null;
     }
 }
