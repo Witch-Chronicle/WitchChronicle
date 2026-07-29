@@ -1,102 +1,99 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace WitchChronicle.IdleFarming
 {
     /// <summary>
-    /// 밭 위에 떠 있는 UI (월드스페이스 Canvas)
-    /// - Growing 상태: 남은 시간 표시
-    /// - ReadyToHarvest 상태: 대기 개수 표시
+    /// 밭 슬롯 위에 떠있는 월드스페이스 UI
+    /// 상태별 정보 표시 (씨앗 종류 / 남은 시간 / 대기 개수)
+    /// 항상 카메라 향해 회전
     /// </summary>
     public class PlotFloatingUI : MonoBehaviour
     {
-        [Header("참조")]
-        [SerializeField] private PlotSlot _plotSlot;
-        
-        [Header("UI 오브젝트")]
-        [SerializeField] private GameObject _timerRoot;      // Growing 시 표시
-        [SerializeField] private TMP_Text _timerText;
-        
-        [SerializeField] private GameObject _countRoot;      // ReadyToHarvest 시 표시
-        [SerializeField] private TMP_Text _countText;
-        
-        [Header("카메라 바라보기")]
-        [SerializeField] private bool _faceCamera = true;
-        
+        [Header("루트")]
+        [SerializeField] private GameObject _growingRoot;
+        [SerializeField] private GameObject _readyRoot;
+
+        [Header("Growing 표시")]
+        [SerializeField] private Image _growingSeedIcon;
+        [SerializeField] private TextMeshProUGUI _growingSeedName;
+        [SerializeField] private TextMeshProUGUI _timerText;
+
+        [Header("ReadyToHarvest 표시")]
+        [SerializeField] private Image _readySeedIcon;
+        [SerializeField] private TextMeshProUGUI _readySeedName;
+        [SerializeField] private TextMeshProUGUI _readyCountText;
+
+        [Header("옵션")]
+        [SerializeField] private bool _billboardToCamera = true;
+
         private Camera _mainCamera;
-        
+
         private void Awake()
         {
-            if (_plotSlot == null) _plotSlot = GetComponentInParent<PlotSlot>();
             _mainCamera = Camera.main;
-            
             HideAll();
         }
-        
-        private void Update()
+
+        private void LateUpdate()
         {
-            if (_plotSlot == null) return;
-            
-            // 카메라 방향으로 회전
-            if (_faceCamera && _mainCamera != null)
+            if (_billboardToCamera && _mainCamera != null)
             {
-                Vector3 lookDir = transform.position - _mainCamera.transform.position;
-                lookDir.y = 0;
-                if (lookDir != Vector3.zero)
-                    transform.rotation = Quaternion.LookRotation(lookDir);
+                transform.rotation = Quaternion.LookRotation(
+                    transform.position - _mainCamera.transform.position);
             }
-            
-            // 상태에 따라 UI 갱신
-            UpdateUI();
         }
-        
-        private void UpdateUI()
+
+        public void Refresh(PlotState state, SeedData seed, float remainingSeconds, int pendingCount)
         {
-            switch (_plotSlot.State)
+            switch (state)
             {
-                case PlotState.Growing:
-                    ShowTimer();
-                    break;
-                    
-                case PlotState.ReadyToHarvest:
-                    ShowCount();
-                    break;
-                    
-                default:
+                case PlotState.Locked:
+                case PlotState.Empty:
                     HideAll();
                     break;
+
+                case PlotState.Growing:
+                    if (seed == null) { HideAll(); return; }
+                    _growingRoot.SetActive(true);
+                    _readyRoot.SetActive(false);
+
+                    if (_growingSeedIcon != null && seed.seedSprite != null)
+                        _growingSeedIcon.sprite = seed.seedSprite;
+                    if (_growingSeedName != null)
+                        _growingSeedName.text = seed.seedName;
+                    if (_timerText != null)
+                        _timerText.text = FormatTime(remainingSeconds);
+                    break;
+
+                case PlotState.ReadyToHarvest:
+                    if (seed == null) { HideAll(); return; }
+                    _growingRoot.SetActive(false);
+                    _readyRoot.SetActive(true);
+
+                    if (_readySeedIcon != null && seed.harvestSprite != null)
+                        _readySeedIcon.sprite = seed.harvestSprite;
+                    if (_readySeedName != null)
+                        _readySeedName.text = seed.harvestName;
+                    if (_readyCountText != null)
+                        _readyCountText.text = $"x {pendingCount}";
+                    break;
             }
         }
-        
-        private void ShowTimer()
-        {
-            if (_timerRoot != null) _timerRoot.SetActive(true);
-            if (_countRoot != null) _countRoot.SetActive(false);
-            
-            if (_timerText != null)
-            {
-                float remaining = _plotSlot.GetRemainingSeconds();
-                int min = Mathf.FloorToInt(remaining / 60f);
-                int sec = Mathf.FloorToInt(remaining % 60f);
-                _timerText.text = $"{min:D2}:{sec:D2}";
-            }
-        }
-        
-        private void ShowCount()
-        {
-            if (_timerRoot != null) _timerRoot.SetActive(false);
-            if (_countRoot != null) _countRoot.SetActive(true);
-            
-            if (_countText != null)
-            {
-                _countText.text = $"x{_plotSlot.PendingHarvestCount}";
-            }
-        }
-        
+
         private void HideAll()
         {
-            if (_timerRoot != null) _timerRoot.SetActive(false);
-            if (_countRoot != null) _countRoot.SetActive(false);
+            if (_growingRoot != null) _growingRoot.SetActive(false);
+            if (_readyRoot != null) _readyRoot.SetActive(false);
+        }
+
+        private string FormatTime(float seconds)
+        {
+            if (seconds < 0f) seconds = 0f;
+            int mm = Mathf.FloorToInt(seconds / 60f);
+            int ss = Mathf.FloorToInt(seconds % 60f);
+            return $"{mm:D2}:{ss:D2}";
         }
     }
 }
