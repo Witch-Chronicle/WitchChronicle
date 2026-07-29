@@ -1253,7 +1253,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.0035634278}
+  m_AnchoredPosition: {x: 0, y: 0.0073312903}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1129733677182495353
@@ -1629,7 +1629,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 8904122988902201451}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.99996984
+  m_Size: 0.99999005
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -2387,6 +2387,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleTargetCycler
   _cameraDirector: {fileID: 0}
+  _battleCanvasRoot: {fileID: 0}
   _debugTargetTxt: {fileID: 7589809803449952477}
 --- !u!1 &6714499346846186183
 GameObject:

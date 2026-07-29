@@ -20,8 +20,7 @@ public class BattleCycleController : MonoBehaviour
 
     [Header("Constellation")]
     [SerializeField] private BattleCameraDirector _battleCameraDirector;
-    [SerializeField] private ConstellationBattleManager _constellationBattleManager;
-
+    [SerializeField] private ConstellationPathBattleManager _constellationPathBattleManager;
     private readonly List<BattleUnit> _battleUnits =
         new List<BattleUnit>();
 
@@ -56,8 +55,7 @@ public class BattleCycleController : MonoBehaviour
     public event Action OnTurnOrderChanged;
     public event Action<BattleActionRequest> OnActionExecuting;
 
-    public event Action<BattleActionRequest, ConstellationResult>
-        OnConstellationResolved;
+    public event Action<BattleActionRequest, ConstellationPathResult> OnConstellationResolved;
 
     // 연출용: 상태이상 부여/해제 알림 (StatusEffectController에서 중계)
     public event Action<BattleUnit, StatusEffectType> OnStatusApplied;
@@ -77,10 +75,10 @@ public class BattleCycleController : MonoBehaviour
                 FindFirstObjectByType<BattleCameraDirector>();
         }
 
-        if (_constellationBattleManager == null)
+        if (_constellationPathBattleManager == null)
         {
-            _constellationBattleManager =
-                FindFirstObjectByType<ConstellationBattleManager>();
+            _constellationPathBattleManager =
+                FindFirstObjectByType<ConstellationPathBattleManager>();
         }
 
         // 상태이상 부여/해제를 연출 이벤트로 중계
@@ -185,10 +183,9 @@ public class BattleCycleController : MonoBehaviour
         }
 
         _battleRoutine = null;
-
-        if (_constellationBattleManager != null)
+        if (_constellationPathBattleManager != null)
         {
-            _constellationBattleManager.StopConstellation();
+            _constellationPathBattleManager.StopConstellationPath();
         }
 
         _battleState = BattleState.None;
@@ -512,9 +509,9 @@ public class BattleCycleController : MonoBehaviour
     private void EndBattle(
         BattleTeamType winner)
     {
-        if (_constellationBattleManager != null)
+        if (_constellationPathBattleManager != null)
         {
-            _constellationBattleManager.StopConstellation();
+            _constellationPathBattleManager.StopConstellationPath();
         }
 
         _battleState = BattleState.BattleEnd;
@@ -845,41 +842,34 @@ public class BattleCycleController : MonoBehaviour
             $"[Battle] {actor.UnitName} uses " +
             $"{skillData.SkillName}");
 
-        bool isEnemyConstellationAttack =
+        bool isEnemyConstellationPathAttack =
             actor.TeamType ==
             BattleTeamType.Enemy &&
             skillData.SkillType ==
             SkillEffectType.Damage &&
-            skillData.IsConstellationAttack;
+            skillData.IsConstellationPathAttack;
 
-        if (isEnemyConstellationAttack)
+        if (isEnemyConstellationPathAttack)
         {
-            yield return ExecuteConstellationSkill(
+            yield return ExecuteConstellationPathSkill(
                 actionRequest,
                 resolvedTargets);
 
             yield break;
         }
 
-        OnActionExecuting?.Invoke(
-            actionRequest);
-
-        yield return WaitImpact(skillData);
-
-        ApplySkillEffects(
-            actor,
-            resolvedTargets,
-            skillData,
-            actionRequest.DamageMultiplier);
+        yield return ExecuteSkillWithoutConstellationPath(
+            actionRequest,
+            resolvedTargets);
     }
 
     /// <summary>
-    /// 별자리 패리 스킬 실행
-    /// 카메라 연출 후 시퀀스 결과 대기
+    /// 경로형 별자리 패리 스킬 실행
+    /// 카메라 연출, 별자리 입력, 최종 결과 처리
     /// </summary>
     /// <param name="actionRequest">스킬 행동 요청</param>
     /// <param name="targets">스킬 대상 목록</param>
-    private IEnumerator ExecuteConstellationSkill(
+    private IEnumerator ExecuteConstellationPathSkill(
         BattleActionRequest actionRequest,
         IReadOnlyList<BattleUnit> targets)
     {
@@ -895,64 +885,53 @@ public class BattleCycleController : MonoBehaviour
             yield break;
         }
 
-        if (_constellationBattleManager == null ||
-            _constellationBattleManager.isActiveAndEnabled == false)
+        if (_constellationPathBattleManager == null ||
+            !_constellationPathBattleManager
+                .isActiveAndEnabled)
         {
             Debug.LogWarning(
-                "[Battle] 별자리 매니저 참조 없음. " +
-                "기존 스킬로 실행",
+                "[Battle] 신규 별자리 매니저 참조 없음. " +
+                "일반 스킬로 실행",
                 this);
 
-            OnActionExecuting?.Invoke(
-                actionRequest);
-
-            ApplySkillEffects(
-                actor,
-                targets,
-                skillData,
-                actionRequest.DamageMultiplier);
+            yield return
+                ExecuteSkillWithoutConstellationPath(
+                    actionRequest,
+                    targets);
 
             yield break;
         }
 
-        ConstellationSequenceData sequenceData =
-            skillData.ConstellationSequenceData;
+        ConstellationPathSequenceData sequenceData =
+            skillData.ConstellationPathSequenceData;
 
         if (sequenceData == null)
         {
             Debug.LogWarning(
                 $"[Battle] {skillData.SkillName}에 " +
-                "별자리 시퀀스가 연결되지 않았습니다.",
+                "경로형 별자리 데이터가 없음",
                 skillData);
 
-            OnActionExecuting?.Invoke(
-                actionRequest);
-
-            ApplySkillEffects(
-                actor,
-                targets,
-                skillData,
-                actionRequest.DamageMultiplier);
+            yield return
+                ExecuteSkillWithoutConstellationPath(
+                    actionRequest,
+                    targets);
 
             yield break;
         }
 
-        if (sequenceData.TryValidate(
-                out string errorMessage) == false)
+        if (!sequenceData.TryValidate(
+                out string errorMessage))
         {
             Debug.LogWarning(
-                $"[Battle] 별자리 데이터 오류: " +
+                $"[Battle] 경로형 별자리 데이터 오류: " +
                 $"{errorMessage}",
                 sequenceData);
 
-            OnActionExecuting?.Invoke(
-                actionRequest);
-
-            ApplySkillEffects(
-                actor,
-                targets,
-                skillData,
-                actionRequest.DamageMultiplier);
+            yield return
+                ExecuteSkillWithoutConstellationPath(
+                    actionRequest,
+                    targets);
 
             yield break;
         }
@@ -977,7 +956,7 @@ public class BattleCycleController : MonoBehaviour
                     () => isIntroCompleted = true);
         }
 
-        while (isIntroCompleted == false)
+        while (!isIntroCompleted)
         {
             if (_battleState ==
                 BattleState.BattleEnd)
@@ -988,20 +967,24 @@ public class BattleCycleController : MonoBehaviour
             yield return null;
         }
 
-        // 사전 카메라 연출 이후 실제 스킬 애니메이션 시작
+        // 공격 애니메이션과 VFX 시작
         OnActionExecuting?.Invoke(
             actionRequest);
 
         bool isStarted =
-            _constellationBattleManager
-                .StartConstellation(sequenceData);
+            _constellationPathBattleManager
+                .StartConstellationPath(
+                    sequenceData);
 
-        if (isStarted == false)
+        if (!isStarted)
         {
             Debug.LogWarning(
-                "[Battle] 별자리 시퀀스 시작 실패. " +
+                "[Battle] 경로형 별자리 시작 실패. " +
                 "기존 스킬 효과 적용",
                 this);
+
+            yield return WaitImpact(
+                skillData);
 
             ApplySkillEffects(
                 actor,
@@ -1012,13 +995,13 @@ public class BattleCycleController : MonoBehaviour
             yield break;
         }
 
-        while (_constellationBattleManager.IsRunning)
+        while (_constellationPathBattleManager.IsRunning)
         {
             if (_battleState ==
                 BattleState.BattleEnd)
             {
-                _constellationBattleManager
-                    .StopConstellation();
+                _constellationPathBattleManager
+                    .StopConstellationPath();
 
                 yield break;
             }
@@ -1026,12 +1009,13 @@ public class BattleCycleController : MonoBehaviour
             yield return null;
         }
 
-        if (_constellationBattleManager.TryGetLastResult(
-                out ConstellationResult result) == false)
+        if (!_constellationPathBattleManager
+                .TryGetLastResult(
+                    out ConstellationPathResult result))
         {
             Debug.LogWarning(
-                "[Battle] 별자리 결과 수신 실패. " +
-                "기존 스킬 효과 적용",
+                "[Battle] 경로형 별자리 결과 수신 실패. " +
+                "스킬 효과 적용",
                 this);
 
             ApplySkillEffects(
@@ -1048,10 +1032,14 @@ public class BattleCycleController : MonoBehaviour
             result);
 
         Debug.Log(
-            $"[Battle] 별자리 공격 결과" +
+            $"[Battle] 경로형 별자리 결과" +
             $"\nSkill: {skillData.SkillName}" +
             $"\nSuccess: {result.IsSuccess}" +
-            $"\nScore: {result.Score:F1}",
+            $"\nNodes: {result.CompletedNodeCount}" +
+            $"/{result.TotalNodeCount}" +
+            $"\nElapsed: {result.ElapsedInputTime:F2}" +
+            $"\nRemaining: " +
+            $"{result.RemainingTimeAtCompletion:F2}",
             this);
 
         if (result.IsSuccess)
@@ -1639,5 +1627,34 @@ public class BattleCycleController : MonoBehaviour
             BattleState.BattleEnd;
 
         OnBattleEnded?.Invoke(winner);
+    }
+
+    /// <summary>
+    /// 별자리 패리 없이 일반 스킬 실행
+    /// </summary>
+    /// <param name="actionRequest">스킬 행동 요청</param>
+    /// <param name="targets">스킬 대상 목록</param>
+    private IEnumerator ExecuteSkillWithoutConstellationPath(
+        BattleActionRequest actionRequest,
+        IReadOnlyList<BattleUnit> targets)
+    {
+        if (actionRequest == null ||
+            actionRequest.Actor == null ||
+            actionRequest.SkillData == null)
+        {
+            yield break;
+        }
+
+        OnActionExecuting?.Invoke(
+            actionRequest);
+
+        yield return WaitImpact(
+            actionRequest.SkillData);
+
+        ApplySkillEffects(
+            actionRequest.Actor,
+            targets,
+            actionRequest.SkillData,
+            actionRequest.DamageMultiplier);
     }
 }
