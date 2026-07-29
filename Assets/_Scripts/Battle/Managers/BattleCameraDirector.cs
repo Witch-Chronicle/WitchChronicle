@@ -20,6 +20,8 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private CinemachineCamera _skillDrawCamera;
     [SerializeField] private CinemachineCamera _singleTargetOverviewCamera;
     [SerializeField] private CinemachineCamera _groupTargetOverviewCamera;
+    [SerializeField] private CinemachineCamera _itemUseCamera;
+
 
     [Header("Priority")]
     [SerializeField] private int _activePriority = 30;
@@ -52,7 +54,7 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private float _skillSideOffset = 1.45f;
     [SerializeField] private float _skillHeight = 0.55f;
     [SerializeField] private float _skillFocusHeight = 1.05f;
-    [Range(0f, 1f)] [SerializeField] private float _skillTargetFocusWeight = 0.72f;
+    [Range(0f, 1f)][SerializeField] private float _skillTargetFocusWeight = 0.72f;
     [SerializeField] private float _skillFov = 78f;
     [SerializeField] private float _skillRoll = 0f;
     [SerializeField] private float _skillWaitDuration = 0.4f;
@@ -94,6 +96,16 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private float _groupAllyRoll = 0f;
 
     [SerializeField] private float _groupWaitDuration = 0.35f;
+
+    [Header("Item Use View (아이템 사용)")]
+    [SerializeField] private float _itemUseDistance = 4.0f;
+    [SerializeField] private float _itemUseHeight = 1.8f;
+    [SerializeField] private float _itemUseLookHeight = 1.0f;
+    [SerializeField] private float _itemUseLookForward = 1.5f;
+    [SerializeField] private float _itemUseFov = 55f;
+    [SerializeField] private float _itemUseSideOffset = 1.0f;
+    [SerializeField] private float _itemUseRoll = 0f;
+    [SerializeField] private float _itemUseWaitDuration = 0.35f;
 
     private Coroutine _waitRoutine;
     private CinemachineCamera _activeCamera;
@@ -566,9 +578,9 @@ public class BattleCameraDirector : MonoBehaviour
     /// <param name="waitDuration">완료 대기 시간</param>
     /// <param name="onComplete">완료 콜백</param>
     private void ActivateCamera(
-        CinemachineCamera targetCamera,
-        float waitDuration,
-        Action onComplete)
+    CinemachineCamera targetCamera,
+    float waitDuration,
+    Action onComplete)
     {
         SetCameraPriority(_playerBackCamera, _inactivePriority);
         SetCameraPriority(_targetOverviewCamera, _inactivePriority);
@@ -576,6 +588,7 @@ public class BattleCameraDirector : MonoBehaviour
         SetCameraPriority(_skillDrawCamera, _inactivePriority);
         SetCameraPriority(_singleTargetOverviewCamera, _inactivePriority);
         SetCameraPriority(_groupTargetOverviewCamera, _inactivePriority);
+        SetCameraPriority(_itemUseCamera, _inactivePriority);
 
         SetCameraPriority(targetCamera, _activePriority);
 
@@ -802,6 +815,44 @@ public class BattleCameraDirector : MonoBehaviour
                     overviewUnit,
                     onComplete);
             });
+    }
+
+    /// <summary>
+    /// 아이템(포션) 사용 구도 재생. ItemList 패널이 열릴 때(대상 선택 없이 바로 진입) 호출.
+    /// PlayerBackView와 유사하게 등 뒤에서 캐릭터가 아이템을 꺼내는 액션을 보여주는 구도.
+    /// </summary>
+    /// <param name="unit">기준 유닛</param>
+    /// <param name="onComplete">완료 콜백</param>
+    public void PlayItemUseView(BattleUnit unit, Action onComplete = null)
+    {
+        if (TryGetActorTransform(unit, out Transform actorTransform) == false)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        Vector3 focusPosition =
+            actorTransform.position +
+            actorTransform.forward * _itemUseLookForward +
+            Vector3.up * _itemUseLookHeight;
+
+        Vector3 cameraPosition =
+            actorTransform.position -
+            actorTransform.forward * _itemUseDistance +
+            actorTransform.right * _itemUseSideOffset +
+            Vector3.up * _itemUseHeight;
+
+        ApplyCameraPose(
+            _itemUseCamera,
+            cameraPosition,
+            focusPosition,
+            _itemUseFov,
+            _itemUseRoll);
+
+        ActivateCamera(
+            _itemUseCamera,
+            _itemUseWaitDuration,
+            onComplete);
     }
 
     /// <summary>

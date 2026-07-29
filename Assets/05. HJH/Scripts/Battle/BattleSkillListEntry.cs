@@ -29,6 +29,9 @@ public class BattleSkillListEntry : MonoBehaviour,
     [SerializeField] private TMP_Text _elementTypeText;
     [SerializeField] private TMP_Text _costText;
 
+    [Tooltip("스킬 속성(ElementType) 아이콘. BattleUIContext의 ElementIconDatabase에서 조회. 해당 속성 아이콘이 없으면 비활성화.")]
+    [SerializeField] private Image _skillElementIconImage;
+
     [Header("Selection Visuals")]
     [Tooltip("BackParticle1, BackParticle2를 모두 등록")]
     [SerializeField] private Image[] _backParticleImages;
@@ -154,6 +157,11 @@ public class BattleSkillListEntry : MonoBehaviour,
         {
             _elementTypeText.text = string.Empty;
             _elementTypeText.gameObject.SetActive(true);
+        }
+
+        if (_skillElementIconImage != null)
+        {
+            _skillElementIconImage.gameObject.SetActive(false);
         }
 
         if (_costText != null)
@@ -452,6 +460,16 @@ public class BattleSkillListEntry : MonoBehaviour,
                     .GetElementColor(
                         _skillData.ElementType);
             }
+        }
+
+        if (_skillElementIconImage != null)
+        {
+            Sprite elementIcon = BattleUIContext.Instance != null
+                ? BattleUIContext.Instance.GetElementIcon(_skillData.ElementType)
+                : null;
+
+            _skillElementIconImage.sprite = elementIcon;
+            _skillElementIconImage.gameObject.SetActive(elementIcon != null);
         }
 
         //-------------------------

@@ -10,18 +10,18 @@ public class FishingUIManager : MonoBehaviour
     [SerializeField] private GameObject fishingPanel;
     [SerializeField] private GameObject resultPopup;
 
-    [Header("낚시 씬 이미지")]
+    [Header("낚시 씬 이미지 (레거시, 3D 씬 사용 시 미연결)")]
     [SerializeField] private Image fishingSceneImage;
     [SerializeField] private Sprite sceneIdle;
     [SerializeField] private Sprite sceneBite;
     [SerializeField] private Sprite sceneReeling;
 
     [Header("상단 UI")]
-    [SerializeField] private GameObject fishingTimer;      // 항상 표시
+    [SerializeField] private GameObject fishingTimer;
     [SerializeField] private TMP_Text timerText;
-    [SerializeField] private GameObject statusBubble;      // Idle/Waiting만
+    [SerializeField] private GameObject statusBubble;
     [SerializeField] private TMP_Text statusText;
-    [SerializeField] private GameObject tensionGaugeGroup; // Bite/Reeling만
+    [SerializeField] private GameObject tensionGaugeGroup;
 
     [Header("진행 게이지 (Bite/Reeling만)")]
     [SerializeField] private GameObject progressGauge;
@@ -53,13 +53,14 @@ public class FishingUIManager : MonoBehaviour
     // ─────────────────────────────────────────
 
     private void Awake()
-{
-    if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-    Instance = this;
+    {
+        Debug.Log("[FishingUIManager] Awake 실행됨");
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
 
-    if (fishingPanel != null) fishingPanel.SetActive(false);
-    if (resultPopup != null) resultPopup.SetActive(false);
-}
+        if (fishingPanel != null) fishingPanel.SetActive(false);
+        if (resultPopup != null) resultPopup.SetActive(false);
+    }
 
     private void OnEnable()
     {
@@ -69,11 +70,14 @@ public class FishingUIManager : MonoBehaviour
 
     private void Start()
     {
+        Debug.Log("[FishingUIManager] Start 실행됨");
         if (FishingManager.Instance != null)
         {
             FishingManager.Instance.OnStateChanged += HandleStateChanged;
             FishingManager.Instance.OnFishCaught += HandleFishCaught;
             FishingManager.Instance.OnFishEscaped += HandleFishEscaped;
+            FishingManager.Instance.OnFishingSessionStarted += HandleSessionStarted;
+            FishingManager.Instance.OnFishingSessionEnded += HandleSessionEnded;
             Debug.Log("[FishingUIManager] 이벤트 등록 성공");
         }
         else
@@ -89,6 +93,8 @@ public class FishingUIManager : MonoBehaviour
             FishingManager.Instance.OnStateChanged -= HandleStateChanged;
             FishingManager.Instance.OnFishCaught -= HandleFishCaught;
             FishingManager.Instance.OnFishEscaped -= HandleFishEscaped;
+            FishingManager.Instance.OnFishingSessionStarted -= HandleSessionStarted;
+            FishingManager.Instance.OnFishingSessionEnded -= HandleSessionEnded;
         }
         if (actionButton != null)
             actionButton.onClick.RemoveListener(OnActionButtonClicked);
@@ -114,12 +120,29 @@ public class FishingUIManager : MonoBehaviour
     }
 
     // ─────────────────────────────────────────
+    // 세션 진입/종료 (매니저 이벤트로 자동 호출)
+    // ─────────────────────────────────────────
+
+    private void HandleSessionStarted()
+    {
+        Debug.Log("[FishingUIManager] HandleSessionStarted 호출됨! fishingPanel is null? " + (fishingPanel == null));
+        OpenPanel();
+    }
+
+    private void HandleSessionEnded() => ClosePanel();
+
+    // ─────────────────────────────────────────
     // 열기/닫기
     // ─────────────────────────────────────────
 
     public void OpenPanel()
     {
-        if (fishingPanel == null) return;
+        Debug.Log("[FishingUIManager] OpenPanel 호출됨");
+        if (fishingPanel == null)
+        {
+            Debug.LogError("[FishingUIManager] fishingPanel이 null! 인스펙터 연결 확인");
+            return;
+        }
         fishingPanel.SetActive(true);
         _isPanelOpen = true;
 
@@ -136,10 +159,7 @@ public class FishingUIManager : MonoBehaviour
         _isPanelOpen = false;
         _timerRunning = false;
 
-        FishingManager.Instance?.EndSession();
         reelController?.StopMiniGame();
-
-        CursorLocker.Instance.ExitUIMode();
     }
 
     // ─────────────────────────────────────────
@@ -210,25 +230,25 @@ public class FishingUIManager : MonoBehaviour
     }
 
     private void HandleFishEscaped(FishingReelController.FailReason reason)
-{
-    string message;
-    switch (reason)
     {
-        case FishingReelController.FailReason.LineBreak:
-            message = "줄이 끊어졌다...";
-            break;
-        case FishingReelController.FailReason.Escape:
-            message = "물고기가 도망갔다...";
-            break;
-        case FishingReelController.FailReason.Timeout:
-            message = "너무 오래 걸렸다... 물고기가 지쳐 도망갔다.";
-            break;
-        default:
-            message = "놓쳤어요...";
-            break;
+        string message;
+        switch (reason)
+        {
+            case FishingReelController.FailReason.LineBreak:
+                message = "줄이 끊어졌다...";
+                break;
+            case FishingReelController.FailReason.Escape:
+                message = "물고기가 도망갔다...";
+                break;
+            case FishingReelController.FailReason.Timeout:
+                message = "너무 오래 걸렸다... 물고기가 지쳐 도망갔다.";
+                break;
+            default:
+                message = "놓쳤어요...";
+                break;
+        }
+        ShowResult("😢 실패", message);
     }
-    ShowResult("😢 실패", message);
-}
 
     // ─────────────────────────────────────────
     // 버튼
@@ -248,7 +268,6 @@ public class FishingUIManager : MonoBehaviour
         }
     }
 
-    // 결과 팝업 확인 버튼 (Inspector OnClick에서 연결)
     public void OnResultConfirmClicked()
     {
         if (resultPopup != null) resultPopup.SetActive(false);
