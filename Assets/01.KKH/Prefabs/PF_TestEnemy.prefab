@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: -3764973052313972867}
   - component: {fileID: 9068949725816475750}
   - component: {fileID: 6131689766468485476}
+  - component: {fileID: 8592595811034977018}
   m_Layer: 0
   m_Name: PF_TestEnemy
   m_TagString: Untagged
@@ -241,6 +242,24 @@ MonoBehaviour:
     VfxPrefab: {fileID: 5663927605720312730, guid: 8dbab8fb0b777164e8f58b48c3ac7efb, type: 3}
     Scale: 0.3
     Offset: {x: 0, y: 0, z: 0}
+--- !u!114 &8592595811034977018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 279443765254442563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32ea624c557eb0a40bdea137cc627d79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyBattlePresenter
+  _attackTrigger1: TriggerAttack1
+  _attackTrigger2: TriggerAttack2
+  _getHitTrigger: TriggerGetHit
+  _dieTrigger: TriggerDie
+  _deathHideDelay: 1.5
+  _hideTarget: {fileID: 0}
 --- !u!1001 &1785868669887140386
 PrefabInstance:
   m_ObjectHideFlags: 0

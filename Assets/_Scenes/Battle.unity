@@ -676,6 +676,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BattleCycleController
   _autoPlay: 0
   _actionDelay: 1
+  _impactDelay: 0.3
   _battleCameraDirector: {fileID: 1867479331}
   _constellationBattleManager: {fileID: 562806760}
   _statusEffectDatabase: {fileID: 11400000, guid: 717e46805c562334d84f64b0ad47202e, type: 2}
@@ -701,8 +702,8 @@ MonoBehaviour:
   _enemyActorPrefabs: []
   _playerFormationRoot: {fileID: 604296034}
   _enemyFormationRoot: {fileID: 361416002}
-  _playerFallbackOrigin: {x: -3, y: 0, z: 0}
-  _enemyFallbackOrigin: {x: 3, y: 0, z: 0}
+  _playerFallbackOrigin: {x: -3, y: -3, z: 0}
+  _enemyFallbackOrigin: {x: 3, y: -3, z: 0}
   _formationSpacing: 4
   _startBattleOnStart: 1
   _debugLogBattleUnits: 1
@@ -780,7 +781,7 @@ Transform:
   m_GameObject: {fileID: 361416001}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3, y: 0, z: 0}
+  m_LocalPosition: {x: 3, y: -0.46, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1855,7 +1856,7 @@ Transform:
   m_GameObject: {fileID: 604296033}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3, y: 0, z: 0}
+  m_LocalPosition: {x: -3, y: -0.46, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5242,6 +5243,22 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 479231466}
+    - target: {fileID: 3154910223912718192, guid: c46928a2981eeec4894734158b0c2ed9, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3154910223912718192, guid: c46928a2981eeec4894734158b0c2ed9, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3154910223912718192, guid: c46928a2981eeec4894734158b0c2ed9, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3154910223912718192, guid: c46928a2981eeec4894734158b0c2ed9, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3958538516211652467, guid: c46928a2981eeec4894734158b0c2ed9, type: 3}
       propertyPath: m_Name
       value: DrawingCanvas_v1
@@ -5384,6 +5401,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7677868509796869995, guid: c46928a2981eeec4894734158b0c2ed9, type: 3}
       propertyPath: m_FillAmount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8024863003074901047, guid: c46928a2981eeec4894734158b0c2ed9, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8024863003074901047, guid: c46928a2981eeec4894734158b0c2ed9, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8024863003074901047, guid: c46928a2981eeec4894734158b0c2ed9, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8024863003074901047, guid: c46928a2981eeec4894734158b0c2ed9, type: 3}
+      propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8135381652773441512, guid: c46928a2981eeec4894734158b0c2ed9, type: 3}
@@ -8044,6 +8077,7 @@ MonoBehaviour:
   _hpTxt: {fileID: 1330923092365827612}
   _mpSlider: {fileID: 3708581697063618936}
   _mpTxt: {fileID: 6805980575154634504}
+  _deadOverlayImg: {fileID: 0}
 --- !u!224 &1065829235644332591
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8942,6 +8976,7 @@ MonoBehaviour:
   _hpTxt: {fileID: 81311961065234392}
   _mpSlider: {fileID: 2927064098475052184}
   _mpTxt: {fileID: 2318752019364706492}
+  _deadOverlayImg: {fileID: 0}
 --- !u!1 &1389018189662811590
 GameObject:
   m_ObjectHideFlags: 0
@@ -9197,6 +9232,7 @@ MonoBehaviour:
   _hpTxt: {fileID: 7685846751348771965}
   _mpSlider: {fileID: 7096616543498465372}
   _mpTxt: {fileID: 7255264224276635823}
+  _deadOverlayImg: {fileID: 0}
 --- !u!224 &1561060292365869176
 RectTransform:
   m_ObjectHideFlags: 0
@@ -10825,6 +10861,7 @@ MonoBehaviour:
   _hpTxt: {fileID: 7293774531084836665}
   _mpSlider: {fileID: 7335003384790306311}
   _mpTxt: {fileID: 1323382489069728539}
+  _deadOverlayImg: {fileID: 0}
 --- !u!1 &2484855166666265236
 GameObject:
   m_ObjectHideFlags: 0

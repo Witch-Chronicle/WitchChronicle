@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -6,19 +5,9 @@ using UnityEngine;
 /// 전투 코어는 이 컴포넌트의 public 메서드만 호출하면 된다.
 /// 판정(HP 계산 등)은 하지 않고, 전투 이벤트에 반응만 한다.
 /// </summary>
-public class BattleUnitPresenter : MonoBehaviour
+public class BattleUnitPresenter : MonoBehaviour, IBattlePresenter
 {
     [SerializeField] private Animator _animator;
-
-    [Header("피격 상반신 레이어 (다리 고정용)")]
-    [Tooltip("Hit를 재생할 상반신 마스크 레이어 인덱스. 0이면 사용 안 함(Base에서 전신 재생)")]
-    [SerializeField] private int _hitLayer = 1;
-
-    [Tooltip("피격 모션 재생 시간. 이 시간 뒤 레이어 가중치를 0으로 되돌린다")]
-    [SerializeField] private float _hitReactionDuration = 0.5f;
-
-    [Tooltip("피격 후 레이어 가중치를 0으로 낮추는 시간")]
-    [SerializeField] private float _hitLayerFade = 0.12f;
 
     // BattleAnimator의 상태 이름과 일치해야 한다.
     private const string IdleState = "Idle";
@@ -32,24 +21,10 @@ public class BattleUnitPresenter : MonoBehaviour
 
     private const float CrossFade = 0.1f;
 
-    private Coroutine _hitRoutine;
-
     private void Awake()
     {
         if (_animator == null)
             _animator = GetComponentInChildren<Animator>();
-
-        // 상반신 레이어는 평소 0으로 두고 피격 때만 켠다(항상 1이면 상반신을 덮어써 T-포즈/공격 깨짐).
-        if (HasHitLayer())
-            _animator.SetLayerWeight(_hitLayer, 0f);
-    }
-
-    private bool HasHitLayer()
-    {
-        return _animator != null
-            && _animator.runtimeAnimatorController != null
-            && _hitLayer > 0
-            && _hitLayer < _animator.layerCount;
     }
 
     /// <summary>
@@ -105,49 +80,8 @@ public class BattleUnitPresenter : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 피격 연출. 상반신 마스크 레이어가 있으면 그 레이어에만 재생해 하반신(다리)을 고정한다.
-    /// 없으면 Base 레이어에서 전신 재생.
-    /// </summary>
-    public void PlayHit()
-    {
-        if (_animator == null || _animator.runtimeAnimatorController == null)
-        {
-            return;
-        }
-
-        if (HasHitLayer())
-        {
-            if (_hitRoutine != null)
-                StopCoroutine(_hitRoutine);
-
-            _hitRoutine = StartCoroutine(HitReactionRoutine());
-            return;
-        }
-
-        PlayState(HitState);
-    }
-
-    private IEnumerator HitReactionRoutine()
-    {
-        _animator.SetLayerWeight(_hitLayer, 1f);
-        _animator.CrossFadeInFixedTime(HitState, CrossFade, _hitLayer);
-
-        yield return new WaitForSeconds(_hitReactionDuration);
-
-        float start = _animator.GetLayerWeight(_hitLayer);
-        float t = 0f;
-
-        while (t < _hitLayerFade)
-        {
-            t += Time.deltaTime;
-            _animator.SetLayerWeight(_hitLayer, Mathf.Lerp(start, 0f, t / _hitLayerFade));
-            yield return null;
-        }
-
-        _animator.SetLayerWeight(_hitLayer, 0f);
-        _hitRoutine = null;
-    }
+    /// <summary>피격 연출. Base 레이어에서 전신 재생.</summary>
+    public void PlayHit() => PlayState(HitState);
 
     public void PlayParry() => PlayState(ParryState);
 
