@@ -6,6 +6,7 @@ using UnityEngine;
 
 /// <summary>
 /// 낚시 상태 머신 + 어종 추첨 + 낚싯대 관리 + 세션 인벤토리.
+/// 낚시 스팟에서 EnterFishing 호출 시 세션 시작, 나가기 시 ExitFishing 호출.
 /// </summary>
 public class FishingManager : MonoBehaviour
 {
@@ -33,12 +34,18 @@ public class FishingManager : MonoBehaviour
     private int _sessionCatchCount = 0;
     private readonly List<FishItemData> _caughtFishesThisSession = new List<FishItemData>();
 
+    // 세션
+    private FishingSpot _currentSpot;
+    private bool _isSessionActive;
+
     // 이벤트
     public event Action<FishingState> OnStateChanged;
     public event Action<FishItemData> OnFishHooked;
     public event Action<FishItemData> OnFishCaught;
     public event Action<FishingReelController.FailReason> OnFishEscaped;
     public event Action<RodItemData> OnRodEquipped;
+    public event Action OnFishingSessionStarted;   // ⭐ 신규: 낚시 씬 진입 시
+    public event Action OnFishingSessionEnded;     // ⭐ 신규: 낚시 씬 이탈 시
 
     // 공개 프로퍼티
     public FishingState State => _state;
@@ -49,6 +56,7 @@ public class FishingManager : MonoBehaviour
     public RodItemData CurrentRod => currentRod;
     public int CurrentRodRank => currentRod != null ? currentRod.rodRank : 1;
     public FishGrade MaxCatchableGrade => currentRod != null ? currentRod.maxCatchableGrade : FishGrade.Common;
+    public bool IsSessionActive => _isSessionActive;
 
     private void Awake()
     {
@@ -66,7 +74,71 @@ public class FishingManager : MonoBehaviour
     }
 
     // ─────────────────────────────────────────────────────────
-    // 외부 API
+    // 세션 관리 (FishingSpot이 호출)
+    // ─────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// 낚시 스팟에서 F키 상호작용 시 호출.
+    /// 카메라·캐릭터 전환은 FishingSpot이 이미 처리한 상태.
+    /// </summary>
+    public void EnterFishing(FishingSpot spot)
+    {
+        if (_isSessionActive)
+        {
+            Debug.LogWarning("[FishingManager] 이미 세션 진행 중.");
+            return;
+        }
+
+        _currentSpot = spot;
+        _isSessionActive = true;
+
+        // 세션 데이터 초기화
+        _sessionCatchCount = 0;
+        _caughtFishesThisSession.Clear();
+
+        // 커서 표시 + 게임 조작 잠금 (파밍이랑 동일 방식)
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        // UI가 구독해서 자동으로 반응
+        OnFishingSessionStarted?.Invoke();
+
+        // 자동으로 낚시 사이클 시작 (Idle → Casting → Waiting)
+        StartFishing();
+
+        Debug.Log("[FishingManager] 낚시 세션 시작");
+    }
+
+    /// <summary>
+    /// 나가기 버튼 또는 ESC로 호출.
+    /// </summary>
+    public void ExitFishing()
+    {
+        if (!_isSessionActive) return;
+
+        // 진행 중인 낚시 사이클 중단
+        EndSession();
+
+        // 커서 잠금 복구
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        // UI 구독자에게 종료 알림
+        OnFishingSessionEnded?.Invoke();
+
+        // 스팟에 카메라·캐릭터 복구 요청
+        if (_currentSpot != null)
+        {
+            _currentSpot.ExitFishing();
+            _currentSpot = null;
+        }
+
+        _isSessionActive = false;
+        Debug.Log("[FishingManager] 낚시 세션 종료");
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // 낚시 사이클 API
     // ─────────────────────────────────────────────────────────
 
     public void StartFishing()
