@@ -167,6 +167,7 @@ public class BattleCharacterStatusView : MonoBehaviour
         }
 
         if (_nameTxt != null) _nameTxt.text = unit.UnitName;
+        if (_levelTxt != null) _levelTxt.text = $"{unit.Level}";
 
         UpdateIcon(unit.Icon);
 

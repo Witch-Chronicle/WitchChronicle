@@ -147,7 +147,8 @@ public class BattleActor : MonoBehaviour
             _characterStats.CombatMagicDefensePower,
             _characterStats.CombatSpeed,
             _playerSkillLoadout.GetBattleSkillList(),
-            _characterStats.Icon);
+            _characterStats.Icon,
+            _characterStats.Level);
     }
 
     /// <summary>
