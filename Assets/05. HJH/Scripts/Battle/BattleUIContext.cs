@@ -19,6 +19,9 @@ public class BattleUIContext : MonoBehaviour
     [Header("Status Effect (아이콘 조회용, StatusEffectData.Icon 사용)")]
     [SerializeField] private Battle.Rules.StatusEffectDatabase _statusEffectDatabase;
 
+    [Header("Element Icon (아이콘 조회용, 스킬 속성 아이콘)")]
+    [SerializeField] private Battle.Rules.ElementIconDatabase _elementIconDatabase;
+
     public BattleUnit CurrentUnit { get; private set; }
     public IReadOnlyList<BattleUnit> PartyUnits { get; private set; } = new List<BattleUnit>();
 
@@ -220,5 +223,15 @@ public class BattleUIContext : MonoBehaviour
         Battle.Rules.StatusEffectData data = _statusEffectDatabase.GetData(type);
 
         return data != null ? data.Icon : null;
+    }
+
+    /// <summary>
+    /// 스킬/속성 종류에 해당하는 아이콘 스프라이트 조회. 데이터베이스 미설정/데이터 없으면 null.
+    /// </summary>
+    public Sprite GetElementIcon(ElementType type)
+    {
+        if (_elementIconDatabase == null) return null;
+
+        return _elementIconDatabase.GetIcon(type);
     }
 }
