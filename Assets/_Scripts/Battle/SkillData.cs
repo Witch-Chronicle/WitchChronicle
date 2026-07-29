@@ -23,6 +23,10 @@ public class SkillData : ScriptableObject
     [SerializeField] private StatusEffectType _statusEffectType;
     [SerializeField] private float _statusChance;
 
+    [Header("Cure Effect (CureStatus 타입 전용)")]     // ⭐ 신규 섹션
+    [Tooltip("CureStatus 타입 스킬이 해제할 상태이상 종류")]
+    [SerializeField] private StatusEffectType _cureStatusEffectType = StatusEffectType.None;
+
     [Header("Buff/Debuff")]
     [Tooltip("Buff/Debuff 타입 스킬일 때 참조할 BuffData")]
     [SerializeField] private BuffData _buffData;
@@ -73,6 +77,8 @@ public class SkillData : ScriptableObject
 
     public StatusEffectType StatusEffectType => _statusEffectType;
     public float StatusChance => _statusChance;
+
+    public StatusEffectType CureStatusEffectType => _cureStatusEffectType;   // ⭐ 신규
 
     public BuffData BuffData => _buffData;
 

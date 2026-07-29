@@ -43,5 +43,6 @@ public enum PotionEffect
 {
     HealHp,             // HP 회복
     HealMp,             // MP 회복
-    CureStatusEffect    // 상태이상 해제
+    CureStatusEffect,
+    CureAllStatusEffects    // 상태이상 해제
 }

@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2956578572942035892
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7630696491373253714}
+  - component: {fileID: 795664876216409667}
+  m_Layer: 0
+  m_Name: Fishing UI manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &7630696491373253714
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2956578572942035892}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1009.0387, y: -144.0029, z: 9.74272}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &795664876216409667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2956578572942035892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e489bf7f9499334f87f500d09d12d3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FishingUIManager
+  fishingPanel: {fileID: 0}
+  resultPopup: {fileID: 0}
+  fishingSceneImage: {fileID: 0}
+  sceneIdle: {fileID: 21300000, guid: d19ed5e53fe448b4db3328dc7c43a46c, type: 3}
+  sceneBite: {fileID: 21300000, guid: a6b1d720b19d82b409b91d1d77ea1f5a, type: 3}
+  sceneReeling: {fileID: 21300000, guid: ec502948d7ad18640a264d8a27b7fa6e, type: 3}
+  fishingTimer: {fileID: 0}
+  timerText: {fileID: 0}
+  statusBubble: {fileID: 0}
+  statusText: {fileID: 0}
+  tensionGaugeGroup: {fileID: 0}
+  progressGauge: {fileID: 0}
+  actionButton: {fileID: 0}
+  actionButtonText: {fileID: 0}
+  actionButtonImage: {fileID: 0}
+  colorReadyToCast: {r: 1, g: 0.7, b: 0.3, a: 1}
+  colorWaiting: {r: 0.7, g: 0.7, b: 0.7, a: 1}
+  colorReadyToReel: {r: 1, g: 0.4, b: 0.3, a: 1}
+  colorReeling: {r: 0.4, g: 0.8, b: 0.4, a: 1}
+  resultTitle: {fileID: 0}
+  resultText: {fileID: 0}
+  reelController: {fileID: 0}
