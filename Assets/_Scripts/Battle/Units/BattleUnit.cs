@@ -251,6 +251,15 @@ public class BattleUnit
     }
 
     /// <summary>
+    /// 빗나감(혼란 miss 등) 통지. HP는 변하지 않고 OnDamaged(0)만 발동한다.
+    /// 연출 측(데미지 팝업)에서 0을 "Miss"로 표시하는 용도.
+    /// </summary>
+    public void NotifyMiss()
+    {
+        OnDamaged?.Invoke(0);
+    }
+
+    /// <summary>
     /// 대상의 HP 회복. 실제로 채워진 HP만큼 OnHealed를 발동 (만피 상태의 오버힐은 발동 안 함).
     /// </summary>
     public void Heal(int amount)

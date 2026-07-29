@@ -702,8 +702,8 @@ MonoBehaviour:
   _enemyActorPrefabs: []
   _playerFormationRoot: {fileID: 604296034}
   _enemyFormationRoot: {fileID: 361416002}
-  _playerFallbackOrigin: {x: -3, y: 0, z: 0}
-  _enemyFallbackOrigin: {x: 3, y: 0, z: 0}
+  _playerFallbackOrigin: {x: -3, y: -3, z: 0}
+  _enemyFallbackOrigin: {x: 3, y: -3, z: 0}
   _formationSpacing: 4
   _startBattleOnStart: 1
   _debugLogBattleUnits: 1
@@ -781,7 +781,7 @@ Transform:
   m_GameObject: {fileID: 361416001}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3, y: 0, z: 0}
+  m_LocalPosition: {x: 3, y: -0.46, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1860,7 +1860,7 @@ Transform:
   m_GameObject: {fileID: 604296033}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3, y: 0, z: 0}
+  m_LocalPosition: {x: -3, y: -0.46, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -8848,17 +8848,7 @@ MonoBehaviour:
   _levelTxt: {fileID: 0}
   _hpTxt: {fileID: 1330923092365827612}
   _mpTxt: {fileID: 6805980575154634504}
-  _hpBarFillImg: {fileID: 0}
-  _mpBarFillImg: {fileID: 0}
-  _fillTweenDuration: 0.3
-  _fillTweenEase: 6
-  _aliveIconColor: {r: 1, g: 1, b: 1, a: 1}
-  _deadIconColor: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
-  _statusIconTemplate: {fileID: 0}
-  _statusIconsParent: {fileID: 0}
-  _rearFrame: {fileID: 0}
-  _rearFrameRevealDuration: 0.35
-  _rearFrameRevealEase: 9
+  _deadOverlayImg: {fileID: 0}
 --- !u!224 &1065829235644332591
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9759,17 +9749,7 @@ MonoBehaviour:
   _levelTxt: {fileID: 0}
   _hpTxt: {fileID: 81311961065234392}
   _mpTxt: {fileID: 2318752019364706492}
-  _hpBarFillImg: {fileID: 0}
-  _mpBarFillImg: {fileID: 0}
-  _fillTweenDuration: 0.3
-  _fillTweenEase: 6
-  _aliveIconColor: {r: 1, g: 1, b: 1, a: 1}
-  _deadIconColor: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
-  _statusIconTemplate: {fileID: 0}
-  _statusIconsParent: {fileID: 0}
-  _rearFrame: {fileID: 0}
-  _rearFrameRevealDuration: 0.35
-  _rearFrameRevealEase: 9
+  _deadOverlayImg: {fileID: 0}
 --- !u!1 &1389018189662811590
 GameObject:
   m_ObjectHideFlags: 0
@@ -10023,17 +10003,7 @@ MonoBehaviour:
   _levelTxt: {fileID: 0}
   _hpTxt: {fileID: 7685846751348771965}
   _mpTxt: {fileID: 7255264224276635823}
-  _hpBarFillImg: {fileID: 0}
-  _mpBarFillImg: {fileID: 0}
-  _fillTweenDuration: 0.3
-  _fillTweenEase: 6
-  _aliveIconColor: {r: 1, g: 1, b: 1, a: 1}
-  _deadIconColor: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
-  _statusIconTemplate: {fileID: 0}
-  _statusIconsParent: {fileID: 0}
-  _rearFrame: {fileID: 0}
-  _rearFrameRevealDuration: 0.35
-  _rearFrameRevealEase: 9
+  _deadOverlayImg: {fileID: 0}
 --- !u!224 &1561060292365869176
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11660,17 +11630,7 @@ MonoBehaviour:
   _levelTxt: {fileID: 0}
   _hpTxt: {fileID: 7293774531084836665}
   _mpTxt: {fileID: 1323382489069728539}
-  _hpBarFillImg: {fileID: 0}
-  _mpBarFillImg: {fileID: 0}
-  _fillTweenDuration: 0.3
-  _fillTweenEase: 6
-  _aliveIconColor: {r: 1, g: 1, b: 1, a: 1}
-  _deadIconColor: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
-  _statusIconTemplate: {fileID: 0}
-  _statusIconsParent: {fileID: 0}
-  _rearFrame: {fileID: 0}
-  _rearFrameRevealDuration: 0.35
-  _rearFrameRevealEase: 9
+  _deadOverlayImg: {fileID: 0}
 --- !u!1 &2484855166666265236
 GameObject:
   m_ObjectHideFlags: 0

@@ -387,8 +387,10 @@ namespace Battle.Rules
                 if (effects[i].Data.RemoveOnHit)
                 {
                     Debug.Log($"[StatusEffect] {unit.UnitName}: {effects[i].Data.StatusName} 피격 해제");
+                    StatusEffectType removedType = effects[i].StatusEffectType;
                     effects[i].Remove();
                     effects.RemoveAt(i);
+                    OnRemoved?.Invoke(unit, removedType);
                 }
             }
         }
