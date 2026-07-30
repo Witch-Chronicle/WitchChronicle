@@ -5,14 +5,13 @@ namespace WitchChronicle.IdleFarming
 {
     /// <summary>
     /// 밭 슬롯 상호작용 처리
-    /// Player가 Trigger 안에 있을 때 E키로 상태별 UI 오픈
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public class PlotInteractor : MonoBehaviour
     {
         [Header("참조")]
         [SerializeField] private PlotSlot _plotSlot;
-        [SerializeField] private GameObject _promptUI;  // "E키로 상호작용" 월드스페이스 UI (선택)
+        [SerializeField] private GameObject _promptUI;
 
         private bool _isPlayerInside;
 
@@ -76,16 +75,15 @@ namespace WitchChronicle.IdleFarming
                 }
 
                 case PlotState.Growing:
-                    // TODO: PlotGrowingPanel (다음 단계)
-                    Debug.Log($"[PlotInteractor] Growing → progress={_plotSlot.GetGrowthProgress():F2}");
+                    // Growing 중엔 상호작용 없음 (FloatingUI로 정보 확인)
                     break;
 
                 case PlotState.ReadyToHarvest:
-                    // TODO: PlotHarvestPanel (다음 단계)
-                    // 우선 자동 수확 (임시)
-                    _plotSlot.Harvest();
-                    Debug.Log("[PlotInteractor] ReadyToHarvest → 자동 수확 (임시)");
+                {
+                    if (PlotManager.Instance.HarvestPanel != null)
+                        PlotManager.Instance.HarvestPanel.Open(_plotSlot);
                     break;
+                }
             }
         }
     }

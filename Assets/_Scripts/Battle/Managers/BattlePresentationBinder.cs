@@ -20,7 +20,7 @@ public class BattlePresentationBinder : MonoBehaviour
     private class UnitBinding
     {
         public BattleUnit Unit;
-        public BattleUnitPresenter Presenter;
+        public IBattlePresenter Presenter;
         public DeathDissolve Dissolve;
         public CharacterAudio Audio;
         public BattleTeamType TeamType;
@@ -306,7 +306,7 @@ public class BattlePresentationBinder : MonoBehaviour
                 continue;
             }
 
-            BattleUnitPresenter presenter = actor.GetComponent<BattleUnitPresenter>();
+            IBattlePresenter presenter = actor.GetComponent<IBattlePresenter>();
 
             if (presenter == null)
             {

@@ -4,28 +4,17 @@ namespace Battle.Rules
 {
     /// <summary>
     /// 전투 중 아이템(포션) 사용 실행부
-    /// PotionItemData를 받아 회복/상태이상 해제 효과를 적용하고 인벤토리에서 차감
+    /// PotionItemData를 받아 회복·상태이상 해제·전체 상태이상 해제 효과를 적용하고 인벤토리에서 차감
     /// </summary>
     public class BattleItemExecutor
     {
         private readonly StatusEffectController _statusEffectController;
 
-        /// <summary>
-        /// 생성자
-        /// </summary>
-        /// <param name="statusEffectController">상태이상 관리자</param>
         public BattleItemExecutor(StatusEffectController statusEffectController)
         {
             _statusEffectController = statusEffectController;
         }
 
-        /// <summary>
-        /// 포션 사용
-        /// 인벤토리 차감 후 효과 실행
-        /// </summary>
-        /// <param name="user">사용자 (효과 적용 대상)</param>
-        /// <param name="potionData">사용할 포션 데이터</param>
-        /// <returns>실행 결과</returns>
         public BattleItemResult UsePotion(BattleUnit user, PotionItemData potionData)
         {
             BattleItemResult result = new BattleItemResult();
@@ -44,7 +33,6 @@ namespace Battle.Rules
                 return result;
             }
 
-            // 인벤토리에서 포션 하나 차감
             if (PlayerInventory.Instance == null)
             {
                 Debug.LogError("[BattleItemExecutor] PlayerInventory.Instance가 null입니다");
@@ -61,7 +49,6 @@ namespace Battle.Rules
                 return result;
             }
 
-            // 포션 효과 실행
             switch (potionData.PotionEffect)
             {
                 case PotionEffect.HealHp:
@@ -76,12 +63,15 @@ namespace Battle.Rules
                     ApplyCureStatusEffect(user, potionData, ref result);
                     break;
 
+                case PotionEffect.CureAllStatusEffects:      // ⭐ 신규
+                    ApplyCureAllStatusEffects(user, potionData, ref result);
+                    break;
+
                 default:
                     Debug.LogWarning($"[BattleItemExecutor] 알 수 없는 PotionEffect: {potionData.PotionEffect}");
                     break;
             }
 
-            // 인벤토리 UI 갱신 이벤트 발행
             PlayerInventory.Instance.RaiseInventoryChanged();
 
             result.Success = true;
@@ -89,9 +79,6 @@ namespace Battle.Rules
             return result;
         }
 
-        /// <summary>
-        /// HP 회복 포션 실행
-        /// </summary>
         private void ApplyHealHp(BattleUnit user, PotionItemData potionData, ref BattleItemResult result)
         {
             int healAmount = Mathf.RoundToInt(user.MaxHp * potionData.HealRatio);
@@ -103,9 +90,6 @@ namespace Battle.Rules
             Debug.Log($"[Item] {user.UnitName}: {potionData.itemName} 사용 (HP +{healAmount})");
         }
 
-        /// <summary>
-        /// MP 회복 포션 실행
-        /// </summary>
         private void ApplyHealMp(BattleUnit user, PotionItemData potionData, ref BattleItemResult result)
         {
             if (user.UsesMp == false)
@@ -117,15 +101,12 @@ namespace Battle.Rules
             int healAmount = Mathf.RoundToInt(user.MaxMp * potionData.HealRatio);
             healAmount = Mathf.Max(1, healAmount);
 
-            RestoreMp(user, healAmount);
+            user.RestoreMp(healAmount);
             result.HealMpAmount = healAmount;
 
             Debug.Log($"[Item] {user.UnitName}: {potionData.itemName} 사용 (MP +{healAmount})");
         }
 
-        /// <summary>
-        /// 상태이상 해제 포션 실행
-        /// </summary>
         private void ApplyCureStatusEffect(BattleUnit user, PotionItemData potionData, ref BattleItemResult result)
         {
             if (potionData.CureStatusEffectType == StatusEffectType.None)
@@ -155,20 +136,23 @@ namespace Battle.Rules
         }
 
         /// <summary>
-        /// BattleUnit에 MP 회복 메서드가 없어 UseMp를 음수처럼 사용하는 대신
-        /// UseMp의 반대 방향으로 리플렉션 없이 처리하기 위한 헬퍼
-        /// (BattleUnit 수정 없이 우회)
+        /// 만능 치료제 실행 - 대상의 모든 상태이상 해제
         /// </summary>
-        private void RestoreMp(BattleUnit user, int amount)
+        private void ApplyCureAllStatusEffects(BattleUnit user, PotionItemData potionData, ref BattleItemResult result)
         {
-            user.RestoreMp(amount);
+            if (_statusEffectController == null)
+            {
+                Debug.LogWarning("[BattleItemExecutor] StatusEffectController가 null입니다");
+                return;
+            }
+
+            _statusEffectController.RemoveAllStatusEffects(user);
+            result.CureAllSuccess = true;
+
+            Debug.Log($"[Item] {user.UnitName}: {potionData.itemName} 사용, 모든 상태이상 해제");
         }
     }
 
-    /// <summary>
-    /// 아이템 사용 결과
-    /// UI, 이펙트가 이 결과를 받아 연출
-    /// </summary>
     public struct BattleItemResult
     {
         public bool Success;
@@ -177,5 +161,6 @@ namespace Battle.Rules
         public int HealMpAmount;
         public StatusEffectType CuredStatusEffect;
         public bool CureSuccess;
+        public bool CureAllSuccess;         // ⭐ 신규
     }
 }

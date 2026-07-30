@@ -18,15 +18,18 @@ namespace WitchChronicle.IdleFarming
         [Header("UI Panels")]
         [SerializeField] private PlotUnlockPanel _unlockPanel;
         [SerializeField] private PlotSeedSelectPanel _seedSelectPanel;
+        [SerializeField] private PlotHarvestPanel _harvestPanel;
 
         private readonly List<PlotSlot> _slots = new List<PlotSlot>();
-        private int _openPanelCount = 0;  // 열린 팝업 카운트 (커서 제어용)
+        private int _openPanelCount = 0;
 
         // 프로퍼티
         public PlotConfig Config => _config;
         public int AllSeedsCount => _allSeeds.Count;
+        public int MaxOfflineCycles => _maxOfflineCycles;
         public PlotUnlockPanel UnlockPanel => _unlockPanel;
         public PlotSeedSelectPanel SeedSelectPanel => _seedSelectPanel;
+        public PlotHarvestPanel HarvestPanel => _harvestPanel;
 
         private void Awake()
         {
@@ -52,10 +55,29 @@ namespace WitchChronicle.IdleFarming
             var found = FindObjectsOfType<PlotSlot>();
             System.Array.Sort(found, (a, b) => a.PlotIndex.CompareTo(b.PlotIndex));
             _slots.AddRange(found);
+
+            foreach (var slot in _slots)
+                slot.OnHarvested += HandleSlotHarvested;
+
             Debug.Log($"[PlotManager] {_slots.Count}개 슬롯 등록됨");
         }
 
-        // ====== 초기화 (저장 없이 매번 새로) ======
+        private void HandleSlotHarvested(PlotSlot slot, SeedData seed, int amount)
+        {
+            if (seed == null || seed.harvestItem == null || amount <= 0) return;
+
+            if (PlayerInventory.Instance != null)
+            {
+                PlayerInventory.Instance.AddItem(seed.harvestItem, amount);
+                Debug.Log($"[PlotManager] 수확: {seed.harvestName} x{amount}");
+            }
+            else
+            {
+                Debug.LogWarning("[PlotManager] PlayerInventory.Instance 없음, 수확 지급 실패");
+            }
+        }
+
+        // ====== 초기화 ======
 
         private void InitializeFresh()
         {
