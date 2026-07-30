@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dcd6cc23ff92a0448196b4017ccc641, type: 3}
+  m_Name: 11.PurificationElixir_potion_recipe
+  m_EditorClassIdentifier: Assembly-CSharp::PotionRecipeData
+  recipeName: "\uC815\uD654\uC758 \uC601\uC57D"
+  description: "\uBAA8\uB4E0 \uC800\uC8FC\uC640 \uBCD1\uC99D\uC744 \uC53B\uC5B4\uB0B4\uB294
+    \uB9C8\uB140\uC758 \uAD81\uADF9 \uBE44\uC57D."
+  ingredients:
+  - specificItem: {fileID: 11400000, guid: 3cacdb6444afd9a4ab44879bf9beea09, type: 2}
+    amount: 2
+  - specificItem: {fileID: 11400000, guid: 49cf35d8a2444364e8ce6ba28f1615a5, type: 2}
+    amount: 2
+  - specificItem: {fileID: 11400000, guid: cfa1e841328a5a442996bb4374e4802a, type: 2}
+    amount: 2
+  - specificItem: {fileID: 11400000, guid: 91ea0125c6c2f8945ba1286defedee46, type: 2}
+    amount: 2
+  - specificItem: {fileID: 11400000, guid: 69fd54e053b5284479520fb02ce9a3dd, type: 2}
+    amount: 2
+  - specificItem: {fileID: 11400000, guid: c8be96a49226c1b4993e21b1a47166a3, type: 2}
+    amount: 2
+  resultPotion: {fileID: 11400000, guid: d4f256417b58dfa4daef366a3895ae46, type: 2}
