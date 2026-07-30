@@ -232,9 +232,11 @@ public class BattleActor : MonoBehaviour
     }
 
     /// <summary>
-    /// 전투 결과 HP/MP 반영
+    /// 전투 결과 HP/MP 반영.
+    /// isVictory가 true이고 이 캐릭터가 전투 중 사망했다면, HP 0 대신 1로 보정해서 반영(부활 처리).
     /// </summary>
-    public void ApplyBattleResultToVitals()
+    /// <param name="isVictory">전투 승리 여부</param>
+    public void ApplyBattleResultToVitals(bool isVictory)
     {
         if (_teamType != BattleTeamType.Player)
         {
@@ -246,10 +248,18 @@ public class BattleActor : MonoBehaviour
             return;
         }
 
+        int finalHp = _battleUnit.CurrentHp;
+
+        // 승리 시, 전투 중 사망한 캐릭터는 HP 1로 부활 처리
+        if (isVictory && _battleUnit.IsAlive == false)
+        {
+            finalHp = 1;
+        }
+
         if (_persistentCharacterUnit != null)
         {
             _persistentCharacterUnit.ApplyVitals(
-                _battleUnit.CurrentHp,
+                finalHp,
                 _battleUnit.CurrentMp);
 
             return;
@@ -261,7 +271,7 @@ public class BattleActor : MonoBehaviour
         }
 
         _characterVitals.SetCurrentVitals(
-            _battleUnit.CurrentHp,
+            finalHp,
             _battleUnit.CurrentMp);
     }
 

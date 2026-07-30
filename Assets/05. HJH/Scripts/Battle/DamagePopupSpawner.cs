@@ -111,14 +111,32 @@ public class DamagePopupSpawner : MonoBehaviour
 
     private void HandleDamaged(int amount)
     {
+        // 테스트 용
+        // amount = 0;
+
         if (_damagePrefab == null || _spawnPoint == null) return;
+
+        if (amount == 0)
+        {
+            _damagePrefab.Spawn(_spawnPoint.position, "Miss");
+            return;
+        }
 
         _damagePrefab.Spawn(_spawnPoint.position, (float)amount);
     }
 
     private void HandleHealed(int amount)
     {
+        // 테스트 용
+        // amount = 0;
+
         if (_healPrefab == null || _spawnPoint == null) return;
+
+        if (amount == 0)
+        {
+            _healPrefab.Spawn(_spawnPoint.position, "Miss");
+            return;
+        }
 
         _healPrefab.Spawn(_spawnPoint.position, (float)amount);
     }

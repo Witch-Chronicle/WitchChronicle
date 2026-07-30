@@ -22,7 +22,16 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private Transform _enemyFormationRoot;
     [SerializeField] private Vector3 _playerFallbackOrigin = new Vector3(-3f, 0f, 0f);
     [SerializeField] private Vector3 _enemyFallbackOrigin = new Vector3(3f, 0f, 0f);
-    [SerializeField] private float _formationSpacing = 1.5f;
+    [Tooltip("아군 진형 좌우 간격")]
+    [SerializeField] private float _playerFormationSpacing = 1.5f;
+    [Tooltip("적 진형 좌우 간격 (한 줄 안에서의 간격)")]
+    [SerializeField] private float _enemyFormationSpacing = 1.5f;
+    [Tooltip("한 줄에 배치할 최대 인원 (예: 3이면 3마리씩 끊어서 다음 줄로)")]
+    [SerializeField] private int _maxPerRow = 3;
+    [Tooltip("줄과 줄 사이 앞뒤 간격 (상대 진영에서 멀어지는 방향으로)")]
+    [SerializeField] private float _rowSpacing = 1.3f;
+    [Tooltip("뒷줄을 앞줄 유닛 사이 틈으로 살짝 어긋나게 배치할 비율 (0.5 = 반 칸)")]
+    [SerializeField] private float _rowSideStagger = 0.5f;
 
     [Header("Debug")]
     [SerializeField] private bool _startBattleOnStart = true;
@@ -502,12 +511,65 @@ public class BattleManager : MonoBehaviour
     /// <param name="index">팀 내 인덱스</param>
     /// <param name="count">팀 유닛 수</param>
     /// <returns>계산 위치</returns>
+    /// <summary>
+    /// 진형 위치 계산.
+    /// Player는 기존 방식대로 한 줄로 나란히 배치.
+    /// Enemy는 한 줄에 최대 _maxPerRow명씩 배치하고, 넘어가면 다음 줄로(최대 2줄 가정).
+    /// 뒷줄은 상대 진영에서 멀어지는 방향(depthDir)으로 _rowSpacing만큼 물러나고,
+    /// 가로 위치(sideDir)도 앞줄 틈 사이로 보이도록 반 칸(_rowSideStagger) 어긋나게 배치됨.
+    /// </summary>
+    /// <param name="teamType">팀 타입</param>
+    /// <param name="index">팀 내 인덱스</param>
+    /// <param name="count">팀 유닛 수</param>
+    /// <returns>계산 위치</returns>
     private Vector3 GetFormationPosition(BattleTeamType teamType, int index, int count)
     {
         Vector3 origin = GetFormationOrigin(teamType);
-        float centerOffset = index - (count - 1) * 0.5f;
 
-        return origin + new Vector3(0f, 0f, centerOffset * _formationSpacing);
+        if (teamType == BattleTeamType.Player)
+        {
+            float centerOffset = index - (count - 1) * 0.5f;
+            return origin + new Vector3(0f, 0f, centerOffset * _playerFormationSpacing);
+        }
+
+        int maxPerRow = Mathf.Max(1, _maxPerRow);
+
+        int row = index / maxPerRow;
+        int indexInRow = index % maxPerRow;
+
+        int countInRow = Mathf.Clamp(count - row * maxPerRow, 1, maxPerRow);
+        int frontRowCount = Mathf.Min(count, maxPerRow);
+
+        Vector3 opponentOrigin = GetFormationOrigin(GetOpposingTeamType(teamType));
+
+        Vector3 depthDir = origin - opponentOrigin;
+        depthDir.y = 0f;
+        depthDir = depthDir.sqrMagnitude > 0.0001f ? depthDir.normalized : Vector3.forward;
+
+        Vector3 sideDir = Vector3.Cross(Vector3.up, depthDir).normalized;
+
+        float sideOffset = indexInRow - (countInRow - 1) * 0.5f;
+
+        // 앞줄과 인원수 차이가 짝수(0, 2 등)일 때만 완전히 겹치므로, 그때만 스태거로 밀어줌.
+        // 차이가 홀수일 땐 자기 인원수 기준 중앙 정렬만으로 이미 앞줄 틈 사이에 정확히 들어감.
+        if (row > 0 && (frontRowCount - countInRow) % 2 == 0)
+        {
+            sideOffset += _rowSideStagger;
+        }
+
+        return origin
+            + sideDir * (sideOffset * _enemyFormationSpacing)
+            + depthDir * (row * _rowSpacing);
+    }
+
+    /// <summary>
+    /// 상대 팀 타입 반환 (진형 깊이 축 계산용)
+    /// </summary>
+    private BattleTeamType GetOpposingTeamType(BattleTeamType teamType)
+    {
+        return teamType == BattleTeamType.Player
+            ? BattleTeamType.Enemy
+            : BattleTeamType.Player;
     }
 
     /// <summary>
@@ -570,13 +632,9 @@ public class BattleManager : MonoBehaviour
     /// <param name="winner">승리 팀</param>
     private void HandleBattleEnded(BattleTeamType winner)
     {
-        ApplyPlayerBattleResultsToVitals();
+        bool isVictory = winner == BattleTeamType.Player;
 
-        // // 추가, 승리지 보상 지급
-        // if (winner == BattleTeamType.Player)
-        // {
-        //     GiveBattleRewards();
-        // }
+        ApplyPlayerBattleResultsToVitals(isVictory);
 
         Debug.Log($"[BattleManager] Battle End / Winner: {winner}");
 
@@ -615,7 +673,8 @@ public class BattleManager : MonoBehaviour
     /// <summary>
     /// 플레이어 전투 결과 반영
     /// </summary>
-    private void ApplyPlayerBattleResultsToVitals()
+    /// <param name="isVictory">전투 승리 여부 (사망 캐릭터 부활 처리 판단용)</param>
+    private void ApplyPlayerBattleResultsToVitals(bool isVictory)
     {
         for (int i = 0; i < _spawnedActors.Count; i++)
         {
@@ -626,7 +685,7 @@ public class BattleManager : MonoBehaviour
                 continue;
             }
 
-            actor.ApplyBattleResultToVitals();
+            actor.ApplyBattleResultToVitals(isVictory);
         }
     }
 

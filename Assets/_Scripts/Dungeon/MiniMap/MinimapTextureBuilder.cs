@@ -3,23 +3,27 @@ using UnityEngine;
 
 /// <summary>
 /// 미니맵 데이터를 Texture2D로 변환하는 순수 로직 클래스.
+/// - BuildBase(): 바닥/벽 타일만 그린 베이스 텍스처 생성. 던전 구조가 바뀌지 않는 한 한 번만 호출하면 됨.
+/// - DrawIconsOnto(): 이미 만들어진 텍스처 위에 방 아이콘만 다시 그림 (방 발견 시마다 호출).
+/// * 개별 SetPixel/GetPixel 호출 대신 배열(GetPixels/SetPixels)로 일괄 처리해서 성능을 크게 개선함.
+///   아이콘 텍스처의 픽셀 배열도 캐싱해서, 같은 아이콘을 쓰는 방이 여러 개여도 GetPixels()는 한 번만 호출됨.
 /// </summary>
 public class MinimapTextureBuilder
 {
     private const int PixelsPerTile = 15;
-    private const float IconScaleFactor = 0.34f; // 방 크기 대비 아이콘이 차지할 비율 (예: 80%)
+    private const float IconScaleFactor = 0.34f; // 방 크기 대비 아이콘이 차지할 비율
 
     private static readonly Color ClearColor = new Color(0f, 0f, 0f, 0f);
     private static readonly Color FloorColor = new Color32(140, 140, 140, 255); // 중간 밝기의 그레이 (바닥)
     private static readonly Color WallColor = new Color32(70, 70, 70, 255);     // 어두운 그레이 (벽)
 
+    // 아이콘 텍스처별 픽셀 배열 캐시 - GetPixel 반복 호출 대신 한 번만 GetPixels()로 뽑아서 재사용
+    private readonly Dictionary<Texture2D, Color[]> _iconPixelCache = new Dictionary<Texture2D, Color[]>();
+
     /// <summary>
-    /// 미니맵 Texture를 생성한다.
+    /// 바닥/벽 타일만 그려진 베이스 텍스처 생성. 던전 구조가 바뀌지 않는 한 딱 한 번만 호출하면 됨.
     /// </summary>
-    public Texture2D Build(
-        MinimapData data, 
-        IReadOnlyDictionary<RoomType, Texture2D> iconMap, 
-        Texture2D unvisitedIcon)
+    public Texture2D BuildBase(MinimapData data)
     {
         if (data == null || data.Rooms == null || data.Rooms.Count == 0)
         {
@@ -39,18 +43,18 @@ public class MinimapTextureBuilder
         texture.filterMode = FilterMode.Point;
         texture.wrapMode = TextureWrapMode.Clamp;
 
-        Clear(texture);
+        Color[] pixels = new Color[width * height];
+
+        for (int i = 0; i < pixels.Length; i++)
+        {
+            pixels[i] = ClearColor;
+        }
 
         if (data.FloorTiles != null)
         {
             foreach (Vector2Int tile in data.FloorTiles)
             {
-                DrawTile(
-                    texture,
-                    tile,
-                    data.MinX,
-                    data.MinY,
-                    FloorColor);
+                FillTileInBuffer(pixels, width, height, tile, data.MinX, data.MinY, FloorColor);
             }
         }
 
@@ -58,76 +62,83 @@ public class MinimapTextureBuilder
         {
             foreach (Vector2Int tile in data.WallTiles)
             {
-                DrawTile(
-                    texture,
-                    tile,
-                    data.MinX,
-                    data.MinY,
-                    WallColor);
+                FillTileInBuffer(pixels, width, height, tile, data.MinX, data.MinY, WallColor);
             }
         }
 
-        DrawRoomIcons(
-            texture,
-            data.Rooms,
-            data.MinX,
-            data.MinY,
-            iconMap,
-            unvisitedIcon);
-
+        texture.SetPixels(pixels);
         texture.Apply();
 
-        Debug.Log("[MinimapTextureBuilder] 미니맵 Texture 생성 완료");
+        Debug.Log("[MinimapTextureBuilder] 베이스 Texture 생성 완료");
 
         return texture;
     }
 
     /// <summary>
-    /// 방 아이콘들을 Texture 위에 표시한다.
+    /// 이미 캐싱된 베이스 픽셀 배열(basePixels)을 복제한 뒤 그 위에 방 아이콘들을 그려서 texture에 반영.
+    /// basePixels를 넘겨받으므로 texture.GetPixels()를 다시 호출하지 않아 할당이 줄어듦.
     /// </summary>
-    public void DrawRoomIcons(
+    public void DrawIconsOntoPixels(
         Texture2D texture,
+        Color[] basePixels,
         IReadOnlyList<RoomNode> rooms,
         int minX,
         int minY,
         IReadOnlyDictionary<RoomType, Texture2D> iconMap,
         Texture2D unvisitedIcon)
     {
-        if (rooms == null)
-        {
-            return;
-        }
+        Color[] pixels = (Color[])basePixels.Clone();
 
-        foreach (RoomNode room in rooms)
+        if (rooms != null)
         {
-            Texture2D iconTexture = null;
-
-            if (room.IsDiscovered)
+            foreach (RoomNode room in rooms)
             {
-                if (iconMap != null && iconMap.TryGetValue(room.Type, out Texture2D foundIcon))
+                Texture2D iconTexture = null;
+
+                if (room.IsDiscovered)
                 {
-                    iconTexture = foundIcon;
+                    if (iconMap != null && iconMap.TryGetValue(room.Type, out Texture2D foundIcon))
+                    {
+                        iconTexture = foundIcon;
+                    }
                 }
-            }
-            else
-            {
-                iconTexture = unvisitedIcon;
-            }
+                else
+                {
+                    iconTexture = unvisitedIcon;
+                }
 
-            DrawIcon(
-                texture,
-                room,
-                minX,
-                minY,
-                iconTexture);
+                DrawIconInBuffer(pixels, texture.width, texture.height, room, minX, minY, iconTexture);
+            }
         }
+
+        texture.SetPixels(pixels);
+        texture.Apply();
+
+        Debug.Log("[MinimapTextureBuilder] 아이콘 Texture 갱신 완료");
     }
 
     /// <summary>
-    /// 방의 실제 크기에 비례하여 아이콘 텍스처를 샘플링하고 미니맵 텍스처의 중심에 복사한다.
+    /// 아이콘 텍스처의 픽셀 배열을 캐싱해서 반환 (동일 텍스처는 GetPixels()를 한 번만 호출).
     /// </summary>
-    private void DrawIcon(
-        Texture2D texture,
+    private Color[] GetCachedIconPixels(Texture2D iconTexture)
+    {
+        if (_iconPixelCache.TryGetValue(iconTexture, out Color[] cached))
+        {
+            return cached;
+        }
+
+        Color[] pixels = iconTexture.GetPixels();
+        _iconPixelCache[iconTexture] = pixels;
+        return pixels;
+    }
+
+    /// <summary>
+    /// 방의 실제 크기에 비례하여 아이콘 텍스처를 샘플링하고, 대상 픽셀 배열의 중심에 복사한다.
+    /// </summary>
+    private void DrawIconInBuffer(
+        Color[] pixels,
+        int textureWidth,
+        int textureHeight,
         RoomNode room,
         int minX,
         int minY,
@@ -142,35 +153,42 @@ public class MinimapTextureBuilder
 
         if (iconTexture != null)
         {
+            Color[] iconPixels = GetCachedIconPixels(iconTexture);
+            int iconTexWidth = iconTexture.width;
+            int iconTexHeight = iconTexture.height;
+
             int startX = centerX - (iconWidth / 2);
             int startY = centerY - (iconHeight / 2);
 
             for (int x = 0; x < iconWidth; x++)
             {
+                int pixelX = startX + x;
+
+                if (pixelX < 0 || pixelX >= textureWidth)
+                {
+                    continue;
+                }
+
+                float u = (float)x / iconWidth;
+                int sourceX = Mathf.Clamp(Mathf.FloorToInt(u * iconTexWidth), 0, iconTexWidth - 1);
+
                 for (int y = 0; y < iconHeight; y++)
                 {
-                    int pixelX = startX + x;
                     int pixelY = startY + y;
 
-                    if (pixelX < 0 ||
-                        pixelY < 0 ||
-                        pixelX >= texture.width ||
-                        pixelY >= texture.height)
+                    if (pixelY < 0 || pixelY >= textureHeight)
                     {
                         continue;
                     }
 
-                    // 원본 아이콘 텍스처에서 비율에 맞게 픽셀을 샘플링
-                    float u = (float)x / iconWidth;
                     float v = (float)y / iconHeight;
-                    int sourceX = Mathf.Clamp(Mathf.FloorToInt(u * iconTexture.width), 0, iconTexture.width - 1);
-                    int sourceY = Mathf.Clamp(Mathf.FloorToInt(v * iconTexture.height), 0, iconTexture.height - 1);
+                    int sourceY = Mathf.Clamp(Mathf.FloorToInt(v * iconTexHeight), 0, iconTexHeight - 1);
 
-                    Color pixelColor = iconTexture.GetPixel(sourceX, sourceY);
+                    Color pixelColor = iconPixels[sourceY * iconTexWidth + sourceX];
 
                     if (pixelColor.a > 0f)
                     {
-                        texture.SetPixel(pixelX, pixelY, pixelColor);
+                        pixels[pixelY * textureWidth + pixelX] = pixelColor;
                     }
                 }
             }
@@ -182,27 +200,35 @@ public class MinimapTextureBuilder
 
             for (int x = -fallbackSize; x <= fallbackSize; x++)
             {
+                int pixelX = centerX + x;
+
+                if (pixelX < 0 || pixelX >= textureWidth)
+                {
+                    continue;
+                }
+
                 for (int y = -fallbackSize; y <= fallbackSize; y++)
                 {
-                    int pixelX = centerX + x;
                     int pixelY = centerY + y;
 
-                    if (pixelX < 0 ||
-                        pixelY < 0 ||
-                        pixelX >= texture.width ||
-                        pixelY >= texture.height)
+                    if (pixelY < 0 || pixelY >= textureHeight)
                     {
                         continue;
                     }
 
-                    texture.SetPixel(pixelX, pixelY, fallbackColor);
+                    pixels[pixelY * textureWidth + pixelX] = fallbackColor;
                 }
             }
         }
     }
 
-    private void DrawTile(
-        Texture2D texture,
+    /// <summary>
+    /// 픽셀 배열 버퍼에 타일 하나를 채움 (SetPixel 대신 배열 직접 접근이라 훨씬 빠름).
+    /// </summary>
+    private void FillTileInBuffer(
+        Color[] pixels,
+        int textureWidth,
+        int textureHeight,
         Vector2Int tile,
         int minX,
         int minY,
@@ -213,25 +239,24 @@ public class MinimapTextureBuilder
 
         for (int x = 0; x < PixelsPerTile; x++)
         {
+            int px = startX + x;
+
+            if (px < 0 || px >= textureWidth)
+            {
+                continue;
+            }
+
             for (int y = 0; y < PixelsPerTile; y++)
             {
-                texture.SetPixel(
-                    startX + x,
-                    startY + y,
-                    color);
+                int py = startY + y;
+
+                if (py < 0 || py >= textureHeight)
+                {
+                    continue;
+                }
+
+                pixels[py * textureWidth + px] = color;
             }
         }
-    }
-
-    private void Clear(Texture2D texture)
-    {
-        Color[] colors = new Color[texture.width * texture.height];
-
-        for (int i = 0; i < colors.Length; i++)
-        {
-            colors[i] = ClearColor;
-        }
-
-        texture.SetPixels(colors);
     }
 }
