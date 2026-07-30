@@ -5,6 +5,7 @@ namespace WitchChronicle.IdleFarming
 {
     /// <summary>
     /// 밭 슬롯 상호작용 처리
+    /// (FloatingUI 표시는 FarmZoneTrigger가 밭 전체 영역 기준으로 담당)
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public class PlotInteractor : MonoBehaviour
