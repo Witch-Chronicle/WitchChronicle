@@ -948,7 +948,7 @@ public class EnemyBattleAI
         }
 
         //// 별자리 확인용
-        if (candidate.SkillData.IsConstellationAttack)
+        if (candidate.SkillData.IsConstellationPathAttack)
         {
             return 1000f;
         }

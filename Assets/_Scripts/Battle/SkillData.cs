@@ -51,10 +51,9 @@ public class SkillData : ScriptableObject
     [Tooltip("명중/발동 이펙트 프리팹 (전 유형 필수)")]
     [SerializeField] private GameObject _hitVfxPrefab;
 
-    [Header("Presentation - Constellation Attack")]
-    [Tooltip("연결 시 사전 카메라 연출 후 별자리 패리 공격 실행")]
-    [SerializeField]
-    private ConstellationSequenceData _constellationSequenceData;
+    [Header("Presentation - Constellation Path Attack")]
+    [Tooltip("연결 시 사전 카메라 연출 후 " + "경로형 별자리 패리 실행")]
+    [SerializeField] private ConstellationPathSequenceData _constellationPathSequenceData;
 
     [Header("Presentation - Draw Guide (마법진 그리기)")]
     [Tooltip("SkillDrawController가 사용할 궤적 가이드 JSON (fire_ball.json 등). " +
@@ -94,11 +93,8 @@ public class SkillData : ScriptableObject
     public GameObject ProjectileVfxPrefab => _projectileVfxPrefab;
     public GameObject HitVfxPrefab => _hitVfxPrefab;
 
-    public ConstellationSequenceData ConstellationSequenceData =>
-    _constellationSequenceData;
-
-    public bool IsConstellationAttack =>
-        _constellationSequenceData != null;
+    public ConstellationPathSequenceData ConstellationPathSequenceData => _constellationPathSequenceData;
+    public bool IsConstellationPathAttack => _constellationPathSequenceData != null;
 
     public TextAsset DrawGuideJson => _drawGuideJson;
     public Sprite DrawExampleSprite => _drawExampleSprite;
