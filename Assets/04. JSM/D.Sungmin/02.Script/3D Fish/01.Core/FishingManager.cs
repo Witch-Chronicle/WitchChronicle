@@ -7,6 +7,7 @@ using UnityEngine;
 /// <summary>
 /// 낚시 상태 머신 + 어종 추첨 + 낚싯대 관리 + 세션 인벤토리.
 /// 낚시 스팟에서 EnterFishing 호출 시 세션 시작, 나가기 시 ExitFishing 호출.
+/// 애니메이션은 FishingAnimatorHook을 통해 담당자가 붙일 수 있도록 인터페이스만 제공.
 /// </summary>
 public class FishingManager : MonoBehaviour
 {
@@ -27,6 +28,10 @@ public class FishingManager : MonoBehaviour
     [SerializeField] private float maxWaitTime = 8f;
     [SerializeField] private float biteWindow = 1.5f;
 
+    [Header("Animator Hook (선택)")]
+    [Tooltip("연결 시 낚시 상태 변화가 애니메이터로 전달됨. null이면 무시.")]
+    [SerializeField] private WitchChronicle.Fishing.FishingAnimatorHook animatorHook;
+
     // 상태
     private FishingState _state = FishingState.Idle;
     private Coroutine _stateRoutine;
@@ -44,8 +49,8 @@ public class FishingManager : MonoBehaviour
     public event Action<FishItemData> OnFishCaught;
     public event Action<FishingReelController.FailReason> OnFishEscaped;
     public event Action<RodItemData> OnRodEquipped;
-    public event Action OnFishingSessionStarted;   // ⭐ 신규: 낚시 씬 진입 시
-    public event Action OnFishingSessionEnded;     // ⭐ 신규: 낚시 씬 이탈 시
+    public event Action OnFishingSessionStarted;
+    public event Action OnFishingSessionEnded;
 
     // 공개 프로퍼티
     public FishingState State => _state;
@@ -96,11 +101,14 @@ public class FishingManager : MonoBehaviour
         _sessionCatchCount = 0;
         _caughtFishesThisSession.Clear();
 
-        // 커서 표시 + 게임 조작 잠금 (파밍이랑 동일 방식)
+        // 커서 표시 + 게임 조작 잠금
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // UI가 구독해서 자동으로 반응
+        // 애니메이터 훅 - 낚시 진입 (앉기 애니 or IsFishing = true)
+        animatorHook?.OnEnterFishing();
+
+        // UI 구독자에게 알림
         OnFishingSessionStarted?.Invoke();
 
         // 자동으로 낚시 사이클 시작 (Idle → Casting → Waiting)
@@ -122,6 +130,9 @@ public class FishingManager : MonoBehaviour
         // 커서 잠금 복구
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        // 애니메이터 훅 - 낚시 이탈 (일어서기 애니 or IsFishing = false)
+        animatorHook?.OnExitFishing();
 
         // UI 구독자에게 종료 알림
         OnFishingSessionEnded?.Invoke();
@@ -175,10 +186,16 @@ public class FishingManager : MonoBehaviour
             _caughtFishesThisSession.Add(fish);
             OnFishCaught?.Invoke(fish);
             GiveFishToInventory(fish);
+
+            // 애니메이터 훅 - 성공 (물고기 들어올리기)
+            animatorHook?.OnCatchSuccess();
         }
         else
         {
             OnFishEscaped?.Invoke(reason);
+
+            // 애니메이터 훅 - 실패 (아쉬워하는 모션)
+            animatorHook?.OnCatchFail();
         }
 
         ChangeState(FishingState.Result);
@@ -246,6 +263,10 @@ public class FishingManager : MonoBehaviour
         {
             Debug.Log("[FishingManager] 물고기 놓침 (시간 초과)");
             OnFishEscaped?.Invoke(FishingReelController.FailReason.Escape);
+
+            // 애니메이터 훅 - 실패 (시간 초과로 놓침)
+            animatorHook?.OnCatchFail();
+
             _hookedFish = null;
             ChangeState(FishingState.Result);
         }
@@ -286,6 +307,10 @@ public class FishingManager : MonoBehaviour
         if (_stateRoutine != null) StopCoroutine(_stateRoutine);
         _hookedFish = null;
         OnFishEscaped?.Invoke(reason);
+
+        // 애니메이터 훅 - 실패
+        animatorHook?.OnCatchFail();
+
         ChangeState(FishingState.Result);
     }
 
@@ -293,6 +318,15 @@ public class FishingManager : MonoBehaviour
     {
         _state = next;
         Debug.Log($"[FishingManager] 상태 → {next}");
+
+        // 애니메이터 훅 - 상태별 애니 트리거
+        switch (next)
+        {
+            case FishingState.Casting: animatorHook?.OnCastStart(); break;
+            case FishingState.Bite:    animatorHook?.OnBite(); break;
+            case FishingState.Reeling: animatorHook?.OnReelStart(); break;
+        }
+
         OnStateChanged?.Invoke(next);
     }
 
