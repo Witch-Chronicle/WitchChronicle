@@ -152,6 +152,9 @@ public class BattleCycleController : MonoBehaviour
 
         StopBattle();
 
+        // 이전 전투의 상태이상 잔류 제거 (연전 대비)
+        _statusEffectController.ClearAll();
+
         _battleUnits.Clear();
 
         _battleUnits.AddRange(
@@ -701,6 +704,9 @@ public class BattleCycleController : MonoBehaviour
             Debug.Log(
                 $"[Battle] {actionRequest.Actor?.UnitName} 혼란: 공격이 빗나감(MISS)");
 
+            // 대상에 데미지 0 통지(연출: Miss 표시용)
+            actionRequest.Target?.NotifyMiss();
+
             yield break;
         }
 
@@ -755,8 +761,13 @@ public class BattleCycleController : MonoBehaviour
 
         target.TakeDamage(damage);
 
-        // 피격 시 자동 해제 상태이상 처리(수면 등)
+        // 피격 시 자동 해제 상태이상 처리(수면 등), 사망 시 상태이상 전체 해제(이펙트 잔류 방지)
         _statusEffectController.OnUnitHit(target);
+
+        if (target.IsAlive == false)
+        {
+            _statusEffectController.RemoveAllStatusEffects(target);
+        }
 
         Debug.Log(
             $"[Battle] {attacker.UnitName} attacks " +
@@ -1432,6 +1443,12 @@ public class BattleCycleController : MonoBehaviour
                     skillData);
                 break;
 
+            case SkillEffectType.HealMp:
+                ApplyHealMpSkill(
+                    target,
+                    skillData);
+                break;
+
             default:
                 Debug.Log(
                     $"[Battle] 아직 처리되지 않은 " +
@@ -1465,8 +1482,13 @@ public class BattleCycleController : MonoBehaviour
 
         target.TakeDamage(damage);
 
-        // 피격 시 자동 해제 상태이상 처리(수면 등)
+        // 피격 시 자동 해제 상태이상 처리(수면 등), 사망 시 상태이상 전체 해제(이펙트 잔류 방지)
         _statusEffectController.OnUnitHit(target);
+
+        if (target.IsAlive == false)
+        {
+            _statusEffectController.RemoveAllStatusEffects(target);
+        }
 
         Debug.Log(
             $"[Battle] {skillData.SkillName} hit " +
@@ -1500,6 +1522,29 @@ public class BattleCycleController : MonoBehaviour
             $"{target.UnitName} / " +
             $"Heal: {healAmount} / " +
             $"Target HP: {target.CurrentHp}");
+    }
+
+    /// <summary>
+    /// MP 회복 스킬 적용. 스킬 Power만큼 대상 MP를 회복한다.
+    /// </summary>
+    /// <param name="target">대상 유닛</param>
+    /// <param name="skillData">스킬 데이터</param>
+    private void ApplyHealMpSkill(
+        BattleUnit target,
+        SkillData skillData)
+    {
+        int mpAmount =
+            Mathf.Max(
+                1,
+                Mathf.RoundToInt(skillData.Power));
+
+        target.RestoreMp(mpAmount);
+
+        Debug.Log(
+            $"[Battle] {skillData.SkillName} MP heal " +
+            $"{target.UnitName} / " +
+            $"MP: +{mpAmount} / " +
+            $"Target MP: {target.CurrentMp}");
     }
 
     /// <summary>
@@ -1650,6 +1695,22 @@ public class BattleCycleController : MonoBehaviour
 
         yield return WaitImpact(
             actionRequest.SkillData);
+
+        // 혼란: 스킬도 일정 확률로 빗나감 (한 번 굴려 통째 실패, 시전 연출·MP는 이미 소모됨)
+        if (_statusEffectController.RollConfusionMiss(
+                actionRequest.Actor))
+        {
+            Debug.Log(
+                $"[Battle] {actionRequest.Actor.UnitName} 혼란: 스킬이 빗나감(MISS)");
+
+            // 각 대상에 데미지 0 통지(연출: Miss 표시용)
+            for (int i = 0; targets != null && i < targets.Count; i++)
+            {
+                targets[i]?.NotifyMiss();
+            }
+
+            yield break;
+        }
 
         ApplySkillEffects(
             actionRequest.Actor,

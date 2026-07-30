@@ -51,6 +51,16 @@ public class SkillData : ScriptableObject
     [Tooltip("명중/발동 이펙트 프리팹 (전 유형 필수)")]
     [SerializeField] private GameObject _hitVfxPrefab;
 
+    [Tooltip("시전 이펙트 위치 보정(로컬). 0이면 SkillVfxPlayer의 전역 Caster Height 사용")]
+    [SerializeField] private Vector3 _castVfxOffset = Vector3.zero;
+    [Tooltip("명중/광역 이펙트 위치 보정(로컬). 0이면 SkillVfxPlayer의 전역 Target Height 사용")]
+    [SerializeField] private Vector3 _hitVfxOffset = Vector3.zero;
+
+    [Tooltip("시전 이펙트 크기 배율. 0이면 프리팹 원본 크기. 파티클 Scaling Mode가 Hierarchy/Local이어야 반영됨")]
+    [SerializeField] private float _castVfxScale = 0f;
+    [Tooltip("투사체/명중/광역 이펙트 크기 배율. 0이면 프리팹 원본 크기")]
+    [SerializeField] private float _hitVfxScale = 0f;
+
     [Header("Presentation - Constellation Path Attack")]
     [Tooltip("연결 시 사전 카메라 연출 후 " + "경로형 별자리 패리 실행")]
     [SerializeField] private ConstellationPathSequenceData _constellationPathSequenceData;
@@ -92,6 +102,10 @@ public class SkillData : ScriptableObject
     public GameObject CastVfxPrefab => _castVfxPrefab;
     public GameObject ProjectileVfxPrefab => _projectileVfxPrefab;
     public GameObject HitVfxPrefab => _hitVfxPrefab;
+    public Vector3 CastVfxOffset => _castVfxOffset;
+    public Vector3 HitVfxOffset => _hitVfxOffset;
+    public float CastVfxScale => _castVfxScale;
+    public float HitVfxScale => _hitVfxScale;
 
     public ConstellationPathSequenceData ConstellationPathSequenceData => _constellationPathSequenceData;
     public bool IsConstellationPathAttack => _constellationPathSequenceData != null;
