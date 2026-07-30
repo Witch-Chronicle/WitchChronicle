@@ -213,7 +213,6 @@ public class BattleEncounter : MonoBehaviour
         Vector3 returnPosition = GetReturnPosition();
         Quaternion returnRotation = GetReturnRotation();
 
-
         BattleEncounterContext.Instance.SetEncounter(this,
             _assignedEnemies,
             returnSceneName,
@@ -223,23 +222,48 @@ public class BattleEncounter : MonoBehaviour
             _isPlayerAdvantage,
             _isEnemyAdvantage);
 
-        // 던전 파티(조작/카메라) 비활성화 — 씬은 유지, 배경으로 남아있음
-        if (Party.Instance != null)
-        {
-            Party.Instance.gameObject.SetActive(false);
-        }
-
         Debug.Log($"[BattleEncounter] Load Battle Scene (Additive): {_battleSceneName}");
 
         DestroyEncounter();
 
         if (SceneTransitionManager.Instance != null)
         {
-            SceneTransitionManager.Instance.LoadSceneAdditive(_battleSceneName);
+            // 던전 필드의 파티 상태 UI도 전투 씬 진입 중엔 숨김
+            if (DungeonPartyQueueController.Instance != null)
+            {
+                DungeonPartyQueueController.Instance.gameObject.SetActive(false);
+            }
+
+            // 화면이 완전히 가려진 뒤(씬 로드 시작 직전)에 Party를 비활성화 -> 카메라가 먼저 사라지는 깜빡임 방지
+            SceneTransitionManager.Instance.LoadSceneAdditive(
+                _battleSceneName,
+                onLoaded: null,
+                onCovered: () =>
+                {
+                    if (Party.Instance != null)
+                    {
+                        Party.Instance.gameObject.SetActive(false);
+                    }
+
+
+                });
+
             CursorLocker.Instance.EnterUIMode();
         }
         else
         {
+            // 던전 필드의 파티 상태 UI도 전투 씬 진입 중엔 숨김
+            if (DungeonPartyQueueController.Instance != null)
+            {
+                DungeonPartyQueueController.Instance.gameObject.SetActive(false);
+            }
+
+            if (Party.Instance != null)
+            {
+                Party.Instance.gameObject.SetActive(false);
+            }
+
+
             SceneManager.LoadScene(_battleSceneName, LoadSceneMode.Additive);
         }
     }

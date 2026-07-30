@@ -545,7 +545,7 @@ public class BattleTargetCycler : MonoBehaviour
         SetOutline(_cycleCandidates[_cycleIndex], true);
 
         if (BattleCharacterUIManager.Instance != null) BattleCharacterUIManager.Instance.HideCurrentUI();
-        if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Show(Confirm, Cancel);
+        if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Show();
     }
 
     /// <summary>
@@ -653,7 +653,7 @@ public class BattleTargetCycler : MonoBehaviour
         }
 
         if (BattleCharacterUIManager.Instance != null) BattleCharacterUIManager.Instance.HideCurrentUI();
-        if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Show(Confirm, Cancel);
+        if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Show();
     }
 
     private void ConfirmAttack()

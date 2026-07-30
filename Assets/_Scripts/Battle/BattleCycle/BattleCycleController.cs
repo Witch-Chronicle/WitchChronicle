@@ -18,6 +18,11 @@ public class BattleCycleController : MonoBehaviour
     [Tooltip("행동 연출(OnActionExecuting) 후 실제 데미지가 적용되기까지 지연(초). 스킬 이펙트가 대상에 닿는 시점에 맞춘다")]
     [SerializeField] private float _impactDelay = 0.3f;
 
+    [Header("Battle End Timing")]
+    [Tooltip("승패가 결정된 시점부터 Result 패널(OnBattleEnded)이 뜨기까지 대기하는 시간(초). " +
+             "마지막 타격의 쓰러지는 연출/데미지 팝업/HP바 트윈이 다 보일 시간을 확보하기 위함.")]
+    [SerializeField] private float _battleEndDelay = 1.5f;
+
     [Header("Constellation")]
     [SerializeField] private BattleCameraDirector _battleCameraDirector;
     [SerializeField] private ConstellationPathBattleManager _constellationPathBattleManager;
@@ -243,7 +248,7 @@ public class BattleCycleController : MonoBehaviour
 
                 if (TryGetWinner(out winner))
                 {
-                    EndBattle(winner);
+                    yield return StartCoroutine(EndBattleAfterDelay(winner));
                     yield break;
                 }
             }
@@ -253,6 +258,20 @@ public class BattleCycleController : MonoBehaviour
             OnTurnOrderChanged?.Invoke();
 
             yield return null;
+        }
+
+        yield return StartCoroutine(EndBattleAfterDelay(winner));
+    }
+
+    /// <summary>
+    /// 승패가 확정된 시점부터 _battleEndDelay만큼 대기한 뒤 EndBattle 실행.
+    /// 마지막 타격의 연출(데미지 팝업, 피격/사망 애니메이션 등)이 다 보일 시간을 확보하기 위함.
+    /// </summary>
+    private IEnumerator EndBattleAfterDelay(BattleTeamType winner)
+    {
+        if (_battleEndDelay > 0f)
+        {
+            yield return new WaitForSeconds(_battleEndDelay);
         }
 
         EndBattle(winner);

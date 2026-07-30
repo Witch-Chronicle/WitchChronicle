@@ -268,6 +268,11 @@ public class ResultController : MonoBehaviour
                 Party.Instance.gameObject.SetActive(true);
             }
 
+            if (DungeonPartyQueueController.Instance != null)
+            {
+                DungeonPartyQueueController.Instance.gameObject.SetActive(true);
+            }
+
             if (BattleEncounterContext.Instance != null)
             {
                 BattleEncounterContext.Instance.ClearEncounter();

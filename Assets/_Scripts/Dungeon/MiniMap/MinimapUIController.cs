@@ -58,6 +58,7 @@ public class MinimapUIController : MonoBehaviour, IDragHandler
 
     private void Update()
     {
+        HandleBattleSceneForceClose();
         HandleToggleInput();
 
         if (!_isMinimapActive || !_isInitialized)
@@ -232,7 +233,7 @@ public class MinimapUIController : MonoBehaviour, IDragHandler
     }
 
     /// <summary>
-    /// 미니맵 토글 키 입력을 처리한다.
+    /// 미니맵 토글 키 입력을 처리한다. Battle 씬이 로드되어 있으면 무시.
     /// </summary>
     private void HandleToggleInput()
     {
@@ -246,9 +247,31 @@ public class MinimapUIController : MonoBehaviour, IDragHandler
             return;
         }
 
+        if (SceneTransitionManager.Instance != null && SceneTransitionManager.Instance.IsInBattleScene())
+        {
+            return;
+        }
+
         _isMinimapActive = !_isMinimapActive;
         _minimapRootObject.SetActive(_isMinimapActive);
 
         Debug.Log($"[MinimapUIController] 미니맵 표시 상태 변경: {(_isMinimapActive ? "켜짐" : "꺼짐")}");
+    }
+
+    /// <summary>
+    /// Battle 씬이 로드되어 있으면 미니맵을 강제로 닫음 (열려있던 상태였어도 즉시 비활성화).
+    /// </summary>
+    private void HandleBattleSceneForceClose()
+    {
+        if (_isMinimapActive == false) return;
+        if (_minimapRootObject == null) return;
+
+        if (SceneTransitionManager.Instance != null && SceneTransitionManager.Instance.IsInBattleScene())
+        {
+            _isMinimapActive = false;
+            _minimapRootObject.SetActive(false);
+
+            Debug.Log("[MinimapUIController] Battle 씬 감지 - 미니맵 강제 비활성화");
+        }
     }
 }
