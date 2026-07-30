@@ -24,6 +24,11 @@ public class SkillVfxPlayer : MonoBehaviour
     [Tooltip("생성한 VFX를 자동 파괴하기까지 시간")]
     [SerializeField] private float _vfxLifetime = 3f;
 
+    [Header("사운드")]
+    [Tooltip("스킬 사운드(SkillData의 Cast/Hit Sfx) 볼륨")]
+    [Range(0f, 1f)]
+    [SerializeField] private float _sfxVolume = 1f;
+
     /// <summary>단일 대상 재생.</summary>
     public void Play(SkillData skill, Transform caster, Transform target)
     {
@@ -51,11 +56,14 @@ public class SkillVfxPlayer : MonoBehaviour
             SpawnAndForget(skill.CastVfxPrefab, casterPos, caster.rotation, skill.CastVfxScale);
         }
 
+        // 시전 사운드 (VFX 유무와 무관하게 재생)
+        PlaySfx(skill.CastSfx, casterPos);
+
         switch (skill.PresentationType)
         {
             case SkillPresentationType.SelfTarget:
                 // 자기/힐형: 시전자 위치에 1회
-                StartCoroutine(SpawnDelayed(ImpactPrefab(skill), casterPos, _hitDelay, skill.HitVfxScale));
+                StartCoroutine(SpawnDelayed(ImpactPrefab(skill), casterPos, _hitDelay, skill.HitVfxScale, skill.HitSfx));
                 break;
 
             case SkillPresentationType.Projectile:
@@ -65,13 +73,16 @@ public class SkillVfxPlayer : MonoBehaviour
                     Transform t = targets[i];
                     if (t == null) continue;
 
+                    // 명중음은 대상이 여럿이어도 1회만 (겹쳐 울리는 것 방지)
+                    AudioClip projSfx = i == 0 ? skill.HitSfx : null;
+
                     if (skill.ProjectileVfxPrefab != null)
                     {
-                        StartCoroutine(ProjectileRoutine(skill, casterPos, t));
+                        StartCoroutine(ProjectileRoutine(skill, casterPos, t, projSfx));
                     }
                     else
                     {
-                        StartCoroutine(SpawnDelayed(ImpactPrefab(skill), TargetSpawnPos(skill, t), _hitDelay, skill.HitVfxScale));
+                        StartCoroutine(SpawnDelayed(ImpactPrefab(skill), TargetSpawnPos(skill, t), _hitDelay, skill.HitVfxScale, projSfx));
                     }
                 }
                 break;
@@ -83,7 +94,8 @@ public class SkillVfxPlayer : MonoBehaviour
                     Transform t = targets[i];
                     if (t == null) continue;
 
-                    StartCoroutine(SpawnDelayed(ImpactPrefab(skill), TargetSpawnPos(skill, t), _hitDelay, skill.HitVfxScale));
+                    // 명중음은 대상이 여럿이어도 1회만 (겹쳐 울리는 것 방지)
+                    StartCoroutine(SpawnDelayed(ImpactPrefab(skill), TargetSpawnPos(skill, t), _hitDelay, skill.HitVfxScale, i == 0 ? skill.HitSfx : null));
                 }
                 break;
         }
@@ -121,7 +133,7 @@ public class SkillVfxPlayer : MonoBehaviour
         return target.position + offset;
     }
 
-    private IEnumerator ProjectileRoutine(SkillData skill, Vector3 start, Transform target)
+    private IEnumerator ProjectileRoutine(SkillData skill, Vector3 start, Transform target, AudioClip hitSfx = null)
     {
         Vector3 end = TargetSpawnPos(skill, target);
         Vector3 dir = end - start;
@@ -157,17 +169,30 @@ public class SkillVfxPlayer : MonoBehaviour
             Destroy(proj);
         }
 
+        PlaySfx(hitSfx, end);
         SpawnPrefab(skill.HitVfxPrefab, end, skill.HitVfxScale);
     }
 
-    private IEnumerator SpawnDelayed(GameObject prefab, Vector3 pos, float delay, float scale = 0f)
+    private IEnumerator SpawnDelayed(GameObject prefab, Vector3 pos, float delay, float scale = 0f, AudioClip sfx = null)
     {
         if (delay > 0f)
         {
             yield return new WaitForSeconds(delay);
         }
 
+        PlaySfx(sfx, pos);
         SpawnPrefab(prefab, pos, scale);
+    }
+
+    /// <summary>지정 위치에서 클립을 1회 재생한다(클립이 없으면 무시).</summary>
+    private void PlaySfx(AudioClip clip, Vector3 pos)
+    {
+        if (clip == null)
+        {
+            return;
+        }
+
+        AudioSource.PlayClipAtPoint(clip, pos, _sfxVolume);
     }
 
     private void SpawnPrefab(GameObject prefab, Vector3 pos, float scale = 0f)
