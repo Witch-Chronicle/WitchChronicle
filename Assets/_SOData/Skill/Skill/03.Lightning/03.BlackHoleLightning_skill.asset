@@ -25,12 +25,21 @@ MonoBehaviour:
   _targetType: 0
   _statusEffectType: 0
   _statusChance: 0
+  _cureStatusEffectType: 0
   _buffData: {fileID: 0}
   _presentationType: 1
   _skillIcon: {fileID: 0}
   _voiceClip: {fileID: 0}
+  _impactDelay: 0.3
   _castSfx: {fileID: 0}
   _hitSfx: {fileID: 0}
   _castVfxPrefab: {fileID: 1733395234720496, guid: af44cf4fb7c45134b84d6889379a7478, type: 3}
   _projectileVfxPrefab: {fileID: 1737381284161942, guid: b8745ef0ea7bca949a6f69de8538afbc, type: 3}
   _hitVfxPrefab: {fileID: 1605288786288348, guid: 05ac55d5a44c06846b0d135a8afaa497, type: 3}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
+  _hitVfxOffset: {x: 0, y: 0, z: 0}
+  _castVfxScale: 0
+  _hitVfxScale: 0
+  _constellationPathSequenceData: {fileID: 0}
+  _drawGuideJson: {fileID: 0}
+  _drawExampleSprite: {fileID: 0}

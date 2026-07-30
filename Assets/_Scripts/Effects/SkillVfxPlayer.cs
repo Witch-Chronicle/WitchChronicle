@@ -42,20 +42,20 @@ public class SkillVfxPlayer : MonoBehaviour
         }
 
         Vector3 casterPos = caster != null
-            ? caster.position + Vector3.up * _casterHeight
+            ? CasterSpawnPos(skill, caster)
             : Vector3.zero;
 
         // 시전 이펙트 (시전자에게 1회)
         if (caster != null && skill.CastVfxPrefab != null)
         {
-            SpawnAndForget(skill.CastVfxPrefab, casterPos, caster.rotation);
+            SpawnAndForget(skill.CastVfxPrefab, casterPos, caster.rotation, skill.CastVfxScale);
         }
 
         switch (skill.PresentationType)
         {
             case SkillPresentationType.SelfTarget:
                 // 자기/힐형: 시전자 위치에 1회
-                StartCoroutine(SpawnDelayed(ImpactPrefab(skill), casterPos, _hitDelay));
+                StartCoroutine(SpawnDelayed(ImpactPrefab(skill), casterPos, _hitDelay, skill.HitVfxScale));
                 break;
 
             case SkillPresentationType.Projectile:
@@ -71,7 +71,7 @@ public class SkillVfxPlayer : MonoBehaviour
                     }
                     else
                     {
-                        StartCoroutine(SpawnDelayed(ImpactPrefab(skill), t.position + Vector3.up * _targetHeight, _hitDelay));
+                        StartCoroutine(SpawnDelayed(ImpactPrefab(skill), TargetSpawnPos(skill, t), _hitDelay, skill.HitVfxScale));
                     }
                 }
                 break;
@@ -83,7 +83,7 @@ public class SkillVfxPlayer : MonoBehaviour
                     Transform t = targets[i];
                     if (t == null) continue;
 
-                    StartCoroutine(SpawnDelayed(ImpactPrefab(skill), t.position + Vector3.up * _targetHeight, _hitDelay));
+                    StartCoroutine(SpawnDelayed(ImpactPrefab(skill), TargetSpawnPos(skill, t), _hitDelay, skill.HitVfxScale));
                 }
                 break;
         }
@@ -95,13 +95,44 @@ public class SkillVfxPlayer : MonoBehaviour
         return skill.HitVfxPrefab != null ? skill.HitVfxPrefab : skill.ProjectileVfxPrefab;
     }
 
+    /// <summary>
+    /// 시전 이펙트 스폰 위치. 스킬에 Cast Vfx Offset이 지정돼 있으면 그것,
+    /// 아니면 전역 Caster Height를 쓴다.
+    /// </summary>
+    private Vector3 CasterSpawnPos(SkillData skill, Transform caster)
+    {
+        Vector3 offset = skill.CastVfxOffset != Vector3.zero
+            ? skill.CastVfxOffset
+            : Vector3.up * _casterHeight;
+
+        return caster.position + offset;
+    }
+
+    /// <summary>
+    /// 명중/광역 이펙트 스폰 위치. 스킬에 Hit Vfx Offset이 지정돼 있으면 그것,
+    /// 아니면 전역 Target Height를 쓴다.
+    /// </summary>
+    private Vector3 TargetSpawnPos(SkillData skill, Transform target)
+    {
+        Vector3 offset = skill.HitVfxOffset != Vector3.zero
+            ? skill.HitVfxOffset
+            : Vector3.up * _targetHeight;
+
+        return target.position + offset;
+    }
+
     private IEnumerator ProjectileRoutine(SkillData skill, Vector3 start, Transform target)
     {
-        Vector3 end = target.position + Vector3.up * _targetHeight;
+        Vector3 end = TargetSpawnPos(skill, target);
         Vector3 dir = end - start;
         Quaternion rot = dir.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(dir) : Quaternion.identity;
 
         GameObject proj = Instantiate(skill.ProjectileVfxPrefab, start, rot);
+
+        if (skill.HitVfxScale > 0f)
+        {
+            proj.transform.localScale *= skill.HitVfxScale;
+        }
 
         float t = 0f;
         while (t < _projectileTravelTime)
@@ -110,7 +141,7 @@ public class SkillVfxPlayer : MonoBehaviour
 
             if (target != null)
             {
-                end = target.position + Vector3.up * _targetHeight;
+                end = TargetSpawnPos(skill, target);
             }
 
             if (proj != null)
@@ -126,30 +157,39 @@ public class SkillVfxPlayer : MonoBehaviour
             Destroy(proj);
         }
 
-        SpawnPrefab(skill.HitVfxPrefab, end);
+        SpawnPrefab(skill.HitVfxPrefab, end, skill.HitVfxScale);
     }
 
-    private IEnumerator SpawnDelayed(GameObject prefab, Vector3 pos, float delay)
+    private IEnumerator SpawnDelayed(GameObject prefab, Vector3 pos, float delay, float scale = 0f)
     {
         if (delay > 0f)
         {
             yield return new WaitForSeconds(delay);
         }
 
-        SpawnPrefab(prefab, pos);
+        SpawnPrefab(prefab, pos, scale);
     }
 
-    private void SpawnPrefab(GameObject prefab, Vector3 pos)
+    private void SpawnPrefab(GameObject prefab, Vector3 pos, float scale = 0f)
     {
         if (prefab != null)
         {
-            SpawnAndForget(prefab, pos, Quaternion.identity);
+            SpawnAndForget(prefab, pos, Quaternion.identity, scale);
         }
     }
 
-    private void SpawnAndForget(GameObject prefab, Vector3 pos, Quaternion rot)
+    /// <summary>
+    /// VFX 생성 후 일정 시간 뒤 파괴. scale이 0보다 크면 프리팹 원본 크기에 배율을 적용한다.
+    /// </summary>
+    private void SpawnAndForget(GameObject prefab, Vector3 pos, Quaternion rot, float scale = 0f)
     {
         GameObject vfx = Instantiate(prefab, pos, rot);
+
+        if (scale > 0f)
+        {
+            vfx.transform.localScale *= scale;
+        }
+
         Destroy(vfx, _vfxLifetime);
     }
 }
