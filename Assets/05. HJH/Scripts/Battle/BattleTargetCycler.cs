@@ -23,6 +23,10 @@ public class BattleTargetCycler : MonoBehaviour
     [Header("Camera (씬 오브젝트라 인스펙터 연결 대신 런타임 자동 탐색)")]
     [SerializeField] private BattleCameraDirector _cameraDirector;
 
+    [Header("Battle Canvas (마법진 그리기 도중 잠깐 비활성화)")]
+    [Tooltip("메인 배틀 HUD 캔버스 루트. 같은 씬 오브젝트라 직접 연결 가능.")]
+    [SerializeField] private GameObject _battleCanvasRoot;
+
     [Header("Debug (임시, 확인 끝나면 제거)")]
     [SerializeField] private TMPro.TMP_Text _debugTargetTxt;
 
@@ -205,22 +209,37 @@ public class BattleTargetCycler : MonoBehaviour
             return;
         }
 
-        if (_idleTarget == null || _idleTarget.IsAlive == false || opponents.Contains(_idleTarget) == false)
+        bool currentTargetInvalid = _idleTarget == null || _idleTarget.IsAlive == false || opponents.Contains(_idleTarget) == false;
+
+        if (currentTargetInvalid)
         {
             if (previousTarget != null) SetOutline(previousTarget, false);
 
             _idleTarget = opponents[0];
+            SetOutline(_idleTarget, true);
+            return;
+        }
+
+        // 타겟 자체는 여전히 유효하지만, 적 턴 동안 ClearAllOutlines()로 아웃라인이 꺼졌을 수 있으니
+        // 실제로 지금 켜져있는지 확인해서 안 켜져있으면 다시 켜줌.
+        if (_outlinedUnits.Contains(_idleTarget) == false)
+        {
             SetOutline(_idleTarget, true);
         }
     }
 
     private void HandleTurnStarted(BattleUnit unit)
     {
-        // BattleStarted 시점엔 아직 턴 순서/CurrentUnit이 없어 구독이 비어있을 수 있으니,
-        // 매 턴 시작마다 한 번 더 갱신해서 확실히 전체 유닛의 HP 변화를 구독하도록 보정.
         SubscribeAllUnitHp();
 
-        if (unit == null || unit.TeamType != BattleTeamType.Player) return;
+        if (unit == null || unit.TeamType != BattleTeamType.Player)
+        {
+            // 적 턴: 이전에 떠있던 아군의 idle 타겟 아웃라인/EnemyWorldSpaceCanvas를 전부 숨김
+            _mode = Mode.Idle;
+            ClearAllOutlines();
+            return;
+        }
+
         if (BattleUIContext.Instance == null) return;
 
         _mode = Mode.Idle;
@@ -234,6 +253,8 @@ public class BattleTargetCycler : MonoBehaviour
 
     private void CycleTarget(int direction)
     {
+        if (IsCurrentUnitPlayerControlled() == false) return;
+
         if (_mode == Mode.Idle)
         {
             CycleIdleTarget(direction);
@@ -248,8 +269,6 @@ public class BattleTargetCycler : MonoBehaviour
 
         SetOutline(_cycleCandidates[_cycleIndex], true);
 
-        // 기본 공격 또는 SingleEnemy 스킬로 대상을 순환 중일 때만 SingleTargetOverview 카메라도 같이 재조준.
-        // (AllEnemies/SingleAlly/AllAllies는 GroupTargetOverview라 카메라가 대상 하나에 붙어있지 않음)
         bool isSingleEnemyTargeting = _mode == Mode.PendingAttack
             || (_mode == Mode.PendingSkill && _pendingSkill != null && _pendingSkill.TargetType == TargetType.SingleEnemy);
 
@@ -258,6 +277,15 @@ public class BattleTargetCycler : MonoBehaviour
             EnsureCameraDirector();
             _cameraDirector?.RetargetSingleTargetOverview(_cycleCandidates[_cycleIndex]);
         }
+    }
+
+    /// <summary>
+    /// 지금 턴인 유닛이 플레이어 진영인지 여부. Q/E 타겟 순환은 이때만 허용.
+    /// </summary>
+    private bool IsCurrentUnitPlayerControlled()
+    {
+        BattleUnit currentUnit = BattleUIContext.Instance != null ? BattleUIContext.Instance.CurrentUnit : null;
+        return currentUnit != null && currentUnit.TeamType == BattleTeamType.Player;
     }
 
     private void CycleIdleTarget(int direction)
@@ -307,6 +335,15 @@ public class BattleTargetCycler : MonoBehaviour
         // 확인/취소 버튼은 그리는 동안 방해되니 미리 숨김 (그리기 끝나면 FinishPending에서 다시 정리)
         if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Hide();
 
+        // 이 스킬에 그리기 가이드가 없으면 SkillDrawCamera로 전환할 필요 자체가 없음
+        // (SkillDrawController.Play()가 DrawGuideJson 없을 때 즉시 배율 1로 콜백만 부르고 카메라는 안 건드리므로,
+        //  여기서 미리 걸러야 TargetView -> DrawCamera -> BackView로 잠깐 튀는 게 방지됨)
+        if (_pendingSkill.DrawGuideJson == null)
+        {
+            StartSkillDraw();
+            return;
+        }
+
         EnsureCameraDirector();
 
         if (_cameraDirector == null)
@@ -315,7 +352,6 @@ public class BattleTargetCycler : MonoBehaviour
             return;
         }
 
-        // TODO: BattleCameraDirector에 PlaySkillDrawView(BattleUnit, Action) 추가 필요
         _cameraDirector.PlaySkillDrawView(actor, StartSkillDraw);
     }
 
@@ -329,7 +365,54 @@ public class BattleTargetCycler : MonoBehaviour
             return;
         }
 
-        SkillDrawController.Instance.Play(_pendingSkill, ConfirmSkill);
+        SetOutlinedTargetVisualsSuppressed(true);
+
+        if (_battleCanvasRoot != null) _battleCanvasRoot.SetActive(false);
+
+        SkillDrawController.Instance.Play(_pendingSkill, damageMultiplier =>
+        {
+            if (_battleCanvasRoot != null) _battleCanvasRoot.SetActive(true);
+
+            SetOutlinedTargetVisualsSuppressed(false);
+            ConfirmSkill(damageMultiplier);
+        });
+    }
+
+    /// <summary>
+    /// SkillDrawCanvas가 떠 있는 동안, 지금 아웃라인된 대상들의 Outline/EnemyTargetOverlay(WorldCanvas)를
+    /// 잠깐 숨김(suppressed=true) / 복원(suppressed=false). _outlinedUnits 추적 상태 자체는 건드리지 않아서
+    /// 드로잉이 끝나면 원래 아웃라인 상태 그대로 복원됨.
+    /// </summary>
+    private void SetOutlinedTargetVisualsSuppressed(bool suppressed)
+    {
+        if (BattleUIContext.Instance == null) return;
+
+        foreach (var unit in _outlinedUnits)
+        {
+            if (BattleUIContext.Instance.TryGetActor(unit, out BattleActor actor) == false || actor == null) continue;
+
+            Outlinable outlinable = actor.GetComponent<Outlinable>();
+
+            if (outlinable != null)
+            {
+                outlinable.enabled = suppressed == false;
+            }
+
+            EnemyTargetOverlay overlay = actor.GetComponentInChildren<EnemyTargetOverlay>(true);
+
+            if (overlay != null)
+            {
+                if (suppressed)
+                {
+                    overlay.Hide();
+                }
+                else
+                {
+                    SkillData skillForAffinity = _mode == Mode.PendingSkill ? _pendingSkill : null;
+                    overlay.Show(true, skillForAffinity);
+                }
+            }
+        }
     }
 
     public void Cancel()
@@ -338,9 +421,12 @@ public class BattleTargetCycler : MonoBehaviour
 
         bool wasSkill = _mode == Mode.PendingSkill;
 
-        RestoreIdleSnapshot();
-
+        // RestoreIdleSnapshot()이 내부에서 SetOutline()을 호출하는데, 그 시점에 _mode가 아직
+        // PendingSkill/PendingAttack이면 UpdateElementIndicator가 "아직 스킬 조준 중"으로 착각해서
+        // 약점/저항 표시기가 잘못 뜰 수 있음 -> 먼저 Idle로 전환한 뒤 복원.
         _mode = Mode.Idle;
+
+        RestoreIdleSnapshot();
 
         if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Hide();
 
@@ -451,13 +537,15 @@ public class BattleTargetCycler : MonoBehaviour
 
         _cycleIndex = _idleTarget != null ? Mathf.Max(0, _cycleCandidates.IndexOf(_idleTarget)) : 0;
 
+        // SetOutline() 호출(내부에서 overlay.Show(isTargeting,...)의 isTargeting 판단에 _mode를 참조함)보다
+        // 먼저 PendingAttack으로 전환해둬야 처음 진입 시부터 EnemyWorldSpaceCanvas가 전체(프레임/이름/파티클) 표시됨.
+        _mode = Mode.PendingAttack;
+
         ClearAllOutlines();
         SetOutline(_cycleCandidates[_cycleIndex], true);
 
-        _mode = Mode.PendingAttack;
-
         if (BattleCharacterUIManager.Instance != null) BattleCharacterUIManager.Instance.HideCurrentUI();
-        if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Show(Confirm, Cancel);
+        if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Show();
     }
 
     /// <summary>
@@ -540,6 +628,10 @@ public class BattleTargetCycler : MonoBehaviour
 
         bool isSingleTarget = skillData.TargetType == TargetType.SingleEnemy || skillData.TargetType == TargetType.SingleAlly;
 
+        // SetOutline() 호출들(약점/저항 표시기 판단에 _mode를 참조함)보다 먼저 PendingSkill로 전환해둬야
+        // 처음 진입 시부터 표시기가 정상적으로 뜸.
+        _mode = Mode.PendingSkill;
+
         if (isSingleTarget)
         {
             _cycleCandidates.AddRange(candidates);
@@ -560,10 +652,8 @@ public class BattleTargetCycler : MonoBehaviour
             }
         }
 
-        _mode = Mode.PendingSkill;
-
         if (BattleCharacterUIManager.Instance != null) BattleCharacterUIManager.Instance.HideCurrentUI();
-        if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Show(Confirm, Cancel);
+        if (GlobalConfirmCancelController.Instance != null) GlobalConfirmCancelController.Instance.Show();
     }
 
     private void ConfirmAttack()
@@ -674,7 +764,9 @@ public class BattleTargetCycler : MonoBehaviour
         {
             if (enabled)
             {
-                overlay.Show();
+                bool isTargeting = _mode != Mode.Idle;
+                SkillData skillForAffinity = _mode == Mode.PendingSkill ? _pendingSkill : null;
+                overlay.Show(isTargeting, skillForAffinity);
             }
             else
             {
@@ -692,6 +784,64 @@ public class BattleTargetCycler : MonoBehaviour
         }
 
         UpdateDebugTargetText();
+    }
+
+    /// <summary>
+    /// 스킬 대상 지정 중(PendingSkill)이고 대상이 적일 때만, 그 스킬 속성이 이 적의 약점/저항인지
+    /// ElementAffinityIndicatorView로 표시. 기본 공격/Idle 상태거나 대상이 아군이면 표시 안 함(숨김).
+    /// </summary>
+    private void UpdateElementIndicator(BattleUnit unit, BattleActor actor, bool enabled)
+    {
+        ElementAffinityIndicatorView indicator = actor.GetComponentInChildren<ElementAffinityIndicatorView>(true);
+
+        if (indicator == null) return;
+
+        if (enabled == false)
+        {
+            indicator.Hide();
+            return;
+        }
+
+        if (_mode != Mode.PendingSkill || _pendingSkill == null || unit.TeamType != BattleTeamType.Enemy)
+        {
+            indicator.Hide();
+            return;
+        }
+
+        EnemyBattleData enemyData = actor.EnemyBattleData;
+
+        if (enemyData == null)
+        {
+            indicator.Hide();
+            return;
+        }
+
+        ElementType skillElement = _pendingSkill.ElementType;
+
+        if (ContainsElement(enemyData.WeakElements, skillElement))
+        {
+            indicator.ShowWeak();
+        }
+        else if (ContainsElement(enemyData.ResistElements, skillElement))
+        {
+            indicator.ShowResist();
+        }
+        else
+        {
+            indicator.Hide();
+        }
+    }
+
+    private static bool ContainsElement(System.Collections.Generic.IReadOnlyList<ElementType> elements, ElementType element)
+    {
+        if (elements == null) return false;
+
+        for (int i = 0; i < elements.Count; i++)
+        {
+            if (elements[i] == element) return true;
+        }
+
+        return false;
     }
 
     private void ClearAllOutlines()

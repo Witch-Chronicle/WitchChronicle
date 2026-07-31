@@ -68,6 +68,9 @@ public class ItemListController : MonoBehaviour
     [SerializeField]
     private BattleActionBarController _actionBar;
 
+    [Header("Camera (씬 오브젝트라 인스펙터 연결 대신 런타임 자동 탐색)")]
+    [SerializeField] private BattleCameraDirector _cameraDirector;
+
     /*
      * PlayerInventory에서 가져온
      * 포션 데이터와 보유 수량 목록.
@@ -102,17 +105,6 @@ public class ItemListController : MonoBehaviour
     private bool _isInitialized;
     private bool _isClosing;
 
-    /*
-     * TODO:
-     * BattleCycleController와 아이템 시스템이 통합되면
-     * BattleUIContext 등을 통해 실제 인스턴스를 받도록 변경한다.
-     */
-    private StatusEffectController
-        _tempStatusEffectController;
-
-    private BattleItemExecutor
-        _tempItemExecutor;
-
     public bool IsOpen { get; private set; }
 
     public bool IsInputActive =>
@@ -134,18 +126,6 @@ public class ItemListController : MonoBehaviour
         {
             _itemBtn.onClick.AddListener(Open);
         }
-
-        /*
-         * TODO:
-         * BattleCycleController와 통합되면 제거한다.
-         */
-        _tempStatusEffectController =
-            new StatusEffectController();
-
-        _tempItemExecutor =
-            new BattleItemExecutor(
-                _tempStatusEffectController
-            );
     }
 
     private void Start()
@@ -209,6 +189,25 @@ public class ItemListController : MonoBehaviour
     }
 
     /// <summary>
+    /// BattleCameraDirector는 씬 오브젝트라 프리팹 인스펙터로 직접 연결할 수 없어서
+    /// Camera.main 계층에서 런타임에 자동으로 찾음. 실패 시 씬 전체(비활성 포함)에서 검색.
+    /// </summary>
+    private void EnsureCameraDirector()
+    {
+        if (_cameraDirector != null) return;
+
+        if (Camera.main != null)
+        {
+            _cameraDirector = Camera.main.GetComponentInParent<BattleCameraDirector>();
+        }
+
+        if (_cameraDirector == null)
+        {
+            _cameraDirector = FindFirstObjectByType<BattleCameraDirector>(FindObjectsInactive.Include);
+        }
+    }
+
+    /// <summary>
     /// Item 버튼을 눌렀을 때 호출한다.
     /// </summary>
     public void Open()
@@ -259,6 +258,15 @@ public class ItemListController : MonoBehaviour
             .SetUpdate(true);
 
         _actionBar?.Hide();
+
+        EnsureCameraDirector();
+
+        if (_cameraDirector != null &&
+            BattleUIContext.Instance != null &&
+            BattleUIContext.Instance.CurrentUnit != null)
+        {
+            _cameraDirector.PlayItemUseView(BattleUIContext.Instance.CurrentUnit);
+        }
 
         if (BattleUIInputReader.Instance != null)
         {
@@ -648,7 +656,7 @@ public class ItemListController : MonoBehaviour
     /// 사용 성공 시 BattleActionRequest를 제출하여 턴을 소비한다.
     /// </summary>
     private void HandleItemSelected(
-        PotionItemData potionData)
+    PotionItemData potionData)
     {
         if (potionData == null)
         {
@@ -680,19 +688,8 @@ public class ItemListController : MonoBehaviour
             return;
         }
 
-        if (_tempItemExecutor == null)
-        {
-            Debug.LogWarning(
-                "[ItemListController] " +
-                "BattleItemExecutor가 없습니다.",
-                this
-            );
-
-            return;
-        }
-
         BattleItemResult result =
-            _tempItemExecutor.UsePotion(
+            BattleUIContext.Instance.UsePotion(
                 currentUnit,
                 potionData
             );
@@ -722,6 +719,13 @@ public class ItemListController : MonoBehaviour
         ClearListInput();
         CloseAfterUse();
 
+        EnsureCameraDirector();
+
+        if (_cameraDirector != null)
+        {
+            _cameraDirector.PlayPlayerBackView(currentUnit);
+        }
+
         BattleActionRequest actionRequest =
             BattleActionRequest
                 .CreateUsingItem(currentUnit);
@@ -745,6 +749,15 @@ public class ItemListController : MonoBehaviour
         _isClosing = true;
 
         ClearListInput();
+
+        EnsureCameraDirector();
+
+        if (_cameraDirector != null &&
+            BattleUIContext.Instance != null &&
+            BattleUIContext.Instance.CurrentUnit != null)
+        {
+            _cameraDirector.PlayPlayerBackView(BattleUIContext.Instance.CurrentUnit);
+        }
 
         if (_rectTransform == null)
         {

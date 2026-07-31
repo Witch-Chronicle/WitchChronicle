@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 257fd23296f4ada4abdc48d80e7a4bb3, type: 3}
+  m_Name: 02.PotatoBread_recipe
+  m_EditorClassIdentifier: Assembly-CSharp::CookingRecipeData
+  recipeName: "\uAC10\uC790\uBE75"
+  description: "\uC73C\uAE6C \uAC10\uC790\uB97C \uBC18\uC8FD\uC5D0 \uC11E\uC5B4 \uCD09\uCD09\uD558\uAC8C
+    \uAD6C\uC6B4 \uBE75."
+  ingredients:
+  - specificItem: {fileID: 11400000, guid: ad0c3f1ed6c0e694b94ca1bd21902bf6, type: 2}
+    amount: 2
+  - specificItem: {fileID: 11400000, guid: 34ea9a49f3036594d948bdcdb4912add, type: 2}
+    amount: 1
+  result: {fileID: 11400000, guid: bc337dbeab7bcb448af17074c549cc47, type: 2}

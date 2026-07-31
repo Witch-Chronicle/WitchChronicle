@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
+  m_Name: 05.Freeze_skill
+  m_EditorClassIdentifier: Assembly-CSharp::SkillData
+  _skillId: 
+  _skillName: "\uD504\uB9AC\uC988"
+  _description: "\uC801\uC758 \uBAB8\uC744 \uC5BC\uB824 \uC6C0\uC9C1\uC784\uC744
+    \uBD09\uC778\uD558\uB294 \uB9C8\uBE44 \uB9C8\uBC95."
+  _tier: 2
+  _mpCost: 15
+  _elementType: 3
+  _skillType: 0
+  _damageType: 1
+  _power: 10
+  _targetType: 0
+  _statusEffectType: 3
+  _statusChance: 0.8
+  _cureStatusEffectType: 0
+  _buffData: {fileID: 0}
+  _presentationType: 1
+  _skillIcon: {fileID: 0}
+  _voiceClip: {fileID: 0}
+  _impactDelay: 0.25
+  _castSfx: {fileID: 8300000, guid: baea6728992fc3b42ad8b7d867e4c8be, type: 3}
+  _hitSfx: {fileID: 8300000, guid: fd36e4003b9585a4dbf2b60c07cbfb88, type: 3}
+  _castVfxPrefab: {fileID: 0}
+  _projectileVfxPrefab: {fileID: 2457285412779223385, guid: 724c0e63016459c48a8cb9837b3d063f, type: 3}
+  _hitVfxPrefab: {fileID: 0}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
+  _hitVfxOffset: {x: 0, y: -0.9, z: 0}
+  _castVfxScale: 0
+  _hitVfxScale: 0
+  _constellationPathSequenceData: {fileID: 0}
+  _drawGuideJson: {fileID: 0}
+  _drawExampleSprite: {fileID: 0}

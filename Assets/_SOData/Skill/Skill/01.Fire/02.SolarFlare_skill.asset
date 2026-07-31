@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
+  m_Name: 02.SolarFlare_skill
+  m_EditorClassIdentifier: Assembly-CSharp::SkillData
+  _skillId: 
+  _skillName: "\uC194\uB77C \uD50C\uB808\uC5B4"
+  _description: "\uC791\uC740 \uD0DC\uC591\uC744 \uC18C\uD658\uD574 \uC801\uC744
+    \uD5A5\uD574 \uBC1C\uC0AC\uD558\uB294 \uAC15\uB825\uD55C \uD654\uC5FC \uB9C8\uBC95"
+  _tier: 2
+  _mpCost: 15
+  _elementType: 2
+  _skillType: 0
+  _damageType: 1
+  _power: 30
+  _targetType: 0
+  _statusEffectType: 0
+  _statusChance: 0
+  _cureStatusEffectType: 0
+  _buffData: {fileID: 0}
+  _presentationType: 0
+  _skillIcon: {fileID: 0}
+  _voiceClip: {fileID: 0}
+  _impactDelay: 0.2
+  _castSfx: {fileID: 8300000, guid: da744f83e6a7071459307dfd44dda48b, type: 3}
+  _hitSfx: {fileID: 8300000, guid: 871c4c763b250f349a836ad60ac3eb7a, type: 3}
+  _castVfxPrefab: {fileID: 69906001918393858, guid: d6bd941464c3eb24788223e41889750a, type: 3}
+  _projectileVfxPrefab: {fileID: 1840672898717558257, guid: aa7a99e8a89bba94aa0d5ed22568ab64, type: 3}
+  _hitVfxPrefab: {fileID: 3305186517166574314, guid: 00f7770bdb0c6c44dadf97f8d5aaac46, type: 3}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
+  _hitVfxOffset: {x: 0, y: 0.3, z: 0}
+  _castVfxScale: 0
+  _hitVfxScale: 0
+  _constellationPathSequenceData: {fileID: 0}
+  _drawGuideJson: {fileID: 0}
+  _drawExampleSprite: {fileID: 0}

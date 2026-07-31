@@ -49,7 +49,7 @@ public class BattleEncounter : MonoBehaviour
     /// 조우 적 데이터 초기화
     /// </summary>
     /// <param name="enemies">조우 적 목록</param>
-    public void Initialize( List<EnemyBattleData> enemyGroup)
+    public void Initialize(List<EnemyBattleData> enemyGroup)
     {
         _assignedEnemies.Clear();
 
@@ -92,10 +92,10 @@ public class BattleEncounter : MonoBehaviour
             return;
         }
 
-        Vector3 spawnPosition = new Vector3( transform.position.x,  transform.position.y - 1f,  transform.position.z);  
+        Vector3 spawnPosition = new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z);
 
         GameObject monsterInstance = Instantiate(strongestEnemy.Prefab, spawnPosition, transform.rotation, transform);
-        
+
         Debug.Log($"[BattleEncounter] 가장 강한 적 [{strongestEnemy.EnemyName}] 프리팹 생성 완료 (스탯 총합 기반)");
     }
 
@@ -196,7 +196,7 @@ public class BattleEncounter : MonoBehaviour
     private void StartBattleTransition()
     {
         Debug.Log("3. 전환 함수 진입 시작");
-        
+
         if (_assignedEnemies.Count <= 0)
         {
             Debug.LogWarning($"{name}에 조우 적 데이터 없음");
@@ -211,9 +211,8 @@ public class BattleEncounter : MonoBehaviour
 
         string returnSceneName = SceneManager.GetActiveScene().name;
         Vector3 returnPosition = GetReturnPosition();
-        Quaternion returnRotation = GetReturnRotation(); 
+        Quaternion returnRotation = GetReturnRotation();
 
-        
         BattleEncounterContext.Instance.SetEncounter(this,
             _assignedEnemies,
             returnSceneName,
@@ -223,23 +222,48 @@ public class BattleEncounter : MonoBehaviour
             _isPlayerAdvantage,
             _isEnemyAdvantage);
 
-        // 던전 파티(조작/카메라) 비활성화 — 씬은 유지, 배경으로 남아있음
-        if (Party.Instance != null)
-        {
-            Party.Instance.gameObject.SetActive(false);
-        }
-
         Debug.Log($"[BattleEncounter] Load Battle Scene (Additive): {_battleSceneName}");
 
         DestroyEncounter();
 
         if (SceneTransitionManager.Instance != null)
         {
-            SceneTransitionManager.Instance.LoadSceneAdditive(_battleSceneName);
+            // 던전 필드의 파티 상태 UI도 전투 씬 진입 중엔 숨김
+            if (DungeonPartyQueueController.Instance != null)
+            {
+                DungeonPartyQueueController.Instance.gameObject.SetActive(false);
+            }
+
+            // 화면이 완전히 가려진 뒤(씬 로드 시작 직전)에 Party를 비활성화 -> 카메라가 먼저 사라지는 깜빡임 방지
+            SceneTransitionManager.Instance.LoadSceneAdditive(
+                _battleSceneName,
+                onLoaded: null,
+                onCovered: () =>
+                {
+                    if (Party.Instance != null)
+                    {
+                        Party.Instance.gameObject.SetActive(false);
+                    }
+
+
+                });
+
             CursorLocker.Instance.EnterUIMode();
         }
         else
         {
+            // 던전 필드의 파티 상태 UI도 전투 씬 진입 중엔 숨김
+            if (DungeonPartyQueueController.Instance != null)
+            {
+                DungeonPartyQueueController.Instance.gameObject.SetActive(false);
+            }
+
+            if (Party.Instance != null)
+            {
+                Party.Instance.gameObject.SetActive(false);
+            }
+
+
             SceneManager.LoadScene(_battleSceneName, LoadSceneMode.Additive);
         }
     }

@@ -127,7 +127,7 @@ public class SceneTransitionManager : MonoBehaviour
     /// <summary>
     /// 기존 씬을 유지한 채 새 씬을 겹쳐 로드 (전투 씬 진입용)
     /// </summary>
-    public void LoadSceneAdditive(string sceneName, Action onLoaded = null)
+    public void LoadSceneAdditive(string sceneName, System.Action onLoaded = null, System.Action onCovered = null)
     {
         if (string.IsNullOrEmpty(sceneName))
         {
@@ -135,12 +135,15 @@ public class SceneTransitionManager : MonoBehaviour
             return;
         }
 
-        StartCoroutine(LoadSceneAdditiveRoutine(sceneName, onLoaded));
+        StartCoroutine(LoadSceneAdditiveRoutine(sceneName, onLoaded, onCovered));
     }
 
-    private IEnumerator LoadSceneAdditiveRoutine(string sceneName, Action onLoaded)
+    private IEnumerator LoadSceneAdditiveRoutine(string sceneName, Action onLoaded, Action onCovered)
     {
         yield return CoverScreenRoutine();
+
+        // 화면이 완전히 가려진 시점 - 씬 로드 시작 전에 미리 정리할 것들(예: 이전 씬 카메라/컨트롤러 비활성화)을 처리
+        onCovered?.Invoke();
 
         AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
 

@@ -16,6 +16,12 @@ namespace Battle.Rules
         // 재사용용 임시 리스트 (매턴 처리 시 콜렉션 수정 회피)
         private readonly List<ActiveStatusEffect> _tempEffectList = new List<ActiveStatusEffect>();
 
+        // ============ 연출용 알림 이벤트 (판정 없음, 통지만) ============
+        /// <summary>상태이상이 부여됐을 때 (대상, 종류)</summary>
+        public event System.Action<BattleUnit, StatusEffectType> OnApplied;
+        /// <summary>상태이상이 해제/만료됐을 때 (대상, 종류)</summary>
+        public event System.Action<BattleUnit, StatusEffectType> OnRemoved;
+
         // ============ 조회 ============
 
         /// <summary>
@@ -99,6 +105,7 @@ namespace Battle.Rules
                 // 이미 있으면 중첩 처리
                 existing.AddStack();
                 Debug.Log($"[StatusEffect] {target.UnitName}: {data.StatusName} 갱신/중첩");
+                OnApplied?.Invoke(target, data.StatusEffectType);
                 return true;
             }
 
@@ -113,6 +120,7 @@ namespace Battle.Rules
 
             effects.Add(newEffect);
             Debug.Log($"[StatusEffect] {target.UnitName}: {data.StatusName} 부여");
+            OnApplied?.Invoke(target, data.StatusEffectType);
             return true;
         }
 
@@ -141,6 +149,7 @@ namespace Battle.Rules
                     effects[i].Remove();
                     effects.RemoveAt(i);
                     Debug.Log($"[StatusEffect] {unit.UnitName}: {type} 해제");
+                    OnRemoved?.Invoke(unit, type);
                     return true;
                 }
             }
@@ -165,7 +174,9 @@ namespace Battle.Rules
 
             for (int i = 0; i < effects.Count; i++)
             {
+                StatusEffectType removedType = effects[i].StatusEffectType;
                 effects[i].Remove();
+                OnRemoved?.Invoke(unit, removedType);
             }
 
             effects.Clear();
@@ -247,6 +258,7 @@ namespace Battle.Rules
                     Debug.Log($"[StatusEffect] {unit.UnitName}: {effect.Data.StatusName} 만료");
                     effect.Remove();
                     effects.RemoveAt(i);
+                    OnRemoved?.Invoke(unit, effect.StatusEffectType);
                 }
             }
         }
@@ -328,6 +340,25 @@ namespace Battle.Rules
             return true;
         }
 
+        /// <summary>
+        /// 혼란 상태에서 공격이 빗나가는지 판정한다(행동은 하되 데미지 없이 헛침).
+        /// 행동 자체를 막는 CanAct와 달리 연출은 그대로 재생된다.
+        /// </summary>
+        /// <param name="unit">공격 유닛</param>
+        /// <returns>true면 빗나감(데미지 없음)</returns>
+        public bool RollConfusionMiss(BattleUnit unit)
+        {
+            ActiveStatusEffect effect =
+                GetActiveEffect(unit, StatusEffectType.Confusion);
+
+            if (effect == null || effect.Data == null)
+            {
+                return false;
+            }
+
+            return Random.value < effect.Data.ConfusionMissChance;
+        }
+
         // ============ 피격 시 처리 ============
 
         /// <summary>
@@ -356,8 +387,10 @@ namespace Battle.Rules
                 if (effects[i].Data.RemoveOnHit)
                 {
                     Debug.Log($"[StatusEffect] {unit.UnitName}: {effects[i].Data.StatusName} 피격 해제");
+                    StatusEffectType removedType = effects[i].StatusEffectType;
                     effects[i].Remove();
                     effects.RemoveAt(i);
+                    OnRemoved?.Invoke(unit, removedType);
                 }
             }
         }

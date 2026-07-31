@@ -41,6 +41,8 @@ namespace Battle.Rules
         [SerializeField] private float _actionFailChance = 0.0f;
         [Tooltip("스킬 사용 불가 (침묵)")]
         [SerializeField] private bool _preventsSkill = false;
+        [Tooltip("혼란: 공격이 빗나가(데미지 없음) 확률 (0~1)")]
+        [SerializeField] private float _confusionMissChance = 0.0f;
 
         [Header("Removal Condition")]
         [Tooltip("피격 시 해제 (수면)")]
@@ -64,6 +66,7 @@ namespace Battle.Rules
         public bool PreventsAction => _preventsAction;
         public float ActionFailChance => _actionFailChance;
         public bool PreventsSkill => _preventsSkill;
+        public float ConfusionMissChance => _confusionMissChance;
 
         public bool RemoveOnHit => _removeOnHit;
 

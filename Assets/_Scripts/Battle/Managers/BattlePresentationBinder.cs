@@ -20,7 +20,7 @@ public class BattlePresentationBinder : MonoBehaviour
     private class UnitBinding
     {
         public BattleUnit Unit;
-        public BattleUnitPresenter Presenter;
+        public IBattlePresenter Presenter;
         public DeathDissolve Dissolve;
         public CharacterAudio Audio;
         public BattleTeamType TeamType;
@@ -59,6 +59,8 @@ public class BattlePresentationBinder : MonoBehaviour
         _battleCycleController.OnTurnStarted += HandleTurnStarted;
         _battleCycleController.OnBattleEnded += HandleBattleEnded;
         _battleCycleController.OnActionExecuting += HandleActionExecuting;
+        _battleCycleController.OnStatusApplied += HandleStatusApplied;
+        _battleCycleController.OnStatusRemoved += HandleStatusRemoved;
     }
 
     private void OnDisable()
@@ -72,6 +74,8 @@ public class BattlePresentationBinder : MonoBehaviour
         _battleCycleController.OnTurnStarted -= HandleTurnStarted;
         _battleCycleController.OnBattleEnded -= HandleBattleEnded;
         _battleCycleController.OnActionExecuting -= HandleActionExecuting;
+        _battleCycleController.OnStatusApplied -= HandleStatusApplied;
+        _battleCycleController.OnStatusRemoved -= HandleStatusRemoved;
 
         ClearBindings();
     }
@@ -144,10 +148,67 @@ public class BattlePresentationBinder : MonoBehaviour
         if (actionRequest.HasSkill && _skillVfxPlayer != null)
         {
             Transform casterTransform = GetActorTransform(actionRequest.Actor);
-            Transform targetTransform = GetActorTransform(actionRequest.Target);
+            IReadOnlyList<Transform> targets = GatherTargetTransforms(actionRequest);
 
-            _skillVfxPlayer.Play(actionRequest.SkillData, casterTransform, targetTransform);
+            _skillVfxPlayer.Play(actionRequest.SkillData, casterTransform, targets);
         }
+    }
+
+    private readonly List<Transform> _targetBuffer = new List<Transform>();
+
+    /// <summary>
+    /// 스킬의 대상 Transform 목록을 모은다.
+    /// 광역(AllEnemies/AllAllies)이면 해당 팀 생존 유닛 전체, 아니면 단일 대상.
+    /// </summary>
+    private IReadOnlyList<Transform> GatherTargetTransforms(BattleActionRequest actionRequest)
+    {
+        _targetBuffer.Clear();
+
+        SkillData skill = actionRequest.SkillData;
+        bool isAllTargets = skill != null
+            && (skill.TargetType == TargetType.AllEnemies || skill.TargetType == TargetType.AllAllies);
+
+        if (isAllTargets
+            && _battleManager != null
+            && _battleManager.SpawnedActors != null
+            && _battleManager.TryGetActor(actionRequest.Actor, out BattleActor casterActor)
+            && casterActor != null)
+        {
+            bool wantEnemies = skill.TargetType == TargetType.AllEnemies;
+            BattleTeamType casterTeam = casterActor.TeamType;
+
+            for (int i = 0; i < _battleManager.SpawnedActors.Count; i++)
+            {
+                BattleActor actor = _battleManager.SpawnedActors[i];
+
+                if (actor == null || actor.HasBattleUnit == false)
+                {
+                    continue;
+                }
+
+                if (actor.BattleUnit != null && actor.BattleUnit.IsAlive == false)
+                {
+                    continue;
+                }
+
+                bool isEnemy = actor.TeamType != casterTeam;
+
+                if (wantEnemies == isEnemy)
+                {
+                    _targetBuffer.Add(actor.transform);
+                }
+            }
+
+            return _targetBuffer;
+        }
+
+        Transform single = GetActorTransform(actionRequest.Target);
+        if (single != null)
+        {
+            _targetBuffer.Add(single);
+        }
+
+        return _targetBuffer;
     }
 
     /// <summary>대상이 아군/자신이면 지원형 스킬로 본다(힐·버프). 적 대상이면 공격형.</summary>
@@ -175,6 +236,42 @@ public class BattlePresentationBinder : MonoBehaviour
         if (_battleManager.TryGetActor(unit, out BattleActor actor) && actor != null)
         {
             return actor.transform;
+        }
+
+        return null;
+    }
+
+    /// <summary>상태이상 부여 시 대상의 StatusEffectView에 표시.</summary>
+    private void HandleStatusApplied(BattleUnit unit, StatusEffectType type)
+    {
+        StatusEffectView view = GetStatusView(unit);
+        if (view != null)
+        {
+            view.ShowStatus(type);
+        }
+    }
+
+    /// <summary>상태이상 해제/만료 시 대상의 StatusEffectView에서 제거.</summary>
+    private void HandleStatusRemoved(BattleUnit unit, StatusEffectType type)
+    {
+        StatusEffectView view = GetStatusView(unit);
+        if (view != null)
+        {
+            view.HideStatus(type);
+        }
+    }
+
+    /// <summary>BattleUnit의 액터에서 StatusEffectView 조회(적/아군 공통, 프레젠터 없어도 됨).</summary>
+    private StatusEffectView GetStatusView(BattleUnit unit)
+    {
+        if (unit == null || _battleManager == null)
+        {
+            return null;
+        }
+
+        if (_battleManager.TryGetActor(unit, out BattleActor actor) && actor != null)
+        {
+            return actor.GetComponentInChildren<StatusEffectView>();
         }
 
         return null;
@@ -209,7 +306,7 @@ public class BattlePresentationBinder : MonoBehaviour
                 continue;
             }
 
-            BattleUnitPresenter presenter = actor.GetComponent<BattleUnitPresenter>();
+            IBattlePresenter presenter = actor.GetComponent<IBattlePresenter>();
 
             if (presenter == null)
             {

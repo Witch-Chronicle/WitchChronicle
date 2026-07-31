@@ -11,6 +11,8 @@ public class BattleUnit
     private readonly BattleTeamType _teamType;
     private readonly Sprite _icon;
 
+    private readonly int _level;
+
     private readonly int _maxHp;
     private int _currentHp;
 
@@ -39,6 +41,8 @@ public class BattleUnit
     public BattleTeamType TeamType => _teamType;
     public Sprite Icon => _icon;
 
+    public int Level => _level;
+
     public int MaxHp => _maxHp;
     public int CurrentHp => _currentHp;
 
@@ -65,6 +69,18 @@ public class BattleUnit
     public event Action OnMpChanged;
 
     /// <summary>
+    /// 실제로 HP가 감소한 양(양수)을 실어서 발동. 데미지 팝업 등에서 사용.
+    /// (요청 데미지가 아니라 "실제로 깎인 HP"라 오버킬 상황에서도 정확한 수치를 보장함)
+    /// </summary>
+    public event Action<int> OnDamaged;
+
+    /// <summary>
+    /// 실제로 HP가 회복된 양(양수)을 실어서 발동. 힐 팝업 등에서 사용.
+    /// (요청 회복량이 아니라 "실제로 채워진 HP"라 만피 상태의 오버힐은 0으로 처리되어 발동 안 함)
+    /// </summary>
+    public event Action<int> OnHealed;
+
+    /// <summary>
     /// BattleUnit 내부 데이터를 초기화
     /// </summary>
     private BattleUnit(
@@ -87,12 +103,14 @@ public class BattleUnit
         IReadOnlyList<ElementType> absorbElements,
         IReadOnlyList<SkillData> skillList,
         EnemyAIProfileData aiProfileData = null,
-        Sprite icon = null)
+        Sprite icon = null,
+        int level = 1)
     {
         _unitId = unitId;
         _unitName = unitName;
         _teamType = teamType;
         _icon = icon;
+        _level = Mathf.Max(1, level);
 
         _maxHp = Mathf.Max(1, maxHp);
         _currentHp = Mathf.Clamp(currentHp, 0, _maxHp);
@@ -117,41 +135,6 @@ public class BattleUnit
         _aiProfileData = aiProfileData;
     }
 
-    ///// <summary>
-    ///// 플레이어 캐릭터용 BattleUnit을 생성
-    ///// 추후 CharacterStats의 최종 계산값을 이 함수에 전달하면 됨
-    ///// </summary>
-    //public static BattleUnit CreatePlayer(
-    //    string unitId,
-    //    string unitName,
-    //    int maxHp,
-    //    int maxMp,
-    //    float attackPower,
-    //    float magicPower,
-    //    float defensePower,
-    //    float magicDefensePower,
-    //    float speed,
-    //    IReadOnlyList<SkillData> skillList)
-    //{
-    //    return new BattleUnit(
-    //        unitId,
-    //        unitName,
-    //        BattleTeamType.Player,
-    //        maxHp,
-    //        maxMp,
-    //        true,
-    //        attackPower,
-    //        magicPower,
-    //        defensePower,
-    //        magicDefensePower,
-    //        speed,
-    //        null,
-    //        null,
-    //        null,
-    //        null,
-    //        skillList);
-    //}
-
     /// <summary>
     /// 플레이어 전투 유닛을 생성합니다.
     /// CharacterStats에서 계산된 최대 스탯과 CharacterVitals의 현재 HP/MP를 기반으로 초기화합니다.
@@ -168,6 +151,8 @@ public class BattleUnit
     /// <param name="magicDefensePower">마법 방어력입니다.</param>
     /// <param name="speed">속도입니다.</param>
     /// <param name="skillList">사용 가능한 스킬 목록입니다.</param>
+    /// <param name="icon">캐릭터 아이콘입니다.</param>
+    /// <param name="level">캐릭터 레벨입니다.</param>
     /// <returns>생성된 플레이어 BattleUnit입니다.</returns>
     public static BattleUnit CreatePlayer(
         string unitId,
@@ -182,7 +167,8 @@ public class BattleUnit
         float magicDefensePower,
         float speed,
         IReadOnlyList<SkillData> skillList,
-        Sprite icon = null)
+        Sprite icon = null,
+        int level = 1)
     {
         return new BattleUnit(
             unitId,
@@ -204,7 +190,8 @@ public class BattleUnit
             null,
             skillList,
             null,
-            icon);
+            icon,
+            level);
     }
 
     /// <summary>
@@ -245,23 +232,50 @@ public class BattleUnit
     }
 
     /// <summary>
-    /// 대상에게 데미지 적용
+    /// 대상에게 데미지 적용. 실제로 깎인 HP만큼 OnDamaged를 발동.
     /// </summary>
     public void TakeDamage(int damage)
     {
         int finalDamage = Mathf.Max(0, damage);
+
+        int previousHp = _currentHp;
         _currentHp = Mathf.Max(0, _currentHp - finalDamage);
+        int actualDamage = previousHp - _currentHp;
+
         OnHpChanged?.Invoke();
+
+        if (actualDamage > 0)
+        {
+            OnDamaged?.Invoke(actualDamage);
+        }
     }
 
     /// <summary>
-    /// 대상의 HP 회복
+    /// 빗나감(혼란 miss 등) 통지. HP는 변하지 않고 OnDamaged(0)만 발동한다.
+    /// 연출 측(데미지 팝업)에서 0을 "Miss"로 표시하는 용도.
+    /// </summary>
+    public void NotifyMiss()
+    {
+        OnDamaged?.Invoke(0);
+    }
+
+    /// <summary>
+    /// 대상의 HP 회복. 실제로 채워진 HP만큼 OnHealed를 발동 (만피 상태의 오버힐은 발동 안 함).
     /// </summary>
     public void Heal(int amount)
     {
         int finalAmount = Mathf.Max(0, amount);
+
+        int previousHp = _currentHp;
         _currentHp = Mathf.Min(_maxHp, _currentHp + finalAmount);
+        int actualHeal = _currentHp - previousHp;
+
         OnHpChanged?.Invoke();
+
+        if (actualHeal > 0)
+        {
+            OnHealed?.Invoke(actualHeal);
+        }
     }
 
     /// <summary>
@@ -287,6 +301,23 @@ public class BattleUnit
         OnMpChanged?.Invoke();
 
         return true;
+    }
+
+    /// <summary>
+    /// MP 회복. MP를 사용하지 않는 유닛은 효과 없음. 최대 MP를 넘지 않는다.
+    /// </summary>
+    public void RestoreMp(int amount)
+    {
+        if (_usesMp == false)
+        {
+            return;
+        }
+
+        int finalAmount = Mathf.Max(0, amount);
+
+        _currentMp = Mathf.Min(_maxMp, _currentMp + finalAmount);
+
+        OnMpChanged?.Invoke();
     }
 
     /// <summary>

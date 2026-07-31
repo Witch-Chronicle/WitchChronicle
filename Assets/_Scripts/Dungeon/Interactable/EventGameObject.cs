@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -80,6 +81,9 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
         {
             ShowMessageManager.Instance.ShowMessage(_eventData.Description);
         }
+
+        ApplyPartyEffect();
+
         Debug.Log($"[EventGameObject] 보상 이벤트 실행: {_eventData.Description}");
     }
 
@@ -105,7 +109,84 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
         {
             ShowMessageManager.Instance.ShowMessage($"몸이 이상하다... 디버프 됨");
         }
+
+        ApplyPartyEffect();
+
         Debug.Log($"[EventGameObject] 디버프 이벤트 실행: {_eventData.Value}");
+    }
+
+    // 파티 조회용 재사용 버퍼
+    private static readonly List<PersistentCharacterUnit> _partyBuffer =
+        new List<PersistentCharacterUnit>();
+
+    /// <summary>
+    /// 이벤트 데이터의 효과를 활성 파티 전원에게 적용한다(HP/MP 회복·피해).
+    /// 영속 데이터(CharacterVitals)에 적용되어 이후 전투에도 반영된다.
+    /// </summary>
+    private void ApplyPartyEffect()
+    {
+        if (_eventData.EffectKind == EventEffectKind.None || _eventData.Value <= 0)
+        {
+            return;
+        }
+
+        if (PersistentCharacterManager.Instance == null)
+        {
+            Debug.LogWarning("[EventGameObject] PersistentCharacterManager가 없어 효과를 적용하지 못했습니다.");
+            return;
+        }
+
+        _partyBuffer.Clear();
+        PersistentCharacterManager.Instance.GetActivePartyMembers(_partyBuffer);
+
+        for (int i = 0; i < _partyBuffer.Count; i++)
+        {
+            CharacterVitals vitals = _partyBuffer[i] != null ? _partyBuffer[i].CharacterVitals : null;
+
+            if (vitals == null)
+            {
+                continue;
+            }
+
+            ApplyEffectToVitals(vitals, _partyBuffer[i].CharacterName);
+        }
+    }
+
+    /// <summary>효과 종류에 따라 한 캐릭터의 HP/MP를 변경한다.</summary>
+    private void ApplyEffectToVitals(CharacterVitals vitals, string characterName)
+    {
+        int value = _eventData.Value;
+
+        switch (_eventData.EffectKind)
+        {
+            case EventEffectKind.HealHp:
+                vitals.HealHp(value);
+                break;
+
+            case EventEffectKind.HealHpPercent:
+                vitals.HealHp(Mathf.Max(1, Mathf.RoundToInt(vitals.MaxHp * value * 0.01f)));
+                break;
+
+            case EventEffectKind.HealMp:
+                vitals.RecoverMp(value);
+                break;
+
+            case EventEffectKind.HealMpPercent:
+                vitals.RecoverMp(Mathf.Max(1, Mathf.RoundToInt(vitals.MaxMp * value * 0.01f)));
+                break;
+
+            case EventEffectKind.DamageHp:
+                vitals.TakeDamage(value);
+                break;
+
+            case EventEffectKind.DamageHpPercent:
+                vitals.TakeDamage(Mathf.Max(1, Mathf.RoundToInt(vitals.MaxHp * value * 0.01f)));
+                break;
+        }
+
+        Debug.Log(
+            $"[EventGameObject] {characterName}: {_eventData.EffectKind} {value} 적용 " +
+            $"(HP {vitals.CurrentHp}/{vitals.MaxHp}, MP {vitals.CurrentMp}/{vitals.MaxMp})");
     }
 
     private void SpawnVisualEffect()

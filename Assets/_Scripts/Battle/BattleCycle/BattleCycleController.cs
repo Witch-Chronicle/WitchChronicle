@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Battle.Rules;
 
 /// <summary>
 /// 전투 턴 사이클 관리
@@ -13,10 +14,18 @@ public class BattleCycleController : MonoBehaviour
     [SerializeField] private bool _autoPlay = true;
     [SerializeField] private float _actionDelay = 0.5f;
 
+    [Header("Impact Timing")]
+    [Tooltip("행동 연출(OnActionExecuting) 후 실제 데미지가 적용되기까지 지연(초). 스킬 이펙트가 대상에 닿는 시점에 맞춘다")]
+    [SerializeField] private float _impactDelay = 0.3f;
+
+    [Header("Battle End Timing")]
+    [Tooltip("승패가 결정된 시점부터 Result 패널(OnBattleEnded)이 뜨기까지 대기하는 시간(초). " +
+             "마지막 타격의 쓰러지는 연출/데미지 팝업/HP바 트윈이 다 보일 시간을 확보하기 위함.")]
+    [SerializeField] private float _battleEndDelay = 1.5f;
+
     [Header("Constellation")]
     [SerializeField] private BattleCameraDirector _battleCameraDirector;
-    [SerializeField] private ConstellationBattleManager _constellationBattleManager;
-
+    [SerializeField] private ConstellationPathBattleManager _constellationPathBattleManager;
     private readonly List<BattleUnit> _battleUnits =
         new List<BattleUnit>();
 
@@ -38,6 +47,11 @@ public class BattleCycleController : MonoBehaviour
 
     private BattleActionRequest _pendingActionRequest;
 
+    [Header("Status Effect (상태이상 적용/알림용)")]
+    [SerializeField] private StatusEffectDatabase _statusEffectDatabase;
+    private readonly StatusEffectController _statusEffectController = new StatusEffectController();
+    private BattleItemExecutor _itemExecutor;
+
     public event Action OnBattleStarted;
     public event Action<int> OnRoundStarted;
     public event Action<BattleUnit, int> OnTurnStarted;
@@ -46,8 +60,11 @@ public class BattleCycleController : MonoBehaviour
     public event Action OnTurnOrderChanged;
     public event Action<BattleActionRequest> OnActionExecuting;
 
-    public event Action<BattleActionRequest, ConstellationResult>
-        OnConstellationResolved;
+    public event Action<BattleActionRequest, ConstellationPathResult> OnConstellationResolved;
+
+    // 연출용: 상태이상 부여/해제 알림 (StatusEffectController에서 중계)
+    public event Action<BattleUnit, StatusEffectType> OnStatusApplied;
+    public event Action<BattleUnit, StatusEffectType> OnStatusRemoved;
 
     public BattleState BattleState => _battleState;
     public BattleTurnContext CurrentTurnContext => _currentTurnContext;
@@ -63,11 +80,64 @@ public class BattleCycleController : MonoBehaviour
                 FindFirstObjectByType<BattleCameraDirector>();
         }
 
-        if (_constellationBattleManager == null)
+        if (_constellationPathBattleManager == null)
         {
-            _constellationBattleManager =
-                FindFirstObjectByType<ConstellationBattleManager>();
+            _constellationPathBattleManager =
+                FindFirstObjectByType<ConstellationPathBattleManager>();
         }
+
+        // 상태이상 부여/해제를 연출 이벤트로 중계
+        _statusEffectController.OnApplied += HandleStatusApplied;
+        _statusEffectController.OnRemoved += HandleStatusRemoved;
+
+        // 아이템(포션) 실행부 — 배틀의 실제 상태이상 컨트롤러를 공유
+        _itemExecutor = new BattleItemExecutor(_statusEffectController);
+    }
+
+    private void HandleStatusApplied(BattleUnit unit, StatusEffectType type)
+    {
+        OnStatusApplied?.Invoke(unit, type);
+    }
+
+    private void HandleStatusRemoved(BattleUnit unit, StatusEffectType type)
+    {
+        OnStatusRemoved?.Invoke(unit, type);
+    }
+
+    /// <summary>
+    /// 스킬의 상태이상 확률을 판정해 대상에게 부여한다.
+    /// 데이터베이스 미설정 시 조용히 무시(기존 전투에 영향 없음).
+    /// </summary>
+    private void TryApplyStatusEffect(BattleUnit target, SkillData skillData)
+    {
+        if (target == null || skillData == null)
+        {
+            return;
+        }
+
+        if (skillData.StatusEffectType == StatusEffectType.None || skillData.StatusChance <= 0f)
+        {
+            return;
+        }
+
+        if (_statusEffectDatabase == null)
+        {
+            return;
+        }
+
+        if (UnityEngine.Random.value > skillData.StatusChance)
+        {
+            return;
+        }
+
+        StatusEffectData data = _statusEffectDatabase.GetData(skillData.StatusEffectType);
+
+        if (data == null)
+        {
+            return;
+        }
+
+        _statusEffectController.ApplyStatusEffect(target, data);
     }
 
     /// <summary>
@@ -86,6 +156,9 @@ public class BattleCycleController : MonoBehaviour
         }
 
         StopBattle();
+
+        // 이전 전투의 상태이상 잔류 제거 (연전 대비)
+        _statusEffectController.ClearAll();
 
         _battleUnits.Clear();
 
@@ -118,10 +191,9 @@ public class BattleCycleController : MonoBehaviour
         }
 
         _battleRoutine = null;
-
-        if (_constellationBattleManager != null)
+        if (_constellationPathBattleManager != null)
         {
-            _constellationBattleManager.StopConstellation();
+            _constellationPathBattleManager.StopConstellationPath();
         }
 
         _battleState = BattleState.None;
@@ -179,7 +251,7 @@ public class BattleCycleController : MonoBehaviour
 
                 if (TryGetWinner(out winner))
                 {
-                    EndBattle(winner);
+                    yield return StartCoroutine(EndBattleAfterDelay(winner));
                     yield break;
                 }
             }
@@ -189,6 +261,20 @@ public class BattleCycleController : MonoBehaviour
             OnTurnOrderChanged?.Invoke();
 
             yield return null;
+        }
+
+        yield return StartCoroutine(EndBattleAfterDelay(winner));
+    }
+
+    /// <summary>
+    /// 승패가 확정된 시점부터 _battleEndDelay만큼 대기한 뒤 EndBattle 실행.
+    /// 마지막 타격의 연출(데미지 팝업, 피격/사망 애니메이션 등)이 다 보일 시간을 확보하기 위함.
+    /// </summary>
+    private IEnumerator EndBattleAfterDelay(BattleTeamType winner)
+    {
+        if (_battleEndDelay > 0f)
+        {
+            yield return new WaitForSeconds(_battleEndDelay);
         }
 
         EndBattle(winner);
@@ -219,10 +305,29 @@ public class BattleCycleController : MonoBehaviour
             $"[Battle] {unit.UnitName} Turn Start / " +
             $"Actions: {actionCount}");
 
-        while (_currentTurnContext.CanAct)
+        // 턴 시작: 화상·독 등 지속 피해 tick 적용
+        _statusEffectController.ProcessTurnStart(unit);
+
+        while (_currentTurnContext.CanAct && unit.IsAlive)
         {
             _battleState =
                 BattleState.ExecutingAction;
+
+            // 상태이상 행동 판정: 수면(항상 불가)·마비(확률 불가)
+            if (_statusEffectController.CanAct(unit) == false)
+            {
+                Debug.Log(
+                    $"[Battle] {unit.UnitName} 행동불가(상태이상)");
+
+                _currentTurnContext.ConsumeAction();
+
+                if (_actionDelay > 0f)
+                {
+                    yield return new WaitForSeconds(_actionDelay);
+                }
+
+                continue;
+            }
 
             if (_autoPlay ||
                 unit.TeamType == BattleTeamType.Enemy)
@@ -253,6 +358,9 @@ public class BattleCycleController : MonoBehaviour
         }
 
         _battleState = BattleState.TurnEnd;
+
+        // 턴 종료: 상태이상 지속턴 감소 및 만료 처리 (지속피해 tick·행동불가 판정은 미포함)
+        _statusEffectController.ProcessTurnEnd(unit);
 
         OnTurnEnded?.Invoke(unit);
 
@@ -343,6 +451,18 @@ public class BattleCycleController : MonoBehaviour
         return target != null;
     }
 
+    /// <summary>침묵 등으로 스킬을 사용할 수 있는지(UI 스킬 버튼 잠금 판단용).</summary>
+    public bool CanUseSkill(BattleUnit unit)
+    {
+        return _statusEffectController.CanUseSkill(unit);
+    }
+
+    /// <summary>포션 사용(HP/MP 회복·상태이상 해제). 배틀의 실제 상태 컨트롤러를 공유한다. UI에서 호출.</summary>
+    public BattleItemResult UsePotion(BattleUnit user, PotionItemData potion)
+    {
+        return _itemExecutor.UsePotion(user, potion);
+    }
+
     /// <summary>
     /// 기본 공격 피해 계산
     /// </summary>
@@ -411,9 +531,9 @@ public class BattleCycleController : MonoBehaviour
     private void EndBattle(
         BattleTeamType winner)
     {
-        if (_constellationBattleManager != null)
+        if (_constellationPathBattleManager != null)
         {
-            _constellationBattleManager.StopConstellation();
+            _constellationPathBattleManager.StopConstellationPath();
         }
 
         _battleState = BattleState.BattleEnd;
@@ -540,10 +660,8 @@ public class BattleCycleController : MonoBehaviour
         switch (actionRequest.CommandType)
         {
             case CommandType.Attack:
-                OnActionExecuting?.Invoke(
+                yield return ExecutePresentedAttack(
                     actionRequest);
-
-                ExecuteAttack(actionRequest);
                 break;
 
             case CommandType.Skill:
@@ -587,6 +705,50 @@ public class BattleCycleController : MonoBehaviour
     }
 
     /// <summary>
+    /// 기본 공격을 연출(OnActionExecuting) → 임팩트 딜레이 → 데미지 순으로 실행.
+    /// </summary>
+    /// <param name="actionRequest">공격 행동 요청</param>
+    private IEnumerator ExecutePresentedAttack(
+        BattleActionRequest actionRequest)
+    {
+        OnActionExecuting?.Invoke(
+            actionRequest);
+
+        yield return WaitImpact();
+
+        // 혼란: 일정 확률로 공격이 빗나가 데미지가 들어가지 않음(연출은 그대로 재생)
+        if (_statusEffectController.RollConfusionMiss(
+                actionRequest.Actor))
+        {
+            Debug.Log(
+                $"[Battle] {actionRequest.Actor?.UnitName} 혼란: 공격이 빗나감(MISS)");
+
+            // 대상에 데미지 0 통지(연출: Miss 표시용)
+            actionRequest.Target?.NotifyMiss();
+
+            yield break;
+        }
+
+        ExecuteAttack(actionRequest);
+    }
+
+    /// <summary>
+    /// 연출 후 데미지 적용까지의 임팩트 딜레이 대기.
+    /// 스킬 SO에 개별 ImpactDelay(>0)가 있으면 그 값, 없으면 전역 _impactDelay 사용.
+    /// </summary>
+    private IEnumerator WaitImpact(SkillData skill = null)
+    {
+        float delay = (skill != null && skill.ImpactDelay > 0f)
+            ? skill.ImpactDelay
+            : _impactDelay;
+
+        if (delay > 0f)
+        {
+            yield return new WaitForSeconds(delay);
+        }
+    }
+
+    /// <summary>
     /// 기본 공격 실행
     /// </summary>
     /// <param name="actionRequest">공격 행동 요청</param>
@@ -617,6 +779,14 @@ public class BattleCycleController : MonoBehaviour
                 target);
 
         target.TakeDamage(damage);
+
+        // 피격 시 자동 해제 상태이상 처리(수면 등), 사망 시 상태이상 전체 해제(이펙트 잔류 방지)
+        _statusEffectController.OnUnitHit(target);
+
+        if (target.IsAlive == false)
+        {
+            _statusEffectController.RemoveAllStatusEffects(target);
+        }
 
         Debug.Log(
             $"[Battle] {attacker.UnitName} attacks " +
@@ -663,6 +833,32 @@ public class BattleCycleController : MonoBehaviour
 
         _skillTargets.Clear();
 
+        // 침묵: 스킬 사용 불가 → 공격 스킬은 기본공격 대체, 지원 스킬은 불발 (MP 소모 전에 판정)
+        if (_statusEffectController.CanUseSkill(actor) == false)
+        {
+            if (skillData.SkillType == SkillEffectType.Damage &&
+                resolvedTargets.Count > 0 &&
+                resolvedTargets[0] != null)
+            {
+                Debug.Log(
+                    $"[Battle] {actor.UnitName} 침묵: 스킬 불가 → 기본공격 대체");
+
+                BattleActionRequest attackRequest =
+                    BattleActionRequest.CreateAttack(
+                        actor,
+                        resolvedTargets[0]);
+
+                yield return ExecutePresentedAttack(attackRequest);
+            }
+            else
+            {
+                Debug.Log(
+                    $"[Battle] {actor.UnitName} 침묵: 지원 스킬 불발");
+            }
+
+            yield break;
+        }
+
         if (actor.UseMp(
                 skillData.MpCost) == false)
         {
@@ -676,39 +872,34 @@ public class BattleCycleController : MonoBehaviour
             $"[Battle] {actor.UnitName} uses " +
             $"{skillData.SkillName}");
 
-        bool isEnemyConstellationAttack =
+        bool isEnemyConstellationPathAttack =
             actor.TeamType ==
             BattleTeamType.Enemy &&
             skillData.SkillType ==
             SkillEffectType.Damage &&
-            skillData.IsConstellationAttack;
+            skillData.IsConstellationPathAttack;
 
-        if (isEnemyConstellationAttack)
+        if (isEnemyConstellationPathAttack)
         {
-            yield return ExecuteConstellationSkill(
+            yield return ExecuteConstellationPathSkill(
                 actionRequest,
                 resolvedTargets);
 
             yield break;
         }
 
-        OnActionExecuting?.Invoke(
-            actionRequest);
-
-        ApplySkillEffects(
-            actor,
-            resolvedTargets,
-            skillData,
-            actionRequest.DamageMultiplier);
+        yield return ExecuteSkillWithoutConstellationPath(
+            actionRequest,
+            resolvedTargets);
     }
 
     /// <summary>
-    /// 별자리 패리 스킬 실행
-    /// 카메라 연출 후 시퀀스 결과 대기
+    /// 경로형 별자리 패리 스킬 실행
+    /// 카메라 연출, 별자리 입력, 최종 결과 처리
     /// </summary>
     /// <param name="actionRequest">스킬 행동 요청</param>
     /// <param name="targets">스킬 대상 목록</param>
-    private IEnumerator ExecuteConstellationSkill(
+    private IEnumerator ExecuteConstellationPathSkill(
         BattleActionRequest actionRequest,
         IReadOnlyList<BattleUnit> targets)
     {
@@ -724,64 +915,53 @@ public class BattleCycleController : MonoBehaviour
             yield break;
         }
 
-        if (_constellationBattleManager == null ||
-            _constellationBattleManager.isActiveAndEnabled == false)
+        if (_constellationPathBattleManager == null ||
+            !_constellationPathBattleManager
+                .isActiveAndEnabled)
         {
             Debug.LogWarning(
-                "[Battle] 별자리 매니저 참조 없음. " +
-                "기존 스킬로 실행",
+                "[Battle] 신규 별자리 매니저 참조 없음. " +
+                "일반 스킬로 실행",
                 this);
 
-            OnActionExecuting?.Invoke(
-                actionRequest);
-
-            ApplySkillEffects(
-                actor,
-                targets,
-                skillData,
-                actionRequest.DamageMultiplier);
+            yield return
+                ExecuteSkillWithoutConstellationPath(
+                    actionRequest,
+                    targets);
 
             yield break;
         }
 
-        ConstellationSequenceData sequenceData =
-            skillData.ConstellationSequenceData;
+        ConstellationPathSequenceData sequenceData =
+            skillData.ConstellationPathSequenceData;
 
         if (sequenceData == null)
         {
             Debug.LogWarning(
                 $"[Battle] {skillData.SkillName}에 " +
-                "별자리 시퀀스가 연결되지 않았습니다.",
+                "경로형 별자리 데이터가 없음",
                 skillData);
 
-            OnActionExecuting?.Invoke(
-                actionRequest);
-
-            ApplySkillEffects(
-                actor,
-                targets,
-                skillData,
-                actionRequest.DamageMultiplier);
+            yield return
+                ExecuteSkillWithoutConstellationPath(
+                    actionRequest,
+                    targets);
 
             yield break;
         }
 
-        if (sequenceData.TryValidate(
-                out string errorMessage) == false)
+        if (!sequenceData.TryValidate(
+                out string errorMessage))
         {
             Debug.LogWarning(
-                $"[Battle] 별자리 데이터 오류: " +
+                $"[Battle] 경로형 별자리 데이터 오류: " +
                 $"{errorMessage}",
                 sequenceData);
 
-            OnActionExecuting?.Invoke(
-                actionRequest);
-
-            ApplySkillEffects(
-                actor,
-                targets,
-                skillData,
-                actionRequest.DamageMultiplier);
+            yield return
+                ExecuteSkillWithoutConstellationPath(
+                    actionRequest,
+                    targets);
 
             yield break;
         }
@@ -806,7 +986,7 @@ public class BattleCycleController : MonoBehaviour
                     () => isIntroCompleted = true);
         }
 
-        while (isIntroCompleted == false)
+        while (!isIntroCompleted)
         {
             if (_battleState ==
                 BattleState.BattleEnd)
@@ -817,20 +997,25 @@ public class BattleCycleController : MonoBehaviour
             yield return null;
         }
 
-        // 사전 카메라 연출 이후 실제 스킬 애니메이션 시작
-        OnActionExecuting?.Invoke(
-            actionRequest);
-
+        // 연출(애니메이션·VFX·사운드)은 별자리 종료 후 패리 실패 시에 재생한다.
+        // 미니게임 중에는 카메라가 별자리 화면이라 여기서 재생하면 보이지 않는다.
         bool isStarted =
-            _constellationBattleManager
-                .StartConstellation(sequenceData);
+            _constellationPathBattleManager
+                .StartConstellationPath(
+                    sequenceData);
 
-        if (isStarted == false)
+        if (!isStarted)
         {
             Debug.LogWarning(
-                "[Battle] 별자리 시퀀스 시작 실패. " +
+                "[Battle] 경로형 별자리 시작 실패. " +
                 "기존 스킬 효과 적용",
                 this);
+
+            OnActionExecuting?.Invoke(
+                actionRequest);
+
+            yield return WaitImpact(
+                skillData);
 
             ApplySkillEffects(
                 actor,
@@ -841,13 +1026,13 @@ public class BattleCycleController : MonoBehaviour
             yield break;
         }
 
-        while (_constellationBattleManager.IsRunning)
+        while (_constellationPathBattleManager.IsRunning)
         {
             if (_battleState ==
                 BattleState.BattleEnd)
             {
-                _constellationBattleManager
-                    .StopConstellation();
+                _constellationPathBattleManager
+                    .StopConstellationPath();
 
                 yield break;
             }
@@ -855,13 +1040,21 @@ public class BattleCycleController : MonoBehaviour
             yield return null;
         }
 
-        if (_constellationBattleManager.TryGetLastResult(
-                out ConstellationResult result) == false)
+        if (!_constellationPathBattleManager
+                .TryGetLastResult(
+                    out ConstellationPathResult result))
         {
             Debug.LogWarning(
-                "[Battle] 별자리 결과 수신 실패. " +
-                "기존 스킬 효과 적용",
+                "[Battle] 경로형 별자리 결과 수신 실패. " +
+                "스킬 효과 적용",
                 this);
+
+            // 실패 처리와 동일하게 연출을 재생한 뒤 데미지 적용
+            OnActionExecuting?.Invoke(
+                actionRequest);
+
+            yield return WaitImpact(
+                skillData);
 
             ApplySkillEffects(
                 actor,
@@ -877,10 +1070,14 @@ public class BattleCycleController : MonoBehaviour
             result);
 
         Debug.Log(
-            $"[Battle] 별자리 공격 결과" +
+            $"[Battle] 경로형 별자리 결과" +
             $"\nSkill: {skillData.SkillName}" +
             $"\nSuccess: {result.IsSuccess}" +
-            $"\nScore: {result.Score:F1}",
+            $"\nNodes: {result.CompletedNodeCount}" +
+            $"/{result.TotalNodeCount}" +
+            $"\nElapsed: {result.ElapsedInputTime:F2}" +
+            $"\nRemaining: " +
+            $"{result.RemainingTimeAtCompletion:F2}",
             this);
 
         if (result.IsSuccess)
@@ -897,6 +1094,13 @@ public class BattleCycleController : MonoBehaviour
             $"[Battle] {skillData.SkillName} " +
             "패리 실패 / 스킬 효과 적용",
             this);
+
+        // 패리 실패 = 맞는 연출. 미니게임 종료 후이므로 이펙트·사운드를 다시 재생한다.
+        OnActionExecuting?.Invoke(
+            actionRequest);
+
+        yield return WaitImpact(
+            skillData);
 
         ApplySkillEffects(
             actor,
@@ -1273,12 +1477,21 @@ public class BattleCycleController : MonoBehaviour
                     skillData);
                 break;
 
+            case SkillEffectType.HealMp:
+                ApplyHealMpSkill(
+                    target,
+                    skillData);
+                break;
+
             default:
                 Debug.Log(
                     $"[Battle] 아직 처리되지 않은 " +
                     $"스킬 효과: {skillData.SkillType}");
                 break;
         }
+
+        // 스킬의 상태이상 확률 판정 및 부여 (데미지/힐과 별개로 적용)
+        TryApplyStatusEffect(target, skillData);
     }
 
     /// <summary>
@@ -1302,6 +1515,14 @@ public class BattleCycleController : MonoBehaviour
                 damageMultiplier);
 
         target.TakeDamage(damage);
+
+        // 피격 시 자동 해제 상태이상 처리(수면 등), 사망 시 상태이상 전체 해제(이펙트 잔류 방지)
+        _statusEffectController.OnUnitHit(target);
+
+        if (target.IsAlive == false)
+        {
+            _statusEffectController.RemoveAllStatusEffects(target);
+        }
 
         Debug.Log(
             $"[Battle] {skillData.SkillName} hit " +
@@ -1335,6 +1556,29 @@ public class BattleCycleController : MonoBehaviour
             $"{target.UnitName} / " +
             $"Heal: {healAmount} / " +
             $"Target HP: {target.CurrentHp}");
+    }
+
+    /// <summary>
+    /// MP 회복 스킬 적용. 스킬 Power만큼 대상 MP를 회복한다.
+    /// </summary>
+    /// <param name="target">대상 유닛</param>
+    /// <param name="skillData">스킬 데이터</param>
+    private void ApplyHealMpSkill(
+        BattleUnit target,
+        SkillData skillData)
+    {
+        int mpAmount =
+            Mathf.Max(
+                1,
+                Mathf.RoundToInt(skillData.Power));
+
+        target.RestoreMp(mpAmount);
+
+        Debug.Log(
+            $"[Battle] {skillData.SkillName} MP heal " +
+            $"{target.UnitName} / " +
+            $"MP: +{mpAmount} / " +
+            $"Target MP: {target.CurrentMp}");
     }
 
     /// <summary>
@@ -1462,5 +1706,50 @@ public class BattleCycleController : MonoBehaviour
             BattleState.BattleEnd;
 
         OnBattleEnded?.Invoke(winner);
+    }
+
+    /// <summary>
+    /// 별자리 패리 없이 일반 스킬 실행
+    /// </summary>
+    /// <param name="actionRequest">스킬 행동 요청</param>
+    /// <param name="targets">스킬 대상 목록</param>
+    private IEnumerator ExecuteSkillWithoutConstellationPath(
+        BattleActionRequest actionRequest,
+        IReadOnlyList<BattleUnit> targets)
+    {
+        if (actionRequest == null ||
+            actionRequest.Actor == null ||
+            actionRequest.SkillData == null)
+        {
+            yield break;
+        }
+
+        OnActionExecuting?.Invoke(
+            actionRequest);
+
+        yield return WaitImpact(
+            actionRequest.SkillData);
+
+        // 혼란: 스킬도 일정 확률로 빗나감 (한 번 굴려 통째 실패, 시전 연출·MP는 이미 소모됨)
+        if (_statusEffectController.RollConfusionMiss(
+                actionRequest.Actor))
+        {
+            Debug.Log(
+                $"[Battle] {actionRequest.Actor.UnitName} 혼란: 스킬이 빗나감(MISS)");
+
+            // 각 대상에 데미지 0 통지(연출: Miss 표시용)
+            for (int i = 0; targets != null && i < targets.Count; i++)
+            {
+                targets[i]?.NotifyMiss();
+            }
+
+            yield break;
+        }
+
+        ApplySkillEffects(
+            actionRequest.Actor,
+            targets,
+            actionRequest.SkillData,
+            actionRequest.DamageMultiplier);
     }
 }
