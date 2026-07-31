@@ -609,11 +609,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleCycleController
   _autoPlay: 0
-  _actionDelay: 1
+  _actionDelay: 0.3
+  _actionEndHoldDuration: 0.1
   _impactDelay: 0.3
   _battleEndDelay: 1.5
   _battleCameraDirector: {fileID: 1867479331}
   _constellationPathBattleManager: {fileID: 0}
+  _battlePresentationBinder: {fileID: 0}
+  _battleActionBanner: {fileID: 0}
+  _enemyActionBannerHoldDuration: 0.2
   _statusEffectDatabase: {fileID: 11400000, guid: 717e46805c562334d84f64b0ad47202e, type: 2}
 --- !u!114 &338119914
 MonoBehaviour:
@@ -694,6 +698,7 @@ MonoBehaviour:
   _targetHeight: -0.6
   _projectileTravelTime: 0.4
   _hitDelay: 0.2
+  _postImpactDuration: 0.25
   _vfxLifetime: 3
 --- !u!1 &361416001
 GameObject:
@@ -1744,6 +1749,118 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1084ba532f77f0458b84c8cd5f4fd0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterStats
+--- !u!1 &649560333
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 649560334}
+  - component: {fileID: 649560338}
+  - component: {fileID: 649560337}
+  - component: {fileID: 649560336}
+  - component: {fileID: 649560335}
+  m_Layer: 5
+  m_Name: EnemyActionBanner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &649560334
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 649560333}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children:
+  - {fileID: 1475237752}
+  - {fileID: 1101036422}
+  m_Father: {fileID: 8185559791213492177}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -50, y: -250}
+  m_SizeDelta: {x: 600, y: 50}
+  m_Pivot: {x: 1, y: 1}
+--- !u!114 &649560335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 649560333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.28235295}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &649560336
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 649560333}
+  m_CullTransparentMesh: 1
+--- !u!114 &649560337
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 649560333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f150b9e5e87b14243932c24a90dea9fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BattleActionBanner
+  _canvasGroup: {fileID: 649560338}
+  _panelRoot: {fileID: 649560334}
+  _actorNameText: {fileID: 1475237753}
+  _actionNameText: {fileID: 1101036423}
+  _showDuration: 0.18
+  _hideDuration: 0.12
+  _hiddenOffsetX: -80
+  _showEase: 9
+  _hideEase: 8
+--- !u!225 &649560338
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 649560333}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &660840212
 GameObject:
   m_ObjectHideFlags: 0
