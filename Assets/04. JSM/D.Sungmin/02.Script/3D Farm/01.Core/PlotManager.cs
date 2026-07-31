@@ -3,9 +3,6 @@ using UnityEngine;
 
 namespace WitchChronicle.IdleFarming
 {
-    /// <summary>
-    /// 방치형 파밍 전체 관리 싱글톤 (저장 없는 임시 버전)
-    /// </summary>
     public class PlotManager : MonoBehaviour
     {
         public static PlotManager Instance { get; private set; }
@@ -20,10 +17,14 @@ namespace WitchChronicle.IdleFarming
         [SerializeField] private PlotSeedSelectPanel _seedSelectPanel;
         [SerializeField] private PlotHarvestPanel _harvestPanel;
 
+        [Header("Floating UI (Screen Space)")]
+        [SerializeField] private PlotFloatingUI _floatingUIPrefab;
+        [SerializeField] private RectTransform _hudCanvasRoot;
+
         private readonly List<PlotSlot> _slots = new List<PlotSlot>();
+        private readonly List<PlotFloatingUI> _floatingUIs = new List<PlotFloatingUI>();
         private int _openPanelCount = 0;
 
-        // 프로퍼티
         public PlotConfig Config => _config;
         public int AllSeedsCount => _allSeeds.Count;
         public int MaxOfflineCycles => _maxOfflineCycles;
@@ -52,14 +53,33 @@ namespace WitchChronicle.IdleFarming
         private void AutoRegisterPlots()
         {
             _slots.Clear();
+            _floatingUIs.Clear();
+
             var found = FindObjectsOfType<PlotSlot>();
             System.Array.Sort(found, (a, b) => a.PlotIndex.CompareTo(b.PlotIndex));
             _slots.AddRange(found);
 
             foreach (var slot in _slots)
+            {
                 slot.OnHarvested += HandleSlotHarvested;
+                SpawnFloatingUI(slot);
+            }
 
             Debug.Log($"[PlotManager] {_slots.Count}개 슬롯 등록됨");
+        }
+
+        private void SpawnFloatingUI(PlotSlot slot)
+        {
+            if (_floatingUIPrefab == null || _hudCanvasRoot == null)
+            {
+                Debug.LogWarning("[PlotManager] FloatingUI 프리팹 또는 HUD Canvas 미설정");
+                return;
+            }
+
+            var ui = Instantiate(_floatingUIPrefab, _hudCanvasRoot);
+            ui.name = $"PlotFloatingUI_{slot.PlotIndex:D2}";
+            slot.SetFloatingUI(ui);
+            _floatingUIs.Add(ui);
         }
 
         private void HandleSlotHarvested(PlotSlot slot, SeedData seed, int amount)
@@ -114,6 +134,20 @@ namespace WitchChronicle.IdleFarming
             if (_config.unlockPrices == null || priceIndex >= _config.unlockPrices.Length)
                 return 999999;
             return _config.unlockPrices[priceIndex];
+        }
+
+        // ====== 플레이어 존 진입/이탈 ======
+
+        /// <summary>
+        /// FarmZoneTrigger가 호출: 팜 존 전체의 FloatingUI 표시/숨김 일괄 처리
+        /// </summary>
+        public void SetAllFloatingUIsPlayerNear(bool near)
+        {
+            for (int i = 0; i < _floatingUIs.Count; i++)
+            {
+                if (_floatingUIs[i] != null)
+                    _floatingUIs[i].SetPlayerNear(near);
+            }
         }
 
         // ====== 커서 제어 ======
