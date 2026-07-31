@@ -5,7 +5,7 @@ using DG.Tweening;
 /// <summary>
 /// 현재 퀘스트 목록 UI 관리
 /// 진행 중인 퀘스트 표시 및 목록 갱신 처리
-/// Tab 키로 우측 슬라이드 아웃/인 토글 (UITestInputReader에서 호출)
+/// Tab 키로 우측 슬라이드 아웃/인 토글 (PlayerUIInputReader에서 호출)
 /// </summary>
 public class QuestListUI : MonoBehaviour
 {

@@ -4,8 +4,8 @@
 /// </summary>
 public enum CharacterType
 {
-    Ariel,
-    Laia,
-    Selene,
-    Fay
+    ariel,
+    laia,
+    selene,
+    fay
 }
