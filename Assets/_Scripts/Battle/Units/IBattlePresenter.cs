@@ -1,3 +1,5 @@
+using System;
+
 /// <summary>
 /// 전투 유닛의 연출(애니메이션) 재생 공용 인터페이스.
 /// 플레이어(상태 이름 방식)와 적(트리거 방식) Presenter가 함께 구현하여
@@ -9,20 +11,20 @@ public interface IBattlePresenter
     void ResetToIdle();
 
     /// <summary>일반 공격. index 생략 시 임의.</summary>
-    void PlayAttack(int index = -1);
+    void PlayAttack(int index = -1, Action onImpact = null, Action onComplete = null);
 
     /// <summary>공격형 스킬 캐스팅.</summary>
-    void PlaySkill();
+    void PlaySkill(Action onComplete = null);
 
     /// <summary>지원형(힐/버프) 스킬 캐스팅.</summary>
-    void PlaySkillSupport();
+    void PlaySkillSupport(Action onComplete = null);
 
     /// <summary>방어/패리.</summary>
-    void PlayParry();
+    void PlayParry(Action onComplete = null);
 
     /// <summary>피격.</summary>
-    void PlayHit();
+    void PlayHit(Action onComplete = null);
 
     /// <summary>사망.</summary>
-    void PlayDeath();
+    void PlayDeath(Action onComplete = null);
 }
