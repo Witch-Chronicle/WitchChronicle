@@ -1,11 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using DG.Tweening;
 using System.Collections.Generic;
 using TMPro;
 
 public class ResultController : MonoBehaviour
 {
+
+
     [Header("Content")]
     [SerializeField] private TMP_Text _resultTxt;
     [SerializeField] private Color _winColor = Color.blue;
@@ -15,8 +18,9 @@ public class ResultController : MonoBehaviour
     [SerializeField] private CanvasGroup _resultWrapCanvasGroup;
     [SerializeField] private float _fadeDuration = 0.3f;
 
-    [Header("Transition (결과 사라진 뒤 화면 다시 덮기)")]
-    [SerializeField] private TransitionController _transitionController;
+    [Header("Result 표시 중 숨길 HUD 오브젝트")]
+    [SerializeField] private GameObject _charactersObject;
+    [SerializeField] private GameObject _turnObject;
 
     [Header("패배 시 복귀 씬")]
     [SerializeField] private SceneId _defeatReturnScene = SceneId.Main; // 거점 씬
@@ -29,17 +33,26 @@ public class ResultController : MonoBehaviour
     [Header("Reward Item")]
     [SerializeField] private DropItemRow _dropItemRowPrefab;
     [SerializeField] private Transform _dropItemContent; // Content 오브젝트
+    [SerializeField] private GameObject _noGainTxt;
 
-    [Header("Confirm")]
-    [SerializeField] private Button _confirmBtn;
+    [Header("Confirm (XP 애니메이션이 전부 끝나면 페이드인, Enter로 진행)")]
+    [SerializeField] private GameObject _confirmObject;
+    [SerializeField] private float _confirmFadeDuration = 0.3f;
 
     [Header("Battle Scene (Additive 언로드용)")]
     [SerializeField] private string _battleSceneName = "Battle";
 
     private readonly List<DropItemRow> _spawnedDropItemRows = new List<DropItemRow>();
 
+    private CanvasGroup _confirmCanvasGroup;
+
     private Sequence _fadeSequence;
     private bool _isPlayerWin;
+
+    private int _totalActiveRows;
+    private int _completedRowCount;
+    private bool _isXpAnimating;
+    private bool _isConfirmVisible;
 
     private void Start()
     {
@@ -61,9 +74,14 @@ public class ResultController : MonoBehaviour
             Debug.LogWarning("[ResultController] BattleRewardManager 참조가 없습니다.");
         }
 
-        if (_confirmBtn != null)
+        if (_confirmObject != null)
         {
-            _confirmBtn.onClick.AddListener(HandleConfirmClicked);
+            _confirmCanvasGroup = _confirmObject.GetComponent<CanvasGroup>();
+
+            if (_confirmCanvasGroup == null)
+            {
+                Debug.LogWarning("[ResultController] Confirm 오브젝트에 CanvasGroup이 없어 페이드 없이 즉시 표시됩니다.");
+            }
         }
 
         gameObject.SetActive(false);
@@ -81,14 +99,26 @@ public class ResultController : MonoBehaviour
             _battleRewardManager.OnRewardsCalculated -= HandleRewardsCalculated;
         }
 
-        if (_confirmBtn != null)
-        {
-            _confirmBtn.onClick.RemoveListener(HandleConfirmClicked);
-        }
+        UnsubscribeAllRows();
 
         ClearDropItems();
 
         _fadeSequence?.Kill();
+    }
+
+    private void Update()
+    {
+        if (Keyboard.current == null) return;
+        if (Keyboard.current.enterKey.wasPressedThisFrame == false) return;
+
+        if (_isXpAnimating)
+        {
+            SkipXpAnimations();
+        }
+        else if (_isConfirmVisible)
+        {
+            HandleConfirmClicked();
+        }
     }
 
     private void HandleBattleEnded(BattleTeamType winner)
@@ -99,27 +129,36 @@ public class ResultController : MonoBehaviour
 
         if (_resultTxt != null)
         {
-            _resultTxt.text = _isPlayerWin ? "WIN" : "LOSE";
+            _resultTxt.text = _isPlayerWin ? "VICTORY" : "DEFEAT";
             _resultTxt.color = _isPlayerWin ? _winColor : _loseColor;
         }
 
-        if (_confirmBtn != null)
-        {
-            _confirmBtn.interactable = true;
-        }
+        HideConfirmImmediate();
+
+        if (_charactersObject != null) _charactersObject.SetActive(false);
+        if (_turnObject != null) _turnObject.SetActive(false);
 
         PlayFadeInSequence();
     }
 
     /// <summary>
     /// BattleRewardManager가 보상 계산/지급을 마치면 호출됨. Result 패널에 골드/캐릭터별 결과/획득 아이템 반영.
+    /// 캐릭터별 XP 애니메이션이 전부 끝나야 Confirm이 나타남.
     /// </summary>
     private void HandleRewardsCalculated(int totalGold, List<CharacterRewardResult> results, List<DropResult> drops)
     {
         if (_goldTxt != null)
         {
-            _goldTxt.text = $"{totalGold:N0} G";
+            _goldTxt.text = $"+ {totalGold:N0} G";
         }
+
+        UnsubscribeAllRows();
+
+        _totalActiveRows = 0;
+        _completedRowCount = 0;
+        _isXpAnimating = true;
+        _isConfirmVisible = false;
+        HideConfirmImmediate();
 
         for (int i = 0; i < _characterXpRows.Count; i++)
         {
@@ -137,20 +176,119 @@ public class ResultController : MonoBehaviour
             }
 
             row.gameObject.SetActive(true);
+            row.OnCompleted += HandleRowCompleted;
+            _totalActiveRows++;
+
             row.SetData(results[i]);
         }
 
         RefreshDropItems(drops);
+
+        // 표시할 캐릭터가 하나도 없으면(예외적 상황) 바로 Confirm 노출
+        if (_totalActiveRows == 0)
+        {
+            _isXpAnimating = false;
+            RevealConfirm();
+        }
+    }
+
+    private void HandleRowCompleted()
+    {
+        _completedRowCount++;
+
+        if (_completedRowCount < _totalActiveRows)
+        {
+            return;
+        }
+
+        _isXpAnimating = false;
+        RevealConfirm();
+    }
+
+    /// <summary>
+    /// 진행 중인 모든 Row 애니메이션을 즉시 최종 상태로 완료시킴 (Enter 스킵).
+    /// </summary>
+    private void SkipXpAnimations()
+    {
+        for (int i = 0; i < _characterXpRows.Count; i++)
+        {
+            CharacterXpRow row = _characterXpRows[i];
+
+            if (row == null || row.gameObject.activeSelf == false)
+            {
+                continue;
+            }
+
+            row.CompleteImmediately();
+        }
+    }
+
+    private void UnsubscribeAllRows()
+    {
+        for (int i = 0; i < _characterXpRows.Count; i++)
+        {
+            CharacterXpRow row = _characterXpRows[i];
+
+            if (row == null)
+            {
+                continue;
+            }
+
+            row.OnCompleted -= HandleRowCompleted;
+        }
+    }
+
+    private void RevealConfirm()
+    {
+        _isConfirmVisible = true;
+
+        if (_confirmObject != null && _confirmObject.activeSelf == false)
+        {
+            _confirmObject.SetActive(true);
+        }
+
+        if (_confirmCanvasGroup == null) return;
+
+        _confirmCanvasGroup.DOKill();
+        _confirmCanvasGroup.alpha = 0f;
+        _confirmCanvasGroup.interactable = true;
+        _confirmCanvasGroup.blocksRaycasts = true;
+
+        _confirmCanvasGroup.DOFade(1f, _confirmFadeDuration);
+    }
+
+    private void HideConfirmImmediate()
+    {
+        if (_confirmCanvasGroup != null)
+        {
+            _confirmCanvasGroup.DOKill();
+            _confirmCanvasGroup.alpha = 0f;
+            _confirmCanvasGroup.interactable = false;
+            _confirmCanvasGroup.blocksRaycasts = false;
+        }
+
+        if (_confirmObject != null)
+        {
+            _confirmObject.SetActive(false);
+        }
     }
 
     /// <summary>
     /// 획득 아이템 목록을 Content 하위에 동적으로 생성/갱신.
+    /// 드롭 아이템이 하나도 없으면 NoGainTxt를 활성화.
     /// </summary>
     private void RefreshDropItems(List<DropResult> drops)
     {
         ClearDropItems();
 
-        if (drops == null || _dropItemRowPrefab == null || _dropItemContent == null)
+        bool hasDrops = drops != null && drops.Count > 0;
+
+        if (_noGainTxt != null)
+        {
+            _noGainTxt.SetActive(hasDrops == false);
+        }
+
+        if (hasDrops == false || _dropItemRowPrefab == null || _dropItemContent == null)
         {
             return;
         }
@@ -177,7 +315,7 @@ public class ResultController : MonoBehaviour
     }
 
     /// <summary>
-    /// Result 패널 등장 시 페이드인만 수행 (자동으로 사라지지 않음, ConfirmBtn 클릭을 기다림).
+    /// Result 패널 등장 시 페이드인만 수행 (자동으로 사라지지 않음, XP 애니메이션 종료 후 Confirm이 Enter를 기다림).
     /// </summary>
     private void PlayFadeInSequence()
     {
@@ -194,14 +332,13 @@ public class ResultController : MonoBehaviour
     }
 
     /// <summary>
-    /// ConfirmBtn 클릭 시: Result 페이드아웃 -> TransitionPanel 페이드인 -> 씬 전환.
+    /// Confirm이 보이는 상태에서 Enter 입력 시: Result 페이드아웃 -> 씬 전환.
     /// </summary>
     private void HandleConfirmClicked()
     {
-        if (_confirmBtn != null)
-        {
-            _confirmBtn.interactable = false; // 중복 클릭 방지
-        }
+        if (_isConfirmVisible == false) return;
+
+        _isConfirmVisible = false; // 중복 트리거 방지
 
         PlayFadeOutSequence();
     }
@@ -225,19 +362,6 @@ public class ResultController : MonoBehaviour
     {
         gameObject.SetActive(false);
 
-        // TransitionController 수동 호출 제거 — SceneTransitionManager.LoadScene/UnloadScene이 자동으로 처리
-        if (_isPlayerWin)
-        {
-            HandleVictoryTransition();
-        }
-        else
-        {
-            HandleDefeatTransition();
-        }
-    }
-
-    private void HandleTransitionInComplete()
-    {
         if (_isPlayerWin)
         {
             HandleVictoryTransition();

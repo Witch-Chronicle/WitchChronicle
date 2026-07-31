@@ -44,9 +44,9 @@ public class PauseController : MonoBehaviour
             return;
         }
 
-        if (UITestInputReader.Instance != null)
+        if (PlayerUIInputReader.Instance != null)
         {
-            UITestInputReader.Instance.TogglePausePanel();
+            PlayerUIInputReader.Instance.TogglePausePanel();
         }
 
         SceneTransitionManager.Instance.LoadScene(_returnScene);
@@ -54,9 +54,9 @@ public class PauseController : MonoBehaviour
 
     private void HandleCloseClicked()
     {
-        if (UITestInputReader.Instance != null)
+        if (PlayerUIInputReader.Instance != null)
         {
-            UITestInputReader.Instance.TogglePausePanel();
+            PlayerUIInputReader.Instance.TogglePausePanel();
         }
     }
 

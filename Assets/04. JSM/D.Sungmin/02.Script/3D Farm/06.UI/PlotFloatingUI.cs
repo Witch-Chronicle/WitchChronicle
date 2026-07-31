@@ -4,13 +4,12 @@ using UnityEngine.UI;
 
 namespace WitchChronicle.IdleFarming
 {
-    /// <summary>
-    /// 밭 슬롯 위에 떠있는 월드스페이스 UI
-    /// 플레이어가 근접했을 때만 표시 (상태별 정보: 씨앗 종류 / 남은 시간 / 대기 개수)
-    /// 항상 카메라 향해 회전
-    /// </summary>
     public class PlotFloatingUI : MonoBehaviour
     {
+        [Header("추적 대상")]
+        [SerializeField] private Transform _worldTarget;
+        [SerializeField] private Vector3 _worldOffset = new Vector3(0f, 2.5f, 0f);
+
         [Header("루트")]
         [SerializeField] private GameObject _growingRoot;
         [SerializeField] private GameObject _readyRoot;
@@ -25,118 +24,138 @@ namespace WitchChronicle.IdleFarming
         [SerializeField] private TextMeshProUGUI _readySeedName;
         [SerializeField] private TextMeshProUGUI _readyCountText;
 
-        [Header("옵션")]
-        [SerializeField] private bool _billboardToCamera = true;
+        [Header("표시 제어")]
+        [SerializeField] private CanvasGroup _canvasGroup;
+        [SerializeField] private bool _startHidden = true;
 
         private Camera _mainCamera;
-
-        // 근접 여부 및 마지막 상태 캐시
+        private RectTransform _rect;
         private bool _isPlayerNear;
-        private PlotState _cachedState = PlotState.Empty;
-        private SeedData _cachedSeed;
-        private float _cachedRemaining;
-        private int _cachedPending;
-        private bool _hasCache;
 
         private void Awake()
         {
             _mainCamera = Camera.main;
-            HideAll();
+            _rect = GetComponent<RectTransform>();
+            if (_canvasGroup == null) _canvasGroup = GetComponent<CanvasGroup>();
+
+            _isPlayerNear = !_startHidden;
+            ApplyVisibility(false);
         }
 
         private void LateUpdate()
         {
-            if (_billboardToCamera && _mainCamera != null)
-            {
-                transform.rotation = Quaternion.LookRotation(
-                    transform.position - _mainCamera.transform.position);
-            }
-        }
-
-        /// <summary>
-        /// PlotInteractor에서 호출. 근접/이탈 시 표시 여부 갱신.
-        /// </summary>
-        public void SetPlayerNear(bool near)
-        {
-            if (_isPlayerNear == near) return;
-            _isPlayerNear = near;
-
             if (!_isPlayerNear)
             {
-                HideAll();
+                ApplyVisibility(false);
                 return;
             }
 
-            // 다시 근접했을 때 마지막 상태로 복원
-            if (_hasCache)
-                ApplyState(_cachedState, _cachedSeed, _cachedRemaining, _cachedPending);
+            if (_worldTarget == null || _mainCamera == null)
+            {
+                ApplyVisibility(false);
+                return;
+            }
+
+            Vector3 worldPos = _worldTarget.position + _worldOffset;
+            Vector3 screenPos = _mainCamera.WorldToScreenPoint(worldPos);
+
+            if (screenPos.z < 0f)
+            {
+                ApplyVisibility(false);
+                return;
+            }
+
+            ApplyVisibility(true);
+            _rect.position = screenPos;
+        }
+
+        private void ApplyVisibility(bool visible)
+        {
+            if (_canvasGroup == null) return;
+            _canvasGroup.alpha = visible ? 1f : 0f;
+            _canvasGroup.interactable = visible;
+            _canvasGroup.blocksRaycasts = visible;
+        }
+
+        // ====== 외부 API ======
+
+        public void SetTarget(Transform target)
+        {
+            _worldTarget = target;
+        }
+
+        /// <summary>
+        /// FarmZoneTrigger가 호출: 플레이어가 팜 존 안에 있는지
+        /// </summary>
+        public void SetPlayerNear(bool near)
+        {
+            _isPlayerNear = near;
         }
 
         public void Refresh(PlotState state, SeedData seed, float remainingSeconds, int pendingCount)
         {
-            // 값 캐싱
-            _cachedState = state;
-            _cachedSeed = seed;
-            _cachedRemaining = remainingSeconds;
-            _cachedPending = pendingCount;
-            _hasCache = true;
-
-            // 근접 상태일 때만 실제 UI 갱신
-            if (_isPlayerNear)
-                ApplyState(state, seed, remainingSeconds, pendingCount);
-            else
-                HideAll();
-        }
-
-        private void ApplyState(PlotState state, SeedData seed, float remainingSeconds, int pendingCount)
-        {
             switch (state)
             {
-                case PlotState.Locked:
-                case PlotState.Empty:
+                case PlotState.Growing:
+                    ShowGrowing(seed, remainingSeconds);
+                    break;
+                case PlotState.ReadyToHarvest:
+                    ShowReady(seed, pendingCount);
+                    break;
+                default:
                     HideAll();
                     break;
-
-                case PlotState.Growing:
-    if (seed == null) { HideAll(); return; }
-    _growingRoot.SetActive(true);
-    _readyRoot.SetActive(false);
-
-    if (_growingSeedIcon != null && seed.seedSprite != null)
-        _growingSeedIcon.sprite = seed.seedSprite;
-    if (_growingSeedName != null)
-        _growingSeedName.text = $"{seed.harvestName} \n자라는 중...";  // ← 여기
-    if (_timerText != null)
-        _timerText.text = FormatTime(remainingSeconds);
-    break;
-
-case PlotState.ReadyToHarvest:
-    if (seed == null) { HideAll(); return; }
-    _growingRoot.SetActive(false);
-    _readyRoot.SetActive(true);
-
-    if (_readySeedIcon != null && seed.harvestSprite != null)
-        _readySeedIcon.sprite = seed.harvestSprite;
-    if (_readySeedName != null)
-        _readySeedName.text = $"{seed.harvestName} \n수확 가능";  // ← 여기
-    if (_readyCountText != null)
-        _readyCountText.text = $"x {pendingCount}";
-    break;
             }
         }
 
+        private void ShowGrowing(SeedData seed, float remainingSeconds)
+{
+    if (_growingRoot != null) _growingRoot.SetActive(true);
+    if (_readyRoot != null) _readyRoot.SetActive(false);
+
+    if (seed != null)
+    {
+        if (_growingSeedIcon != null && seed.seedSprite != null)
+            _growingSeedIcon.sprite = seed.seedSprite;
+
+        // 씨앗 이름 (첫 줄) — "감자"
+        if (_growingSeedName != null)
+            _growingSeedName.text = seed.seedName;
+    }
+
+    // 상태 + 타이머 (두번째 줄) — "자라는 중\n02:34"
+    if (_timerText != null)
+    {
+        int total = Mathf.CeilToInt(remainingSeconds);
+        int m = total / 60;
+        int s = total % 60;
+        _timerText.text = $"자라는 중\n{m:D2}:{s:D2}";
+    }
+}
+
+private void ShowReady(SeedData seed, int pendingCount)
+{
+    if (_growingRoot != null) _growingRoot.SetActive(false);
+    if (_readyRoot != null) _readyRoot.SetActive(true);
+
+    if (seed != null)
+    {
+        if (_readySeedIcon != null && seed.harvestSprite != null)
+            _readySeedIcon.sprite = seed.harvestSprite;
+
+        // 씨앗 이름 (첫 줄) — "감자"
+        if (_readySeedName != null)
+            _readySeedName.text = seed.seedName;
+    }
+
+    // 상태 + 개수 (두번째 줄) — "수확 가능\n×15"
+    if (_readyCountText != null)
+        _readyCountText.text = $"수확 가능\n×{pendingCount}";
+}
         private void HideAll()
         {
             if (_growingRoot != null) _growingRoot.SetActive(false);
             if (_readyRoot != null) _readyRoot.SetActive(false);
-        }
-
-        private string FormatTime(float seconds)
-        {
-            if (seconds < 0f) seconds = 0f;
-            int mm = Mathf.FloorToInt(seconds / 60f);
-            int ss = Mathf.FloorToInt(seconds % 60f);
-            return $"{mm:D2}:{ss:D2}";
         }
     }
 }

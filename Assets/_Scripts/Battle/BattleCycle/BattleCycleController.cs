@@ -13,6 +13,8 @@ public class BattleCycleController : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool _autoPlay = true;
     [SerializeField] private float _actionDelay = 0.5f;
+    [Tooltip("행동 연출 종료 후 기본 카메라 복귀 전 유지 시간")]
+    [SerializeField] private float _actionEndHoldDuration = 0.1f;
 
     [Header("Impact Timing")]
     [Tooltip("행동 연출(OnActionExecuting) 후 실제 데미지가 적용되기까지 지연(초). 스킬 이펙트가 대상에 닿는 시점에 맞춘다")]
@@ -26,17 +28,18 @@ public class BattleCycleController : MonoBehaviour
     [Header("Constellation")]
     [SerializeField] private BattleCameraDirector _battleCameraDirector;
     [SerializeField] private ConstellationPathBattleManager _constellationPathBattleManager;
-    private readonly List<BattleUnit> _battleUnits =
-        new List<BattleUnit>();
+    [SerializeField] private BattlePresentationBinder _battlePresentationBinder;
+    [SerializeField] private BattleActionBanner _battleActionBanner;
+    [Tooltip("적 행동 배너 표시 후 대상 카메라로 넘어가기 전 유지 시간")]
+    [SerializeField] private float _enemyActionBannerHoldDuration = 0.2f;
 
-    private readonly List<BattleUnit> _turnOrder =
-        new List<BattleUnit>();
+    private readonly List<BattleUnit> _battleUnits = new List<BattleUnit>();
 
-    private readonly List<BattleUnit> _skillTargets =
-        new List<BattleUnit>();
+    private readonly List<BattleUnit> _turnOrder = new List<BattleUnit>();
 
-    private readonly EnemyBattleAI _enemyBattleAI =
-        new EnemyBattleAI();
+    private readonly List<BattleUnit> _skillTargets = new List<BattleUnit>();
+
+    private readonly EnemyBattleAI _enemyBattleAI = new EnemyBattleAI();
 
     private Coroutine _battleRoutine;
     private BattleState _battleState = BattleState.None;
@@ -84,6 +87,18 @@ public class BattleCycleController : MonoBehaviour
         {
             _constellationPathBattleManager =
                 FindFirstObjectByType<ConstellationPathBattleManager>();
+        }
+
+        if (_battlePresentationBinder == null)
+        {
+            _battlePresentationBinder =
+                FindFirstObjectByType<BattlePresentationBinder>();
+        }
+
+        if (_battleActionBanner == null)
+        {
+            _battleActionBanner =
+                FindFirstObjectByType<BattleActionBanner>();
         }
 
         // 상태이상 부여/해제를 연출 이벤트로 중계
@@ -646,6 +661,42 @@ public class BattleCycleController : MonoBehaviour
     }
 
     /// <summary>
+    /// 판정과 행동 연출 순차 실행
+    /// </summary>
+    /// <param name="actionRequest">실행 행동 요청</param>
+    /// <param name="executeAction">행동 판정 함수</param>
+    private IEnumerator ExecuteSimplePresentedAction(
+        BattleActionRequest actionRequest,
+        Action executeAction)
+    {
+        bool isPresentationCompleted = false;
+
+        PlayActionPresentation(
+            actionRequest,
+            null,
+            () => isPresentationCompleted = true);
+
+        executeAction?.Invoke();
+
+        yield return WaitForActionPresentation(
+            () => isPresentationCompleted);
+    }
+
+    /// <summary>
+    /// 행동 종료 카메라 복귀
+    /// </summary>
+    private void RestoreDefaultBattleCamera()
+    {
+        if (_battleCameraDirector == null ||
+            _battleCameraDirector.isActiveAndEnabled == false)
+        {
+            return;
+        }
+
+        _battleCameraDirector.PlayDefaultBattleView();
+    }
+
+    /// <summary>
     /// 전투 행동 요청 실행
     /// </summary>
     /// <param name="actionRequest">실행 행동 요청</param>
@@ -671,24 +722,21 @@ public class BattleCycleController : MonoBehaviour
                 break;
 
             case CommandType.Defense:
-                OnActionExecuting?.Invoke(
-                    actionRequest);
-
-                ExecuteDefense(actionRequest);
+                yield return ExecuteSimplePresentedAction(
+                    actionRequest,
+                    () => ExecuteDefense(actionRequest));
                 break;
 
             case CommandType.Item:
-                OnActionExecuting?.Invoke(
-                    actionRequest);
-
-                ExecuteUsingItem(actionRequest);
+                yield return ExecuteSimplePresentedAction(
+                    actionRequest,
+                    () => ExecuteUsingItem(actionRequest));
                 break;
 
             case CommandType.Escape:
-                OnActionExecuting?.Invoke(
-                    actionRequest);
-
-                ExecuteEscape(actionRequest);
+                yield return ExecuteSimplePresentedAction(
+                    actionRequest,
+                    () => ExecuteEscape(actionRequest));
                 break;
 
             default:
@@ -699,22 +747,41 @@ public class BattleCycleController : MonoBehaviour
                 break;
         }
 
+        if (TryGetWinner(out _) == false)
+        {
+            if (_actionEndHoldDuration > 0f)
+            {
+                yield return new WaitForSeconds(
+                    _actionEndHoldDuration);
+            }
+
+            RestoreDefaultBattleCamera();
+        }
+
         OnTurnOrderChanged?.Invoke();
 
         yield return null;
     }
 
     /// <summary>
-    /// 기본 공격을 연출(OnActionExecuting) → 임팩트 딜레이 → 데미지 순으로 실행.
+    /// 기본 공격을 연출 → 타격 시점 → 데미지 → 연출 완료 순으로 실행
     /// </summary>
     /// <param name="actionRequest">공격 행동 요청</param>
     private IEnumerator ExecutePresentedAttack(
         BattleActionRequest actionRequest)
     {
-        OnActionExecuting?.Invoke(
-            actionRequest);
+        yield return PlayEnemyActionCamera(actionRequest);
 
-        yield return WaitImpact();
+        bool isImpactReached = false;
+        bool isPresentationCompleted = false;
+
+        PlayActionPresentation(
+            actionRequest,
+            () => isImpactReached = true,
+            () => isPresentationCompleted = true);
+
+        yield return WaitForActionImpact(
+            () => isImpactReached);
 
         // 혼란: 일정 확률로 공격이 빗나가 데미지가 들어가지 않음(연출은 그대로 재생)
         if (_statusEffectController.RollConfusionMiss(
@@ -723,13 +790,262 @@ public class BattleCycleController : MonoBehaviour
             Debug.Log(
                 $"[Battle] {actionRequest.Actor?.UnitName} 혼란: 공격이 빗나감(MISS)");
 
-            // 대상에 데미지 0 통지(연출: Miss 표시용)
             actionRequest.Target?.NotifyMiss();
+
+            yield return WaitForActionPresentation(
+                () => isPresentationCompleted);
 
             yield break;
         }
 
         ExecuteAttack(actionRequest);
+
+        yield return WaitForActionPresentation(
+            () => isPresentationCompleted);
+
+        yield return WaitForTargetReaction(
+            actionRequest.Target);
+    }
+
+    /// <summary>
+    /// 적 공격 사전 카메라 연출
+    /// </summary>
+    /// <param name="actionRequest">실행 행동 요청</param>
+    /// <param name="targets">해결된 대상 목록</param>
+    private IEnumerator PlayEnemyActionCamera(
+        BattleActionRequest actionRequest,
+        IReadOnlyList<BattleUnit> targets = null)
+    {
+        if (actionRequest == null ||
+            actionRequest.Actor == null ||
+            actionRequest.Actor.TeamType != BattleTeamType.Enemy ||
+            _battleCameraDirector == null ||
+            _battleCameraDirector.isActiveAndEnabled == false)
+        {
+            yield break;
+        }
+
+        bool isDamageAction =
+            actionRequest.CommandType == CommandType.Attack ||
+            (actionRequest.CommandType == CommandType.Skill &&
+             actionRequest.SkillData != null &&
+             actionRequest.SkillData.SkillType == SkillEffectType.Damage);
+
+        if (isDamageAction == false)
+        {
+            yield break;
+        }
+
+        _battleActionBanner?.Show(actionRequest);
+
+        bool isActorViewCompleted = false;
+
+        _battleCameraDirector.PlaySingleTargetOverview(
+            actionRequest.Actor,
+            () => isActorViewCompleted = true);
+
+        while (isActorViewCompleted == false)
+        {
+            if (_battleState == BattleState.BattleEnd)
+            {
+                _battleActionBanner?.HideImmediate();
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        if (_enemyActionBannerHoldDuration > 0f)
+        {
+            yield return new WaitForSeconds(
+                _enemyActionBannerHoldDuration);
+        }
+
+        _battleActionBanner?.Hide();
+
+        BattleUnit cameraTarget =
+            actionRequest.Target;
+
+        if (cameraTarget == null &&
+            targets != null)
+        {
+            for (int i = 0; i < targets.Count; i++)
+            {
+                if (targets[i] == null)
+                {
+                    continue;
+                }
+
+                cameraTarget = targets[i];
+                break;
+            }
+        }
+
+        if (cameraTarget == null)
+        {
+            yield break;
+        }
+
+        bool isTargetViewCompleted = false;
+
+        bool isGroupTarget =
+            actionRequest.SkillData != null &&
+            (actionRequest.SkillData.TargetType == TargetType.AllEnemies ||
+             actionRequest.SkillData.TargetType == TargetType.AllAllies);
+
+        if (isGroupTarget)
+        {
+            _battleCameraDirector.PlayTargetOverview(
+                cameraTarget,
+                () => isTargetViewCompleted = true);
+        }
+        else if (cameraTarget.TeamType == BattleTeamType.Player)
+        {
+            _battleCameraDirector.PlayPlayerBackView(
+                cameraTarget,
+                () => isTargetViewCompleted = true);
+        }
+        else
+        {
+            _battleCameraDirector.PlaySingleTargetOverview(
+                cameraTarget,
+                () => isTargetViewCompleted = true);
+        }
+
+        while (isTargetViewCompleted == false)
+        {
+            if (_battleState == BattleState.BattleEnd)
+            {
+                yield break;
+            }
+
+            yield return null;
+        }
+    }
+
+    /// <summary>
+    /// 행동 연출 재생
+    /// </summary>
+    /// <param name="actionRequest">실행 행동 요청</param>
+    /// <param name="onImpact">명중 콜백</param>
+    /// <param name="onComplete">연출 완료 콜백</param>
+    private void PlayActionPresentation(
+        BattleActionRequest actionRequest,
+        Action onImpact = null,
+        Action onComplete = null)
+    {
+        OnActionExecuting?.Invoke(
+            actionRequest);
+
+        if (_battlePresentationBinder != null &&
+            _battlePresentationBinder.isActiveAndEnabled)
+        {
+            _battlePresentationBinder.PlayAction(
+                actionRequest,
+                onImpact,
+                onComplete);
+
+            return;
+        }
+
+        onImpact?.Invoke();
+        onComplete?.Invoke();
+    }
+
+    /// <summary>
+    /// 행동 연출 완료 대기
+    /// </summary>
+    /// <param name="isCompleted">연출 완료 확인 함수</param>
+    private IEnumerator WaitForActionPresentation(
+        Func<bool> isCompleted)
+    {
+        if (isCompleted == null)
+        {
+            yield break;
+        }
+
+        while (isCompleted() == false)
+        {
+            if (_battleState == BattleState.BattleEnd)
+            {
+                yield break;
+            }
+
+            yield return null;
+        }
+    }
+
+    /// <summary>
+    /// 단일 대상 피격 연출 완료 대기
+    /// </summary>
+    /// <param name="target">대상 유닛</param>
+    private IEnumerator WaitForTargetReaction(
+        BattleUnit target)
+    {
+        if (_battlePresentationBinder == null ||
+            target == null)
+        {
+            yield break;
+        }
+
+        while (_battlePresentationBinder
+            .IsReactionPlaying(target))
+        {
+            if (_battleState == BattleState.BattleEnd)
+            {
+                yield break;
+            }
+
+            yield return null;
+        }
+    }
+
+    /// <summary>
+    /// 다중 대상 피격 연출 완료 대기
+    /// </summary>
+    /// <param name="targets">대상 유닛 목록</param>
+    private IEnumerator WaitForTargetReactions(
+        IReadOnlyList<BattleUnit> targets)
+    {
+        if (_battlePresentationBinder == null ||
+            targets == null)
+        {
+            yield break;
+        }
+
+        while (_battlePresentationBinder
+            .IsAnyReactionPlaying(targets))
+        {
+            if (_battleState == BattleState.BattleEnd)
+            {
+                yield break;
+            }
+
+            yield return null;
+        }
+    }
+
+    /// <summary>
+    /// 행동 명중 시점 대기
+    /// </summary>
+    /// <param name="isImpactReached">명중 여부 확인 함수</param>
+    private IEnumerator WaitForActionImpact(
+        Func<bool> isImpactReached)
+    {
+        if (isImpactReached == null)
+        {
+            yield break;
+        }
+
+        while (isImpactReached() == false)
+        {
+            if (_battleState == BattleState.BattleEnd)
+            {
+                yield break;
+            }
+
+            yield return null;
+        }
     }
 
     /// <summary>
@@ -1724,11 +2040,20 @@ public class BattleCycleController : MonoBehaviour
             yield break;
         }
 
-        OnActionExecuting?.Invoke(
-            actionRequest);
+        yield return PlayEnemyActionCamera(
+            actionRequest,
+            targets);
 
-        yield return WaitImpact(
-            actionRequest.SkillData);
+        bool isImpactReached = false;
+        bool isPresentationCompleted = false;
+
+        PlayActionPresentation(
+            actionRequest,
+            () => isImpactReached = true,
+            () => isPresentationCompleted = true);
+
+        yield return WaitForActionImpact(
+            () => isImpactReached);
 
         // 혼란: 스킬도 일정 확률로 빗나감 (한 번 굴려 통째 실패, 시전 연출·MP는 이미 소모됨)
         if (_statusEffectController.RollConfusionMiss(
@@ -1743,6 +2068,9 @@ public class BattleCycleController : MonoBehaviour
                 targets[i]?.NotifyMiss();
             }
 
+            yield return WaitForActionPresentation(
+                () => isPresentationCompleted);
+
             yield break;
         }
 
@@ -1751,5 +2079,11 @@ public class BattleCycleController : MonoBehaviour
             targets,
             actionRequest.SkillData,
             actionRequest.DamageMultiplier);
+
+        yield return WaitForActionPresentation(
+            () => isPresentationCompleted);
+
+        yield return WaitForTargetReactions(
+            targets);
     }
 }

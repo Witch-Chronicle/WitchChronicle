@@ -100,7 +100,7 @@ public class InventoryUIController : MonoBehaviour
         // 닫기 전에 클릭 이벤트 제거
         _closeBtn.onClick.RemoveListener(OnClickClose);
 
-        UITestInputReader.Instance.ToggleIntegrationPanel();
+        PlayerUIInputReader.Instance.ToggleIntegrationPanel();
     }
 
     /// <summary>

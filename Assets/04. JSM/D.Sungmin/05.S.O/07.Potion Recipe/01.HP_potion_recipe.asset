@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dcd6cc23ff92a0448196b4017ccc641, type: 3}
+  m_Name: 01.HP_potion_recipe
+  m_EditorClassIdentifier: Assembly-CSharp::PotionRecipeData
+  recipeName: "\uCCB4\uB825 \uD3EC\uC158"
+  description: "\uAC00\uBCBC\uC6B4 \uC0C1\uCC98\uC640 \uD53C\uB85C\uB97C \uC53B\uC5B4\uB0B4\uB294
+    \uAE30\uBCF8 \uCE58\uB8CC\uC81C."
+  ingredients:
+  - specificItem: {fileID: 11400000, guid: 4e9336f2e1f64144893371d82ab30caa, type: 2}
+    amount: 0
+  resultPotion: {fileID: 11400000, guid: 1929871b9bcd1324498989844f5a8c8f, type: 2}
