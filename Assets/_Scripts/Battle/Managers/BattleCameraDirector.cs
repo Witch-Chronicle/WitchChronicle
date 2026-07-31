@@ -104,6 +104,8 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private float _itemUseLookForward = 1.5f;
     [SerializeField] private float _itemUseFov = 55f;
     [SerializeField] private float _itemUseSideOffset = 1.0f;
+    [Tooltip("카메라 위치와 바라보는 지점을 함께 좌우로 이동시켜, 캐릭터를 중심으로 도는 느낌 없이 순수하게 화면을 좌우로 패닝시킴")]
+    [SerializeField] private float _itemUsePanOffset = 0f;
     [SerializeField] private float _itemUseRoll = 0f;
     [SerializeField] private float _itemUseWaitDuration = 0.35f;
 
@@ -217,6 +219,42 @@ public class BattleCameraDirector : MonoBehaviour
             _backWaitDuration,
             _backTweenDuration,
             onComplete);
+    }
+
+    /// <summary>
+    /// 기본 전투 구도 재생
+    /// </summary>
+    /// <param name="onComplete">완료 콜백</param>
+    public void PlayDefaultBattleView(Action onComplete = null)
+    {
+        if (_battleManager == null ||
+            _battleManager.SpawnedActors == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        for (int i = 0; i < _battleManager.SpawnedActors.Count; i++)
+        {
+            BattleActor actor =
+                _battleManager.SpawnedActors[i];
+
+            if (actor == null ||
+                actor.TeamType != BattleTeamType.Player ||
+                actor.HasBattleUnit == false ||
+                actor.BattleUnit.IsAlive == false)
+            {
+                continue;
+            }
+
+            PlayPlayerBackView(
+                actor.BattleUnit,
+                onComplete);
+
+            return;
+        }
+
+        onComplete?.Invoke();
     }
 
     /// <summary>
@@ -831,16 +869,20 @@ public class BattleCameraDirector : MonoBehaviour
             return;
         }
 
+        Vector3 panShift = actorTransform.right * _itemUsePanOffset;
+
         Vector3 focusPosition =
             actorTransform.position +
             actorTransform.forward * _itemUseLookForward +
-            Vector3.up * _itemUseLookHeight;
+            Vector3.up * _itemUseLookHeight +
+            panShift;
 
         Vector3 cameraPosition =
             actorTransform.position -
             actorTransform.forward * _itemUseDistance +
             actorTransform.right * _itemUseSideOffset +
-            Vector3.up * _itemUseHeight;
+            Vector3.up * _itemUseHeight +
+            panShift;
 
         ApplyCameraPose(
             _itemUseCamera,

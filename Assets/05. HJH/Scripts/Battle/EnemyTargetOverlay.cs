@@ -348,12 +348,19 @@ public class EnemyTargetOverlay : MonoBehaviour
         if (_statusIconTemplate == null || _statusIconsParent == null) return;
         if (BattleUIContext.Instance == null) return;
 
-        Sprite icon = BattleUIContext.Instance.GetStatusIcon(type);
-        if (icon == null) return;
+        Battle.Rules.StatusEffectData data = BattleUIContext.Instance.GetStatusEffectData(type);
+        if (data == null || data.Icon == null) return;
 
         Image instance = Instantiate(_statusIconTemplate, _statusIconsParent);
-        instance.sprite = icon;
+        instance.sprite = data.Icon;
         instance.gameObject.SetActive(true);
+
+        StatusTooltipTrigger trigger = instance.GetComponent<StatusTooltipTrigger>();
+        if (trigger == null)
+        {
+            trigger = instance.gameObject.AddComponent<StatusTooltipTrigger>();
+        }
+        trigger.SetTooltipInfo(data.StatusName, data.Description);
 
         _activeStatusIcons.Add(type, instance);
     }

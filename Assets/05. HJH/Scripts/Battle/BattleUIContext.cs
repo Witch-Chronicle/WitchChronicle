@@ -234,4 +234,14 @@ public class BattleUIContext : MonoBehaviour
 
         return _elementIconDatabase.GetIcon(type);
     }
+
+    /// <summary>
+    /// 상태이상 종류에 해당하는 StatusEffectData 자체를 조회 (이름/설명 등 툴팁용).
+    /// </summary>
+    public StatusEffectData GetStatusEffectData(StatusEffectType type)
+    {
+        if (_statusEffectDatabase == null) return null;
+
+        return _statusEffectDatabase.GetData(type);
+    }
 }

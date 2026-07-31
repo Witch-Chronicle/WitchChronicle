@@ -32,6 +32,9 @@ public class BattleSkillListEntry : MonoBehaviour,
     [Tooltip("스킬 속성(ElementType) 아이콘. BattleUIContext의 ElementIconDatabase에서 조회. 해당 속성 아이콘이 없으면 비활성화.")]
     [SerializeField] private Image _skillElementIconImage;
 
+    [Tooltip("이 스킬이 마법진 그리기(DrawGuideJson/DrawExampleSprite)를 사용하는 스킬일 때만 활성화되는 표시 오브젝트.")]
+    [SerializeField] private GameObject _drawingTxt;
+
     [Header("Selection Visuals")]
     [Tooltip("BackParticle1, BackParticle2를 모두 등록")]
     [SerializeField] private Image[] _backParticleImages;
@@ -89,6 +92,11 @@ public class BattleSkillListEntry : MonoBehaviour,
         if (_frameImage != null)
         {
             _frameImage.raycastTarget = true;
+        }
+
+        if (_drawingTxt != null)
+        {
+            _drawingTxt.SetActive(false);
         }
 
         InitializeRuntimeMaterials();
@@ -163,6 +171,12 @@ public class BattleSkillListEntry : MonoBehaviour,
         {
             _skillElementIconImage.gameObject.SetActive(false);
         }
+
+        if (_drawingTxt != null)
+        {
+            _drawingTxt.SetActive(false);
+        }
+
 
         if (_costText != null)
         {
@@ -470,6 +484,16 @@ public class BattleSkillListEntry : MonoBehaviour,
 
             _skillElementIconImage.sprite = elementIcon;
             _skillElementIconImage.gameObject.SetActive(elementIcon != null);
+        }
+
+        //-------------------------
+        // Drawing (마법진 그리기 스킬 여부)
+        //-------------------------
+
+        if (_drawingTxt != null)
+        {
+            bool hasDrawGuide = _skillData.DrawGuideJson != null && _skillData.DrawExampleSprite != null;
+            _drawingTxt.SetActive(hasDrawGuide);
         }
 
         //-------------------------

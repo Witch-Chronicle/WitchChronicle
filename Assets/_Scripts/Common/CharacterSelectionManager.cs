@@ -11,7 +11,7 @@ public class CharacterSelectionManager : MonoBehaviour
     public static CharacterSelectionManager Instance { get; private set; }
 
     [Header("시작 시 기본 선택 캐릭터")]
-    [SerializeField] private CharacterType _defaultCharacter = CharacterType.Ariel;
+    [SerializeField] private CharacterType _defaultCharacter = CharacterType.ariel;
 
     private CharacterType _selectedCharacter;
 
@@ -45,6 +45,18 @@ public class CharacterSelectionManager : MonoBehaviour
         if (_selectedCharacter == character) return;
 
         _selectedCharacter = character;
+        OnSelectionChanged?.Invoke(_selectedCharacter);
+    }
+
+    /// <summary>
+    /// 선택 상태를 기본 캐릭터로 되돌림. UI 패널이 닫힐 때 호출해서,
+    /// 다른 UI를 다시 열었을 때 이전에 선택했던 캐릭터가 아니라 항상 기본값부터 보이게 함.
+    /// </summary>
+    public void ResetToDefault()
+    {
+        if (_selectedCharacter == _defaultCharacter) return;
+
+        _selectedCharacter = _defaultCharacter;
         OnSelectionChanged?.Invoke(_selectedCharacter);
     }
 }

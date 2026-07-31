@@ -222,6 +222,11 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &269586325 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2952065342217774564, guid: 65b4ac7ce6e8f6a4eb121827d5a0d581, type: 3}
+  m_PrefabInstance: {fileID: 1907506562}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &496926809 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2765597497681302516, guid: 65b4ac7ce6e8f6a4eb121827d5a0d581, type: 3}
@@ -318,6 +323,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 2667063633744849521, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: _playerUIRoot
+      value: 
+      objectReference: {fileID: 269586325}
+    - target: {fileID: 2667063633744849521, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: _statPanelAnimator
       value: 
       objectReference: {fileID: 496926809}
@@ -393,6 +402,10 @@ PrefabInstance:
       propertyPath: _transitionController
       value: 
       objectReference: {fileID: 1263152780967716417}
+    - target: {fileID: 3591808869070422089, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: _defaultCharacter
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3948643204487428067, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: _equippedSkills.Array.size
       value: 6
@@ -457,6 +470,10 @@ PrefabInstance:
       propertyPath: '_equippedSkills.Array.data[5]'
       value: 
       objectReference: {fileID: 11400000, guid: 719e5883610359c479758dad8ecb3bd6, type: 2}
+    - target: {fileID: 5602968954777064284, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: m_Name
+      value: PlayerUIInputReader
+      objectReference: {fileID: 0}
     - target: {fileID: 5604706730358775763, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: m_Name
       value: SystemManagers
