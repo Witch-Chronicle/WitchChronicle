@@ -16,7 +16,7 @@ MonoBehaviour:
   _skillName: "\uB9C8\uB825\uD0C4"
   _description: "\uC21C\uC218\uD55C \uB9C8\uB825\uC73C\uB85C \uB9CC\uB4E0 \uAE30\uBCF8
     \uACF5\uACA9. \uB9C8\uBC95\uC0AC\uC758 \uAE30\uBCF8 \uAE30\uC220."
-  _tier: 0
+  _tier: 4
   _mpCost: 0
   _elementType: 0
   _skillType: 0
@@ -25,13 +25,21 @@ MonoBehaviour:
   _targetType: 0
   _statusEffectType: 0
   _statusChance: 0
+  _cureStatusEffectType: 0
   _buffData: {fileID: 0}
   _presentationType: 0
   _skillIcon: {fileID: 0}
   _voiceClip: {fileID: 0}
+  _impactDelay: 0
   _castSfx: {fileID: 0}
   _hitSfx: {fileID: 0}
   _castVfxPrefab: {fileID: 1291653246976116, guid: 42a2483f6efc40e47865798c10be8834, type: 3}
   _projectileVfxPrefab: {fileID: 1657981230171060, guid: 080168af0fb1a0f48bd653b0def3737e, type: 3}
   _hitVfxPrefab: {fileID: 1594239829313766, guid: cfb4a671812a3e246be9e97692c8fd22, type: 3}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
   _hitVfxOffset: {x: 0, y: 1, z: 0}
+  _castVfxScale: 0
+  _hitVfxScale: 0
+  _constellationPathSequenceData: {fileID: 0}
+  _drawGuideJson: {fileID: 0}
+  _drawExampleSprite: {fileID: 0}

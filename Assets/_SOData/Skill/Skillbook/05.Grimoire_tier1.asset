@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eabb0b7dc02b7124a93ea3d09607b370, type: 3}
+  m_Name: 05.Grimoire_tier1
+  m_EditorClassIdentifier: Assembly-CSharp::SkillBookItemData
+  itemId: 0
+  itemName: "\uB300\uB9C8\uB140\uC758 \uB9C8\uB3C4\uC11C"
+  description: "\uADF9\uC18C\uC218\uB9CC\uC774 \uD574\uB3C5\uD55C \uB9C8\uB3C4\uC11C.\n1\uD2F0\uC5B4
+    \uB9C8\uBC95 \uD558\uB098\uB97C \uD68D\uB4DD\uD78C\uB2E4."
+  itemType: 0
+  itemGrade: 0
+  icon: {fileID: 0}
+  maxStack: 99
+  buyPrice: 0
+  sellPrice: 0
+  canSell: 1
+  consumableType: 4
+  value: 0
+  _minTier: 1
+  _maxTier: 1
+  _tierWeights:
+  - Tier: 1
+    Weight: 100
+  _candidateSkills:
+  - {fileID: 11400000, guid: b452156248513cf46b84b2ed94dc3c7e, type: 2}
+  - {fileID: 11400000, guid: 8c48c7c38660cdc498dfccd556749804, type: 2}
+  - {fileID: 11400000, guid: b6dce862f81f79946a237eac92e2530b, type: 2}
+  - {fileID: 11400000, guid: b7838b54497c4bb45a15840a72e51cab, type: 2}
+  - {fileID: 11400000, guid: 719e5883610359c479758dad8ecb3bd6, type: 2}
+  - {fileID: 11400000, guid: 63967efa4d528264181da23c8b68b0ab, type: 2}
+  - {fileID: 11400000, guid: bd095cfe7bf451d49a003c7ceb0fbd44, type: 2}
+  - {fileID: 11400000, guid: 0a855d355e79e944f99dc1204d42f847, type: 2}
+  - {fileID: 11400000, guid: 2f847b1bc2834ef4ba0db5d9452a3c7a, type: 2}
+  - {fileID: 11400000, guid: 6f121d15a18649043ba703a5193686de, type: 2}
+  - {fileID: 11400000, guid: d50ec591cbe5fb742a1930ba55d0a067, type: 2}
+  - {fileID: 11400000, guid: 21a8d0f35e0e87b4da347fb93755b7c7, type: 2}
+  - {fileID: 11400000, guid: f1a73d1d32adcbd48838b38bc96b4561, type: 2}
+  - {fileID: 11400000, guid: cbded8de5f4365548988be47d87295b8, type: 2}
+  - {fileID: 11400000, guid: bf43e2b0e65b2f44998c8a0f0be24179, type: 2}
+  - {fileID: 11400000, guid: 9276915d40013e14caa0e4bf26cef8ff, type: 2}
+  - {fileID: 11400000, guid: c951696b56a943548941c7bfc530efcd, type: 2}
+  - {fileID: 11400000, guid: 7c4b6e745aead084ea059058ad53f3b7, type: 2}
+  - {fileID: 11400000, guid: b2ad745671950824c801b22fd0184b26, type: 2}
+  _duplicateGold: 500

@@ -15,7 +15,7 @@ MonoBehaviour:
   _skillId: 
   _skillName: "\uD050\uC5B4 \uCEE8\uD4E8\uC83C"
   _description: "\uB300\uC0C1\uC758 \uD63C\uB780\uC744 \uC81C\uAC70\uD55C\uB2E4."
-  _tier: 0
+  _tier: 3
   _mpCost: 0
   _elementType: 0
   _skillType: 7
@@ -35,6 +35,10 @@ MonoBehaviour:
   _castVfxPrefab: {fileID: 0}
   _projectileVfxPrefab: {fileID: 0}
   _hitVfxPrefab: {fileID: 0}
-  _constellationSequenceData: {fileID: 0}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
+  _hitVfxOffset: {x: 0, y: 0, z: 0}
+  _castVfxScale: 0
+  _hitVfxScale: 0
+  _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}
