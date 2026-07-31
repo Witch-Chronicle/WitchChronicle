@@ -8,7 +8,7 @@ using UnityEngine;
 /// - 순수 자원 저장소 역할만 담당. 구매 판정/규칙은 ShopController, 강화 판정/규칙은 EnhanceController가 담당
 /// - 소비/재료/씨앗/퀘스트 아이템은 수량 기반(InventorySlot)으로,
 ///   장비는 개체마다 강화 단계가 다를 수 있어 개별 인스턴스(EquipmentInstance)로 관리
-/// * 패널 열기/닫기 입력 처리는 UITestInputReader가 담당 (여기서는 순수 자원 로직만)
+/// * 패널 열기/닫기 입력 처리는 PlayerUIInputReader가 담당 (여기서는 순수 자원 로직만)
 /// </summary>
 public class PlayerInventory : MonoBehaviour
 {

@@ -44,8 +44,8 @@ public class UIPanelAnimator : MonoBehaviour
         _canvasGroup.interactable = false;
         _canvasGroup.blocksRaycasts = false;
 
-        _scaleTween = _rectTransform.DOScale(Vector3.one, _duration).SetEase(Ease.Linear);
-        _fadeTween = _canvasGroup.DOFade(1f, _duration).SetEase(Ease.Linear)
+        _scaleTween = _rectTransform.DOScale(Vector3.one, _duration).SetEase(Ease.Linear).SetUpdate(true);
+        _fadeTween = _canvasGroup.DOFade(1f, _duration).SetEase(Ease.Linear).SetUpdate(true)
             .OnComplete(() =>
             {
                 _canvasGroup.interactable = true;
@@ -63,14 +63,16 @@ public class UIPanelAnimator : MonoBehaviour
         _canvasGroup.interactable = false;
         _canvasGroup.blocksRaycasts = false;
 
-        _scaleTween = _rectTransform.DOScale(_closedScale, _duration).SetEase(Ease.Linear);
-        _fadeTween = _canvasGroup.DOFade(0f, _duration).SetEase(Ease.Linear)
+        _scaleTween = _rectTransform.DOScale(_closedScale, _duration).SetEase(Ease.Linear).SetUpdate(true);
+        _fadeTween = _canvasGroup.DOFade(0f, _duration).SetEase(Ease.Linear).SetUpdate(true)
             .OnComplete(() =>
             {
                 gameObject.SetActive(false);
                 OnClosed?.Invoke();
             });
     }
+
+
 
     public void SetClosedImmediate()
     {

@@ -11,7 +11,7 @@ using UnityEngine.UI;
 ///   단, StatPanel 자체가 어떤 경로로든(C키/CloseBtn) 닫히면 OnDisable()에서 Detail도 무조건 같이 닫힘.
 /// - StatType별 툴팁(LabelTxt 호버 시 설명 표시)도 여기서 초기화
 /// * StatController는 건드리지 않고 CharacterEquipment 레지스트리를 경유해서 캐릭터별 StatController를 찾음.
-/// * StatPanel 열기/닫기 자체는 UITestInputReader.Instance.ToggleStatPanel()이 담당.
+/// * StatPanel 열기/닫기 자체는 PlayerUIInputReader.Instance.ToggleStatPanel()이 담당.
 /// </summary>
 public class StatUIController : MonoBehaviour
 {
@@ -156,6 +156,12 @@ public class StatUIController : MonoBehaviour
         {
             _detailPanelAnimator.SetClosedImmediate();
         }
+
+        // 패널이 닫히면 캐릭터 선택 상태를 기본값으로 초기화 (다른 UI에 이전 선택이 남지 않도록)
+        if (CharacterSelectionManager.Instance != null)
+        {
+            CharacterSelectionManager.Instance.ResetToDefault();
+        }
     }
 
     private void ClosePanel()
@@ -163,7 +169,7 @@ public class StatUIController : MonoBehaviour
         // 닫기 전에 클릭 이벤트 제거 (InventoryUIController와 동일 패턴)
         // if (_closeBtn != null) _closeBtn.onClick.RemoveListener(ClosePanel);
 
-        UITestInputReader.Instance.ToggleStatPanel();
+        PlayerUIInputReader.Instance.ToggleStatPanel();
     }
 
     private void OpenDetailPanel()
@@ -199,15 +205,21 @@ public class StatUIController : MonoBehaviour
         if (CharacterSelectionManager.Instance == null) return;
 
         CharacterType selected = CharacterSelectionManager.Instance.GetSelected();
-        CharacterEquipment equipment = CharacterEquipment.GetByCharacter(selected);
+        string characterId = selected.ToString();
 
-        if (equipment == null)
+        if (PersistentCharacterManager.Instance == null)
         {
-            Debug.LogWarning($"[StatUIController] CharacterEquipment를 찾을 수 없음: {selected}");
+            Debug.LogWarning("[StatUIController] PersistentCharacterManager.Instance가 없습니다.");
             return;
         }
 
-        _currentStatController = equipment.GetComponent<StatController>();
+        if (PersistentCharacterManager.Instance.TryGetCharacter(characterId, out PersistentCharacterUnit unit) == false)
+        {
+            Debug.LogWarning($"[StatUIController] PersistentCharacterUnit를 찾을 수 없음: {selected}");
+            return;
+        }
+
+        _currentStatController = unit.StatController;
 
         if (_currentStatController == null)
         {
@@ -220,7 +232,7 @@ public class StatUIController : MonoBehaviour
 
         if (_characterNameTxt != null)
         {
-            _characterNameTxt.text = selected.ToString();
+            _characterNameTxt.text = unit.CharacterName;
         }
 
         RefreshUI();

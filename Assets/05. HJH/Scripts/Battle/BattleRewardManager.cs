@@ -10,8 +10,10 @@ public class CharacterRewardResult
     public int ExpGained;
     public int LevelBefore;
     public int LevelAfter;
-    public int CurrentExp;    // 지급 후, 현재 레벨 내에서의 진행 경험치
-    public int RequiredExp;   // 지급 후, 다음 레벨업까지 필요한 경험치
+    public int ExpBefore;         // 지급 전, 그 시점 레벨 내에서의 진행 경험치
+    public int RequiredExpBefore; // 지급 전, 그 시점 레벨 기준 다음 레벨업까지 필요한 경험치
+    public int CurrentExp;        // 지급 후, 현재 레벨 내에서의 진행 경험치
+    public int RequiredExp;       // 지급 후, 다음 레벨업까지 필요한 경험치
 
     public bool DidLevelUp => LevelAfter > LevelBefore;
 }
@@ -242,7 +244,8 @@ public class BattleRewardManager : MonoBehaviour
         List<PersistentCharacterUnit> activeParty = new List<PersistentCharacterUnit>();
         PersistentCharacterManager.Instance.GetActivePartyMembers(activeParty);
 
-        List<(string name, int level, Sprite icon)> before = new List<(string, int, Sprite)>();
+        List<(string name, int level, int exp, int requiredExp, Sprite icon)> before =
+            new List<(string, int, int, int, Sprite)>();
 
         for (int i = 0; i < activeParty.Count; i++)
         {
@@ -251,12 +254,12 @@ public class BattleRewardManager : MonoBehaviour
             if (unit == null || unit.StatController == null)
             {
                 Sprite fallbackIcon = unit != null && unit.CharacterStats != null ? unit.CharacterStats.Icon : null;
-                before.Add((unit != null ? unit.CharacterName : "?", 0, fallbackIcon));
+                before.Add((unit != null ? unit.CharacterName : "?", 0, 0, 0, fallbackIcon));
                 continue;
             }
 
             Sprite icon = unit.CharacterStats != null ? unit.CharacterStats.Icon : null;
-            before.Add((unit.CharacterName, unit.StatController.Level, icon));
+            before.Add((unit.CharacterName, unit.StatController.Level, unit.StatController.Exp, unit.StatController.ExpToNextLevel, icon));
         }
 
         if (exp > 0)
@@ -282,6 +285,8 @@ public class BattleRewardManager : MonoBehaviour
                     ExpGained = exp,
                     LevelBefore = before[i].level,
                     LevelAfter = before[i].level,
+                    ExpBefore = before[i].exp,
+                    RequiredExpBefore = before[i].requiredExp,
                     CurrentExp = 0,
                     RequiredExp = 0
                 });
@@ -295,6 +300,8 @@ public class BattleRewardManager : MonoBehaviour
                 ExpGained = exp,
                 LevelBefore = before[i].level,
                 LevelAfter = unit.StatController.Level,
+                ExpBefore = before[i].exp,
+                RequiredExpBefore = before[i].requiredExp,
                 CurrentExp = unit.StatController.Exp,
                 RequiredExp = unit.StatController.ExpToNextLevel
             });
