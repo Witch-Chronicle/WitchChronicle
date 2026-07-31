@@ -3,10 +3,6 @@ using UnityEngine;
 
 namespace WitchChronicle.IdleFarming
 {
-    /// <summary>
-    /// 개별 밭 하나의 로직과 데이터
-    /// 씬 오브젝트에 붙는 컴포넌트
-    /// </summary>
     public class PlotSlot : MonoBehaviour
     {
         [Header("밭 정보")]
@@ -15,7 +11,10 @@ namespace WitchChronicle.IdleFarming
 
         [Header("컴포넌트 참조")]
         [SerializeField] private PlotVisual _visual;
-        [SerializeField] private PlotFloatingUI _floatingUI;
+        [SerializeField] private Transform _floatingAnchor; // UI가 따라올 3D 위치 (밭 위쪽 빈 오브젝트)
+
+        // 런타임 주입
+        private PlotFloatingUI _floatingUI;
 
         // 런타임 데이터
         private PlotState _state;
@@ -32,6 +31,7 @@ namespace WitchChronicle.IdleFarming
         public SeedData PlantedSeed => _plantedSeed;
         public DateTime CycleStartTime => _cycleStartTime;
         public int PendingHarvestCount => _pendingHarvestCount;
+        public Transform FloatingAnchor => _floatingAnchor != null ? _floatingAnchor : transform;
 
         // ====== Unity 라이프사이클 ======
 
@@ -42,6 +42,18 @@ namespace WitchChronicle.IdleFarming
                 _visual.Refresh(_state, _plantedSeed, GetGrowthProgress());
                 if (_floatingUI != null)
                     _floatingUI.Refresh(_state, _plantedSeed, GetRemainingSeconds(), _pendingHarvestCount);
+            }
+        }
+
+        // ====== 외부 주입 ======
+
+        public void SetFloatingUI(PlotFloatingUI ui)
+        {
+            _floatingUI = ui;
+            if (_floatingUI != null)
+            {
+                _floatingUI.SetTarget(FloatingAnchor);
+                _floatingUI.Refresh(_state, _plantedSeed, GetRemainingSeconds(), _pendingHarvestCount);
             }
         }
 
@@ -111,7 +123,7 @@ namespace WitchChronicle.IdleFarming
             return true;
         }
 
-        // ====== 사이클 업데이트 (온라인/오프라인 통합) ======
+        // ====== 사이클 업데이트 ======
 
         public void UpdateCycle()
         {
@@ -127,7 +139,6 @@ namespace WitchChronicle.IdleFarming
             int completedCycles = (int)(elapsed / cycleSeconds);
             if (completedCycles <= 0) return;
 
-            // 최대 누적 제한
             int maxStack = PlotManager.Instance != null ? PlotManager.Instance.MaxOfflineCycles : 5;
             int harvestPerCycle = Mathf.Max(1, _plantedSeed.harvestAmount);
             int currentStacks = _pendingHarvestCount / harvestPerCycle;
@@ -135,7 +146,6 @@ namespace WitchChronicle.IdleFarming
 
             if (allowedCycles <= 0)
             {
-                // 최대 도달, cycleStartTime 유지 (시간 소비 X)
                 if (_state != PlotState.ReadyToHarvest)
                 {
                     _state = PlotState.ReadyToHarvest;
@@ -153,9 +163,6 @@ namespace WitchChronicle.IdleFarming
             RefreshVisual();
         }
 
-        /// <summary>
-        /// 오프라인 처리 — 현재 UpdateCycle이 통합 처리하므로 이 메서드는 호환용으로만 남김
-        /// </summary>
         public void ProcessOfflineTime(int maxCycles)
         {
             UpdateCycle();

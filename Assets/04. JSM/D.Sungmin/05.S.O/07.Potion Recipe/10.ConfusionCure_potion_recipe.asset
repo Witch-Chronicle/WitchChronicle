@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dcd6cc23ff92a0448196b4017ccc641, type: 3}
+  m_Name: 10.ConfusionCure_potion_recipe
+  m_EditorClassIdentifier: Assembly-CSharp::PotionRecipeData
+  recipeName: "\uD63C\uB780 \uCE58\uB8CC\uC81C"
+  description: "\uD750\uD2B8\uB7EC\uC9C4 \uC815\uC2E0\uC744 \uB2E4\uC2DC \uB610\uB837\uD558\uAC8C
+    \uB418\uB3CC\uB9AC\uB294 \uCE58\uB8CC\uC81C."
+  ingredients:
+  - specificItem: {fileID: 11400000, guid: c8be96a49226c1b4993e21b1a47166a3, type: 2}
+    amount: 2
+  resultPotion: {fileID: 11400000, guid: f793d40cdbff1b342a9a411527e13df1, type: 2}

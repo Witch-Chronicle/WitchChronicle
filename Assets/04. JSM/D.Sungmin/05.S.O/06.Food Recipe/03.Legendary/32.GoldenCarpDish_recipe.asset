@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 257fd23296f4ada4abdc48d80e7a4bb3, type: 3}
+  m_Name: 32.GoldenCarpDish_recipe
+  m_EditorClassIdentifier: Assembly-CSharp::CookingRecipeData
+  recipeName: "\uD669\uAE08\uC789\uC5B4 \uC694\uB9AC"
+  description: "\uD669\uAE08\uBE5B \uC789\uC5B4\uC0B4\uC5D0\uC11C \uC740\uC740\uD55C
+    \uAD11\uCC44\uAC00 \uD750\uB974\uB294 \uC804\uC124\uC758 \uC694\uB9AC."
+  ingredients:
+  - specificItem: {fileID: 11400000, guid: ed8e9b109bac7184b8bdbdea9cb58b8a, type: 2}
+    amount: 1
+  - specificItem: {fileID: 11400000, guid: ad0c3f1ed6c0e694b94ca1bd21902bf6, type: 2}
+    amount: 1
+  - specificItem: {fileID: 11400000, guid: 37d47f60be8643045b6ba8032be74574, type: 2}
+    amount: 1
+  result: {fileID: 11400000, guid: 1dbc94da391e62849b32331a1765339e, type: 2}

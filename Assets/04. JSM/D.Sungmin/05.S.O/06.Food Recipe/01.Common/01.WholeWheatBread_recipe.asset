@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 257fd23296f4ada4abdc48d80e7a4bb3, type: 3}
+  m_Name: 01.WholeWheatBread_recipe
+  m_EditorClassIdentifier: Assembly-CSharp::CookingRecipeData
+  recipeName: "\uD1B5\uBC00\uBE75"
+  description: "\uAC13 \uBE7B\uC740 \uD1B5\uBC00 \uD5A5\uC774 \uC9C4\uD558\uAC8C
+    \uBC30\uC5B4\uB098\uB294 \uC18C\uBC15\uD55C \uBE75."
+  ingredients:
+  - specificItem: {fileID: 11400000, guid: ad0c3f1ed6c0e694b94ca1bd21902bf6, type: 2}
+    amount: 2
+  result: {fileID: 11400000, guid: 010f849034133e746941457d40a11e1f, type: 2}
