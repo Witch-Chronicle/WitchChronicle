@@ -220,6 +220,42 @@ public class BattleCameraDirector : MonoBehaviour
     }
 
     /// <summary>
+    /// 기본 전투 구도 재생
+    /// </summary>
+    /// <param name="onComplete">완료 콜백</param>
+    public void PlayDefaultBattleView(Action onComplete = null)
+    {
+        if (_battleManager == null ||
+            _battleManager.SpawnedActors == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        for (int i = 0; i < _battleManager.SpawnedActors.Count; i++)
+        {
+            BattleActor actor =
+                _battleManager.SpawnedActors[i];
+
+            if (actor == null ||
+                actor.TeamType != BattleTeamType.Player ||
+                actor.HasBattleUnit == false ||
+                actor.BattleUnit.IsAlive == false)
+            {
+                continue;
+            }
+
+            PlayPlayerBackView(
+                actor.BattleUnit,
+                onComplete);
+
+            return;
+        }
+
+        onComplete?.Invoke();
+    }
+
+    /// <summary>
     /// 대상 선택 부감 구도 재생
     /// </summary>
     /// <param name="unit">기준 유닛</param>

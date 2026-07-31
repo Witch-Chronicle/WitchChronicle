@@ -26,6 +26,7 @@ public class BattlePresentationBinder : MonoBehaviour
         public BattleTeamType TeamType;
         public int LastHp;
         public System.Action HpHandler;
+        public bool IsReactionPlaying;
     }
 
     private readonly List<UnitBinding> _bindings = new List<UnitBinding>();
@@ -58,7 +59,6 @@ public class BattlePresentationBinder : MonoBehaviour
         _battleCycleController.OnBattleStarted += HandleBattleStarted;
         _battleCycleController.OnTurnStarted += HandleTurnStarted;
         _battleCycleController.OnBattleEnded += HandleBattleEnded;
-        _battleCycleController.OnActionExecuting += HandleActionExecuting;
         _battleCycleController.OnStatusApplied += HandleStatusApplied;
         _battleCycleController.OnStatusRemoved += HandleStatusRemoved;
     }
@@ -73,7 +73,6 @@ public class BattlePresentationBinder : MonoBehaviour
         _battleCycleController.OnBattleStarted -= HandleBattleStarted;
         _battleCycleController.OnTurnStarted -= HandleTurnStarted;
         _battleCycleController.OnBattleEnded -= HandleBattleEnded;
-        _battleCycleController.OnActionExecuting -= HandleActionExecuting;
         _battleCycleController.OnStatusApplied -= HandleStatusApplied;
         _battleCycleController.OnStatusRemoved -= HandleStatusRemoved;
 
@@ -100,14 +99,32 @@ public class BattlePresentationBinder : MonoBehaviour
     }
 
     /// <summary>
-    /// 행동 실행: 행동자 연출 재생.
-    /// 기현님이 BattleCycleController에 OnActionExecuting 이벤트를 추가하면 연결된다.
+    /// 행동 실행 이벤트 처리
     /// </summary>
     /// <param name="actionRequest">실행 행동 요청</param>
     public void HandleActionExecuting(BattleActionRequest actionRequest)
     {
+        PlayAction(
+            actionRequest,
+            null,
+            null);
+    }
+
+    /// <summary>
+    /// 행동 연출 재생
+    /// </summary>
+    /// <param name="actionRequest">실행 행동 요청</param>
+    /// <param name="onImpact">스킬 명중 콜백</param>
+    /// <param name="onComplete">전체 연출 완료 콜백</param>
+    public void PlayAction(
+        BattleActionRequest actionRequest,
+        System.Action onImpact,
+        System.Action onComplete)
+    {
         if (actionRequest == null)
         {
+            onImpact?.Invoke();
+            onComplete?.Invoke();
             return;
         }
 
@@ -115,42 +132,109 @@ public class BattlePresentationBinder : MonoBehaviour
 
         if (binding == null || binding.Presenter == null)
         {
+            onImpact?.Invoke();
+            onComplete?.Invoke();
             return;
         }
 
+        bool hasVfx =
+            actionRequest.HasSkill &&
+            _skillVfxPlayer != null;
+
+        int remainingCount =
+            hasVfx
+                ? 2
+                : 1;
+
+        bool isCompleted = false;
+
+        void HandlePartCompleted()
+        {
+            remainingCount--;
+
+            if (remainingCount > 0 || isCompleted)
+            {
+                return;
+            }
+
+            isCompleted = true;
+            onComplete?.Invoke();
+        }
+
+        PlayActorPresentation(
+            binding,
+            actionRequest,
+            onImpact,
+            HandlePartCompleted);
+
+        if (hasVfx)
+        {
+            Transform casterTransform =
+                GetActorTransform(actionRequest.Actor);
+
+            IReadOnlyList<Transform> targets =
+                GatherTargetTransforms(actionRequest);
+
+            _skillVfxPlayer.Play(
+                actionRequest.SkillData,
+                casterTransform,
+                targets,
+                onImpact,
+                HandlePartCompleted);
+        }
+        else if (actionRequest.CommandType != CommandType.Attack)
+        {
+            onImpact?.Invoke();
+        }
+    }
+
+    /// <summary>
+    /// 행동자 애니메이션 재생
+    /// </summary>
+    /// <param name="binding">행동자 바인딩</param>
+    /// <param name="actionRequest">실행 행동 요청</param>
+    /// <param name="onComplete">애니메이션 완료 콜백</param>
+    private void PlayActorPresentation(
+        UnitBinding binding,
+        BattleActionRequest actionRequest,
+        System.Action onImpact,
+        System.Action onComplete)
+    {
         switch (actionRequest.CommandType)
         {
             case CommandType.Attack:
-                binding.Presenter.PlayAttack();
+                binding.Presenter.PlayAttack(
+                    onImpact: onImpact,
+                    onComplete: onComplete);
+
                 binding.Audio?.PlayAttack();
                 break;
 
             case CommandType.Skill:
                 if (IsSupportSkill(actionRequest.SkillData))
                 {
-                    binding.Presenter.PlaySkillSupport();
+                    binding.Presenter.PlaySkillSupport(
+                        onComplete);
                 }
                 else
                 {
-                    binding.Presenter.PlaySkill();
+                    binding.Presenter.PlaySkill(
+                        onComplete);
                 }
+
                 binding.Audio?.PlaySkill();
                 break;
 
             case CommandType.Defense:
-                binding.Presenter.PlayParry();
+                binding.Presenter.PlayParry(
+                    onComplete);
+
                 binding.Audio?.PlayParry();
                 break;
-        }
 
-        // 스킬(또는 스킬 데이터를 가진 공격) VFX 재생: SkillData의 시전/투사체/명중 프리팹.
-        // 대상이 적일 수 있어 위치는 프레젠터가 아니라 BattleManager의 액터에서 가져온다(적엔 프레젠터가 없음).
-        if (actionRequest.HasSkill && _skillVfxPlayer != null)
-        {
-            Transform casterTransform = GetActorTransform(actionRequest.Actor);
-            IReadOnlyList<Transform> targets = GatherTargetTransforms(actionRequest);
-
-            _skillVfxPlayer.Play(actionRequest.SkillData, casterTransform, targets);
+            default:
+                onComplete?.Invoke();
+                break;
         }
     }
 
@@ -333,7 +417,7 @@ public class BattlePresentationBinder : MonoBehaviour
     }
 
     /// <summary>
-    /// HP 변화 감지: 감소면 피격, 0이면 사망 연출
+    /// HP 변화에 따른 피격·사망 연출 재생
     /// </summary>
     /// <param name="binding">대상 바인딩</param>
     private void HandleHpChanged(UnitBinding binding)
@@ -347,20 +431,68 @@ public class BattlePresentationBinder : MonoBehaviour
 
         if (currentHp < binding.LastHp)
         {
+            binding.IsReactionPlaying = true;
+
+            void HandleReactionCompleted()
+            {
+                binding.IsReactionPlaying = false;
+            }
+
             if (binding.Unit.IsAlive == false)
             {
-                binding.Presenter.PlayDeath();
+                binding.Presenter.PlayDeath(
+                    HandleReactionCompleted);
+
                 binding.Audio?.PlayDeath();
                 binding.Dissolve?.Play();
             }
             else
             {
-                binding.Presenter.PlayHit();
+                binding.Presenter.PlayHit(
+                    HandleReactionCompleted);
+
                 binding.Audio?.PlayHit();
             }
         }
 
         binding.LastHp = currentHp;
+    }
+
+    /// <summary>
+    /// 대상 피격 연출 진행 여부 반환
+    /// </summary>
+    /// <param name="unit">확인 유닛</param>
+    /// <returns>피격 연출 진행 여부</returns>
+    public bool IsReactionPlaying(BattleUnit unit)
+    {
+        UnitBinding binding = FindBinding(unit);
+
+        return binding != null &&
+            binding.IsReactionPlaying;
+    }
+
+    /// <summary>
+    /// 대상 목록의 피격 연출 진행 여부 반환
+    /// </summary>
+    /// <param name="units">확인 유닛 목록</param>
+    /// <returns>피격 연출 진행 여부</returns>
+    public bool IsAnyReactionPlaying(
+        IReadOnlyList<BattleUnit> units)
+    {
+        if (units == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            if (IsReactionPlaying(units[i]))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -399,6 +531,8 @@ public class BattlePresentationBinder : MonoBehaviour
             {
                 binding.Unit.OnHpChanged -= binding.HpHandler;
             }
+
+            binding.IsReactionPlaying = false;
         }
 
         _bindings.Clear();
