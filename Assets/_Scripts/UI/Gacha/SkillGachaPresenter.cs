@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 
 /// <summary>
@@ -21,8 +22,8 @@ public class SkillGachaPresenter : MonoBehaviour
     [Header("결과 표시")]
     [SerializeField] private GameObject _resultRoot;
     [SerializeField] private Image _resultIcon;
-    [SerializeField] private Text _resultNameText;
-    [SerializeField] private Text _resultDescText;
+    [SerializeField] private TMP_Text _resultNameText;
+    [SerializeField] private TMP_Text _resultDescText;
 
     [Header("연출 타이밍")]
     [Tooltip("전체 스핀 시간(초)")]
@@ -36,6 +37,12 @@ public class SkillGachaPresenter : MonoBehaviour
 
     [Tooltip("결과를 보여주기 전 잠깐 멈추는 시간")]
     [SerializeField] private float _revealDelay = 0.3f;
+
+    [Tooltip("멈춘 뒤 확정된 느낌을 주는 반짝임 횟수. 0이면 반짝이지 않는다")]
+    [SerializeField] private int _settleFlashCount = 3;
+
+    [Tooltip("반짝임 한 번의 간격(초)")]
+    [SerializeField] private float _settleFlashInterval = 0.07f;
 
     [Header("티어별 색상 (0=1티어 ... 3=4티어)")]
     [SerializeField]
@@ -98,9 +105,11 @@ public class SkillGachaPresenter : MonoBehaviour
 
         PlayClip(_spinClip);
 
-        // 스핀: 시간이 갈수록 교체 간격이 길어져 감속처럼 보인다
+        // 스핀: 시간이 갈수록 교체 간격이 길어져 감속처럼 보인다.
+        // 아이콘과 함께 티어 색도 계속 갈아끼워 릴이 돌아가는 느낌을 준다.
         float elapsed = 0f;
         int index = 0;
+        int colorIndex = 0;
 
         while (elapsed < _spinDuration)
         {
@@ -111,6 +120,9 @@ public class SkillGachaPresenter : MonoBehaviour
                 index++;
             }
 
+            ApplyReelColor(GetTierColorAt(colorIndex));
+            colorIndex++;
+
             float t = _spinDuration <= 0f ? 1f : elapsed / _spinDuration;
             float interval = Mathf.Lerp(_fastInterval, _slowInterval, t * t);
 
@@ -120,20 +132,26 @@ public class SkillGachaPresenter : MonoBehaviour
 
         // 결과 아이콘에서 정지
         Sprite finalIcon = result.LearnedSkill != null ? result.LearnedSkill.SkillIcon : null;
+        Color finalColor = GetTierColor(result.RolledTier);
 
         if (_spinIcon != null)
         {
-            if (finalIcon != null)
-            {
-                _spinIcon.sprite = finalIcon;
-            }
+            _spinIcon.sprite = finalIcon;
 
-            _spinIcon.color = GetTierColor(result.RolledTier);
+            // 아이콘이 없는 스킬이면 색만 칠한 사각형이 크게 보이므로 아예 숨긴다
+            _spinIcon.enabled = finalIcon != null;
         }
 
-        if (_frameImage != null)
+        ApplyReelColor(finalColor);
+
+        // 멈춘 자리에서 짧게 반짝여 "확정" 느낌을 준다
+        for (int i = 0; i < _settleFlashCount; i++)
         {
-            _frameImage.color = GetTierColor(result.RolledTier);
+            ApplyReelColor(Color.white);
+            yield return new WaitForSeconds(_settleFlashInterval);
+
+            ApplyReelColor(finalColor);
+            yield return new WaitForSeconds(_settleFlashInterval);
         }
 
         yield return new WaitForSeconds(_revealDelay);
@@ -173,7 +191,7 @@ public class SkillGachaPresenter : MonoBehaviour
             if (_resultDescText != null)
             {
                 _resultDescText.text =
-                    $"{result.RolledTier}티어 스킬을 습득했습니다.\n{result.LearnedSkill.Description}";
+                    $"{result.RolledTier}티어 스킬을 습득했습니다.\n\n{result.LearnedSkill.Description}";
             }
         }
         else
@@ -190,6 +208,31 @@ public class SkillGachaPresenter : MonoBehaviour
                 _resultDescText.text = "이미 모두 익힌 지식입니다. 대가를 받았습니다.";
             }
         }
+    }
+
+    /// <summary>스핀 중인 틀·아이콘에 같은 색을 입힌다.</summary>
+    private void ApplyReelColor(Color color)
+    {
+        if (_frameImage != null)
+        {
+            _frameImage.color = color;
+        }
+
+        if (_spinIcon != null)
+        {
+            _spinIcon.color = color;
+        }
+    }
+
+    /// <summary>티어 색을 순서대로 돌려쓴다(스핀 연출용).</summary>
+    private Color GetTierColorAt(int index)
+    {
+        if (_tierColors == null || _tierColors.Length == 0)
+        {
+            return Color.white;
+        }
+
+        return _tierColors[index % _tierColors.Length];
     }
 
     /// <summary>티어(1이 최상)에 대응하는 색.</summary>

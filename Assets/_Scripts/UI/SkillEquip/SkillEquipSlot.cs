@@ -4,24 +4,24 @@ using TMPro;
 using UnityEngine.UI;
 
 /// <summary>
-/// 가챠 창 오른쪽 목록의 마도서 한 칸.
-/// 아이콘·이름·보유 개수를 표시하고, 클릭하면 선택을 알린다.
+/// 장착 슬롯 한 칸. 비어 있으면 "비어 있음", 차 있으면 스킬 아이콘·이름 표시.
+/// 클릭하면 슬롯 인덱스를 알린다.
 /// </summary>
-public class SkillGachaBookSlot : MonoBehaviour
+public class SkillEquipSlot : MonoBehaviour
 {
     [SerializeField] private Image _iconImage;
     [SerializeField] private TMP_Text _nameText;
-    [SerializeField] private TMP_Text _countText;
     [SerializeField] private Button _button;
 
-    [Header("선택 표시")]
+    [Header("상태 표시")]
     [SerializeField] private GameObject _selectedMark;
+    [SerializeField] private GameObject _emptyMark;
 
-    private SkillBookItemData _book;
-    private Action<SkillBookItemData> _onClicked;
+    private int _slotIndex = -1;
+    private Action<int> _onClicked;
 
-    /// <summary>이 칸이 표시 중인 마도서.</summary>
-    public SkillBookItemData Book => _book;
+    /// <summary>이 칸의 슬롯 번호.</summary>
+    public int SlotIndex => _slotIndex;
 
     private void Awake()
     {
@@ -40,30 +40,32 @@ public class SkillGachaBookSlot : MonoBehaviour
     }
 
     /// <summary>슬롯 내용 채우기.</summary>
-    /// <param name="book">마도서</param>
-    /// <param name="count">보유 개수</param>
+    /// <param name="slotIndex">슬롯 번호</param>
+    /// <param name="skill">장착된 스킬 (없으면 null)</param>
     /// <param name="onClicked">클릭 콜백</param>
-    public void Bind(SkillBookItemData book, int count, Action<SkillBookItemData> onClicked)
+    public void Bind(int slotIndex, SkillData skill, Action<int> onClicked)
     {
-        _book = book;
+        _slotIndex = slotIndex;
         _onClicked = onClicked;
 
         gameObject.SetActive(true);
 
+        bool hasSkill = skill != null;
+
         if (_iconImage != null)
         {
-            _iconImage.sprite = book != null ? book.icon : null;
-            _iconImage.enabled = _iconImage.sprite != null;
+            _iconImage.sprite = hasSkill ? skill.SkillIcon : null;
+            _iconImage.enabled = hasSkill && _iconImage.sprite != null;
         }
 
         if (_nameText != null)
         {
-            _nameText.text = book != null ? book.itemName : string.Empty;
+            _nameText.text = hasSkill ? skill.SkillName : "- 비어 있음 -";
         }
 
-        if (_countText != null)
+        if (_emptyMark != null)
         {
-            _countText.text = $"x{count}";
+            _emptyMark.SetActive(hasSkill == false);
         }
 
         SetSelected(false);
@@ -78,18 +80,18 @@ public class SkillGachaBookSlot : MonoBehaviour
         }
     }
 
-    /// <summary>이 칸 숨기기(목록이 줄었을 때).</summary>
+    /// <summary>이 칸 숨기기(슬롯 수가 줄었을 때).</summary>
     public void Clear()
     {
-        _book = null;
+        _slotIndex = -1;
         gameObject.SetActive(false);
     }
 
     private void HandleClick()
     {
-        if (_book != null)
+        if (_slotIndex >= 0)
         {
-            _onClicked?.Invoke(_book);
+            _onClicked?.Invoke(_slotIndex);
         }
     }
 }
