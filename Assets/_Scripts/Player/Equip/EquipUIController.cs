@@ -125,9 +125,18 @@ public class EquipUIController : MonoBehaviour
             _boundEquipment.OnEquipmentChanged -= RefreshAllSlots;
         }
 
-        _boundEquipment = CharacterSelectionManager.Instance != null
-            ? CharacterEquipment.GetByCharacter(CharacterSelectionManager.Instance.GetSelected())
-            : null;
+        _boundEquipment = null;
+
+        if (CharacterSelectionManager.Instance != null && PersistentCharacterManager.Instance != null)
+        {
+            CharacterType selected = CharacterSelectionManager.Instance.GetSelected();
+            string characterId = selected.ToString();
+
+            if (PersistentCharacterManager.Instance.TryGetCharacter(characterId, out PersistentCharacterUnit unit))
+            {
+                _boundEquipment = unit.CharacterEquipment;
+            }
+        }
 
         if (_boundEquipment != null)
         {

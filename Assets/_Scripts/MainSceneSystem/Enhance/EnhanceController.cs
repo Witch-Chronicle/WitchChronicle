@@ -1,27 +1,57 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// 강화의 "규칙"을 전담하는 컨트롤러.
 /// - EnhanceTableData 조회, 비용 확인, 확률 판정, 성공 시 EquipmentInstance 갱신까지 담당
 /// - 실제 골드/재료 소모는 PlayerInventory의 저수준 메서드(TrySpendGold/TryConsumeItem)에 위임
+/// - 강화 테이블(EnhanceTableData) 자체를 등급별로 완전히 분리해서 관리 (Common/UnCommon/Rare/Unique/Legendary
+///   각각 별도 에셋). 장비의 itemGrade를 보고 그에 맞는 테이블을 선택해서 사용.
 /// * PlayerInventory는 "얼마 갖고 있는지"만 알고, 강화 규칙 자체는 전혀 모름
 /// </summary>
 public class EnhanceController : MonoBehaviour
 {
-    [Header("강화 테이블")]
-    [SerializeField] private EnhanceTableData _enhanceTableData;
+    [Serializable]
+    private class GradeTableEntry
+    {
+        public ItemGradeType itemGrade;
+        public EnhanceTableData table;
+    }
 
-    // UI 등 외부에서 테이블이 필요할 때(스탯 미리보기 계산 등) 이걸 통해서만 접근
-    public EnhanceTableData Table => _enhanceTableData;
+    [Header("등급별 강화 테이블")]
+    [SerializeField] private List<GradeTableEntry> _gradeTables = new List<GradeTableEntry>();
+
+    /// <summary>
+    /// 지정한 등급에 해당하는 강화 테이블을 반환. 등록 안 된 등급이면 null.
+    /// </summary>
+    public EnhanceTableData GetTable(ItemGradeType grade)
+    {
+        for (int i = 0; i < _gradeTables.Count; i++)
+        {
+            GradeTableEntry entry = _gradeTables[i];
+
+            if (entry != null && entry.itemGrade == grade)
+            {
+                return entry.table;
+            }
+        }
+
+        Debug.LogWarning($"[EnhanceController] {grade}에 해당하는 EnhanceTableData가 등록되지 않았습니다.");
+        return null;
+    }
 
     /// <summary>
     /// 이 장비의 다음 강화 단계 데이터를 반환. 최대 단계면 null.
     /// </summary>
     public EnhanceLevelEntry GetNextLevelEntry(EquipmentInstance instance)
     {
-        if (instance == null || _enhanceTableData == null) return null;
+        if (instance == null || instance.baseData == null) return null;
 
-        return _enhanceTableData.GetLevelData(instance.enhanceLevel + 1);
+        EnhanceTableData table = GetTable(instance.baseData.itemGrade);
+        if (table == null) return null;
+
+        return table.GetLevelData(instance.enhanceLevel + 1);
     }
 
     /// <summary>
@@ -37,8 +67,8 @@ public class EnhanceController : MonoBehaviour
         }
 
         bool hasEnoughGold = PlayerInventory.Instance.Gold >= nextEntry.requiredGold;
-
         bool hasEnoughMaterials = true;
+
         if (nextEntry.requiredMaterials != null)
         {
             foreach (var required in nextEntry.requiredMaterials)
@@ -109,10 +139,10 @@ public class EnhanceController : MonoBehaviour
             {
                 Debug.Log($"[EnhanceController] 강화 조건 부족(골드/재료): {instance.baseData.itemName}");
             }
+
             return false;
         }
 
-        // 위에서 이미 충분함을 확인했으므로 그대로 소모
         PlayerInventory.Instance.TrySpendGold(nextEntry.requiredGold);
 
         if (nextEntry.requiredMaterials != null)
@@ -126,25 +156,24 @@ public class EnhanceController : MonoBehaviour
             }
         }
 
-        // 진행률이 100%(pityCount번 실패)에 도달한 "다음" 시도부터 확정 성공.
-        // 즉 pityCount번째 실패로 100%가 채워지고, 그 다음 시도(=이번 시도)가 확정 성공.
         bool isPityGuaranteed = nextEntry.pityCount > 0
             && instance.enhanceAttemptCount >= nextEntry.pityCount;
 
-        bool isSuccess = isPityGuaranteed || Random.Range(0f, 100f) < nextEntry.successRate;
+        bool isSuccess = isPityGuaranteed || UnityEngine.Random.Range(0f, 100f) < nextEntry.successRate;
 
         if (isSuccess)
         {
+            EnhanceTableData table = GetTable(instance.baseData.itemGrade);
+
             instance.enhanceLevel = nextEntry.level;
-            instance.enhanceAttemptCount = 0; // 다음 단계로 넘어갔으니 시도횟수 리셋
-            instance.RefreshStats(_enhanceTableData);
+            instance.enhanceAttemptCount = 0;
+            instance.RefreshStats(table);
         }
         else
         {
             instance.enhanceAttemptCount++;
         }
 
-        // 골드/재료 소모, (성공 시)강화 단계 변경까지 끝났으니 UI 갱신 신호만 보냄
         PlayerInventory.Instance.RaiseInventoryChanged();
 
         Debug.Log(isSuccess

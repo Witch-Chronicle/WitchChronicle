@@ -34,7 +34,7 @@ namespace WitchChronicle.IdleFarming
             if (!_isPlayerInside) return;
             if (Keyboard.current == null) return;
 
-            if (Keyboard.current.eKey.wasPressedThisFrame)
+            if (Keyboard.current.fKey.wasPressedThisFrame)
             {
                 HandleInteraction();
             }

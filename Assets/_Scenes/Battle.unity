@@ -632,6 +632,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleManager
   _battleCycleController: {fileID: 338119913}
+  _battleIntroDirector: {fileID: 0}
   _usePersistentParty: 1
   _fallbackToInspectorParty: 1
   _playerActorPrefabs:
@@ -819,6 +820,57 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 899025f422efcba48b187b744f86614f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathController
+--- !u!1 &418915745
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 418915746}
+  - component: {fileID: 418915747}
+  m_Layer: 0
+  m_Name: BattleIntroDirector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &418915746
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 418915745}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1464087536}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &418915747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 418915745}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb5be93388936cc43a0a5d755d26dabc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BattleIntroDirector
+  _battleManager: {fileID: 338119914}
+  _battleCameraDirector: {fileID: 1867479331}
+  _battleHudCanvasGroup: {fileID: 567879308}
+  _hudShowDuration: 0.2
+  _startDelay: 0.7
+  _enemyViewHoldDuration: 0.5
+  _defaultViewHoldDuration: 0.15
 --- !u!1001 &466403587
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1586,6 +1638,11 @@ PrefabInstance:
 --- !u!1 &567879307 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1866208748023065653, guid: 8a24a400e68f4b64ea715197e7a54c88, type: 3}
+  m_PrefabInstance: {fileID: 567879306}
+  m_PrefabAsset: {fileID: 0}
+--- !u!225 &567879308 stripped
+CanvasGroup:
+  m_CorrespondingSourceObject: {fileID: 9063146655261522743, guid: 8a24a400e68f4b64ea715197e7a54c88, type: 3}
   m_PrefabInstance: {fileID: 567879306}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &598687271
@@ -3268,6 +3325,7 @@ Transform:
   - {fileID: 1180134113}
   - {fileID: 245494101}
   - {fileID: 245877445}
+  - {fileID: 418915746}
   m_Father: {fileID: 41473027}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1578806200
@@ -3897,6 +3955,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BattleCameraDirector
   _battleManager: {fileID: 338119914}
   _battleUIContext: {fileID: 859420390}
+  _cinemachineBrain: {fileID: 479231469}
   _playerBackCamera: {fileID: 598687273}
   _targetOverviewCamera: {fileID: 1786888902}
   _skillLowAngleCamera: {fileID: 2082331633}

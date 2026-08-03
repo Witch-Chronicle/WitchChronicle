@@ -69,3 +69,28 @@ public enum OwnerCharacter
     Ria,    // 라이아
     Fay     // 페이
 }
+
+public enum MainCategory
+{
+    Equip,
+    Consume,
+    Life,
+    Material
+}
+
+public enum SubCategory
+{
+    Weapon, // 무기
+    Armor,  // 방어구
+    Acce,   // 장신구
+    Seed, // 씨앗
+    Harvest,    // 작물
+    Fish,   //생선
+    Cooked, // 요리
+    Rod,    // 낚싯대
+    Potion, // 포션
+    Book,   // 마도서
+    Material, // 재료
+
+}
+

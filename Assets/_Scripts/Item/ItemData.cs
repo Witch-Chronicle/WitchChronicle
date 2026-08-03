@@ -17,6 +17,10 @@ public abstract class ItemData : ScriptableObject
     public ItemGradeType itemGrade;    // 아이템 등급
     public Sprite icon;                // 아이콘
 
+    [Header("인벤토리/상점 카테고리")]
+    public MainCategory mainCategory;
+    public SubCategory subCategory;
+
     [Header("스택 / 거래")]
     public int maxStack = 1;           // 최대 중첩 개수
 

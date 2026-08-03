@@ -1,18 +1,42 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerUIInputReader : MonoBehaviour
+/// <summary>
+/// 필드 및 던전 씬에서 플레이어 공통 UI 입력을 관리합니다.
+///
+/// - I: 통합 패널
+/// - C: 스탯 패널
+/// - ESC: 열린 패널 닫기 / Pause 패널 열기
+/// - Tab: 퀘스트 리스트 토글
+///
+/// 패널을 열 때 전역 UIBackgroundBlurManager에 Blur 표시를 요청하고,
+/// 패널 닫기 애니메이션이 완료된 뒤 Blur 요청을 해제합니다.
+/// </summary>
+public sealed class PlayerUIInputReader : MonoBehaviour
 {
     public static PlayerUIInputReader Instance { get; private set; }
 
     [Header("Integration Panel")]
-    [SerializeField] private UIPanelAnimator _integrationPanelAnimator;
+    [SerializeField]
+    private UIPanelAnimator _integrationPanelAnimator;
 
     [Header("Stat Panel")]
-    [SerializeField] private UIPanelAnimator _statPanelAnimator;
+    [SerializeField]
+    private UIPanelAnimator _statPanelAnimator;
 
-    [Header("Pause Panel (Dungeon 전용)")]
-    [SerializeField] private UIPanelAnimator _pausePanelAnimator;
+    [Header("Pause Panel")]
+    [SerializeField]
+    private UIPanelAnimator _pausePanelAnimator;
+
+    [SerializeField]
+    private PauseController _pauseController;
+
+    [Header("Player Input")]
+    [Tooltip("패널이 열릴 때 캐릭터 이동 및 상호작용을 제어하기 위한 Input Action Asset")]
+    [SerializeField]
+    private InputActionAsset _inputAsset;
+
+    private InputActionMap _playerMap;
 
     private void Awake()
     {
@@ -24,28 +48,25 @@ public class PlayerUIInputReader : MonoBehaviour
 
         Instance = this;
 
-        if (_integrationPanelAnimator != null)
-        {
-            _integrationPanelAnimator.SetClosedImmediate();
-        }
-
-        if (_statPanelAnimator != null)
-        {
-            _statPanelAnimator.SetClosedImmediate();
-        }
-
-        if (_pausePanelAnimator != null)
-        {
-            _pausePanelAnimator.SetClosedImmediate();
-        }
+        InitializeInputMap();
+        InitializePanels();
+        SubscribePanelEvents();
     }
 
     private void Update()
     {
-        if (Keyboard.current == null) return;
+        if (Keyboard.current == null)
+        {
+            return;
+        }
 
-        // 배틀 씬에서는 이 스크립트가 아무 키 입력도 받지 않음.
-        // 배틀 씬의 모든 키 입력(스킬/아이템 리스트, 커맨드 UI 등)은 BattleUIInputReader가 전담.
+        // 타이틀 씬의 입력은 타이틀 전용 컨트롤러가 담당합니다.
+        if (IsInTitleScene())
+        {
+            return;
+        }
+
+        // 전투 씬의 UI 입력은 BattleUIInputReader가 담당합니다.
         if (IsInBattleScene())
         {
             return;
@@ -72,85 +93,170 @@ public class PlayerUIInputReader : MonoBehaviour
         }
     }
 
+    #region Initialization
+
+    private void InitializeInputMap()
+    {
+        if (_inputAsset == null)
+        {
+            return;
+        }
+
+        _playerMap = _inputAsset.FindActionMap(
+            "Player",
+            throwIfNotFound: false
+        );
+
+        if (_playerMap == null)
+        {
+            Debug.LogWarning(
+                "[PlayerUIInputReader] Player 액션맵을 찾을 수 없습니다.",
+                this
+            );
+        }
+    }
+
+    private void InitializePanels()
+    {
+        /*
+         * SetClosedImmediate()는 OnClosed 이벤트를 호출하므로,
+         * 반드시 이벤트 구독 전에 실행해야 합니다.
+         */
+        _integrationPanelAnimator?.SetClosedImmediate();
+        _statPanelAnimator?.SetClosedImmediate();
+        _pausePanelAnimator?.SetClosedImmediate();
+    }
+
+    private void SubscribePanelEvents()
+    {
+        if (_integrationPanelAnimator != null)
+        {
+            _integrationPanelAnimator.OnClosed +=
+                HandleIntegrationPanelClosed;
+        }
+
+        if (_statPanelAnimator != null)
+        {
+            _statPanelAnimator.OnClosed +=
+                HandleStatPanelClosed;
+        }
+
+        if (_pausePanelAnimator != null)
+        {
+            _pausePanelAnimator.OnClosed +=
+                HandlePausePanelClosed;
+        }
+    }
+
+    private void UnsubscribePanelEvents()
+    {
+        if (_integrationPanelAnimator != null)
+        {
+            _integrationPanelAnimator.OnClosed -=
+                HandleIntegrationPanelClosed;
+        }
+
+        if (_statPanelAnimator != null)
+        {
+            _statPanelAnimator.OnClosed -=
+                HandleStatPanelClosed;
+        }
+
+        if (_pausePanelAnimator != null)
+        {
+            _pausePanelAnimator.OnClosed -=
+                HandlePausePanelClosed;
+        }
+    }
+
+    #endregion
+
+    #region Input Handling
+
     /// <summary>
-    /// Esc 입력 처리.
-    /// - 열려있는 패널(Integration/Stat/Pause)이 있으면 그것부터 닫음.
-    /// - 아무 패널도 안 열려있고 던전 씬이면 PausePanel을 염.
+    /// ESC 입력 처리.
+    ///
+    /// 우선순위:
+    /// 1. IntegrationPanel 닫기
+    /// 2. StatPanel 닫기
+    /// 3. PausePanel의 설정 화면에서 Pause 화면으로 복귀
+    /// 4. PausePanel 닫기
+    /// 5. 열린 패널이 없으면 PausePanel 열기
     /// </summary>
     private void HandleEscape()
     {
-        if (_integrationPanelAnimator != null && _integrationPanelAnimator.IsOpen)
+        if (
+            _integrationPanelAnimator != null &&
+            _integrationPanelAnimator.IsOpen
+        )
         {
             CloseIntegrationPanel();
             return;
         }
 
-        if (_statPanelAnimator != null && _statPanelAnimator.IsOpen)
+        if (
+            _statPanelAnimator != null &&
+            _statPanelAnimator.IsOpen
+        )
         {
             CloseStatPanel();
             return;
         }
 
-        if (_pausePanelAnimator != null && _pausePanelAnimator.IsOpen)
+        if (
+            _pausePanelAnimator != null &&
+            _pausePanelAnimator.IsOpen
+        )
         {
+            if (
+                _pauseController != null &&
+                _pauseController.IsSettingOpen
+            )
+            {
+                _pauseController.ShowPauseView();
+                return;
+            }
+
             ClosePausePanel();
             return;
         }
 
-        if (IsInDungeonScene())
-        {
-            OpenPausePanel();
-        }
+        OpenPausePanel();
     }
 
     /// <summary>
-    /// 지금 이 세 패널 중 하나라도 열려있는지 여부. 새 패널을 열기 전 중복 방지 체크용.
+    /// Integration, Stat, Pause 패널 중 하나라도 열려 있는지 확인합니다.
     /// </summary>
     private bool IsAnyPanelOpen()
     {
-        bool integrationOpen = _integrationPanelAnimator != null && _integrationPanelAnimator.IsOpen;
-        bool statOpen = _statPanelAnimator != null && _statPanelAnimator.IsOpen;
-        bool pauseOpen = _pausePanelAnimator != null && _pausePanelAnimator.IsOpen;
+        bool integrationOpen =
+            _integrationPanelAnimator != null &&
+            _integrationPanelAnimator.IsOpen;
+
+        bool statOpen =
+            _statPanelAnimator != null &&
+            _statPanelAnimator.IsOpen;
+
+        bool pauseOpen =
+            _pausePanelAnimator != null &&
+            _pausePanelAnimator.IsOpen;
 
         return integrationOpen || statOpen || pauseOpen;
     }
 
-    /// <summary>
-    /// QuestListUI 슬라이드 토글 (Tab 키)
-    /// </summary>
-    public void ToggleQuestList()
-    {
-        if (QuestListUI.Instance == null)
-        {
-            Debug.LogWarning("[PlayerUIInputReader] QuestListUI.Instance가 없습니다.");
-            return;
-        }
+    #endregion
 
-        QuestListUI.Instance.ToggleSlide();
-    }
-
-    /// <summary>
-    /// SceneTransitionManager에 위임. 지금 활성 씬이 Battle_1인지 여부.
-    /// </summary>
-    private bool IsInBattleScene()
-    {
-        return SceneTransitionManager.Instance != null && SceneTransitionManager.Instance.IsInBattleScene();
-    }
-
-    /// <summary>
-    /// SceneTransitionManager에 위임. 지금 활성 씬이 Dungeon인지 여부.
-    /// PausePanel은 던전 씬에서만 열려야 하고, 거점/전투 씬에서는 열리지 않아야 함.
-    /// </summary>
-    private bool IsInDungeonScene()
-    {
-        return SceneTransitionManager.Instance != null && SceneTransitionManager.Instance.IsInDungeonScene();
-    }
+    #region Integration Panel
 
     public void ToggleIntegrationPanel()
     {
         if (_integrationPanelAnimator == null)
         {
-            Debug.LogWarning("[PlayerUIInputReader] integrationPanelAnimator가 연결되지 않았습니다.");
+            Debug.LogWarning(
+                "[PlayerUIInputReader] IntegrationPanelAnimator가 연결되지 않았습니다.",
+                this
+            );
+
             return;
         }
 
@@ -160,7 +266,6 @@ public class PlayerUIInputReader : MonoBehaviour
             return;
         }
 
-        // 다른 패널이 열려있으면 새로 열지 않음
         if (IsAnyPanelOpen())
         {
             return;
@@ -169,11 +274,58 @@ public class PlayerUIInputReader : MonoBehaviour
         OpenIntegrationPanel();
     }
 
+    private void OpenIntegrationPanel()
+    {
+        if (_integrationPanelAnimator == null)
+        {
+            return;
+        }
+
+        /*
+         * 패널을 화면에 표시하기 전에 현재 월드 화면을 캡처해야
+         * 패널 자체가 Blur 이미지에 포함되지 않습니다.
+         */
+        ShowBackgroundBlur();
+
+        _integrationPanelAnimator.Open();
+        CursorLocker.Instance?.EnterUIMode();
+    }
+
+    private void CloseIntegrationPanel()
+    {
+        if (_integrationPanelAnimator == null)
+        {
+            return;
+        }
+
+        _integrationPanelAnimator.Close();
+        CursorLocker.Instance?.ExitUIMode();
+
+        /*
+         * Blur는 여기서 바로 숨기지 않습니다.
+         * Close 애니메이션이 끝난 뒤
+         * HandleIntegrationPanelClosed()에서 해제합니다.
+         */
+    }
+
+    private void HandleIntegrationPanelClosed()
+    {
+        HideBackgroundBlur();
+    }
+
+    #endregion
+
+    #region Stat Panel
+
     public void ToggleStatPanel()
     {
         if (_statPanelAnimator == null)
         {
-            Debug.LogWarning("[PlayerUIInputReader] statPanelAnimator가 연결되지 않았습니다.");
+            Debug.LogWarning(
+                "[PlayerUIInputReader] StatPanelAnimator가 연결되지 않았습니다.",
+                this
+            );
+
             return;
         }
 
@@ -183,7 +335,6 @@ public class PlayerUIInputReader : MonoBehaviour
             return;
         }
 
-        // 다른 패널이 열려있으면 새로 열지 않음
         if (IsAnyPanelOpen())
         {
             return;
@@ -192,14 +343,51 @@ public class PlayerUIInputReader : MonoBehaviour
         OpenStatPanel();
     }
 
+    private void OpenStatPanel()
+    {
+        if (_statPanelAnimator == null)
+        {
+            return;
+        }
+
+        ShowBackgroundBlur();
+
+        _statPanelAnimator.Open();
+        CursorLocker.Instance?.EnterUIMode();
+    }
+
+    private void CloseStatPanel()
+    {
+        if (_statPanelAnimator == null)
+        {
+            return;
+        }
+
+        _statPanelAnimator.Close();
+        CursorLocker.Instance?.ExitUIMode();
+    }
+
+    private void HandleStatPanelClosed()
+    {
+        HideBackgroundBlur();
+    }
+
+    #endregion
+
+    #region Pause Panel
+
     /// <summary>
-    /// 던전 씬 전용 일시정지 패널 토글.
+    /// Pause 패널을 토글합니다.
     /// </summary>
     public void TogglePausePanel()
     {
         if (_pausePanelAnimator == null)
         {
-            Debug.LogWarning("[PlayerUIInputReader] pausePanelAnimator가 연결되지 않았습니다.");
+            Debug.LogWarning(
+                "[PlayerUIInputReader] PausePanelAnimator가 연결되지 않았습니다.",
+                this
+            );
+
             return;
         }
 
@@ -209,7 +397,6 @@ public class PlayerUIInputReader : MonoBehaviour
             return;
         }
 
-        // 다른 패널이 열려있으면 새로 열지 않음
         if (IsAnyPanelOpen())
         {
             return;
@@ -218,60 +405,183 @@ public class PlayerUIInputReader : MonoBehaviour
         OpenPausePanel();
     }
 
-    private void OpenIntegrationPanel()
-    {
-        _integrationPanelAnimator.Open();
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
-
-    private void CloseIntegrationPanel()
-    {
-        _integrationPanelAnimator.Close();
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
-
-    private void OpenStatPanel()
-    {
-        _statPanelAnimator.Open();
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
-
-    private void CloseStatPanel()
-    {
-        _statPanelAnimator.Close();
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
-
     private void OpenPausePanel()
     {
+        if (_pausePanelAnimator == null)
+        {
+            Debug.LogWarning(
+                "[PlayerUIInputReader] PausePanelAnimator가 연결되지 않았습니다.",
+                this
+            );
+
+            return;
+        }
+
+        /*
+         * Time.timeScale을 0으로 변경하기 전에 화면을 캡처합니다.
+         * 현재 방식은 Camera.Render()를 직접 호출하므로 정지 상태에서도
+         * 동작할 수 있지만, 캡처 순서를 일관되게 유지하는 편이 안전합니다.
+         */
+        ShowBackgroundBlur();
+
         _pausePanelAnimator.Open();
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        CursorLocker.Instance?.EnterUIMode();
 
         Time.timeScale = 0f;
     }
 
     private void ClosePausePanel()
     {
-        _pausePanelAnimator.Close();
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (_pausePanelAnimator == null)
+        {
+            return;
+        }
 
+        _pausePanelAnimator.Close();
+        CursorLocker.Instance?.ExitUIMode();
+
+        /*
+         * 패널의 Close Tween은 SetUpdate(true)를 사용하므로
+         * Time.timeScale을 먼저 복구해도 정상 동작합니다.
+         */
         Time.timeScale = 1f;
     }
+
+    private void HandlePausePanelClosed()
+    {
+        HideBackgroundBlur();
+    }
+
+    #endregion
+
+    #region Quest List
+
+    /// <summary>
+    /// QuestListUI 슬라이드 토글입니다.
+    /// </summary>
+    public void ToggleQuestList()
+    {
+        if (QuestListUI.Instance == null)
+        {
+            Debug.LogWarning(
+                "[PlayerUIInputReader] QuestListUI.Instance가 없습니다.",
+                this
+            );
+
+            return;
+        }
+
+        QuestListUI.Instance.ToggleSlide();
+    }
+
+    #endregion
+
+    #region Background Blur
+
+    /// <summary>
+    /// 전역 Blur Manager에 배경 Blur 표시를 요청합니다.
+    /// Manager는 호출 시점의 Camera.main을 찾아 화면을 캡처합니다.
+    /// </summary>
+    private void ShowBackgroundBlur()
+    {
+        if (UIBackgroundBlurManager.Instance == null)
+        {
+            Debug.LogWarning(
+                "[PlayerUIInputReader] UIBackgroundBlurManager.Instance가 없습니다.",
+                this
+            );
+
+            return;
+        }
+
+        UIBackgroundBlurManager.Instance.Show();
+    }
+
+    /// <summary>
+    /// 이 패널이 사용하던 Blur 요청을 해제합니다.
+    /// 요청 횟수가 0이 되었을 때 실제 Blur가 사라집니다.
+    /// </summary>
+    private void HideBackgroundBlur()
+    {
+        UIBackgroundBlurManager.Instance?.Hide();
+    }
+
+    #endregion
+
+    #region Scene Check
+
+    /// <summary>
+    /// 현재 활성 씬이 전투 씬인지 확인합니다.
+    /// </summary>
+    private bool IsInBattleScene()
+    {
+        return
+            SceneTransitionManager.Instance != null &&
+            SceneTransitionManager.Instance.IsInBattleScene();
+    }
+
+    /// <summary>
+    /// 현재 활성 씬이 던전 씬인지 확인합니다.
+    /// 현재 코드는 향후 씬별 Pause 제한에 사용할 수 있도록 유지합니다.
+    /// </summary>
+    private bool IsInDungeonScene()
+    {
+        return
+            SceneTransitionManager.Instance != null &&
+            SceneTransitionManager.Instance.IsInDungeonScene();
+    }
+
+    /// <summary>
+    /// 현재 활성 씬이 타이틀 씬인지 확인합니다.
+    /// </summary>
+    private bool IsInTitleScene()
+    {
+        return
+            SceneTransitionManager.Instance != null &&
+            SceneTransitionManager.Instance.IsInTitleScene();
+    }
+
+    #endregion
+
+    #region Scene Loading
 
     private void LoadScene(SceneId sceneId)
     {
         if (SceneTransitionManager.Instance == null)
         {
-            Debug.LogWarning("[PlayerUIInputReader] SceneTransitionManager.Instance가 null입니다.");
+            Debug.LogWarning(
+                "[PlayerUIInputReader] SceneTransitionManager.Instance가 null입니다.",
+                this
+            );
+
             return;
         }
 
+        /*
+         * UI가 열린 상태로 씬이 전환되는 경우
+         * OnClosed 이벤트가 호출되지 않을 수 있으므로 강제로 정리합니다.
+         */
+        UIBackgroundBlurManager.Instance?.ForceHide();
+
+        Time.timeScale = 1f;
+
         SceneTransitionManager.Instance.LoadScene(sceneId);
+    }
+
+    #endregion
+
+    private void OnDestroy()
+    {
+        UnsubscribePanelEvents();
+
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+
+        /*
+         * Pause 상태에서 오브젝트가 파괴되거나 씬이 전환되는 경우를 대비합니다.
+         */
+        Time.timeScale = 1f;
     }
 }
