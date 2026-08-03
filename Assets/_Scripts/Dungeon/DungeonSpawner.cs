@@ -4,10 +4,78 @@ using Unity.AI.Navigation;
 using UnityEngine;
 
 /// <summary>
-/// 생성된 RoomNode 데이터를 기반으로 실제 던전 Mesh와 Runtime Controller를 생성한다.
+/// 개별 벽의 위치와 회전 정보를 담는 구조체.
+/// </summary>
+public struct WallData
+{
+    public Vector2 Position;
+    public Quaternion Rotation;
+
+    public WallData(Vector2 position, Quaternion rotation)
+    {
+        Position = position;
+        Rotation = rotation;
+    }
+}
+
+/// <summary>
+/// 방과 통로 연결 지점(문)의 위치와 회전 정보를 담는 구조체.
+/// </summary>
+public struct DoorData
+{
+    public Vector2 Position;
+    public Quaternion Rotation;
+
+    public DoorData(Vector2 position, Quaternion rotation)
+    {
+        Position = position;
+        Rotation = rotation;
+    }
+}
+
+/// <summary>
+/// DungeonData 및 RoomNode 기반으로 메시, 룸 컨트롤러, 문, 네비메시를 생성하는 클래스.
 /// </summary>
 public class DungeonSpawner : MonoBehaviour
 {
+    private struct ChunkWallRule
+    {
+        public Vector2Int ChunkOffset;
+        public Vector2 WorldPosOffset;
+        public float RotationY;
+
+        public ChunkWallRule(Vector2Int chunkOffset, Vector2 worldPosOffset, float rotationY)
+        {
+            ChunkOffset = chunkOffset;
+            WorldPosOffset = worldPosOffset;
+            RotationY = rotationY;
+        }
+    }
+
+    /// <summary>
+    /// 방 하나가 차지하는 청크 좌표 범위를 담는 구조체 (문 배치 시 경계 판정에 사용).
+    /// </summary>
+    private struct RoomChunkBounds
+    {
+        public int Left;
+        public int Right;
+        public int Bottom;
+        public int Top;
+
+        public RoomChunkBounds(int left, int right, int bottom, int top)
+        {
+            Left = left;
+            Right = right;
+            Bottom = bottom;
+            Top = top;
+        }
+
+        public bool Contains(Vector2Int chunk)
+        {
+            return chunk.x >= Left && chunk.x <= Right && chunk.y >= Bottom && chunk.y <= Top;
+        }
+    }
+
     [Header("Containers")]
     [SerializeField] private Transform _environmentContainer;
 
@@ -15,105 +83,119 @@ public class DungeonSpawner : MonoBehaviour
     [SerializeField] private float _wallHeight = 4f;
     [SerializeField] private float _ceilingHeight = 4f;
     [SerializeField] private float _tileSize = 1f;
+    [SerializeField] private float _wallSize = 6f;
 
     [Header("Corridor Settings")]
-    [SerializeField] private int _corridorWidth = 4;
+    [SerializeField] private int _corridorWidth = 6;
 
     [Header("Navigation")]
     [SerializeField] private NavMeshSurface _navMeshSurface;
 
+    [Header("Door Pivot Correction")]
+    [Tooltip("DoorPrefab의 피벗이 문틀 정중앙이 아닐 때, 문이 바라보는 방향(로컬 X: 좌우, 로컬 Z: 전후) 기준으로 보정할 오프셋. " +
+             "오른쪽으로 쏠려 있다면 X 오프셋을 조절하여 중앙으로 맞출 수 있습니다.")]
+    [SerializeField] private Vector3 _doorPivotOffset = Vector3.zero;
 
     private GameObject _floorPrefab;
     private GameObject _wallPrefab;
     private GameObject _ceilingPrefab;
+    private GameObject _doorPrefab;
+    private GameObject _doorWallPrefab;
 
     private DungeonMeshBuilder _meshBuilder;
 
     private readonly Dictionary<RoomNode, RoomController> _roomControllers = new();
-
     private readonly HashSet<Vector2Int> _floorTiles = new();
-    private readonly HashSet<Vector2Int> _wallTiles = new();
+    private readonly HashSet<Vector2> _wallTiles = new();
+    private readonly List<WallData> _wallDataList = new();
+    private readonly List<WallData> _doorWallDataList = new();
+    private readonly List<DoorData> _doorDataList = new();
     private readonly HashSet<Vector2Int> _corridorTiles = new();
 
-
     public float GetTileSize => _tileSize;
-
     public IReadOnlyCollection<Vector2Int> FloorTiles => _floorTiles;
-
-    public IReadOnlyCollection<Vector2Int> WallTiles => _wallTiles;
-
+    public IReadOnlyCollection<Vector2> WallTiles => _wallTiles;
     public IReadOnlyCollection<Vector2Int> CorridorTiles => _corridorTiles;
 
-
-
     /// <summary>
-    /// DungeonData에서 필요한 Prefab 데이터를 초기화한다.
+    /// 청크 기반으로 계산된 실제 벽 조각들의 위치/회전 데이터.
+    /// RoomContentSpawner가 벽 데코레이션 배치 시 레이캐스트 대신 이 데이터를 직접 재사용한다.
     /// </summary>
+    public IReadOnlyList<WallData> WallDataList => _wallDataList;
+
     public void Initialize(DungeonData dungeon)
     {
+        if (dungeon == null)
+        {
+            Debug.LogError("[DungeonSpawner] 전달된 DungeonData가 null입니다.");
+            return;
+        }
+
         _floorPrefab = dungeon.FloorPrefab;
         _wallPrefab = dungeon.WallPrefab;
         _ceilingPrefab = dungeon.CeilingPrefab;
+        _doorPrefab = dungeon.DoorPrefab;
+        _doorWallPrefab = dungeon.DoorWallPrefab;
+
+        if (_doorWallPrefab == null)
+        {
+            Debug.LogWarning("[DungeonSpawner] DungeonData에 DoorWallPrefab이 지정되지 않았습니다.");
+        }
 
         _meshBuilder = new DungeonMeshBuilder();
     }
 
-
-
-    /// <summary>
-    /// RoomNode 데이터를 실제 Scene 던전으로 생성한다.
-    /// </summary>
     public void BuildDungeon(List<RoomNode> rooms)
     {
+        if (_meshBuilder == null)
+        {
+            Debug.LogError("[DungeonSpawner] DungeonMeshBuilder가 초기화되지 않았습니다.");
+            return;
+        }
+
         Debug.Log($"[DungeonSpawner] 던전 빌드 시작 : {rooms.Count}개 방");
 
         ClearEnvironment();
 
         _floorTiles.Clear();
         _wallTiles.Clear();
+        _wallDataList.Clear();
+        _doorWallDataList.Clear();
+        _doorDataList.Clear();
         _corridorTiles.Clear();
 
+        int step = Mathf.RoundToInt(_wallSize);
+        if (step < 1)
+        {
+            step = 6;
+        }
 
-        _floorTiles.UnionWith(GenerateFloorPositions(rooms));
+        HashSet<Vector2Int> floorChunks = new HashSet<Vector2Int>();
+        GenerateRoomChunks(rooms, floorChunks, step);
+        GenerateCorridorChunks(rooms, floorChunks, step);
 
-        GenerateCorridors(rooms, _floorTiles);
+        _floorTiles.UnionWith(ExpandChunksToFloorTiles(floorChunks, step));
+        _wallDataList.AddRange(CalculateWallDataFromChunks(floorChunks, step));
 
-        _wallTiles.UnionWith(CalculateWallPositions(_floorTiles));
+        Debug.Log($"[DungeonSpawner] 타일 수 계산 완료 - 바닥: {_floorTiles.Count}, 벽: {_wallDataList.Count}, 문틀벽: {_doorWallDataList.Count}, 문: {_doorDataList.Count}");
 
-        _meshBuilder.BuildFloorMesh(
-            _floorPrefab,
-            _floorTiles,
-            _tileSize,
-            _environmentContainer);
+        _meshBuilder.BuildFloorMesh(_floorPrefab, _floorTiles, _tileSize, _environmentContainer);
+        _meshBuilder.BuildWallMesh(_wallPrefab, _wallDataList, _tileSize, _wallHeight, _environmentContainer);
 
-        _meshBuilder.BuildWallMesh(
-            _wallPrefab,
-            _wallTiles,
-            _tileSize,
-            _wallHeight,
-            _environmentContainer);
+        if (_doorWallPrefab != null && _doorWallDataList.Count > 0)
+        {
+            _meshBuilder.BuildWallMesh(_doorWallPrefab, _doorWallDataList, _tileSize, _wallHeight, _environmentContainer);
+        }
 
-        _meshBuilder.BuildCeilingMesh(
-            _ceilingPrefab,
-            _floorTiles,
-            _tileSize,
-            _ceilingHeight,
-            _environmentContainer);
-
+        _meshBuilder.BuildCeilingMesh(_ceilingPrefab, _floorTiles, _tileSize, _ceilingHeight, _environmentContainer);
+        SpawnDoors();
 
         CreateRoomControllers(rooms);
-
         BuildDungeonNavMesh();
 
-
-        Debug.Log($"[DungeonSpawner] 던전 빌드 완료 - Floor:{_floorTiles.Count}, Wall:{_wallTiles.Count}");
+        Debug.Log($"[DungeonSpawner] 던전 빌드 완료 - Floor:{_floorTiles.Count}, Wall:{_wallDataList.Count}, Door:{_doorDataList.Count}");
     }
 
-
-
-    /// <summary>
-    /// 이전에 생성된 던전 오브젝트 제거.
-    /// </summary>
     private void ClearEnvironment()
     {
         if (_environmentContainer == null)
@@ -121,54 +203,47 @@ public class DungeonSpawner : MonoBehaviour
             return;
         }
 
-
         foreach (Transform child in _environmentContainer)
         {
             Destroy(child.gameObject);
         }
     }
 
-
-
-    /// <summary>
-    /// Room 영역을 기반으로 Floor Tile 위치 생성.
-    /// </summary>
-    private HashSet<Vector2Int> GenerateFloorPositions(List<RoomNode> rooms)
+    private void GenerateRoomChunks(List<RoomNode> rooms, HashSet<Vector2Int> floorChunks, int step)
     {
-        HashSet<Vector2Int> floorPositions = new();
-
-
         foreach (RoomNode room in rooms)
         {
-            Debug.Log($"[DungeonSpawner] Room Floor 생성 : {room.Type} {room.Bounds}");
+            int xMin = Mathf.FloorToInt((float)room.Bounds.xMin / step);
+            int xMax = Mathf.CeilToInt((float)room.Bounds.xMax / step);
+            int yMin = Mathf.FloorToInt((float)room.Bounds.yMin / step);
+            int yMax = Mathf.CeilToInt((float)room.Bounds.yMax / step);
 
-
-            for (int x = room.Bounds.xMin; x < room.Bounds.xMax; x++)
+            if (xMax <= xMin)
             {
-                for (int y = room.Bounds.yMin; y < room.Bounds.yMax; y++)
+                xMax = xMin + 1;
+            }
+            if (yMax <= yMin)
+            {
+                yMax = yMin + 1;
+            }
+
+            for (int x = xMin; x < xMax; x++)
+            {
+                for (int y = yMin; y < yMax; y++)
                 {
-                    floorPositions.Add(new Vector2Int(x, y));
+                    floorChunks.Add(new Vector2Int(x, y));
                 }
             }
         }
-
-        return floorPositions;
     }
 
-
-
-    /// <summary>
-    /// Room 연결 Graph 기반 Corridor 생성.
-    /// </summary>
-    private void GenerateCorridors(List<RoomNode> rooms, HashSet<Vector2Int> floorPositions)
+    private void GenerateCorridorChunks(List<RoomNode> rooms, HashSet<Vector2Int> floorChunks, int step)
     {
         HashSet<RoomNode> visited = new();
-
 
         foreach (RoomNode room in rooms)
         {
             visited.Add(room);
-
 
             foreach (RoomNode connectedRoom in room.ConnectedRooms)
             {
@@ -177,215 +252,361 @@ public class DungeonSpawner : MonoBehaviour
                     continue;
                 }
 
-
-                BuildCorridor(
-                    room,
-                    connectedRoom,
-                    floorPositions);
+                BuildCorridorChunks(room, connectedRoom, floorChunks, step);
             }
         }
     }
 
-
-
-    /// <summary>
-    /// 두 Room 사이 L자 Corridor 생성.
-    /// </summary>
-    private void BuildCorridor(RoomNode startRoom, RoomNode endRoom, HashSet<Vector2Int> floorPositions)
+    private void BuildCorridorChunks(RoomNode startRoom, RoomNode endRoom, HashSet<Vector2Int> floorChunks, int step)
     {
-        Vector2Int start = GetSafeWallConnectionPoint(endRoom.Center, startRoom.Bounds);
+        Vector2Int startChunk = GetAlignedConnectionPoint(endRoom.Center, startRoom.Bounds, step);
+        Vector2Int endChunk = GetAlignedConnectionPoint(startRoom.Center, endRoom.Bounds, step);
 
-        Vector2Int end = GetSafeWallConnectionPoint(startRoom.Center, endRoom.Bounds);
+        List<Vector2Int> corridorPath = new List<Vector2Int>();
 
-        int minX = Mathf.Min(start.x, end.x);
-        int maxX = Mathf.Max(start.x, end.x);
+        int x = startChunk.x;
+        int y = startChunk.y;
 
-        int minY = Mathf.Min(start.y, end.y);
-        int maxY = Mathf.Max(start.y, end.y);
+        corridorPath.Add(new Vector2Int(x, y));
+        floorChunks.Add(new Vector2Int(x, y));
+        _corridorTiles.Add(new Vector2Int(x, y));
 
-
-        int halfWidth = _corridorWidth / 2;
-
-
-        for (int x = minX; x <= maxX; x++)
+        while (x != endChunk.x)
         {
-            for (int offset = -halfWidth; offset < halfWidth; offset++)
+            if (endChunk.x > x)
             {
-                Vector2Int position = new Vector2Int(x, start.y + offset);
+                x++;
+            }
+            else
+            {
+                x--;
+            }
 
-                floorPositions.Add(position);
-                _corridorTiles.Add(position);
+            corridorPath.Add(new Vector2Int(x, y));
+            floorChunks.Add(new Vector2Int(x, y));
+            _corridorTiles.Add(new Vector2Int(x, y));
+        }
+
+        while (y != endChunk.y)
+        {
+            if (endChunk.y > y)
+            {
+                y++;
+            }
+            else
+            {
+                y--;
+            }
+
+            corridorPath.Add(new Vector2Int(x, y));
+            floorChunks.Add(new Vector2Int(x, y));
+            _corridorTiles.Add(new Vector2Int(x, y));
+        }
+
+        CalculateCorridorDoors(corridorPath, startRoom.Bounds, endRoom.Bounds, step);
+    }
+
+    private void CalculateCorridorDoors(List<Vector2Int> corridorPath, RectInt startBounds, RectInt endBounds, int step)
+    {
+        if (corridorPath == null || corridorPath.Count < 2)
+        {
+            return;
+        }
+
+        float edgeNear = -0.5f;
+        float edgeFar = step - 0.5f;
+        float center = (step - 1) * 0.5f;
+
+        RoomChunkBounds startChunkBounds = GetRoomChunkBounds(startBounds, step);
+        RoomChunkBounds endChunkBounds = GetRoomChunkBounds(endBounds, step);
+
+        bool startDoorPlaced = false;
+
+        for (int i = 0; i < corridorPath.Count - 1; i++)
+        {
+            Vector2Int current = corridorPath[i];
+            Vector2Int next = corridorPath[i + 1];
+
+            bool currentInside = startChunkBounds.Contains(current);
+            bool nextInside = startChunkBounds.Contains(next);
+
+            if (currentInside && !nextInside)
+            {
+                Vector2Int dir = next - current;
+                AddDoorAtBoundary(current, dir, edgeNear, edgeFar, center, step);
+                startDoorPlaced = true;
+                break;
             }
         }
 
-
-        for (int y = minY; y <= maxY; y++)
+        if (!startDoorPlaced)
         {
-            for (int offset = -halfWidth; offset < halfWidth; offset++)
-            {
-                Vector2Int position =new Vector2Int(end.x + offset, y);
+            Vector2Int startChunk = corridorPath[0];
+            Vector2Int nextChunk = corridorPath[1];
+            Vector2Int startDir = nextChunk - startChunk;
+            AddDoorAtBoundary(startChunk, startDir, edgeNear, edgeFar, center, step);
+        }
 
-                floorPositions.Add(position);
-                _corridorTiles.Add(position);
+        bool endDoorPlaced = false;
+
+        for (int i = corridorPath.Count - 1; i > 0; i--)
+        {
+            Vector2Int current = corridorPath[i];
+            Vector2Int prev = corridorPath[i - 1];
+
+            bool currentInside = endChunkBounds.Contains(current);
+            bool prevInside = endChunkBounds.Contains(prev);
+
+            if (currentInside && !prevInside)
+            {
+                Vector2Int dir = prev - current;
+                AddDoorAtBoundary(current, dir, edgeNear, edgeFar, center, step);
+                endDoorPlaced = true;
+                break;
             }
         }
+
+        if (!endDoorPlaced)
+        {
+            Vector2Int endChunk = corridorPath[corridorPath.Count - 1];
+            Vector2Int prevChunk = corridorPath[corridorPath.Count - 2];
+            Vector2Int endDir = prevChunk - endChunk;
+            AddDoorAtBoundary(endChunk, endDir, edgeNear, edgeFar, center, step);
+        }
     }
 
-
-
-    /// <summary>
-    /// Room 벽면에 연결 가능한 위치 계산.
-    /// </summary>
-    private Vector2Int GetSafeWallConnectionPoint(Vector2Int fromCenter, RectInt targetBounds)
+    private RoomChunkBounds GetRoomChunkBounds(RectInt bounds, int step)
     {
-        int xMin = targetBounds.xMin + 1;
-        int xMax = targetBounds.xMax - 2;
+        int left = Mathf.FloorToInt((float)bounds.xMin / step);
+        int right = Mathf.CeilToInt((float)bounds.xMax / step) - 1;
+        int bottom = Mathf.FloorToInt((float)bounds.yMin / step);
+        int top = Mathf.CeilToInt((float)bounds.yMax / step) - 1;
 
-        int yMin = targetBounds.yMin + 1;
-        int yMax = targetBounds.yMax - 2;
-
-        int clampX = Mathf.Clamp(fromCenter.x, xMin, xMax);
-
-        int clampY = Mathf.Clamp(fromCenter.y, yMin, yMax);
-
-        if (fromCenter.x < targetBounds.xMin)
-        {
-            return new Vector2Int(
-                targetBounds.xMin,
-                clampY);
-        }
-
-        if (fromCenter.x >= targetBounds.xMax)
-        {
-            return new Vector2Int(
-                targetBounds.xMax - 1,
-                clampY);
-        }
-
-        if (fromCenter.y < targetBounds.yMin)
-        {
-            return new Vector2Int(
-                clampX,
-                targetBounds.yMin);
-        }
-
-        return new Vector2Int(
-            clampX,
-            targetBounds.yMax - 1);
+        return new RoomChunkBounds(left, right, bottom, top);
     }
 
-
-
-    /// <summary>
-    /// Floor 주변 빈 공간을 찾아 Wall Tile 생성.
-    /// </summary>
-    private HashSet<Vector2Int> CalculateWallPositions(HashSet<Vector2Int> floorPositions)
+    private void AddDoorAtBoundary(Vector2Int chunk, Vector2Int dir, float edgeNear, float edgeFar, float center, int step)
     {
-        Vector2Int[] directions =
+        Vector2 chunkWorldPos = new Vector2(chunk.x * step, chunk.y * step);
+        Vector2 doorPos = Vector2.zero;
+        float rotY = 0f;
+
+        if (dir == new Vector2Int(0, 1))
         {
-            Vector2Int.up,
-            Vector2Int.down,
-            Vector2Int.left,
-            Vector2Int.right
-        };
-
-
-        HashSet<Vector2Int> walls = new();
-
-
-        foreach (Vector2Int floor in floorPositions)
+            doorPos = chunkWorldPos + new Vector2(center, edgeFar);
+            rotY = 0f;
+        }
+        else if (dir == new Vector2Int(0, -1))
         {
-            foreach (Vector2Int direction in directions)
+            doorPos = chunkWorldPos + new Vector2(center, edgeNear);
+            rotY = 180f;
+        }
+        else if (dir == new Vector2Int(-1, 0))
+        {
+            doorPos = chunkWorldPos + new Vector2(edgeNear, center);
+            rotY = 270f;
+        }
+        else if (dir == new Vector2Int(1, 0))
+        {
+            doorPos = chunkWorldPos + new Vector2(edgeFar, center);
+            rotY = 90f;
+        }
+
+        _doorDataList.Add(new DoorData(doorPos, Quaternion.Euler(0f, rotY, 0f)));
+
+        float wallRotY = (rotY + 180f) % 360f;
+        _doorWallDataList.Add(new WallData(doorPos, Quaternion.Euler(0f, wallRotY, 0f)));
+    }
+
+    private Vector2Int GetAlignedConnectionPoint(Vector2Int fromCenter, RectInt targetBounds, int step)
+    {
+        int left = Mathf.FloorToInt((float)targetBounds.xMin / step);
+        int right = Mathf.CeilToInt((float)targetBounds.xMax / step) - 1;
+
+        int bottom = Mathf.FloorToInt((float)targetBounds.yMin / step);
+        int top = Mathf.CeilToInt((float)targetBounds.yMax / step) - 1;
+
+        int targetChunkX = Mathf.RoundToInt((float)fromCenter.x / step);
+        int targetChunkY = Mathf.RoundToInt((float)fromCenter.y / step);
+
+        if (targetChunkX < left)
+        {
+            return new Vector2Int(left, Mathf.Clamp(targetChunkY, bottom, top));
+        }
+
+        if (targetChunkX > right)
+        {
+            return new Vector2Int(right, Mathf.Clamp(targetChunkY, bottom, top));
+        }
+
+        if (targetChunkY < bottom)
+        {
+            return new Vector2Int(Mathf.Clamp(targetChunkX, left, right), bottom);
+        }
+
+        if (targetChunkY > top)
+        {
+            return new Vector2Int(Mathf.Clamp(targetChunkX, left, right), top);
+        }
+
+        int distLeft = Mathf.Abs(targetChunkX - left);
+        int distRight = Mathf.Abs(right - targetChunkX);
+        int distBottom = Mathf.Abs(targetChunkY - bottom);
+        int distTop = Mathf.Abs(top - targetChunkY);
+
+        int min = Mathf.Min(distLeft, distRight, distBottom, distTop);
+
+        if (min == distLeft)
+        {
+            return new Vector2Int(left, targetChunkY);
+        }
+
+        if (min == distRight)
+        {
+            return new Vector2Int(right, targetChunkY);
+        }
+
+        if (min == distBottom)
+        {
+            return new Vector2Int(targetChunkX, bottom);
+        }
+
+        return new Vector2Int(targetChunkX, top);
+    }
+
+    private HashSet<Vector2Int> ExpandChunksToFloorTiles(HashSet<Vector2Int> floorChunks, int step)
+    {
+        HashSet<Vector2Int> floorPositions = new();
+
+        foreach (var chunk in floorChunks)
+        {
+            int worldX = chunk.x * step;
+            int worldY = chunk.y * step;
+
+            for (int dx = 0; dx < step; dx++)
             {
-                Vector2Int check =
-                    floor + direction;
-
-
-                if (!floorPositions.Contains(check))
+                for (int dy = 0; dy < step; dy++)
                 {
-                    walls.Add(check);
+                    floorPositions.Add(new Vector2Int(worldX + dx, worldY + dy));
                 }
             }
         }
 
-        return walls;
+        return floorPositions;
     }
 
+    private List<WallData> CalculateWallDataFromChunks(HashSet<Vector2Int> floorChunks, int step)
+    {
+        Dictionary<Vector2, Quaternion> wallDict = new();
 
+        float edgeNear = -0.5f;
+        float edgeFar = step - 0.5f;
+        float center = (step - 1) * 0.5f;
 
-    /// <summary>
-    /// RoomNode와 Scene RoomController 연결.
-    /// </summary>
+        ChunkWallRule[] rules = new ChunkWallRule[]
+        {
+            new ChunkWallRule(new Vector2Int(0, 1), new Vector2(center, edgeFar), 180f),
+            new ChunkWallRule(new Vector2Int(0, -1), new Vector2(center, edgeNear), 0f),
+            new ChunkWallRule(new Vector2Int(-1, 0), new Vector2(edgeNear, center), 90f),
+            new ChunkWallRule(new Vector2Int(1, 0), new Vector2(edgeFar, center), 270f)
+        };
+
+        foreach (var chunk in floorChunks)
+        {
+            Vector2 chunkWorldPos = new Vector2(chunk.x * step, chunk.y * step);
+
+            foreach (var rule in rules)
+            {
+                Vector2Int neighborChunk = chunk + rule.ChunkOffset;
+
+                if (!floorChunks.Contains(neighborChunk))
+                {
+                    Vector2 exactWallPos = chunkWorldPos + rule.WorldPosOffset;
+
+                    if (!wallDict.ContainsKey(exactWallPos))
+                    {
+                        wallDict[exactWallPos] = Quaternion.Euler(0f, rule.RotationY, 0f);
+                    }
+                }
+            }
+        }
+
+        _wallTiles.Clear();
+        List<WallData> wallDataList = new();
+
+        foreach (var kvp in wallDict)
+        {
+            _wallTiles.Add(kvp.Key);
+            wallDataList.Add(new WallData(kvp.Key, kvp.Value));
+        }
+
+        Debug.Log($"[DungeonSpawner] 청크 기반 벽 데이터 계산 완료: 총 {wallDataList.Count}개 생성");
+        return wallDataList;
+    }
+
+    private void SpawnDoors()
+    {
+        if (_doorPrefab == null)
+        {
+            Debug.LogWarning("[DungeonSpawner] DungeonData에 지정된 _doorPrefab이 null입니다.");
+            return;
+        }
+
+        foreach (DoorData doorData in _doorDataList)
+        {
+            Vector3 spawnPosition = new Vector3(
+                doorData.Position.x * _tileSize,
+                0f,
+                doorData.Position.y * _tileSize);
+
+            Vector3 correctedPosition = spawnPosition + doorData.Rotation * _doorPivotOffset;
+
+            Instantiate(_doorPrefab, correctedPosition, doorData.Rotation, _environmentContainer);
+        }
+
+        Debug.Log($"[DungeonSpawner] 통로 입구/출구 문 프리팹 생성 완료: 총 {_doorDataList.Count}개 생성");
+    }
+
     private void CreateRoomControllers(List<RoomNode> rooms)
     {
         _roomControllers.Clear();
 
-
         foreach (RoomNode room in rooms)
         {
-            GameObject roomObject =
-                new GameObject(
-                    $"Room_{room.Type}");
+            GameObject roomObject = new GameObject($"Room_{room.Type}");
 
+            roomObject.transform.position = new Vector3(
+                room.Center.x * _tileSize,
+                0f,
+                room.Center.y * _tileSize);
 
-            roomObject.transform.position =
-                new Vector3(
-                    room.Center.x * _tileSize,
-                    0f,
-                    room.Center.y * _tileSize);
+            roomObject.transform.SetParent(_environmentContainer);
 
+            RoomController controller = roomObject.AddComponent<RoomController>();
+            controller.Initialize(room, _tileSize);
 
-            roomObject.transform.SetParent(
-                _environmentContainer);
-
-
-
-            RoomController controller =
-                roomObject.AddComponent<RoomController>();
-
-
-            controller.Initialize(
-                room,
-                _tileSize);
-
-
-            room.RoomControllerInstance =
-                controller;
-
-
-            _roomControllers.Add(
-                room,
-                controller);
+            room.RoomControllerInstance = controller;
+            _roomControllers.Add(room, controller);
         }
     }
 
-
-
-    /// <summary>
-    /// 생성된 Mesh 기반 NavMesh Bake.
-    /// </summary>
     private void BuildDungeonNavMesh()
     {
         StartCoroutine(BuildNavMeshRoutine());
     }
 
-
-
     private IEnumerator BuildNavMeshRoutine()
     {
         yield return null;
-
 
         if (_navMeshSurface == null)
         {
             _navMeshSurface = GetComponent<NavMeshSurface>();
         }
 
-
         if (_navMeshSurface != null)
         {
             _navMeshSurface.RemoveData();
-
             _navMeshSurface.BuildNavMesh();
 
             Debug.Log("[DungeonSpawner] NavMesh 생성 완료");

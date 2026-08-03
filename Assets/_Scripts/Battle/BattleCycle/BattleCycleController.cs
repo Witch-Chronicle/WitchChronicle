@@ -1313,10 +1313,8 @@ public class BattleCycleController : MonoBehaviour
             yield return null;
         }
 
-        // 공격 애니메이션과 VFX 시작
-        PlayActionPresentation(
-            actionRequest);
-
+        // 연출(애니메이션·VFX·사운드)은 별자리 종료 후 패리 실패 시에 재생한다.
+        // 미니게임 중에는 카메라가 별자리 화면이라 여기서 재생하면 보이지 않는다.
         bool isStarted =
             _constellationPathBattleManager
                 .StartConstellationPath(

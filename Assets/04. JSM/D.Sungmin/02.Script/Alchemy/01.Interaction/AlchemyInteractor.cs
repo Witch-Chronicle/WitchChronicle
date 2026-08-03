@@ -1,4 +1,5 @@
 using UnityEngine;
+using StarterAssets;
 
 namespace WitchChronicle.Alchemy
 {
@@ -66,7 +67,7 @@ namespace WitchChronicle.Alchemy
             _isUsing = true;
 
             MovePlayerToStand();
-            SetCharacterControllerEnabled(false);
+            SetPlayerLocked(true);
 
             if (_interactPrompt != null) _interactPrompt.SetActive(false);
 
@@ -95,18 +96,28 @@ namespace WitchChronicle.Alchemy
             if (cc != null) cc.enabled = true;
         }
 
-        private void SetCharacterControllerEnabled(bool enable)
+        private void SetPlayerLocked(bool locked)
         {
             if (_playerRef == null) return;
+
+            // ThirdPersonController 스크립트 잠금 (Move 호출 자체를 막음)
+            var controller = _playerRef.GetComponent<ThirdPersonController>();
+            if (controller != null) controller.enabled = !locked;
+
+            // CharacterController도 잠금 (물리 이동 봉인)
             var cc = _playerRef.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = enable;
+            if (cc != null) cc.enabled = !locked;
+
+            // 애니메이션 잠금 (걷기 애니 재생 방지)
+            var animator = _playerRef.GetComponentInChildren<Animator>();
+            if (animator != null) animator.enabled = !locked;
         }
 
         private void OnPanelClosed()
         {
             _isUsing = false;
 
-            SetCharacterControllerEnabled(true);
+            SetPlayerLocked(false);
 
             if (_cameraController != null)
                 _cameraController.SwitchToPlayerView();

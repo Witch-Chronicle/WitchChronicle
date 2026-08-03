@@ -21,6 +21,8 @@ public class SkillInventory : MonoBehaviour
     /// <summary>스킬을 새로 습득했을 때 발생.</summary>
     public event Action<SkillData> OnSkillLearned;
 
+    private readonly List<PersistentCharacterUnit> _partyBuffer = new List<PersistentCharacterUnit>();
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -31,6 +33,48 @@ public class SkillInventory : MonoBehaviour
 
         Instance = this;
         RemoveNullSkills();
+    }
+
+    private void Start()
+    {
+        SyncPartyEquippedSkills();
+    }
+
+    /// <summary>
+    /// 파티원이 이미 장착 중인 스킬(캐릭터 프리팹에 넣어둔 시작 스킬)을 보유 목록에 흡수한다.
+    /// 이게 없으면 시작 스킬을 해제했을 때 목록에 없어서 다시 장착할 수 없다.
+    /// 습득 연출이 뜨면 안 되므로 OnSkillLearned는 발생시키지 않는다.
+    /// </summary>
+    public void SyncPartyEquippedSkills()
+    {
+        if (PersistentCharacterManager.Instance == null)
+        {
+            return;
+        }
+
+        PersistentCharacterManager.Instance.GetActivePartyMembers(_partyBuffer);
+
+        for (int i = 0; i < _partyBuffer.Count; i++)
+        {
+            PersistentCharacterUnit member = _partyBuffer[i];
+
+            if (member == null || member.PlayerSkillLoadout == null)
+            {
+                continue;
+            }
+
+            IReadOnlyList<SkillData> equipped = member.PlayerSkillLoadout.EquippedSkills;
+
+            for (int j = 0; j < equipped.Count; j++)
+            {
+                SkillData skill = equipped[j];
+
+                if (skill != null && _learnedSkills.Contains(skill) == false)
+                {
+                    _learnedSkills.Add(skill);
+                }
+            }
+        }
     }
 
     private void OnDestroy()

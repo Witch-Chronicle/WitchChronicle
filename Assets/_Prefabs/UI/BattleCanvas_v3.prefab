@@ -1831,7 +1831,8 @@ MonoBehaviour:
   _loseColor: {r: 1, g: 0, b: 0, a: 1}
   _resultWrapCanvasGroup: {fileID: 7840073097808898008}
   _fadeDuration: 0.5
-  _transitionController: {fileID: 0}
+  _charactersObject: {fileID: 0}
+  _turnObject: {fileID: 0}
   _defeatReturnScene: 0
   _battleRewardManager: {fileID: 0}
   _goldTxt: {fileID: 7872371758849973128}
@@ -1842,7 +1843,9 @@ MonoBehaviour:
   - {fileID: 4081985021833717610}
   _dropItemRowPrefab: {fileID: 5139749685353393127, guid: bee11026ae51066418923ef3c2f4f263, type: 3}
   _dropItemContent: {fileID: 3327116352126534292}
-  _confirmBtn: {fileID: 6617453237665364800}
+  _noGainTxt: {fileID: 0}
+  _confirmObject: {fileID: 0}
+  _confirmFadeDuration: 0.3
   _battleSceneName: Battle
 --- !u!1 &852605247213107228
 GameObject:
@@ -2867,13 +2870,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdfa969abd680984380c7731475235bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PartyQueueController
-  _views:
-  - {fileID: 1545198786308078742}
-  - {fileID: 2470181357714773337}
-  - {fileID: 1061409506359741364}
-  - {fileID: 1384395528105681890}
+  _statusViewPrefab: {fileID: 0}
+  _contentParent: {fileID: 0}
   _duration: 0.35
   _ease: 6
+  _selectedScaleMultiplier: 1.15
 --- !u!1 &1288632833347178697
 GameObject:
   m_ObjectHideFlags: 0
@@ -3268,11 +3269,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba040c3c201d9704da482cfe9449cc49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleActionBarController
+  _autoReactToTurnEvents: 1
   _canvasGroup: {fileID: 8111814920555342707}
   _rectTransform: {fileID: 2959045566437547288}
   _duration: 0.2
   _hideEase: 5
   _showEase: 6
+  _hiddenScale: {x: 0.85, y: 0.85, z: 0.85}
 --- !u!1 &1392051668455842171
 GameObject:
   m_ObjectHideFlags: 0
@@ -5370,11 +5373,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcc81112abbc62149a273d3b0fe1b9db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RetreatConfirmController
-  _retreatBtn: {fileID: 4440577309082460810}
   _retreatConfirmPanel: {fileID: 2467697102271095848}
   _confirmBtn: {fileID: 6020379636888668438}
   _cancelBtn: {fileID: 7753955642850828005}
-  _transitionController: {fileID: 0}
 --- !u!1 &2484855166639651180
 GameObject:
   m_ObjectHideFlags: 0
@@ -5856,15 +5857,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillListController
   _skillBtn: {fileID: 1958935960502080422}
   _rectTransform: {fileID: 9115350066956644594}
-  _closeBtn: {fileID: 7805989511705290562}
   _duration: 0.25
   _openEase: 6
   _closeEase: 5
-  _contentParent: {fileID: 2013522604735968534}
-  _skillPrefab: {fileID: 5728450186566913571, guid: 81702a5bfa480d54893aa5da3b16c439, type: 3}
+  _upPlace: {fileID: 0}
+  _middlePlace: {fileID: 0}
+  _downPlace: {fileID: 0}
   _actionBar: {fileID: 1985847522786587773}
-  _targetList: {fileID: 6690692582471205994}
+  _targetCycler: {fileID: 0}
   _cameraDirector: {fileID: 0}
+  _skillPresentationPalette: {fileID: 0}
 --- !u!1 &2579618518551030186
 GameObject:
   m_ObjectHideFlags: 0
@@ -7005,10 +7007,15 @@ MonoBehaviour:
   _icon: {fileID: 1998506462448302960}
   _nameTxt: {fileID: 4845292132057083229}
   _levelTxt: {fileID: 7638939763480130348}
+  _xpFillImg: {fileID: 0}
+  _xpTxt: {fileID: 0}
   _levelUpImg: {fileID: 2136954900067399016}
-  _xpSlider: {fileID: 1466462317497277560}
-  _earnedXpTxt: {fileID: 6434424829366905456}
-  _requiredXpTxt: {fileID: 8984092385404821664}
+  _levelUpBounceHeight: 15
+  _levelUpBounceDuration: 0.4
+  _levelUpBounceCount: 2
+  _fillDuration: 1.5
+  _fillEase: 6
+  _levelUpPauseDuration: 0
 --- !u!1 &3383476672782367611
 GameObject:
   m_ObjectHideFlags: 0
@@ -8314,10 +8321,15 @@ MonoBehaviour:
   _icon: {fileID: 4231914129223111102}
   _nameTxt: {fileID: 5404681545459639479}
   _levelTxt: {fileID: 323241239675789432}
+  _xpFillImg: {fileID: 0}
+  _xpTxt: {fileID: 0}
   _levelUpImg: {fileID: 3811661872801928205}
-  _xpSlider: {fileID: 7560450290583567908}
-  _earnedXpTxt: {fileID: 640335212275510589}
-  _requiredXpTxt: {fileID: 4806076492445735487}
+  _levelUpBounceHeight: 15
+  _levelUpBounceDuration: 0.4
+  _levelUpBounceCount: 2
+  _fillDuration: 1.5
+  _fillEase: 6
+  _levelUpPauseDuration: 0
 --- !u!1 &3907541009386976099
 GameObject:
   m_ObjectHideFlags: 0
@@ -10214,12 +10226,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c17eed50a5db18479811a4931914f4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleCharacterStatusView
+  _visualRoot: {fileID: 0}
+  _iconImg: {fileID: 0}
   _nameTxt: {fileID: 6484181870203477362}
-  _orderTxt: {fileID: 3435910504796400844}
-  _hpSlider: {fileID: 3243311541046457192}
+  _levelTxt: {fileID: 0}
   _hpTxt: {fileID: 81311961043629088}
-  _mpSlider: {fileID: 2927064098515576672}
   _mpTxt: {fileID: 2318752019403608900}
+  _hpBarFillImg: {fileID: 0}
+  _mpBarFillImg: {fileID: 0}
+  _fillTweenDuration: 0.3
+  _fillTweenEase: 6
+  _aliveIconColor: {r: 1, g: 1, b: 1, a: 1}
+  _deadIconColor: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
+  _statusIconTemplate: {fileID: 0}
+  _statusIconsParent: {fileID: 0}
+  _rearFrame: {fileID: 0}
+  _rearFrameRevealDuration: 0.35
+  _rearFrameRevealEase: 9
 --- !u!1 &4452782783798582077
 GameObject:
   m_ObjectHideFlags: 0
@@ -10793,8 +10816,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AtkController
   _atkBtn: {fileID: 1769435135107577476}
-  _targetList: {fileID: 6690692582471205994}
-  _cameraDirector: {fileID: 0}
+  _targetCycler: {fileID: 0}
 --- !u!1 &4882551519251272273
 GameObject:
   m_ObjectHideFlags: 0
@@ -11542,12 +11564,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c17eed50a5db18479811a4931914f4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleCharacterStatusView
+  _visualRoot: {fileID: 0}
+  _iconImg: {fileID: 0}
   _nameTxt: {fileID: 7015961262918924903}
-  _orderTxt: {fileID: 7231146597379846933}
-  _hpSlider: {fileID: 2998035104900961021}
+  _levelTxt: {fileID: 0}
   _hpTxt: {fileID: 7685846751387690885}
-  _mpSlider: {fileID: 7096616543472360356}
   _mpTxt: {fileID: 7255264224235850583}
+  _hpBarFillImg: {fileID: 0}
+  _mpBarFillImg: {fileID: 0}
+  _fillTweenDuration: 0.3
+  _fillTweenEase: 6
+  _aliveIconColor: {r: 1, g: 1, b: 1, a: 1}
+  _deadIconColor: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
+  _statusIconTemplate: {fileID: 0}
+  _statusIconsParent: {fileID: 0}
+  _rearFrame: {fileID: 0}
+  _rearFrameRevealDuration: 0.35
+  _rearFrameRevealEase: 9
 --- !u!1 &5539735111613344493
 GameObject:
   m_ObjectHideFlags: 0
@@ -13882,10 +13915,15 @@ MonoBehaviour:
   _icon: {fileID: 7410750416537441024}
   _nameTxt: {fileID: 4509770311823142665}
   _levelTxt: {fileID: 7331627172277025119}
+  _xpFillImg: {fileID: 0}
+  _xpTxt: {fileID: 0}
   _levelUpImg: {fileID: 3542084015484029874}
-  _xpSlider: {fileID: 2501036702455724206}
-  _earnedXpTxt: {fileID: 3997330308691783164}
-  _requiredXpTxt: {fileID: 5679957050559999755}
+  _levelUpBounceHeight: 15
+  _levelUpBounceDuration: 0.4
+  _levelUpBounceCount: 2
+  _fillDuration: 1.5
+  _fillEase: 6
+  _levelUpPauseDuration: 0
 --- !u!1 &6693960456760774536
 GameObject:
   m_ObjectHideFlags: 0
@@ -14604,12 +14642,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c17eed50a5db18479811a4931914f4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleCharacterStatusView
+  _visualRoot: {fileID: 0}
+  _iconImg: {fileID: 0}
   _nameTxt: {fileID: 6003695119449044916}
-  _orderTxt: {fileID: 503007144289251929}
-  _hpSlider: {fileID: 5355295554842014819}
+  _levelTxt: {fileID: 0}
   _hpTxt: {fileID: 7293774531127948481}
-  _mpSlider: {fileID: 7335003384811922943}
   _mpTxt: {fileID: 1323382489025042659}
+  _hpBarFillImg: {fileID: 0}
+  _mpBarFillImg: {fileID: 0}
+  _fillTweenDuration: 0.3
+  _fillTweenEase: 6
+  _aliveIconColor: {r: 1, g: 1, b: 1, a: 1}
+  _deadIconColor: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
+  _statusIconTemplate: {fileID: 0}
+  _statusIconsParent: {fileID: 0}
+  _rearFrame: {fileID: 0}
+  _rearFrameRevealDuration: 0.35
+  _rearFrameRevealEase: 9
 --- !u!1 &7073929866090981044
 GameObject:
   m_ObjectHideFlags: 0
@@ -14976,13 +15025,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemListController
   _itemBtn: {fileID: 6182712357742300709}
   _rectTransform: {fileID: 1828834732748170305}
-  _closeBtn: {fileID: 8328519508329102191}
   _duration: 0.25
   _openEase: 6
   _closeEase: 5
-  _contentParent: {fileID: 4149913187988973878}
-  _itemPrefab: {fileID: 3650460574739081875, guid: 1cde7a14df47bd14389e77a480d6e7ee, type: 3}
+  _upPlace: {fileID: 0}
+  _middlePlace: {fileID: 0}
+  _downPlace: {fileID: 0}
   _actionBar: {fileID: 1985847522786587773}
+  _cameraDirector: {fileID: 0}
 --- !u!1 &7248885611658196888
 GameObject:
   m_ObjectHideFlags: 0
@@ -16928,12 +16978,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c17eed50a5db18479811a4931914f4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleCharacterStatusView
+  _visualRoot: {fileID: 0}
+  _iconImg: {fileID: 0}
   _nameTxt: {fileID: 6203821400649800590}
-  _orderTxt: {fileID: 218007388696234165}
-  _hpSlider: {fileID: 5333261029784433775}
+  _levelTxt: {fileID: 0}
   _hpTxt: {fileID: 1330923092324791780}
-  _mpSlider: {fileID: 3708581697085268608}
   _mpTxt: {fileID: 6805980575132456176}
+  _hpBarFillImg: {fileID: 0}
+  _mpBarFillImg: {fileID: 0}
+  _fillTweenDuration: 0.3
+  _fillTweenEase: 6
+  _aliveIconColor: {r: 1, g: 1, b: 1, a: 1}
+  _deadIconColor: {r: 0.5568628, g: 0.5568628, b: 0.5568628, a: 1}
+  _statusIconTemplate: {fileID: 0}
+  _statusIconsParent: {fileID: 0}
+  _rearFrame: {fileID: 0}
+  _rearFrameRevealDuration: 0.35
+  _rearFrameRevealEase: 9
 --- !u!1 &8204157440882215137
 GameObject:
   m_ObjectHideFlags: 0
@@ -17319,7 +17380,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 207.39001, y: -50}
-  m_SizeDelta: {x: 0, y: 50}
+  m_SizeDelta: {x: 101.95, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5994149094391635118
 CanvasRenderer:
@@ -18730,10 +18791,15 @@ MonoBehaviour:
   _icon: {fileID: 2887905569956184425}
   _nameTxt: {fileID: 75055386262583331}
   _levelTxt: {fileID: 7784365609009471854}
+  _xpFillImg: {fileID: 0}
+  _xpTxt: {fileID: 0}
   _levelUpImg: {fileID: 1048181733547158757}
-  _xpSlider: {fileID: 96614903284463473}
-  _earnedXpTxt: {fileID: 4837765823779275321}
-  _requiredXpTxt: {fileID: 93241994764408838}
+  _levelUpBounceHeight: 15
+  _levelUpBounceDuration: 0.4
+  _levelUpBounceCount: 2
+  _fillDuration: 1.5
+  _fillEase: 6
+  _levelUpPauseDuration: 0
 --- !u!1 &8768882965904922965
 GameObject:
   m_ObjectHideFlags: 0

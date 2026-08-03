@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 던전 생성 및 환경 설정을 관리하는 ScriptableObject 데이터 클래스.
+/// </summary>
 [CreateAssetMenu(fileName = "Dungeon_", menuName = "Game/Dungeon")]
 public class DungeonData : ScriptableObject
 {
@@ -12,9 +15,12 @@ public class DungeonData : ScriptableObject
     public GameObject FloorPrefab;
     public GameObject WallPrefab;
     public GameObject CeilingPrefab;
+    public GameObject DoorPrefab;
+    public GameObject DoorWallPrefab; 
 
     public GameObject[] DecorPrefabs;
-    
+
+    public GameObject[] WallDecorPrefabs;
 
     [Header("Dungeon Setting")]
     public Vector2Int MapSize;
@@ -35,12 +41,12 @@ public class DungeonData : ScriptableObject
     public int MaxRoomSize;
 
     [System.Serializable]
-    public struct RoomWeight // Room 의 생성 확률
+    public struct RoomWeight
     {
         public RoomType Type;
         public int Weight;
     }
- 
+
     public List<RoomWeight> RoomWeights;
 
     [Header("Content")]
