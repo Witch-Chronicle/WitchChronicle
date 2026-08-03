@@ -8,6 +8,7 @@ public class BattleManager : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private BattleCycleController _battleCycleController;
+    [SerializeField] private BattleIntroDirector _battleIntroDirector;
 
     [Header("Persistent Party")]
     [SerializeField] private bool _usePersistentParty = true;
@@ -61,6 +62,11 @@ public class BattleManager : MonoBehaviour
         if (_battleCycleController == null)
         {
             _battleCycleController = GetComponent<BattleCycleController>();
+        }
+
+        if (_battleIntroDirector == null)
+        {
+            _battleIntroDirector = FindFirstObjectByType<BattleIntroDirector>();
         }
     }
 
@@ -152,7 +158,18 @@ public class BattleManager : MonoBehaviour
 
         LogBattleUnits();
 
-        _battleCycleController.StartBattle(_activeBattleUnits);
+        if (_battleIntroDirector != null &&
+            _battleIntroDirector.isActiveAndEnabled)
+        {
+            _battleIntroDirector.PlayIntro(
+                () => _battleCycleController.StartBattle(
+                    _activeBattleUnits));
+
+            return;
+        }
+
+        _battleCycleController.StartBattle(
+            _activeBattleUnits);
     }
 
     /// <summary>
