@@ -1,14 +1,11 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace WitchChronicle.Alchemy
 {
-    /// <summary>
-    /// 가마솥 UI 패널 (요리/포션 겸용).
-    /// 모드 탭 클릭 시 3D 가마솥 + UI 요소가 함께 스왑됨.
-    /// </summary>
     public class AlchemyPanel : MonoBehaviour
     {
         [Header("UI 루트")]
@@ -37,10 +34,30 @@ namespace WitchChronicle.Alchemy
         [SerializeField] private Button _startButton;
 
         [Header("재료 슬롯")]
-        [SerializeField] private GameObject[] _ingredientSlots; // 최대 6개 미리 배치
+        [SerializeField] private GameObject[] _ingredientSlots;
+
+        [Header("레시피 리스트")]
+        [SerializeField] private Transform _recipeListContent;
+        [SerializeField] private RecipeCard _recipeCardPrefab;
+        [SerializeField] private TextMeshProUGUI _recipeCountText;
+
+        [Header("레시피 데이터")]
+        [SerializeField] private List<CookingRecipeData> _cookingRecipes = new List<CookingRecipeData>();
+        [SerializeField] private List<PotionRecipeData> _potionRecipes = new List<PotionRecipeData>();
+
+        [Header("재료 인벤토리")]
+        [SerializeField] private Transform _inventoryContent;
+        [SerializeField] private MaterialSlot _materialSlotPrefab;
+        [SerializeField] private TextMeshProUGUI _inventoryCountText;
 
         private Action _onClosedCallback;
         private AlchemyMode _currentMode;
+        private int _currentGradeIndex = 0;
+
+        private List<RecipeCard> _spawnedCards = new List<RecipeCard>();
+        private RecipeCard _selectedCard;
+
+        private List<MaterialSlot> _spawnedInventorySlots = new List<MaterialSlot>();
 
         private void Awake()
         {
@@ -73,6 +90,7 @@ namespace WitchChronicle.Alchemy
             _onClosedCallback = onClosed;
             if (_panelRoot != null) _panelRoot.SetActive(true);
 
+            _currentGradeIndex = 0;
             SwitchMode(mode);
             Debug.Log($"[AlchemyPanel] 열림 (모드: {mode})");
         }
@@ -91,27 +109,21 @@ namespace WitchChronicle.Alchemy
         private void SwitchMode(AlchemyMode mode)
         {
             _currentMode = mode;
+            _currentGradeIndex = 0;
+            _selectedCard = null;
 
-            // 3D 가마솥 스왑
             if (_cookingCauldron != null)
                 _cookingCauldron.SetActive(mode == AlchemyMode.Cooking);
             if (_potionCauldron != null)
                 _potionCauldron.SetActive(mode == AlchemyMode.Potion);
 
-            // 모드 탭 색상 업데이트
             UpdateModeTabVisual();
-
-            // 재료 슬롯 개수 스왑 (요리 5, 포션 6)
             UpdateIngredientSlotCount(mode);
-
-            // 시작 버튼 텍스트 스왑
             UpdateStartButtonText(mode);
-
-            // 등급 탭 스왑 (포션은 Legendary 없음)
             UpdateGradeTabVisibility(mode);
 
-            // TODO: 레시피 리스트 리로드 (Phase 2)
-            // TODO: 재료 인벤토리 필터 변경 (Phase 3)
+            RefreshRecipeList();
+            RefreshInventory();
 
             Debug.Log($"[AlchemyPanel] 모드 전환: {mode}");
         }
@@ -145,20 +157,155 @@ namespace WitchChronicle.Alchemy
         private void UpdateStartButtonText(AlchemyMode mode)
         {
             if (_startButtonText == null) return;
-            _startButtonText.text = (mode == AlchemyMode.Cooking) ? " 요리 시작" : " 제조 시작";
+            _startButtonText.text = (mode == AlchemyMode.Cooking) ? "🔥 요리 시작" : "🧪 제조 시작";
         }
 
         private void UpdateGradeTabVisibility(AlchemyMode mode)
         {
-            // 포션은 Legendary 없으니 숨김
             if (_legendaryTabButton != null)
                 _legendaryTabButton.gameObject.SetActive(mode == AlchemyMode.Cooking);
         }
 
         private void OnGradeTabClicked(int gradeIndex)
         {
-            // TODO: 레시피 리스트 필터링 (Phase 2)
+            _currentGradeIndex = gradeIndex;
+            RefreshRecipeList();
             Debug.Log($"[AlchemyPanel] 등급 탭 클릭: {gradeIndex}");
+        }
+
+        // ====== 레시피 리스트 ======
+
+        private void RefreshRecipeList()
+        {
+            ClearRecipeCards();
+
+            if (_currentMode == AlchemyMode.Cooking)
+                SpawnCookingRecipes();
+            else
+                SpawnPotionRecipes();
+        }
+
+        private void ClearRecipeCards()
+        {
+            foreach (var card in _spawnedCards)
+            {
+                if (card != null) Destroy(card.gameObject);
+            }
+            _spawnedCards.Clear();
+            _selectedCard = null;
+        }
+
+        private void SpawnCookingRecipes()
+        {
+            if (_recipeCardPrefab == null || _recipeListContent == null) return;
+
+            int count = 0;
+            foreach (var recipe in _cookingRecipes)
+            {
+                if (recipe == null || recipe.result == null) continue;
+
+                if ((int)recipe.result.foodGrade != _currentGradeIndex) continue;
+
+                var card = Instantiate(_recipeCardPrefab, _recipeListContent);
+                card.SetupCookingRecipe(recipe, OnRecipeCardClicked);
+                _spawnedCards.Add(card);
+                count++;
+            }
+
+            UpdateRecipeCountText(count);
+        }
+
+        private void SpawnPotionRecipes()
+        {
+            if (_recipeCardPrefab == null || _recipeListContent == null) return;
+
+            int count = 0;
+            foreach (var recipe in _potionRecipes)
+            {
+                if (recipe == null || recipe.resultPotion == null) continue;
+
+                if ((int)recipe.resultPotion.PotionGrade != _currentGradeIndex) continue;
+
+                var card = Instantiate(_recipeCardPrefab, _recipeListContent);
+                card.SetupPotionRecipe(recipe, OnRecipeCardClicked);
+                _spawnedCards.Add(card);
+                count++;
+            }
+
+            UpdateRecipeCountText(count);
+        }
+
+        private void UpdateRecipeCountText(int count)
+        {
+            if (_recipeCountText != null)
+                _recipeCountText.text = $"{count}종";
+        }
+
+        private void OnRecipeCardClicked(object recipeData)
+        {
+            if (_selectedCard != null)
+                _selectedCard.SetHighlighted(false);
+
+            Debug.Log($"[AlchemyPanel] 레시피 클릭됨: {recipeData}");
+        }
+
+        // ====== 재료 인벤토리 ======
+
+        private void RefreshInventory()
+        {
+            ClearInventorySlots();
+
+            if (PlayerInventory.Instance == null)
+            {
+                Debug.LogWarning("[AlchemyPanel] PlayerInventory.Instance 없음");
+                return;
+            }
+
+            int totalCount = 0;
+
+            foreach (var slot in PlayerInventory.Instance.InventorySlots)
+            {
+                if (slot == null || slot.ItemData == null) continue;
+
+                // 재료만 필터링
+                var material = slot.ItemData as MaterialItemData;
+                if (material == null) continue;
+
+                // 요리 결과물이나 포션은 인벤토리에서 제외 (재료 아님)
+                if (material is CookedFoodItemData) continue;
+                if (material is PotionItemData) continue;
+
+                SpawnInventorySlot(material, slot.Quantity);
+                totalCount += slot.Quantity;
+            }
+
+            if (_inventoryCountText != null)
+                _inventoryCountText.text = totalCount.ToString();
+
+            Debug.Log($"[AlchemyPanel] 재료 인벤토리 갱신: {_spawnedInventorySlots.Count}종, 총 {totalCount}개");
+        }
+
+        private void ClearInventorySlots()
+        {
+            foreach (var slot in _spawnedInventorySlots)
+            {
+                if (slot != null) Destroy(slot.gameObject);
+            }
+            _spawnedInventorySlots.Clear();
+        }
+
+        private void SpawnInventorySlot(MaterialItemData material, int quantity)
+        {
+            if (_materialSlotPrefab == null || _inventoryContent == null) return;
+
+            var slot = Instantiate(_materialSlotPrefab, _inventoryContent);
+            slot.Setup(material, quantity, OnMaterialSlotClicked);
+            _spawnedInventorySlots.Add(slot);
+        }
+
+        private void OnMaterialSlotClicked(MaterialItemData material)
+        {
+            Debug.Log($"[AlchemyPanel] 재료 클릭됨: {material?.itemName}");
         }
     }
 }
