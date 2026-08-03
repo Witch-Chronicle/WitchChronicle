@@ -2,31 +2,68 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// PortalPanel 전담. NormalDungeon 버튼 클릭 시 Dungeon_1 씬으로 이동.
-/// CloseBtn 클릭 시 PortalNPC.TogglePortal()을 호출해서 패널을 닫음.
+/// PortalPanel 전담 컨트롤러. 여러 던전 버튼들의 입력을 수신하고 씬 전환 및 패널 제어를 담당합니다.
 /// </summary>
 public class PortalUIController : MonoBehaviour
 {
     [Header("NPC")]
     [SerializeField] private PortalNPC _portalNPC;
 
-    [Header("Buttons")]
-    [SerializeField] private Button _normalDungeonBtn;
+    [Header("Dungeon Buttons")]
+    [SerializeField] private DungeonButton[] _dungeonButtons;
+
+    [Header("Close Button")]
     [SerializeField] private Button _closeBtn;
-
-    // 추가, 던전 다르게 생성 하기 위한 SO, 
-    // 나중에 버튼 마다 다른 던전 데이터 로 골라서 던전 이동
-    [Header("Dungeon Data")]
-    [SerializeField] private DungeonData _targetDungeon;
-
 
     private void Awake()
     {
-        if (_normalDungeonBtn != null) _normalDungeonBtn.onClick.AddListener(HandleNormalDungeonClicked);
-        if (_closeBtn != null) _closeBtn.onClick.AddListener(HandleCloseClicked);
+        BindEvents();
     }
 
-    private void HandleNormalDungeonClicked()
+    private void OnDestroy()
+    {
+        UnbindEvents();
+    }
+
+    private void BindEvents()
+    {
+        if (_dungeonButtons != null)
+        {
+            foreach (var dungeonButton in _dungeonButtons)
+            {
+                if (dungeonButton != null)
+                {
+                    dungeonButton.OnDungeonSelected += HandleDungeonSelected;
+                }
+            }
+        }
+
+        if (_closeBtn != null)
+        {
+            _closeBtn.onClick.AddListener(HandleCloseClicked);
+        }
+    }
+
+    private void UnbindEvents()
+    {
+        if (_dungeonButtons != null)
+        {
+            foreach (var dungeonButton in _dungeonButtons)
+            {
+                if (dungeonButton != null)
+                {
+                    dungeonButton.OnDungeonSelected -= HandleDungeonSelected;
+                }
+            }
+        }
+
+        if (_closeBtn != null)
+        {
+            _closeBtn.onClick.RemoveListener(HandleCloseClicked);
+        }
+    }
+
+    private void HandleDungeonSelected(DungeonData targetDungeon)
     {
         if (SceneTransitionManager.Instance == null)
         {
@@ -34,10 +71,16 @@ public class PortalUIController : MonoBehaviour
             return;
         }
 
-        // 추가, 현재 들어갈 던전 저장
-        DungeonSelection.CurrentDungeonData = _targetDungeon;
+        if (targetDungeon == null)
+        {
+            Debug.LogWarning("[PortalUIController] 전달받은 던전 데이터가 null입니다.");
+            return;
+        }
 
-        ShowMessageManager.Instance.ShowMessage($"{_targetDungeon.DungeonName} 에 입장 합니다.");
+        DungeonSelection.CurrentDungeonData = targetDungeon;
+
+        ShowMessageManager.Instance.ShowMessage($"{targetDungeon.DungeonName} 에 입장합니다.");
+        Debug.Log($"[PortalUIController] 던전 선택 완료: {targetDungeon.DungeonName} 씬 전환 시작");
 
         SceneTransitionManager.Instance.LoadScene(SceneId.Dungeon);
     }
@@ -50,6 +93,7 @@ public class PortalUIController : MonoBehaviour
             return;
         }
 
+        Debug.Log("[PortalUIController] 포탈 패널 닫기 요청");
         _portalNPC.TogglePortal();
     }
 }

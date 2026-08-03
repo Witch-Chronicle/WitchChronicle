@@ -2,10 +2,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// BSP 기반 던전 생성기
+/// BSP 기반 던전 생성기 (6x6 모듈 규격 스냅 적용)
 /// </summary>
 public class DungeonGenerator : MonoBehaviour
 {
+    private const int ModuleSize = 6;
+
     [Header("Dungeon Settings")]
     private DungeonData _dungeonData
     {
@@ -117,7 +119,7 @@ public class DungeonGenerator : MonoBehaviour
     }
 
     /// <summary>
-    /// Leaf 분할
+    /// Leaf 분할 (6의 배수 단위 스냅)
     /// </summary>
     private bool SplitLeaf(Leaf leaf)
     {
@@ -141,9 +143,15 @@ public class DungeonGenerator : MonoBehaviour
                 return false;
             }
 
-            int split = Random.Range(
-                _dungeonData.MinRoomSize,
-                area.height - _dungeonData.MinRoomSize);
+            int minSplit = _dungeonData.MinRoomSize / ModuleSize;
+            int maxSplit = (area.height - _dungeonData.MinRoomSize) / ModuleSize;
+
+            if (minSplit > maxSplit)
+            {
+                return false;
+            }
+
+            int split = Random.Range(minSplit, maxSplit + 1) * ModuleSize;
 
             leaf.Left = new Leaf(
                 new RectInt(
@@ -166,9 +174,15 @@ public class DungeonGenerator : MonoBehaviour
                 return false;
             }
 
-            int split = Random.Range(
-                _dungeonData.MinRoomSize,
-                area.width - _dungeonData.MinRoomSize);
+            int minSplit = _dungeonData.MinRoomSize / ModuleSize;
+            int maxSplit = (area.width - _dungeonData.MinRoomSize) / ModuleSize;
+
+            if (minSplit > maxSplit)
+            {
+                return false;
+            }
+
+            int split = Random.Range(minSplit, maxSplit + 1) * ModuleSize;
 
             leaf.Left = new Leaf(
                 new RectInt(
@@ -187,8 +201,9 @@ public class DungeonGenerator : MonoBehaviour
 
         return true;
     }
-        /// <summary>
-    /// Leaf 영역 안에 Room 생성
+
+    /// <summary>
+    /// Leaf 영역 안에 Room 생성 (6의 배수 단위 스냅)
     /// </summary>
     private void CreateRoom(RectInt area, List<RoomNode> rooms)
     {
@@ -203,21 +218,34 @@ public class DungeonGenerator : MonoBehaviour
             return;
         }
 
-        int width = Random.Range(
-            _dungeonData.MinRoomSize,
-            Mathf.Min(_dungeonData.MaxRoomSize, maxWidth) + 1);
+        int minWidthSteps = _dungeonData.MinRoomSize / ModuleSize;
+        int maxWidthSteps = Mathf.Min(_dungeonData.MaxRoomSize, maxWidth) / ModuleSize;
 
-        int height = Random.Range(
-            _dungeonData.MinRoomSize,
-            Mathf.Min(_dungeonData.MaxRoomSize, maxHeight) + 1);
+        if (minWidthSteps > maxWidthSteps)
+        {
+            return;
+        }
 
-        int x = area.x + Random.Range(
-            0,
-            area.width - width + 1);
+        int width = Random.Range(minWidthSteps, maxWidthSteps + 1) * ModuleSize;
 
-        int y = area.y + Random.Range(
-            0,
-            area.height - height + 1);
+        int minHeightSteps = _dungeonData.MinRoomSize / ModuleSize;
+        int maxHeightSteps = Mathf.Min(_dungeonData.MaxRoomSize, maxHeight) / ModuleSize;
+
+        if (minHeightSteps > maxHeightSteps)
+        {
+            return;
+        }
+
+        int height = Random.Range(minHeightSteps, maxHeightSteps + 1) * ModuleSize;
+
+        int maxOffsetX = Mathf.Max(0, area.width - width);
+        int maxOffsetY = Mathf.Max(0, area.height - height);
+
+        int randomXSteps = Random.Range(0, (maxOffsetX / ModuleSize) + 1);
+        int randomYSteps = Random.Range(0, (maxOffsetY / ModuleSize) + 1);
+
+        int x = area.x + (randomXSteps * ModuleSize);
+        int y = area.y + (randomYSteps * ModuleSize);
 
         RoomNode room = new RoomNode(
             new RectInt(
@@ -323,7 +351,9 @@ public class DungeonGenerator : MonoBehaviour
         }
 
         Debug.Log("[DungeonGenerator] Room 연결 완료");
-    }    /// <summary>
+    }
+
+    /// <summary>
     /// Room Type 지정
     /// </summary>
     private void AssignRoomTypes(List<RoomNode> rooms)
