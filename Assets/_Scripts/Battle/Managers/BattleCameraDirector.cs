@@ -12,6 +12,7 @@ public class BattleCameraDirector : MonoBehaviour
     [Header("References")]
     [SerializeField] private BattleManager _battleManager;
     [SerializeField] private BattleUIContext _battleUIContext;
+    [SerializeField] private CinemachineBrain _cinemachineBrain;
 
     [Header("Cinemachine Cameras")]
     [SerializeField] private CinemachineCamera _playerBackCamera;
@@ -110,7 +111,10 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private float _itemUseWaitDuration = 0.35f;
 
     private Coroutine _waitRoutine;
+    private Coroutine _cutRoutine;
     private CinemachineCamera _activeCamera;
+    private CinemachineBlendDefinition _cachedDefaultBlend;
+    private bool _hasCachedDefaultBlend;
 
     /// <summary>
     /// 참조 자동 연결
@@ -125,6 +129,10 @@ public class BattleCameraDirector : MonoBehaviour
         if (_battleUIContext == null)
         {
             _battleUIContext = FindFirstObjectByType<BattleUIContext>();
+        }
+        if (_cinemachineBrain == null)
+        {
+            _cinemachineBrain = FindFirstObjectByType<CinemachineBrain>();
         }
     }
 
@@ -147,6 +155,9 @@ public class BattleCameraDirector : MonoBehaviour
     /// </summary>
     private void OnDisable()
     {
+        StopWaitRoutine();
+        StopCutRoutine();
+
         if (_battleUIContext == null)
         {
             return;
@@ -610,15 +621,11 @@ public class BattleCameraDirector : MonoBehaviour
     }
 
     /// <summary>
-    /// 카메라 활성화
+    /// 대상 카메라 Priority 활성화
     /// </summary>
     /// <param name="targetCamera">활성화할 카메라</param>
-    /// <param name="waitDuration">완료 대기 시간</param>
-    /// <param name="onComplete">완료 콜백</param>
-    private void ActivateCamera(
-    CinemachineCamera targetCamera,
-    float waitDuration,
-    Action onComplete)
+    private void ApplyActiveCameraPriority(
+        CinemachineCamera targetCamera)
     {
         SetCameraPriority(_playerBackCamera, _inactivePriority);
         SetCameraPriority(_targetOverviewCamera, _inactivePriority);
@@ -631,6 +638,23 @@ public class BattleCameraDirector : MonoBehaviour
         SetCameraPriority(targetCamera, _activePriority);
 
         _activeCamera = targetCamera;
+    }
+
+    /// <summary>
+    /// 카메라 블렌드 활성화
+    /// </summary>
+    /// <param name="targetCamera">활성화할 카메라</param>
+    /// <param name="waitDuration">완료 대기 시간</param>
+    /// <param name="onComplete">완료 콜백</param>
+    private void ActivateCamera(
+        CinemachineCamera targetCamera,
+        float waitDuration,
+        Action onComplete)
+    {
+        StopCutRoutine();
+
+        ApplyActiveCameraPriority(
+            targetCamera);
 
         StopWaitRoutine();
 
@@ -639,7 +663,72 @@ public class BattleCameraDirector : MonoBehaviour
             return;
         }
 
-        _waitRoutine = StartCoroutine(WaitAndInvoke(waitDuration, onComplete));
+        _waitRoutine = StartCoroutine(
+            WaitAndInvoke(
+                waitDuration,
+                onComplete));
+    }
+
+    /// <summary>
+    /// 카메라 컷 활성화
+    /// </summary>
+    /// <param name="targetCamera">활성화할 카메라</param>
+    /// <param name="waitDuration">컷 이후 유지 시간</param>
+    /// <param name="onComplete">완료 콜백</param>
+    private void ActivateCameraCut(
+        CinemachineCamera targetCamera,
+        float waitDuration,
+        Action onComplete)
+    {
+        if (targetCamera == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        StopCutRoutine();
+        StopWaitRoutine();
+
+        if (_cinemachineBrain != null)
+        {
+            _cachedDefaultBlend =
+                _cinemachineBrain.DefaultBlend;
+
+            _hasCachedDefaultBlend = true;
+
+            _cinemachineBrain.DefaultBlend =
+                new CinemachineBlendDefinition(
+                    CinemachineBlendDefinition.Styles.Cut,
+                    0f);
+
+            _cutRoutine = StartCoroutine(
+                RestoreDefaultBlendNextFrame());
+        }
+
+        ApplyActiveCameraPriority(
+            targetCamera);
+
+        if (onComplete == null)
+        {
+            return;
+        }
+
+        _waitRoutine = StartCoroutine(
+            WaitAndInvoke(
+                waitDuration,
+                onComplete));
+    }
+
+    /// <summary>
+    /// 다음 프레임 기본 블렌드 복구
+    /// </summary>
+    private IEnumerator RestoreDefaultBlendNextFrame()
+    {
+        yield return null;
+
+        RestoreDefaultBlend();
+
+        _cutRoutine = null;
     }
 
     /// <summary>
@@ -688,6 +777,37 @@ public class BattleCameraDirector : MonoBehaviour
 
         StopCoroutine(_waitRoutine);
         _waitRoutine = null;
+    }
+
+    /// <summary>
+    /// 컷 전환 루틴 중단
+    /// </summary>
+    private void StopCutRoutine()
+    {
+        if (_cutRoutine != null)
+        {
+            StopCoroutine(_cutRoutine);
+            _cutRoutine = null;
+        }
+
+        RestoreDefaultBlend();
+    }
+
+    /// <summary>
+    /// Cinemachine 기본 블렌드 복구
+    /// </summary>
+    private void RestoreDefaultBlend()
+    {
+        if (_cinemachineBrain == null ||
+            _hasCachedDefaultBlend == false)
+        {
+            return;
+        }
+
+        _cinemachineBrain.DefaultBlend =
+            _cachedDefaultBlend;
+
+        _hasCachedDefaultBlend = false;
     }
 
     /// <summary>

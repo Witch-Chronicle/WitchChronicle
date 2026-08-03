@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using DG.Tweening;
 
 /// <summary>
 /// 전투 시작 카메라 연출 제어
@@ -10,6 +11,10 @@ public class BattleIntroDirector : MonoBehaviour
     [Header("References")]
     [SerializeField] private BattleManager _battleManager;
     [SerializeField] private BattleCameraDirector _battleCameraDirector;
+
+    [Header("Battle HUD")]
+    [SerializeField] private CanvasGroup _battleHudCanvasGroup;
+    [SerializeField] private float _hudShowDuration = 0.2f;
 
     [Header("Timing")]
     [Tooltip("전투 씬 공개 연출 대기 시간")]
@@ -35,6 +40,8 @@ public class BattleIntroDirector : MonoBehaviour
         {
             _battleCameraDirector = FindFirstObjectByType<BattleCameraDirector>();
         }
+
+        HideBattleHudImmediate();
     }
 
     /// <summary>
@@ -44,6 +51,7 @@ public class BattleIntroDirector : MonoBehaviour
     public void PlayIntro(Action onComplete = null)
     {
         StopIntro();
+        HideBattleHudImmediate();
 
         _introRoutine = StartCoroutine(
             PlayIntroRoutine(onComplete));
@@ -54,13 +62,16 @@ public class BattleIntroDirector : MonoBehaviour
     /// </summary>
     public void StopIntro()
     {
-        if (_introRoutine == null)
+        if (_introRoutine != null)
         {
-            return;
+            StopCoroutine(_introRoutine);
+            _introRoutine = null;
         }
 
-        StopCoroutine(_introRoutine);
-        _introRoutine = null;
+        if (_battleHudCanvasGroup != null)
+        {
+            _battleHudCanvasGroup.DOKill();
+        }
     }
 
     /// <summary>
@@ -78,8 +89,8 @@ public class BattleIntroDirector : MonoBehaviour
             _battleCameraDirector == null ||
             _battleCameraDirector.isActiveAndEnabled == false)
         {
-            _introRoutine = null;
-            onComplete?.Invoke();
+            yield return CompleteIntro(onComplete);
+
             yield break;
         }
 
@@ -87,8 +98,8 @@ public class BattleIntroDirector : MonoBehaviour
 
         if (playerUnit == null)
         {
-            _introRoutine = null;
-            onComplete?.Invoke();
+            yield return CompleteIntro(onComplete);
+
             yield break;
         }
 
@@ -126,8 +137,7 @@ public class BattleIntroDirector : MonoBehaviour
                 _defaultViewHoldDuration);
         }
 
-        _introRoutine = null;
-        onComplete?.Invoke();
+        yield return CompleteIntro(onComplete);
     }
 
     /// <summary>
@@ -160,5 +170,68 @@ public class BattleIntroDirector : MonoBehaviour
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// 전투 HUD 즉시 숨김
+    /// </summary>
+    private void HideBattleHudImmediate()
+    {
+        if (_battleHudCanvasGroup == null)
+        {
+            return;
+        }
+
+        _battleHudCanvasGroup.DOKill();
+        _battleHudCanvasGroup.alpha = 0f;
+        _battleHudCanvasGroup.interactable = false;
+        _battleHudCanvasGroup.blocksRaycasts = false;
+    }
+
+    /// <summary>
+    /// 전투 HUD 표시
+    /// </summary>
+    /// <param name="onComplete">표시 완료 콜백</param>
+    private void ShowBattleHud(Action onComplete)
+    {
+        if (_battleHudCanvasGroup == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        _battleHudCanvasGroup.DOKill();
+        _battleHudCanvasGroup.interactable = false;
+        _battleHudCanvasGroup.blocksRaycasts = false;
+
+        _battleHudCanvasGroup
+            .DOFade(1f, _hudShowDuration)
+            .SetEase(Ease.OutQuad)
+            .OnComplete(() =>
+            {
+                _battleHudCanvasGroup.interactable = true;
+                _battleHudCanvasGroup.blocksRaycasts = true;
+                onComplete?.Invoke();
+            });
+    }
+
+    /// <summary>
+    /// 전투 시작 연출 완료 처리
+    /// </summary>
+    /// <param name="onComplete">연출 완료 콜백</param>
+    private IEnumerator CompleteIntro(Action onComplete)
+    {
+        bool isHudShown = false;
+
+        ShowBattleHud(
+            () => isHudShown = true);
+
+        while (isHudShown == false)
+        {
+            yield return null;
+        }
+
+        _introRoutine = null;
+        onComplete?.Invoke();
     }
 }
