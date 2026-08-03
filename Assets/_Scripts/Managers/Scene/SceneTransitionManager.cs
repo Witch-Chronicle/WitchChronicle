@@ -57,17 +57,26 @@ public class SceneTransitionManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 지금 Title 씬이 로드되어 있는지 여부.
+    /// </summary>
+    public bool IsInTitleScene()
+    {
+        Scene titleScene = SceneManager.GetSceneByName(SceneId.Title.ToString());
+        return titleScene.IsValid() && titleScene.isLoaded;
+    }
+
+    /// <summary>
     /// SceneId(enum)로 씬 전환. 오타 걱정 없이 이걸 기본으로 사용하면 됨.
     /// </summary>
-    public void LoadScene(SceneId sceneId, float delayBeforeLoad = 0f, Action onBeforeLoad = null, Action onLoaded = null, bool skipCover = false)
+    public void LoadScene(SceneId sceneId, float delayBeforeLoad = 0f, Action onBeforeLoad = null, Action onLoaded = null, bool skipCover = false, bool skipReveal = false)
     {
-        LoadScene(sceneId.ToString(), delayBeforeLoad, onBeforeLoad, onLoaded, skipCover);
+        LoadScene(sceneId.ToString(), delayBeforeLoad, onBeforeLoad, onLoaded, skipCover, skipReveal);
     }
 
     /// <summary>
     /// 문자열로 직접 씬 전환. SceneId에 없는 씬을 임시로 불러야 할 때만 사용.
     /// </summary>
-    public void LoadScene(string sceneName, float delayBeforeLoad = 0f, Action onBeforeLoad = null, Action onLoaded = null, bool skipCover = false)
+    public void LoadScene(string sceneName, float delayBeforeLoad = 0f, Action onBeforeLoad = null, Action onLoaded = null, bool skipCover = false, bool skipReveal = false)
     {
         if (IsLoading)
         {
@@ -81,10 +90,10 @@ public class SceneTransitionManager : MonoBehaviour
             return;
         }
 
-        StartCoroutine(LoadSceneRoutine(sceneName, delayBeforeLoad, onBeforeLoad, onLoaded, skipCover));
+        StartCoroutine(LoadSceneRoutine(sceneName, delayBeforeLoad, onBeforeLoad, onLoaded, skipCover, skipReveal));
     }
 
-    private IEnumerator LoadSceneRoutine(string sceneName, float delayBeforeLoad, Action onBeforeLoad, Action onLoaded, bool skipCover)
+    private IEnumerator LoadSceneRoutine(string sceneName, float delayBeforeLoad, Action onBeforeLoad, Action onLoaded, bool skipCover, bool skipReveal)
     {
         IsLoading = true;
 
@@ -107,7 +116,10 @@ public class SceneTransitionManager : MonoBehaviour
             Debug.LogError($"[SceneTransitionManager] 씬을 찾을 수 없습니다: {sceneName} (Build Settings 등록 확인)");
             IsLoading = false;
 
-            yield return RevealScreenRoutine();
+            if (skipReveal == false)
+            {
+                yield return RevealScreenRoutine();
+            }
 
             yield break;
         }
@@ -119,7 +131,10 @@ public class SceneTransitionManager : MonoBehaviour
 
         onLoaded?.Invoke();
 
-        yield return RevealScreenRoutine();
+        if (skipReveal == false)
+        {
+            yield return RevealScreenRoutine();
+        }
 
         IsLoading = false;
     }

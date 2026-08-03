@@ -1,11 +1,15 @@
 using UnityEngine;
 
 /// <summary>
-/// EquipItemData(원본 스탯) + EnhanceTableData(강화 테이블) + 강화 단계를 조합해서
-/// 최종 스탯을 계산하는 유틸리티.
-/// - 원래 0이었던 스탯은 강화해도 계속 0 (스탯별 성장 폭이 다른 무기/방어구 대응)
-/// - 강화는 단계별로 누적 적용 (1강 적용된 값에 2강 비율이 다시 적용되는 복리 방식)
-/// - 소수점은 올림 처리 (강화했는데 하나도 안 오르는 상황 방지)
+/// 원본 장비 스탯과 강화 테이블을 조합해 최종 스탯을 계산한다.
+///
+/// 계산 규칙:
+/// 1. 현재 강화 단계까지의 increaseRate를 모두 더한다.
+/// 2. 합산된 증가율을 원본 스탯에 한 번만 적용한다.
+/// 3. 증가량의 소수점은 마지막에 한 번만 올림 처리한다.
+/// 4. 원래 0이었던 스탯은 강화 후에도 0을 유지한다.
+///
+/// 단계별 현재 값에 반복 적용하는 복리 계산은 사용하지 않는다.
 /// </summary>
 public static class EquipStatCalculator
 {
@@ -22,11 +26,44 @@ public static class EquipStatCalculator
     }
 
     /// <summary>
-    /// 강화 단계가 반영된 최종 스탯을 계산해서 반환.
+    /// 강화 단계가 반영된 최종 정수 스탯을 계산한다.
     /// </summary>
-    public static StatSet GetCurrentStats(EquipItemData baseData, int enhanceLevel, EnhanceTableData enhanceTable)
+    public static StatSet GetCurrentStats(
+        EquipItemData baseData,
+        int enhanceLevel,
+        EnhanceTableData enhanceTable)
     {
-        var stats = new StatSet
+        if (baseData == null)
+        {
+            Debug.LogWarning("[EquipStatCalculator] baseData가 null이므로 빈 스탯을 반환합니다.");
+            return default;
+        }
+
+        if (enhanceTable == null || enhanceLevel <= 0)
+        {
+            return CreateBaseStats(baseData);
+        }
+
+        float totalIncreaseRate = enhanceTable.GetTotalIncreaseRate(enhanceLevel);
+
+        return new StatSet
+        {
+            hp = ApplyTotalIncrease(baseData.hpBonus, totalIncreaseRate),
+            mp = ApplyTotalIncrease(baseData.mpBonus, totalIncreaseRate),
+            spellPower = ApplyTotalIncrease(baseData.spellPowerBonus, totalIncreaseRate),
+            intelligence = ApplyTotalIncrease(baseData.intelligenceBonus, totalIncreaseRate),
+            defense = ApplyTotalIncrease(baseData.defenseBonus, totalIncreaseRate),
+            speed = ApplyTotalIncrease(baseData.speedBonus, totalIncreaseRate),
+            luck = ApplyTotalIncrease(baseData.luckBonus, totalIncreaseRate)
+        };
+    }
+
+    /// <summary>
+    /// 강화가 적용되지 않은 원본 스탯 세트를 생성한다.
+    /// </summary>
+    private static StatSet CreateBaseStats(EquipItemData baseData)
+    {
+        return new StatSet
         {
             hp = baseData.hpBonus,
             mp = baseData.mpBonus,
@@ -36,41 +73,20 @@ public static class EquipStatCalculator
             speed = baseData.speedBonus,
             luck = baseData.luckBonus
         };
-
-        if (enhanceTable == null || enhanceLevel <= 0)
-        {
-            return stats;
-        }
-
-        // 1강부터 현재 강화 단계까지 순서대로 누적 적용
-        for (int level = 1; level <= enhanceLevel; level++)
-        {
-            EnhanceLevelEntry entry = enhanceTable.GetLevelData(level);
-            if (entry == null) continue;
-
-            stats.hp = ApplyIncrease(stats.hp, entry.increaseRate);
-            stats.mp = ApplyIncrease(stats.mp, entry.increaseRate);
-            stats.spellPower = ApplyIncrease(stats.spellPower, entry.increaseRate);
-            stats.intelligence = ApplyIncrease(stats.intelligence, entry.increaseRate);
-            stats.defense = ApplyIncrease(stats.defense, entry.increaseRate);
-            stats.speed = ApplyIncrease(stats.speed, entry.increaseRate);
-            stats.luck = ApplyIncrease(stats.luck, entry.increaseRate);
-        }
-
-        return stats;
     }
 
     /// <summary>
-    /// 원래 0이었던 스탯은 그대로 0 유지. 0이 아니면 올림 처리된 증가분을 더함.
+    /// 누적 증가율을 원본 스탯에 한 번 적용한다.
+    /// 증가량의 소수점은 마지막에 한 번만 올린다.
     /// </summary>
-    private static int ApplyIncrease(int currentValue, float increaseRate)
+    private static int ApplyTotalIncrease(int baseValue, float totalIncreaseRate)
     {
-        if (currentValue == 0)
+        if (baseValue == 0 || totalIncreaseRate <= 0f)
         {
-            return 0;
+            return baseValue;
         }
 
-        int increase = Mathf.CeilToInt(currentValue * increaseRate / 100f);
-        return currentValue + increase;
+        int increase = Mathf.CeilToInt(baseValue * totalIncreaseRate / 100f);
+        return baseValue + increase;
     }
 }

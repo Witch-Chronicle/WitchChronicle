@@ -16,6 +16,7 @@ public class InventoryItemSlot : MonoBehaviour
 {
     [Header("UI 연결")]
     [SerializeField] private Image _iconImage;
+    [SerializeField] private Image _gradeImage;
     [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private TextMeshProUGUI _amountText;
     [SerializeField] private Button _slotButton;
@@ -39,12 +40,13 @@ public class InventoryItemSlot : MonoBehaviour
     /// <summary>
     /// 소비/재료/씨앗/퀘스트 아이템용. 수량을 "x3" 형식으로 표시.
     /// </summary>
-    public void Setup(ItemData itemData, int quantity, Action<ItemData> onClick)
+    public void Setup(ItemData itemData, int quantity, Action<ItemData> onClick, Sprite gradeIcon)
     {
         ItemData = itemData;
         EquipmentInstance = null;
 
         SetIconAndName(itemData);
+        SetGradeIcon(gradeIcon);
 
         if (_amountText != null)
         {
@@ -57,7 +59,7 @@ public class InventoryItemSlot : MonoBehaviour
     /// <summary>
     /// 장비 개체용. 강화 단계가 1 이상이면 이름 뒤에 "+n"을 붙여서 표시.
     /// </summary>
-    public void Setup(EquipmentInstance equipmentInstance, Action<EquipmentInstance> onClick)
+    public void Setup(EquipmentInstance equipmentInstance, Action<EquipmentInstance> onClick, Sprite gradeIcon)
     {
         EquipmentInstance = equipmentInstance;
         ItemData = equipmentInstance.baseData;
@@ -74,6 +76,8 @@ public class InventoryItemSlot : MonoBehaviour
                 ? $"{baseName} +{equipmentInstance.enhanceLevel}"
                 : baseName;
         }
+
+        SetGradeIcon(gradeIcon);
 
         // 장비는 수량 개념이 없으므로 amountText는 비워둠
         if (_amountText != null)
@@ -100,5 +104,16 @@ public class InventoryItemSlot : MonoBehaviour
     private void HandleClick()
     {
         _onClickCallback?.Invoke();
+    }
+
+    /// <summary>
+    /// 아이템 등급에 해당하는 이미지를 표시. 없으면 이미지 자체를 비활성화.
+    /// </summary>
+    private void SetGradeIcon(Sprite gradeIcon)
+    {
+        if (_gradeImage == null) return;
+
+        _gradeImage.sprite = gradeIcon;
+        _gradeImage.enabled = gradeIcon != null;
     }
 }

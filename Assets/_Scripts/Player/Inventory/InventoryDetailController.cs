@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
 using System.Collections.Generic;
+using System.Collections;
 
 /// <summary>
 /// 인벤토리 슬롯 클릭 시 하단에서 슬라이드업 되는 아이템 상세 패널.
@@ -54,6 +55,8 @@ public class InventoryDetailController : MonoBehaviour
     [SerializeField] private Button _unequipBtn;
     [Tooltip("ItemData.canSell이 true인 아이템만 표시")]
     [SerializeField] private Button _sellBtn;
+    [Tooltip("MainCategory.Consume + SubCategory.Book(마도서)인 소비 아이템만 표시")]
+    [SerializeField] private Button _useBtn;
 
     [Header("Equip Stat Section")]
     [Tooltip("Equip/StatSection의 Current/Change 표시 담당")]
@@ -90,8 +93,8 @@ public class InventoryDetailController : MonoBehaviour
         if (_closeBtn != null) _closeBtn.onClick.AddListener(Hide);
         if (_equipBtn != null) _equipBtn.onClick.AddListener(OnClickEquip);
         if (_unequipBtn != null) _unequipBtn.onClick.AddListener(OnClickUnequip);
-
         if (_sellBtn != null) _sellBtn.onClick.AddListener(OnClickSellBtn);
+        if (_useBtn != null) _useBtn.onClick.AddListener(OnClickUse);
         if (_sellCancelBtn != null) _sellCancelBtn.onClick.AddListener(OnClickSellCancel);
         if (_sellConfirmBtn != null) _sellConfirmBtn.onClick.AddListener(OnClickSellConfirm);
         if (_sellMinusBtn != null) _sellMinusBtn.onClick.AddListener(OnClickSellMinus);
@@ -99,7 +102,6 @@ public class InventoryDetailController : MonoBehaviour
         if (_sellMaxBtn != null) _sellMaxBtn.onClick.AddListener(OnClickSellMax);
         if (_sellAmountInput != null) _sellAmountInput.onEndEdit.AddListener(OnSellAmountInputEndEdit);
 
-        // 시작 시에는 BtnsWrap 상태로 (애니메이션 없이)
         SetWrapStateImmediate(showSellWrap: false);
 
         if (_panelRect == null) return;
@@ -107,9 +109,9 @@ public class InventoryDetailController : MonoBehaviour
         _shownY = _panelRect.anchoredPosition.y;
         _hiddenY = _shownY - _panelRect.rect.height;
 
-        // 시작 시에는 바로 숨겨진 위치로 (애니메이션 없이)
         _panelRect.anchoredPosition = new Vector2(_panelRect.anchoredPosition.x, _hiddenY);
     }
+
 
     /// <summary>
     /// 소비/재료/씨앗/퀘스트 아이템 정보를 채우고 패널을 슬라이드업으로 보여준다.
@@ -121,18 +123,19 @@ public class InventoryDetailController : MonoBehaviour
         _currentItemData = itemData;
         _currentEquipmentInstance = null;
 
-        // 새 아이템을 열 때는 항상 BtnsWrap 상태로 (애니메이션 없이)
         SetWrapStateImmediate(showSellWrap: false);
 
         SetInfoCommon(itemData);
 
-        // 장비가 아니므로 착용 레벨/스탯/장착버튼 전부 숨김
         if (_requiredLevelText != null) _requiredLevelText.gameObject.SetActive(false);
         if (_statsContainer != null) _statsContainer.SetActive(false);
         if (_equipBtn != null) _equipBtn.gameObject.SetActive(false);
         if (_unequipBtn != null) _unequipBtn.gameObject.SetActive(false);
         if (_equipStateText != null) _equipStateText.SetActive(false);
-        if (_equipStatSectionController != null) _equipStatSectionController.HideChangePreview();
+
+        bool isBook = itemData.mainCategory == MainCategory.Consume && itemData.subCategory == SubCategory.Book;
+        if (_useBtn != null) _useBtn.gameObject.SetActive(isBook);
+
         ClearStatRows();
 
         if (_descriptionObject != null) _descriptionObject.SetActive(true);
@@ -154,12 +157,12 @@ public class InventoryDetailController : MonoBehaviour
 
         ItemData itemData = equipmentInstance.baseData;
 
-        // 새 아이템을 열 때는 항상 BtnsWrap 상태로 (애니메이션 없이)
         SetWrapStateImmediate(showSellWrap: false);
 
         SetInfoCommon(itemData);
 
-        // 장비는 강화 단계가 1 이상이면 이름 뒤에 "+n" 표시
+        if (_useBtn != null) _useBtn.gameObject.SetActive(false);
+
         if (_nameText != null && equipmentInstance.enhanceLevel > 0)
         {
             _nameText.text = $"{itemData.itemName} +{equipmentInstance.enhanceLevel}";
@@ -168,38 +171,22 @@ public class InventoryDetailController : MonoBehaviour
         if (_requiredLevelText != null)
         {
             _requiredLevelText.gameObject.SetActive(true);
-            _requiredLevelText.text = $"Lv.{equipmentInstance.baseData.requiredLevel}";
+            _requiredLevelText.text = $"{equipmentInstance.baseData.requiredLevel}레벨 장비";
         }
 
         if (_descriptionObject != null) _descriptionObject.SetActive(true);
         if (_descriptionText != null) _descriptionText.text = itemData.description;
-
         if (_statsContainer != null) _statsContainer.SetActive(true);
 
-        // 장착 중인 장비를 보고 있는지 여부에 따라 BtnsWrap 버튼 구성을 다르게 함 (4명 중 누구든 장착 중이면 true)
         bool isEquipped = CharacterEquipment.IsEquippedByAnyone(equipmentInstance);
 
         if (_equipBtn != null) _equipBtn.gameObject.SetActive(!isEquipped);
         if (_unequipBtn != null) _unequipBtn.gameObject.SetActive(isEquipped);
         if (_equipStateText != null) _equipStateText.SetActive(isEquipped);
 
-        // 장착 중인 장비는 판매 불가 (판매하려면 먼저 해제해야 함)
         if (isEquipped && _sellBtn != null)
         {
             _sellBtn.gameObject.SetActive(false);
-        }
-
-        // 장착 중인 장비를 보고 있으면 Change 숨김, 미장착 장비를 보고 있으면 장착 시 변화 미리보기
-        if (_equipStatSectionController != null)
-        {
-            if (isEquipped)
-            {
-                _equipStatSectionController.HideChangePreview();
-            }
-            else
-            {
-                _equipStatSectionController.ShowChangePreview(equipmentInstance);
-            }
         }
 
         BuildStatRows(equipmentInstance.cachedStats);
@@ -226,11 +213,6 @@ public class InventoryDetailController : MonoBehaviour
     public void Hide()
     {
         SlideTo(_hiddenY);
-
-        if (_equipStatSectionController != null)
-        {
-            _equipStatSectionController.HideChangePreview();
-        }
     }
 
     /// <summary>
@@ -398,11 +380,26 @@ public class InventoryDetailController : MonoBehaviour
 
     private void OnClickEquip()
     {
-        if (_currentEquipmentInstance == null || CharacterSelectionManager.Instance == null) return;
+        if (_currentEquipmentInstance == null) return;
+        if (CharacterSelectionManager.Instance == null) return;
+        if (PersistentCharacterManager.Instance == null) return;
 
         CharacterType selected = CharacterSelectionManager.Instance.GetSelected();
-        CharacterEquipment target = CharacterEquipment.GetByCharacter(selected);
-        if (target == null) return;
+        string characterId = selected.ToString();
+
+        if (PersistentCharacterManager.Instance.TryGetCharacter(characterId, out PersistentCharacterUnit unit) == false)
+        {
+            Debug.LogWarning($"[InventoryDetailController] PersistentCharacterUnit를 찾을 수 없음: {selected}");
+            return;
+        }
+
+        CharacterEquipment target = unit.CharacterEquipment;
+
+        if (target == null)
+        {
+            Debug.LogWarning($"[InventoryDetailController] CharacterEquipment를 찾을 수 없음: {selected}");
+            return;
+        }
 
         target.Equip(_currentEquipmentInstance);
         Hide();
@@ -410,11 +407,26 @@ public class InventoryDetailController : MonoBehaviour
 
     private void OnClickUnequip()
     {
-        if (_currentEquipmentInstance == null || CharacterSelectionManager.Instance == null) return;
+        if (_currentEquipmentInstance == null) return;
+        if (CharacterSelectionManager.Instance == null) return;
+        if (PersistentCharacterManager.Instance == null) return;
 
         CharacterType selected = CharacterSelectionManager.Instance.GetSelected();
-        CharacterEquipment target = CharacterEquipment.GetByCharacter(selected);
-        if (target == null) return;
+        string characterId = selected.ToString();
+
+        if (PersistentCharacterManager.Instance.TryGetCharacter(characterId, out PersistentCharacterUnit unit) == false)
+        {
+            Debug.LogWarning($"[InventoryDetailController] PersistentCharacterUnit를 찾을 수 없음: {selected}");
+            return;
+        }
+
+        CharacterEquipment target = unit.CharacterEquipment;
+
+        if (target == null)
+        {
+            Debug.LogWarning($"[InventoryDetailController] CharacterEquipment를 찾을 수 없음: {selected}");
+            return;
+        }
 
         EquipSlotType slot = _currentEquipmentInstance.baseData.equipSlotType;
         target.Unequip(slot);
@@ -453,6 +465,31 @@ public class InventoryDetailController : MonoBehaviour
 
         // 아직 남아있으면 BtnsWrap으로 복귀
         CrossFadeToBtnsWrap();
+    }
+
+    /// <summary>
+    /// 마도서(Consume+Book) 사용. 임시로 디버그 로그만 남기고 인벤토리에서 1개 소모.
+    /// 다 써서 더 이상 보유하고 있지 않으면 패널을 닫음.
+    /// </summary>
+    private void OnClickUse()
+    {
+        if (_currentItemData == null) return;
+        if (PlayerInventory.Instance == null) return;
+
+        Debug.Log($"[InventoryDetailController] 아이템 사용: {_currentItemData.itemName}");
+
+        bool success = PlayerInventory.Instance.TryConsumeItem(_currentItemData, 1);
+
+        if (!success) return;
+
+        PlayerInventory.Instance.RaiseInventoryChanged();
+
+        int remaining = PlayerInventory.Instance.GetTotalQuantity(_currentItemData);
+
+        if (remaining <= 0)
+        {
+            Hide();
+        }
     }
 
     // ===================== 스탯 표시 =====================

@@ -165,7 +165,6 @@ public class EnhanceUIController : MonoBehaviour
     {
         _selectedInstance = instance;
 
-        // 슬롯 선택 강조 갱신
         UpdateSelectedSlotHighlight(instance);
 
         ItemData itemData = instance.baseData;
@@ -175,7 +174,6 @@ public class EnhanceUIController : MonoBehaviour
         if (_infoGrade != null) _infoGrade.text = itemData.itemGrade.ToDisplayString();
 
         int currentLevel = instance.enhanceLevel;
-
         EnhanceLevelEntry nextEntry = _enhanceController != null
             ? _enhanceController.GetNextLevelEntry(instance)
             : null;
@@ -185,7 +183,10 @@ public class EnhanceUIController : MonoBehaviour
         if (_currentLvText != null) _currentLvText.text = $"+{currentLevel}";
         if (_nextLvText != null) _nextLvText.text = isMaxLevel ? "MAX" : $"+{nextEntry.level}";
 
-        EnhanceTableData table = _enhanceController != null ? _enhanceController.Table : null;
+        // 등급별 테이블로 변경 - 이 장비의 등급에 맞는 테이블을 조회
+        EnhanceTableData table = _enhanceController != null
+            ? _enhanceController.GetTable(itemData.itemGrade)
+            : null;
 
         EquipStatCalculator.StatSet currentStats = instance.cachedStats;
         EquipStatCalculator.StatSet nextStats = isMaxLevel

@@ -3,25 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Pool;
 using TMPro;
 
 /// <summary>
-/// ShopNPC가 들고 있는 아이템 S.O 목록을 실제 Shop UI에 뿌려주는 역할.
-/// - CategorySection(EquipBtn/ConsumeBtn/MaterialBtn) 선택 -> 서브카테고리 버튼 동적 생성
-/// - 서브카테고리 선택 -> Contents/Scroll View/Content에 ShopItemSlot 생성
-/// - 선택된 대분류 카테고리 버튼은 배경/텍스트 색을 다르게 표시
+/// ShopNPC가 들고 있는 판매 아이템 목록(List&lt;ItemData&gt;)을 Shop UI에 뿌려주는 역할.
+/// - MainCategory 4종 버튼은 항상 고정 배치하되, 그 상점이 실제로 판매하는 Main만 표시.
+/// - Main 클릭 시, 그 상점이 그 Main 안에서 실제로 파는 SubCategory 버튼만 동적 생성(+"전체"),
+///   판매하지 않는 서브카테고리는 아예 생성하지 않음.
+/// - 아이템 슬롯(ShopItemSlot)은 ObjectPool로 재사용.
 /// * 구매 로직은 없음. 진열만 담당.
 /// </summary>
 public class ShopUIController : MonoBehaviour
 {
+    [Serializable]
+    private class MainCategoryButton
+    {
+        public MainCategory mainCategory;
+        public Button mainButton;
+    }
+
     [Header("Shop NPC")]
     [SerializeField] private ShopNPC _shopNPC;
 
-    [Header("Main Category Btns")]
-    [SerializeField] private Button _equipCategoryBtn;
-    [SerializeField] private Button _consumeCategoryBtn;
-    [SerializeField] private Button _materialCategoryBtn;
-    [SerializeField] private Button _seedCategoryBtn;
+    [Header("Main Category Btns (항상 고정 배치, 판매 여부에 따라 표시/숨김)")]
+    [SerializeField] private List<MainCategoryButton> _mainButtons = new List<MainCategoryButton>();
 
     [Header("Category Btn 색상")]
     [SerializeField] private Color _normalBackgroundColor = Color.white;
@@ -32,13 +38,17 @@ public class ShopUIController : MonoBehaviour
     [Header("Close Btn")]
     [SerializeField] private Button _closeBtn;
 
-    [Header("Sub Category Btns")]
+    [Header("Sub Category Btns (동적 생성, 실제 판매하는 서브카테고리만)")]
     [SerializeField] private Button _subCategoryButtonPrefab;
     [SerializeField] private Transform _subCategoryParent; // BtnsWrap
 
     [Header("Item List")]
     [SerializeField] private ShopItemSlot _itemSlotPrefab;
     [SerializeField] private Transform _itemSlotParent; // Content
+
+    [Header("Item Slot Pool")]
+    [SerializeField] private int _poolDefaultCapacity = 20;
+    [SerializeField] private int _poolMaxSize = 200;
 
     [Header("Item Detail")]
     [SerializeField] private ShopDetailController _shopDetailController;
@@ -47,29 +57,71 @@ public class ShopUIController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _goldText;
 
     private readonly List<GameObject> _spawnedSubCategoryButtons = new List<GameObject>();
-    private readonly List<GameObject> _spawnedItemSlots = new List<GameObject>();
 
-    private ItemType _currentCategory = ItemType.Equipment;
+    private ObjectPool<ShopItemSlot> _slotPool;
+    private readonly List<ShopItemSlot> _activeSlots = new List<ShopItemSlot>();
+
+    private List<ItemData> _currentSellItems = new List<ItemData>();
+
+    private MainCategory _currentMainCategory;
     private Button _selectedSubCategoryButton;
+
+    private void Awake()
+    {
+        _slotPool = new ObjectPool<ShopItemSlot>(
+            createFunc: CreateSlot,
+            actionOnGet: OnGetSlot,
+            actionOnRelease: OnReleaseSlot,
+            actionOnDestroy: OnDestroySlot,
+            collectionCheck: true,
+            defaultCapacity: _poolDefaultCapacity,
+            maxSize: _poolMaxSize);
+    }
 
     private void OnEnable()
     {
-        _equipCategoryBtn.onClick.AddListener(OnClickEquipCategory);
-        _consumeCategoryBtn.onClick.AddListener(OnClickConsumeCategory);
-        _materialCategoryBtn.onClick.AddListener(OnClickMaterialCategory);
-        _seedCategoryBtn.onClick.AddListener(OnClickSeedCategory);
-        _closeBtn.onClick.AddListener(OnClickClose);
+        for (int i = 0; i < _mainButtons.Count; i++)
+        {
+            MainCategoryButton entry = _mainButtons[i];
+            if (entry.mainButton == null) continue;
 
-        // 상점이 켜질 때마다 기본 카테고리(Equip)부터 보여줌
-        SelectCategory(ItemType.Equipment);
+            MainCategory captured = entry.mainCategory;
+            entry.mainButton.onClick.AddListener(() => OnClickMainCategory(captured));
+        }
 
-        // 아직 아무 아이템도 선택 안 한 상태로 초기화
+        if (_closeBtn != null)
+        {
+            _closeBtn.onClick.AddListener(OnClickClose);
+        }
+
+        FindShopkeeper();
+
+        _currentSellItems = _shopNPC != null
+            ? _shopNPC.SellItems.Where(item => item != null).ToList()
+            : new List<ItemData>();
+
+        RefreshMainButtonAvailability();
+
+        MainCategory? firstAvailable = _mainButtons
+            .Where(b => _currentSellItems.Any(item => item.mainCategory == b.mainCategory))
+            .Select(b => (MainCategory?)b.mainCategory)
+            .FirstOrDefault();
+
+        if (firstAvailable.HasValue)
+        {
+            SelectMainCategory(firstAvailable.Value);
+        }
+        else
+        {
+            ClearSubCategoryButtons();
+            ReleaseAllSlots();
+        }
+
         if (_shopDetailController != null)
         {
             _shopDetailController.HideDetail();
         }
 
-        // 골드 실시간 갱신 구독 + 현재 값으로 초기 표시
         if (PlayerInventory.Instance != null)
         {
             PlayerInventory.Instance.OnGoldChanged += UpdateGoldText;
@@ -79,11 +131,15 @@ public class ShopUIController : MonoBehaviour
 
     private void OnDisable()
     {
-        _equipCategoryBtn.onClick.RemoveListener(OnClickEquipCategory);
-        _consumeCategoryBtn.onClick.RemoveListener(OnClickConsumeCategory);
-        _materialCategoryBtn.onClick.RemoveListener(OnClickMaterialCategory);
-        _seedCategoryBtn.onClick.RemoveListener(OnClickSeedCategory);
-        _closeBtn.onClick.RemoveListener(OnClickClose);
+        for (int i = 0; i < _mainButtons.Count; i++)
+        {
+            _mainButtons[i].mainButton?.onClick.RemoveAllListeners();
+        }
+
+        if (_closeBtn != null)
+        {
+            _closeBtn.onClick.RemoveListener(OnClickClose);
+        }
 
         if (PlayerInventory.Instance != null)
         {
@@ -91,31 +147,73 @@ public class ShopUIController : MonoBehaviour
         }
     }
 
-    void Start()
+    private void OnDestroy()
     {
-        FindShopkeeper();
+        _slotPool?.Dispose();
     }
 
-    private void OnClickEquipCategory() => SelectCategory(ItemType.Equipment);
-    private void OnClickConsumeCategory() => SelectCategory(ItemType.Consumable);
-    private void OnClickMaterialCategory() => SelectCategory(ItemType.Material);
-    private void OnClickSeedCategory() => SelectCategory(ItemType.SeedItem);
+    // ===================== Object Pool =====================
+
+    private ShopItemSlot CreateSlot()
+    {
+        return Instantiate(_itemSlotPrefab, _itemSlotParent);
+    }
+
+    private void OnGetSlot(ShopItemSlot slot)
+    {
+        slot.gameObject.SetActive(true);
+        slot.transform.SetAsLastSibling();
+    }
+
+    private void OnReleaseSlot(ShopItemSlot slot)
+    {
+        slot.gameObject.SetActive(false);
+    }
+
+    private void OnDestroySlot(ShopItemSlot slot)
+    {
+        if (slot != null)
+        {
+            Destroy(slot.gameObject);
+        }
+    }
 
     private void OnClickClose()
     {
-        // 닫기 전에 클릭 이벤트 제거
         _closeBtn.onClick.RemoveListener(OnClickClose);
-
         _shopNPC.ToggleShop();
     }
 
+    // ===================== Main Category =====================
+
     /// <summary>
-    /// 대분류 선택 -> 서브카테고리 버튼들을 새로 생성하고, 첫 번째(전체)를 기본으로 보여줌
+    /// 실제로 판매 중인 Main만 버튼 노출, 나머지는 숨김.
     /// </summary>
-    private void SelectCategory(ItemType category)
+    private void RefreshMainButtonAvailability()
     {
-        _currentCategory = category;
-        UpdateCategoryHighlight();
+        for (int i = 0; i < _mainButtons.Count; i++)
+        {
+            MainCategoryButton entry = _mainButtons[i];
+            if (entry.mainButton == null) continue;
+
+            bool hasItems = _currentSellItems.Any(item => item.mainCategory == entry.mainCategory);
+            entry.mainButton.gameObject.SetActive(hasItems);
+        }
+    }
+
+    private void OnClickMainCategory(MainCategory category)
+    {
+        SelectMainCategory(category);
+    }
+
+    /// <summary>
+    /// 대분류 선택 -> 그 안에서 실제 판매하는 서브카테고리 버튼들을 새로 생성(+"전체"), 첫 번째를 기본 선택.
+    /// </summary>
+    private void SelectMainCategory(MainCategory category)
+    {
+        _currentMainCategory = category;
+
+        UpdateMainHighlight();
 
         List<(string label, List<ItemData> items)> subCategories = BuildSubCategories(category);
 
@@ -126,26 +224,24 @@ public class ShopUIController : MonoBehaviour
         foreach (var subCategory in subCategories)
         {
             Button createdButton = CreateSubCategoryButton(subCategory.label, subCategory.items);
+
             if (firstButton == null)
             {
                 firstButton = createdButton;
             }
         }
 
-        // 대분류를 새로 고를 때마다 첫 번째("전체") 서브카테고리를 기본 선택 상태로 표시
         SetSubCategorySelected(firstButton);
         ShowItems(subCategories.Count > 0 ? subCategories[0].items : new List<ItemData>());
     }
 
-    /// <summary>
-    /// 지금 선택된 대분류 카테고리 버튼만 강조 색상으로, 나머지는 기본 색상으로.
-    /// </summary>
-    private void UpdateCategoryHighlight()
+    private void UpdateMainHighlight()
     {
-        SetButtonHighlighted(_equipCategoryBtn, _currentCategory == ItemType.Equipment);
-        SetButtonHighlighted(_consumeCategoryBtn, _currentCategory == ItemType.Consumable);
-        SetButtonHighlighted(_materialCategoryBtn, _currentCategory == ItemType.Material);
-        SetButtonHighlighted(_seedCategoryBtn, _currentCategory == ItemType.SeedItem);
+        for (int i = 0; i < _mainButtons.Count; i++)
+        {
+            MainCategoryButton entry = _mainButtons[i];
+            SetButtonHighlighted(entry.mainButton, entry.mainCategory == _currentMainCategory);
+        }
     }
 
     private void SetButtonHighlighted(Button button, bool isSelected)
@@ -165,6 +261,8 @@ public class ShopUIController : MonoBehaviour
         }
     }
 
+    // ===================== Sub Category (동적 생성) =====================
+
     /// <summary>
     /// 지금 선택된 서브카테고리 버튼만 강조 색상으로, 나머지는 기본 색상으로.
     /// </summary>
@@ -180,72 +278,36 @@ public class ShopUIController : MonoBehaviour
     }
 
     /// <summary>
-    /// 카테고리별 서브카테고리 구성 (라벨 + 해당 아이템 목록).
-    /// 서브카테고리 이름/구성은 기획에 맞게 자유롭게 수정 가능.
+    /// 이 Main 카테고리 안에서 실제로 판매하는 SubCategory만 "전체" + 개별 서브로 구성.
+    /// 판매하지 않는 서브카테고리는 목록 자체에 안 들어감.
     /// </summary>
-    private List<(string label, List<ItemData> items)> BuildSubCategories(ItemType category)
+    private List<(string label, List<ItemData> items)> BuildSubCategories(MainCategory category)
     {
         var result = new List<(string, List<ItemData>)>();
 
-        if (_shopNPC == null)
+        List<ItemData> itemsInMain = _currentSellItems
+            .Where(item => item.mainCategory == category)
+            .ToList();
+
+        if (itemsInMain.Count == 0)
         {
-            Debug.LogWarning("[ShopUIController] shopNPC가 연결되지 않았습니다.");
             return result;
         }
 
-        switch (category)
+        result.Add(("전체", itemsInMain));
+
+        List<SubCategory> subCategories = itemsInMain
+            .Select(item => item.subCategory)
+            .Distinct()
+            .ToList();
+
+        foreach (SubCategory sub in subCategories)
         {
-            case ItemType.Equipment:
-                var weapons = _shopNPC.WeaponItems.Cast<ItemData>().ToList();
-                var armors = _shopNPC.ArmorItems.Cast<ItemData>().ToList();
-                var accessories = _shopNPC.AccessoryItems.Cast<ItemData>().ToList();
+            List<ItemData> filtered = itemsInMain
+                .Where(item => item.subCategory == sub)
+                .ToList();
 
-                result.Add(("전체", weapons.Concat(armors).Concat(accessories).ToList()));
-                result.Add(("무기", weapons));
-                result.Add(("방어구", armors));
-                result.Add(("장신구", accessories));
-                break;
-
-            case ItemType.Consumable:
-                var consumables = _shopNPC.ConsumableItems.Cast<ItemData>().ToList();
-                result.Add(("전체", consumables));
-
-                foreach (ConsumableType type in Enum.GetValues(typeof(ConsumableType)))
-                {
-                    var filtered = _shopNPC.ConsumableItems
-                        .Where(item => item.consumableType == type)
-                        .Cast<ItemData>()
-                        .ToList();
-
-                    if (filtered.Count > 0)
-                    {
-                        result.Add((type.ToString(), filtered));
-                    }
-                }
-                break;
-
-            case ItemType.Material:
-                var materials = _shopNPC.MaterialItems.Cast<ItemData>().ToList();
-                result.Add(("전체", materials));
-
-                foreach (MaterialType type in Enum.GetValues(typeof(MaterialType)))
-                {
-                    var filtered = _shopNPC.MaterialItems
-                        .Where(item => item.materialType == type)
-                        .Cast<ItemData>()
-                        .ToList();
-
-                    if (filtered.Count > 0)
-                    {
-                        result.Add((type.ToString(), filtered));
-                    }
-                }
-                break;
-
-            case ItemType.SeedItem:
-                var seeds = _shopNPC.SeedItems.Cast<ItemData>().ToList();
-                result.Add(("전체", seeds));
-                break;
+            result.Add((sub.ToDisplayString(), filtered));
         }
 
         return result;
@@ -283,16 +345,19 @@ public class ShopUIController : MonoBehaviour
         {
             Destroy(buttonObj);
         }
+
         _spawnedSubCategoryButtons.Clear();
         _selectedSubCategoryButton = null;
     }
+
+    // ===================== Item List (Pooled) =====================
 
     /// <summary>
     /// 선택된 아이템 목록을 Content에 슬롯으로 뿌려준다. itemId 오름차순으로 정렬해서 표시.
     /// </summary>
     private void ShowItems(List<ItemData> items)
     {
-        ClearItemSlots();
+        ReleaseAllSlots();
 
         if (_itemSlotPrefab == null || _itemSlotParent == null)
         {
@@ -303,19 +368,23 @@ public class ShopUIController : MonoBehaviour
 
         foreach (var itemData in sortedItems)
         {
-            ShopItemSlot slot = Instantiate(_itemSlotPrefab, _itemSlotParent);
+            ShopItemSlot slot = _slotPool.Get();
             slot.Setup(itemData, HandleItemSlotClicked);
-            _spawnedItemSlots.Add(slot.gameObject);
+            _activeSlots.Add(slot);
         }
     }
 
-    private void ClearItemSlots()
+    private void ReleaseAllSlots()
     {
-        foreach (var slotObj in _spawnedItemSlots)
+        for (int i = 0; i < _activeSlots.Count; i++)
         {
-            Destroy(slotObj);
+            if (_activeSlots[i] != null)
+            {
+                _slotPool.Release(_activeSlots[i]);
+            }
         }
-        _spawnedItemSlots.Clear();
+
+        _activeSlots.Clear();
     }
 
     private void HandleItemSlotClicked(ItemData itemData)
@@ -334,10 +403,12 @@ public class ShopUIController : MonoBehaviour
         }
     }
 
-    // 추가, 던전에서 생성된 ShopNPC 를 런타임 중에 가져오기 위해서
+    /// <summary>
+    /// 던전에서 생성된 ShopNPC를 런타임 중에 가져오기 위해서.
+    /// </summary>
     private void FindShopkeeper()
     {
-        if(_shopNPC == null)
+        if (_shopNPC == null)
         {
             _shopNPC = FindAnyObjectByType<ShopNPC>();
         }

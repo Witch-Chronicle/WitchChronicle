@@ -123,11 +123,18 @@ public class CharacterEquipment : MonoBehaviour
     /// <summary>
     /// 장비 장착. instance.baseData.equipSlotType을 보고 슬롯을 자동으로 판단.
     /// 이 캐릭터의 해당 슬롯에 이미 다른 장비가 있으면 자동으로 해제 후 장착.
+    /// 캐릭터 레벨이 장비의 요구 레벨보다 낮으면 장착하지 않음.
     /// * 이미 다른 캐릭터가 장착 중인 장비는 애초에 인벤토리 목록에 안 뜨므로 여기서 별도 방어 체크는 안 함.
     /// </summary>
     public void Equip(EquipmentInstance instance)
     {
         if (instance == null || instance.baseData == null) return;
+
+        if (_characterStats != null && _characterStats.Level < instance.baseData.requiredLevel)
+        {
+            Debug.Log($"[CharacterEquipment:{_character}] 레벨 부족. {instance.baseData.itemName} 착용 불가");
+            return;
+        }
 
         EquipSlotType slot = instance.baseData.equipSlotType;
 
@@ -146,9 +153,7 @@ public class CharacterEquipment : MonoBehaviour
 
         _equipped[slot] = instance;
         _globallyEquipped.Add(instance);
-
         ApplySlotModifiers(instance, slot);
-
         RecalculateTotalStats();
     }
 
