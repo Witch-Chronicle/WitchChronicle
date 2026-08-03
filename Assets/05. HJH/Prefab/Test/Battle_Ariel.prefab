@@ -2955,6 +2955,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleUnitPresenter
   _animator: {fileID: 1225852485558496439}
+  _animationTimeout: 3
+  _attackImpactNormalizedTime: 0.45
 --- !u!114 &1541503134147651112
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2989,16 +2991,42 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterAudio
   audioSource: {fileID: 6644305102824327850}
-  footstepClips: []
+  footstepClips:
+  - {fileID: 8300000, guid: 65ac77ff573d95c458b76c9177749513, type: 3}
+  - {fileID: 8300000, guid: 6033f7b51b2cdec4c9788026518da42c, type: 3}
+  - {fileID: 8300000, guid: e0139f8334bdae84f8771de3dfd065a3, type: 3}
+  - {fileID: 8300000, guid: 580a6577fb121c5409d30e656b97ca74, type: 3}
+  - {fileID: 8300000, guid: 42ecf0e9801791d4d950bd9014570dc9, type: 3}
   footstepVolume: 0.5
-  attackClips: []
+  attackClips:
+  - {fileID: 8300000, guid: 19f9c3a78814cdc4c93e90b0e5d65add, type: 3}
+  - {fileID: 8300000, guid: 9ef4c35a4d3bff54985bbcc4e98be924, type: 3}
+  - {fileID: 8300000, guid: 40fe98dae34d5a548aa6b23bde27108a, type: 3}
+  attackVolume: 0.3
   skillClips: []
-  hitClips: []
+  skillVolume: 0.3
+  hitClips:
+  - {fileID: 8300000, guid: 1fd1d29b04c21664cb86eb45523749f7, type: 3}
+  - {fileID: 8300000, guid: e5edfb30cd388d3439c8a09755dd3856, type: 3}
+  - {fileID: 8300000, guid: b4ab2d6bd1b8d054d9ba67addac61003, type: 3}
+  - {fileID: 8300000, guid: d505f99c638b6d3438362048033b6de6, type: 3}
+  hitVolume: 0.05
   statusClips: []
-  parryClips: []
-  deathClips: []
+  statusVolume: 0.1
+  parryClips:
+  - {fileID: 8300000, guid: 3d7acdbc20b1b4245823d706ccd63f15, type: 3}
+  - {fileID: 8300000, guid: bf638b96c16230b4c85cf3126b64fcb0, type: 3}
+  - {fileID: 8300000, guid: da811c5b38d8e294aa8eb59912e2e41c, type: 3}
+  parryVolume: 0.3
+  deathClips:
+  - {fileID: 8300000, guid: 72db5f7fa0fb40b4da4e2a3bc3842bd6, type: 3}
+  - {fileID: 8300000, guid: 91b9c9c0ceb4edf4096dffed598fa831, type: 3}
+  - {fileID: 8300000, guid: 9de6328df9a25f54a8411505334bb826, type: 3}
+  deathVolume: 0.3
   victoryClips: []
+  victoryVolume: 0.3
   jointAttackClips: []
+  jointAttackVolume: 0.3
 --- !u!82 &6644305102824327850
 AudioSource:
   m_ObjectHideFlags: 0
@@ -3116,26 +3144,34 @@ MonoBehaviour:
     VfxPrefab: {fileID: 3617594021801474913, guid: d965e644356308d4eba9a804c59753ac, type: 3}
     Scale: 0
     Offset: {x: 0, y: 0, z: 0}
+    ApplySfx: {fileID: 8300000, guid: 375e2f6d47d6bbe479c03d101fe48e6f, type: 3}
   - Type: 2
     VfxPrefab: {fileID: 2817813146465231806, guid: da28829cce8256a4d82e1b8e4c5d8c3c, type: 3}
     Scale: 0
     Offset: {x: 0, y: 0, z: 0}
+    ApplySfx: {fileID: 8300000, guid: b8d3e12d319b92e45a4b95959ecb9499, type: 3}
   - Type: 3
     VfxPrefab: {fileID: 5663927605720312730, guid: 8dbab8fb0b777164e8f58b48c3ac7efb, type: 3}
     Scale: 0
     Offset: {x: 0, y: 0, z: 0}
+    ApplySfx: {fileID: 8300000, guid: e989b7344b9db0b49bdb7e5dcd909332, type: 3}
   - Type: 4
     VfxPrefab: {fileID: 130371810037123645, guid: 98783eafbabdb99478e8001a6ea75f2c, type: 3}
     Scale: 0
     Offset: {x: 0, y: 0, z: 0}
+    ApplySfx: {fileID: 8300000, guid: 3e415384a8439b041823e7cd6e15926e, type: 3}
   - Type: 5
     VfxPrefab: {fileID: 5663927605720312730, guid: 8dbab8fb0b777164e8f58b48c3ac7efb, type: 3}
     Scale: 0
     Offset: {x: 0, y: 0, z: 0}
+    ApplySfx: {fileID: 8300000, guid: c7dce7eb081913043946915845a6cc6f, type: 3}
   - Type: 6
     VfxPrefab: {fileID: 8392620470651161117, guid: 19e5b513668805f43a5d9ab53d1b6013, type: 3}
     Scale: 0
     Offset: {x: 0, y: 0, z: 0}
+    ApplySfx: {fileID: 8300000, guid: 2e4463610d60eae4e88c3ec2d7a45b34, type: 3}
+  _audioSource: {fileID: 0}
+  _sfxVolume: 0.3
 --- !u!1 &1562030576368215012
 GameObject:
   m_ObjectHideFlags: 0
@@ -12102,6 +12138,10 @@ PrefabInstance:
     - target: {fileID: 3464774465854993330, guid: 26ea2dc19214dfa4895c5fb943d9ce9b, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3642543872571986206, guid: 26ea2dc19214dfa4895c5fb943d9ce9b, type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3881630521578914514, guid: 26ea2dc19214dfa4895c5fb943d9ce9b, type: 3}
       propertyPath: m_AnchorMax.y

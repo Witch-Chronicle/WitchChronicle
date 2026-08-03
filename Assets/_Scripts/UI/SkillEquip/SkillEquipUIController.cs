@@ -30,6 +30,15 @@ public class SkillEquipUIController : MonoBehaviour
     [Header("안내")]
     [SerializeField] private TMP_Text _guideText;
 
+    [Header("사운드")]
+    [Tooltip("비워두면 실행 시 자동으로 만든다")]
+    [SerializeField] private AudioSource _audioSource;
+    [SerializeField] private AudioClip _equipClip;
+    [SerializeField] private AudioClip _unequipClip;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float _sfxVolume = 0.5f;
+
     private readonly List<PersistentCharacterUnit> _party = new List<PersistentCharacterUnit>();
     private readonly List<SkillData> _learned = new List<SkillData>();
 
@@ -56,9 +65,24 @@ public class SkillEquipUIController : MonoBehaviour
 
         BindMemberTabs();
 
+        if (_audioSource == null)
+        {
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.playOnAwake = false;
+        }
+
         if (_root != null)
         {
             _root.SetActive(false);
+        }
+    }
+
+    /// <summary>효과음 재생.</summary>
+    private void PlayClip(AudioClip clip)
+    {
+        if (_audioSource != null && clip != null)
+        {
+            _audioSource.PlayOneShot(clip, _sfxVolume);
         }
     }
 
@@ -328,6 +352,7 @@ public class SkillEquipUIController : MonoBehaviour
         }
 
         SkillEquipService.EquipAt(CurrentMember, _selectedSlot, skill);
+        PlayClip(_equipClip);
 
         RefreshEquipSlots();
         RefreshSkillList();
@@ -343,6 +368,7 @@ public class SkillEquipUIController : MonoBehaviour
         }
 
         SkillEquipService.UnequipAt(CurrentMember, _selectedSlot);
+        PlayClip(_unequipClip);
 
         RefreshEquipSlots();
         RefreshSkillList();

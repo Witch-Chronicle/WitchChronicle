@@ -18,6 +18,9 @@ public class StatusEffectView : MonoBehaviour
 
         [Tooltip("이 상태이상 VFX만의 위치 오프셋(로컬). 전역 Offset에 더해진다. 0이면 전역만 적용")]
         public Vector3 Offset;
+
+        [Tooltip("이 상태이상이 걸리는 순간 1회 재생할 소리")]
+        public AudioClip ApplySfx;
     }
 
     [Tooltip("VFX를 붙일 위치. 몸을 따라가려면 척추/가슴 본을 넣는다. 비우면 이 오브젝트 기준")]
@@ -32,6 +35,12 @@ public class StatusEffectView : MonoBehaviour
     [Tooltip("상태이상 종류별 루프 VFX 프리팹")]
     [SerializeField] private StatusVfxEntry[] _entries;
 
+    [Tooltip("상태이상 적용음을 낼 AudioSource. 비우면 실행 시 자동으로 만든다")]
+    [SerializeField] private AudioSource _audioSource;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float _sfxVolume = 0.3f;
+
     private readonly Dictionary<StatusEffectType, GameObject> _active =
         new Dictionary<StatusEffectType, GameObject>();
 
@@ -42,6 +51,17 @@ public class StatusEffectView : MonoBehaviour
         if (_attachPoint == null)
         {
             _attachPoint = transform;
+        }
+
+        if (_audioSource == null)
+        {
+            _audioSource = GetComponent<AudioSource>();
+        }
+
+        if (_audioSource == null)
+        {
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.playOnAwake = false;
         }
     }
 
@@ -74,6 +94,12 @@ public class StatusEffectView : MonoBehaviour
         }
 
         _active.Add(type, vfx);
+
+        // 걸리는 순간 1회만 재생 (이미 걸려 있으면 위에서 return되므로 중복되지 않는다)
+        if (_audioSource != null && _entries[index].ApplySfx != null)
+        {
+            _audioSource.PlayOneShot(_entries[index].ApplySfx, _sfxVolume);
+        }
     }
 
     /// <summary>해당 상태이상의 VFX를 끈다.</summary>

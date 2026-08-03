@@ -700,6 +700,7 @@ MonoBehaviour:
   _hitDelay: 0.2
   _postImpactDuration: 0.25
   _vfxLifetime: 3
+  _sfxVolume: 0.1
 --- !u!1 &361416001
 GameObject:
   m_ObjectHideFlags: 0
@@ -1780,10 +1781,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
-  m_Children:
-  - {fileID: 1475237752}
-  - {fileID: 1101036422}
-  m_Father: {fileID: 8185559791213492177}
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
@@ -1842,8 +1841,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BattleActionBanner
   _canvasGroup: {fileID: 649560338}
   _panelRoot: {fileID: 649560334}
-  _actorNameText: {fileID: 1475237753}
-  _actionNameText: {fileID: 1101036423}
+  _actorNameText: {fileID: 0}
+  _actionNameText: {fileID: 0}
   _showDuration: 0.18
   _hideDuration: 0.12
   _hiddenOffsetX: -80
@@ -4905,3 +4904,4 @@ SceneRoots:
   - {fileID: 1554497068131324832}
   - {fileID: 567879306}
   - {fileID: 2052179069}
+  - {fileID: 649560334}

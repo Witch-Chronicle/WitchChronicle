@@ -55,6 +55,9 @@ public class SkillGachaPresenter : MonoBehaviour
     };
 
     [Header("사운드")]
+    [Range(0f, 1f)]
+    [SerializeField] private float _sfxVolume = 0.5f;
+
     [SerializeField] private AudioSource _audioSource;
     [SerializeField] private AudioClip _spinClip;
     [SerializeField] private AudioClip _revealClip;
@@ -251,7 +254,7 @@ public class SkillGachaPresenter : MonoBehaviour
     {
         if (_audioSource != null && clip != null)
         {
-            _audioSource.PlayOneShot(clip);
+            _audioSource.PlayOneShot(clip, _sfxVolume);
         }
     }
 }

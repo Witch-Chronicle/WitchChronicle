@@ -29,7 +29,7 @@ public class SkillVfxPlayer : MonoBehaviour
     [Header("사운드")]
     [Tooltip("스킬 사운드(SkillData의 Cast/Hit Sfx) 볼륨")]
     [Range(0f, 1f)]
-    [SerializeField] private float _sfxVolume = 1f;
+    [SerializeField] private float _sfxVolume = 0.5f;
 
     /// <summary>단일 대상 재생.</summary>
     public void Play(SkillData skill, Transform caster, Transform target)
@@ -108,6 +108,15 @@ public class SkillVfxPlayer : MonoBehaviour
             ? CasterSpawnPos(skill, caster)
             : Vector3.zero;
 
+        // 스킬 SO에 개별 Impact Delay가 지정돼 있으면 VFX 진행과 무관하게
+        // 그 시점에 명중을 통지한다(= 데미지가 들어가는 순간을 스킬별로 조절).
+        // 지정이 없으면(0) 기존대로 VFX가 대상에 닿는 시점을 따른다.
+        if (skill.ImpactDelay > 0f && onImpact != null)
+        {
+            StartCoroutine(InvokeAfter(skill.ImpactDelay, onImpact));
+            onImpact = null;
+        }
+
         if (caster != null && skill.CastVfxPrefab != null)
         {
             SpawnAndForget(
@@ -172,6 +181,17 @@ public class SkillVfxPlayer : MonoBehaviour
         }
 
         onComplete?.Invoke();
+    }
+
+    /// <summary>지정 시간 뒤에 콜백을 1회 호출한다.</summary>
+    private IEnumerator InvokeAfter(float delay, System.Action action)
+    {
+        if (delay > 0f)
+        {
+            yield return new WaitForSeconds(delay);
+        }
+
+        action?.Invoke();
     }
 
     /// <summary>
@@ -363,7 +383,12 @@ public class SkillVfxPlayer : MonoBehaviour
         return fallback;
     }
 
-    /// <summary>지정 위치에서 클립을 1회 재생한다(클립이 없으면 무시).</summary>
+    /// <summary>
+    /// 클립을 1회 재생한다(클립이 없으면 무시).
+    /// PlayClipAtPoint는 3D 소스를 만들어 카메라 거리에 따라 음량이 달라지는데,
+    /// 캐릭터 사운드(CharacterAudio)는 2D라 둘의 체감 음량이 어긋났다.
+    /// 그래서 여기서도 2D AudioSource로 재생해 기준을 맞춘다.
+    /// </summary>
     private void PlaySfx(AudioClip clip, Vector3 pos)
     {
         if (clip == null)
@@ -371,8 +396,17 @@ public class SkillVfxPlayer : MonoBehaviour
             return;
         }
 
-        AudioSource.PlayClipAtPoint(clip, pos, _sfxVolume);
+        if (_sfxSource == null)
+        {
+            _sfxSource = gameObject.AddComponent<AudioSource>();
+            _sfxSource.playOnAwake = false;
+            _sfxSource.spatialBlend = 0f;   // 2D
+        }
+
+        _sfxSource.PlayOneShot(clip, _sfxVolume);
     }
+
+    private AudioSource _sfxSource;
 
     private void SpawnPrefab(GameObject prefab, Vector3 pos, float scale = 0f)
     {
