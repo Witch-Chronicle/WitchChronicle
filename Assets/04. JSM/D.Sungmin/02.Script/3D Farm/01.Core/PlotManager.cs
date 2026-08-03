@@ -139,7 +139,7 @@ namespace WitchChronicle.IdleFarming
         // ====== 플레이어 존 진입/이탈 ======
 
         /// <summary>
-        /// FarmZoneTrigger가 호출: 팜 존 전체의 FloatingUI 표시/숨김 일괄 처리
+        /// [사용 안 함, 남겨둠] 팜 존 전체의 FloatingUI 일괄 표시/숨김
         /// </summary>
         public void SetAllFloatingUIsPlayerNear(bool near)
         {
@@ -147,6 +147,36 @@ namespace WitchChronicle.IdleFarming
             {
                 if (_floatingUIs[i] != null)
                     _floatingUIs[i].SetPlayerNear(near);
+            }
+        }
+
+        /// <summary>
+        /// 특정 PlotSlot에 해당하는 FloatingUI만 표시/숨김
+        /// </summary>
+        public void SetFloatingUINearBySlot(PlotSlot slot, bool near)
+        {
+            if (slot == null) return;
+
+            int index = _slots.IndexOf(slot);
+            if (index < 0 || index >= _floatingUIs.Count) return;
+
+            if (_floatingUIs[index] != null)
+                _floatingUIs[index].SetPlayerNear(near);
+        }
+
+        /// <summary>
+        /// 특정 PlotIndex에 해당하는 FloatingUI만 표시/숨김
+        /// </summary>
+        public void SetFloatingUINearByIndex(int plotIndex, bool near)
+        {
+            for (int i = 0; i < _slots.Count; i++)
+            {
+                if (_slots[i] != null && _slots[i].PlotIndex == plotIndex)
+                {
+                    if (i < _floatingUIs.Count && _floatingUIs[i] != null)
+                        _floatingUIs[i].SetPlayerNear(near);
+                    return;
+                }
             }
         }
 
