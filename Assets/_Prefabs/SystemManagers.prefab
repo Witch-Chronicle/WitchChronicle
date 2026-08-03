@@ -337,7 +337,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3588406580674331729}
   - component: {fileID: 2802279125796709891}
-  - component: {fileID: 422436048346883944}
   m_Layer: 0
   m_Name: InventoryManager
   m_TagString: Untagged
@@ -379,19 +378,6 @@ MonoBehaviour:
   - ItemData: {fileID: 11400000, guid: f62c02212e9607f42b086c779c83ef5c, type: 2}
     Quantity: 0
   _equipmentInstances: []
---- !u!114 &422436048346883944
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4325860273440113098}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e616f4405195074fa574961b4e2ccc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SkillInventory
-  _learnedSkills: []
 --- !u!1 &5105725049431117140
 GameObject:
   m_ObjectHideFlags: 0

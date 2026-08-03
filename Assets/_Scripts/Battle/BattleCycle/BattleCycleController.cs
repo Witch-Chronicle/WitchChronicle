@@ -1329,9 +1329,6 @@ public class BattleCycleController : MonoBehaviour
                 "기존 스킬 효과 적용",
                 this);
 
-            OnActionExecuting?.Invoke(
-                actionRequest);
-
             yield return WaitImpact(
                 skillData);
 
@@ -1366,13 +1363,6 @@ public class BattleCycleController : MonoBehaviour
                 "[Battle] 경로형 별자리 결과 수신 실패. " +
                 "스킬 효과 적용",
                 this);
-
-            // 실패 처리와 동일하게 연출을 재생한 뒤 데미지 적용
-            OnActionExecuting?.Invoke(
-                actionRequest);
-
-            yield return WaitImpact(
-                skillData);
 
             ApplySkillEffects(
                 actor,
@@ -1412,13 +1402,6 @@ public class BattleCycleController : MonoBehaviour
             $"[Battle] {skillData.SkillName} " +
             "패리 실패 / 스킬 효과 적용",
             this);
-
-        // 패리 실패 = 맞는 연출. 미니게임 종료 후이므로 이펙트·사운드를 다시 재생한다.
-        OnActionExecuting?.Invoke(
-            actionRequest);
-
-        yield return WaitImpact(
-            skillData);
 
         ApplySkillEffects(
             actor,

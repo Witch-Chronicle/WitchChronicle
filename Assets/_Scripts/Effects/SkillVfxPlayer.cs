@@ -26,11 +26,6 @@ public class SkillVfxPlayer : MonoBehaviour
     [Tooltip("생성한 VFX를 자동 파괴하기까지 시간")]
     [SerializeField] private float _vfxLifetime = 3f;
 
-    [Header("사운드")]
-    [Tooltip("스킬 사운드(SkillData의 Cast/Hit Sfx) 볼륨")]
-    [Range(0f, 1f)]
-    [SerializeField] private float _sfxVolume = 1f;
-
     /// <summary>단일 대상 재생.</summary>
     public void Play(SkillData skill, Transform caster, Transform target)
     {
@@ -116,9 +111,6 @@ public class SkillVfxPlayer : MonoBehaviour
                 caster.rotation,
                 skill.CastVfxScale);
         }
-
-        // 시전 사운드 (VFX 유무와 무관하게 재생)
-        PlaySfx(skill.CastSfx, casterPos);
 
         switch (skill.PresentationType)
         {
@@ -333,20 +325,8 @@ public class SkillVfxPlayer : MonoBehaviour
             yield return new WaitForSeconds(delay);
         }
 
-        PlaySfx(sfx, pos);
         SpawnPrefab(prefab, pos, scale);
         onSpawned?.Invoke();
-    }
-
-    /// <summary>지정 위치에서 클립을 1회 재생한다(클립이 없으면 무시).</summary>
-    private void PlaySfx(AudioClip clip, Vector3 pos)
-    {
-        if (clip == null)
-        {
-            return;
-        }
-
-        AudioSource.PlayClipAtPoint(clip, pos, _sfxVolume);
     }
 
     private void SpawnPrefab(GameObject prefab, Vector3 pos, float scale = 0f)

@@ -509,34 +509,8 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4325860273440113098, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1302953591}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
---- !u!1 &1302953590 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4325860273440113098, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
-  m_PrefabInstance: {fileID: 1302953589}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1302953591
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1302953590}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 74f213d340c4fdd4d811842dd82acd23, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SkillBookDebug
-  _skillBook: {fileID: 0}
-  _giveKey: 286
-  _useKey: 287
-  _listKey: 288
-  _statusKey: 289
-  _giveAmount: 5
 --- !u!1 &1342724862
 GameObject:
   m_ObjectHideFlags: 0
