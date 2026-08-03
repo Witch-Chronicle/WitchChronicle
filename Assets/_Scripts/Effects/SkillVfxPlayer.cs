@@ -26,6 +26,11 @@ public class SkillVfxPlayer : MonoBehaviour
     [Tooltip("생성한 VFX를 자동 파괴하기까지 시간")]
     [SerializeField] private float _vfxLifetime = 3f;
 
+    [Header("사운드")]
+    [Tooltip("스킬 사운드(SkillData의 Cast/Hit Sfx) 볼륨")]
+    [Range(0f, 1f)]
+    [SerializeField] private float _sfxVolume = 0.5f;
+
     /// <summary>단일 대상 재생.</summary>
     public void Play(SkillData skill, Transform caster, Transform target)
     {
@@ -103,6 +108,15 @@ public class SkillVfxPlayer : MonoBehaviour
             ? CasterSpawnPos(skill, caster)
             : Vector3.zero;
 
+        // 스킬 SO에 개별 Impact Delay가 지정돼 있으면 VFX 진행과 무관하게
+        // 그 시점에 명중을 통지한다(= 데미지가 들어가는 순간을 스킬별로 조절).
+        // 지정이 없으면(0) 기존대로 VFX가 대상에 닿는 시점을 따른다.
+        if (skill.ImpactDelay > 0f && onImpact != null)
+        {
+            StartCoroutine(InvokeAfter(skill.ImpactDelay, onImpact));
+            onImpact = null;
+        }
+
         if (caster != null && skill.CastVfxPrefab != null)
         {
             SpawnAndForget(
@@ -112,6 +126,9 @@ public class SkillVfxPlayer : MonoBehaviour
                 skill.CastVfxScale);
         }
 
+        // 시전 사운드 (VFX 유무와 무관하게 재생)
+        PlaySfx(skill.CastSfx, casterPos);
+
         switch (skill.PresentationType)
         {
             case SkillPresentationType.SelfTarget:
@@ -120,6 +137,9 @@ public class SkillVfxPlayer : MonoBehaviour
                     casterPos,
                     _hitDelay,
                     skill.HitVfxScale);
+
+                // 명중 사운드는 임팩트 시점에 1회
+                PlaySfx(skill.HitSfx, casterPos);
 
                 onImpact?.Invoke();
                 break;
@@ -131,6 +151,9 @@ public class SkillVfxPlayer : MonoBehaviour
                     targets,
                     true);
 
+                // 명중 사운드는 대상이 여럿이어도 1회만 (겹쳐 울리는 것 방지)
+                PlaySfx(skill.HitSfx, FirstTargetPos(skill, targets, casterPos));
+
                 onImpact?.Invoke();
                 break;
 
@@ -140,6 +163,9 @@ public class SkillVfxPlayer : MonoBehaviour
                     casterPos,
                     targets,
                     false);
+
+                // 명중 사운드는 대상이 여럿이어도 1회만 (겹쳐 울리는 것 방지)
+                PlaySfx(skill.HitSfx, FirstTargetPos(skill, targets, casterPos));
 
                 onImpact?.Invoke();
                 break;
@@ -155,6 +181,17 @@ public class SkillVfxPlayer : MonoBehaviour
         }
 
         onComplete?.Invoke();
+    }
+
+    /// <summary>지정 시간 뒤에 콜백을 1회 호출한다.</summary>
+    private IEnumerator InvokeAfter(float delay, System.Action action)
+    {
+        if (delay > 0f)
+        {
+            yield return new WaitForSeconds(delay);
+        }
+
+        action?.Invoke();
     }
 
     /// <summary>
@@ -328,6 +365,48 @@ public class SkillVfxPlayer : MonoBehaviour
         SpawnPrefab(prefab, pos, scale);
         onSpawned?.Invoke();
     }
+
+    /// <summary>명중 사운드를 재생할 대표 위치(첫 유효 대상). 없으면 fallback.</summary>
+    private Vector3 FirstTargetPos(
+        SkillData skill,
+        IReadOnlyList<Transform> targets,
+        Vector3 fallback)
+    {
+        for (int i = 0; targets != null && i < targets.Count; i++)
+        {
+            if (targets[i] != null)
+            {
+                return TargetSpawnPos(skill, targets[i]);
+            }
+        }
+
+        return fallback;
+    }
+
+    /// <summary>
+    /// 클립을 1회 재생한다(클립이 없으면 무시).
+    /// PlayClipAtPoint는 3D 소스를 만들어 카메라 거리에 따라 음량이 달라지는데,
+    /// 캐릭터 사운드(CharacterAudio)는 2D라 둘의 체감 음량이 어긋났다.
+    /// 그래서 여기서도 2D AudioSource로 재생해 기준을 맞춘다.
+    /// </summary>
+    private void PlaySfx(AudioClip clip, Vector3 pos)
+    {
+        if (clip == null)
+        {
+            return;
+        }
+
+        if (_sfxSource == null)
+        {
+            _sfxSource = gameObject.AddComponent<AudioSource>();
+            _sfxSource.playOnAwake = false;
+            _sfxSource.spatialBlend = 0f;   // 2D
+        }
+
+        _sfxSource.PlayOneShot(clip, _sfxVolume);
+    }
+
+    private AudioSource _sfxSource;
 
     private void SpawnPrefab(GameObject prefab, Vector3 pos, float scale = 0f)
     {

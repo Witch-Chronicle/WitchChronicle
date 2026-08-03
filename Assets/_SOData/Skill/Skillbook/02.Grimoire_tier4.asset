@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eabb0b7dc02b7124a93ea3d09607b370, type: 3}
+  m_Name: 02.Grimoire_tier4
+  m_EditorClassIdentifier: Assembly-CSharp::SkillBookItemData
+  itemId: 0
+  itemName: "\uACAC\uC2B5\uC758 \uB9C8\uB3C4\uC11C"
+  description: "\uACAC\uC2B5 \uB9C8\uB140\uB97C \uC704\uD55C \uB9C8\uB3C4\uC11C.\n4\uD2F0\uC5B4
+    \uB9C8\uBC95 \uD558\uB098\uB97C \uD68D\uB4DD\uD78C\uB2E4."
+  itemType: 0
+  itemGrade: 0
+  icon: {fileID: 0}
+  maxStack: 99
+  buyPrice: 0
+  sellPrice: 0
+  canSell: 1
+  consumableType: 4
+  value: 0
+  _minTier: 4
+  _maxTier: 4
+  _tierWeights:
+  - Tier: 4
+    Weight: 100
+  _candidateSkills:
+  - {fileID: 11400000, guid: 0b915029cc082ed4cbb16c4219653326, type: 2}
+  - {fileID: 11400000, guid: f34ed27ee9bb1bc41a5d0abef0555b80, type: 2}
+  - {fileID: 11400000, guid: 2bde53e79a7d21042bb858b03b2a027c, type: 2}
+  - {fileID: 11400000, guid: dc13c5a8fced6fa4ab90348649f1e4af, type: 2}
+  - {fileID: 11400000, guid: 0d4e019f1211f7d42b9bc6753babd510, type: 2}
+  - {fileID: 11400000, guid: 09488392c107c2b459e94521a60ca4cb, type: 2}
+  - {fileID: 11400000, guid: 69c230cb0cd714b4c83500616df7f3a5, type: 2}
+  - {fileID: 11400000, guid: d490703f4b9988f4986575b18c5008cc, type: 2}
+  - {fileID: 11400000, guid: bc89c447c7fdebb448f135a47b26732a, type: 2}
+  - {fileID: 11400000, guid: 653d9f13f92626b46bba20cfaef1a34c, type: 2}
+  - {fileID: 11400000, guid: 818c9fa287ab3c441ab38de55089e98e, type: 2}
+  - {fileID: 11400000, guid: b44f7bf3212ba76469aa2b4cebcd17e3, type: 2}
+  - {fileID: 11400000, guid: 0878d5adf2f106a44a4dcec33a5a5d69, type: 2}
+  _duplicateGold: 60

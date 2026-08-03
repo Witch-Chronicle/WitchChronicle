@@ -1313,10 +1313,8 @@ public class BattleCycleController : MonoBehaviour
             yield return null;
         }
 
-        // 공격 애니메이션과 VFX 시작
-        PlayActionPresentation(
-            actionRequest);
-
+        // 연출(애니메이션·VFX·사운드)은 별자리 종료 후 패리 실패 시에 재생한다.
+        // 미니게임 중에는 카메라가 별자리 화면이라 여기서 재생하면 보이지 않는다.
         bool isStarted =
             _constellationPathBattleManager
                 .StartConstellationPath(
@@ -1328,6 +1326,9 @@ public class BattleCycleController : MonoBehaviour
                 "[Battle] 경로형 별자리 시작 실패. " +
                 "기존 스킬 효과 적용",
                 this);
+
+            OnActionExecuting?.Invoke(
+                actionRequest);
 
             yield return WaitImpact(
                 skillData);
@@ -1363,6 +1364,13 @@ public class BattleCycleController : MonoBehaviour
                 "[Battle] 경로형 별자리 결과 수신 실패. " +
                 "스킬 효과 적용",
                 this);
+
+            // 실패 처리와 동일하게 연출을 재생한 뒤 데미지 적용
+            OnActionExecuting?.Invoke(
+                actionRequest);
+
+            yield return WaitImpact(
+                skillData);
 
             ApplySkillEffects(
                 actor,
@@ -1402,6 +1410,13 @@ public class BattleCycleController : MonoBehaviour
             $"[Battle] {skillData.SkillName} " +
             "패리 실패 / 스킬 효과 적용",
             this);
+
+        // 패리 실패 = 맞는 연출. 미니게임 종료 후이므로 이펙트·사운드를 다시 재생한다.
+        OnActionExecuting?.Invoke(
+            actionRequest);
+
+        yield return WaitImpact(
+            skillData);
 
         ApplySkillEffects(
             actor,
