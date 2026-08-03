@@ -88,6 +88,7 @@ GameObject:
   - component: {fileID: 5398904798121928177}
   - component: {fileID: 1960869110135383741}
   - component: {fileID: 2629445076646271246}
+  - component: {fileID: 7510424299964703701}
   m_Layer: 5
   m_Name: MaterialSlot
   m_TagString: Untagged
@@ -211,8 +212,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WitchChronicle.Alchemy.MaterialSlot
   _iconImage: {fileID: 6171616570894099352}
+  _nameText: {fileID: 0}
   _countText: {fileID: 8186977940576760310}
   _button: {fileID: 1960869110135383741}
+  _draggable: {fileID: 7510424299964703701}
+--- !u!114 &7510424299964703701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6880157642325603744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80a91c7dbc702944bb82674e1fa1043c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WitchChronicle.Alchemy.DraggableMaterial
+  _iconImage: {fileID: 6171616570894099352}
 --- !u!1 &7157379595237969923
 GameObject:
   m_ObjectHideFlags: 0

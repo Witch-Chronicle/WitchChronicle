@@ -10,8 +10,7 @@ public class SeedData : ScriptableObject
     public string harvestName;       // 감자
     public SeedCategory category;    // Crop / Herb / Rare
     public float growthTime;         // 성장시간 (초) - 5분=300
-    public Sprite seedSprite;        // 씨앗 이미지
-    public Sprite sproutSprite;      // 새싹 이미지
+    public Sprite seedSprite;        // 씨앗 이미지      
     public Sprite harvestSprite;     // 다 자란 이미지
 
     [TextArea(2, 4)]

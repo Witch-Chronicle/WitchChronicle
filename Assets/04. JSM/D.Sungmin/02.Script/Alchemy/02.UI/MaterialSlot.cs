@@ -7,7 +7,7 @@ namespace WitchChronicle.Alchemy
 {
     /// <summary>
     /// 재료 인벤토리 그리드 슬롯 하나.
-    /// 재료 아이콘 + 이름 + 개수 표시.
+    /// 클릭하면 IngredientSlot에 담김.
     /// </summary>
     public class MaterialSlot : MonoBehaviour
     {
@@ -44,6 +44,7 @@ namespace WitchChronicle.Alchemy
                 {
                     _iconImage.sprite = material.icon;
                     _iconImage.enabled = true;
+                    _iconImage.preserveAspect = true;
                 }
                 else
                 {
