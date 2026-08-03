@@ -2,9 +2,6 @@ using UnityEngine;
 
 public class CharacterAudio : MonoBehaviour
 {
-    [Header("Audio Source")]
-    [SerializeField] private AudioSource audioSource;
-
     [Header("Footstep")]
     [SerializeField] private AudioClip[] footstepClips;
     [Range(0f, 1f)]
@@ -50,14 +47,16 @@ public class CharacterAudio : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float jointAttackVolume = 0.3f;
 
-
+    /// <summary>
+    /// SoundManager를 통해 재생 (전역 마스터/SFX 볼륨이 자동 반영됨).
+    /// </summary>
     private void PlayRandom(AudioClip[] clips, float volume = 1f)
     {
-        if (audioSource == null || clips == null || clips.Length == 0)
-            return;
+        if (clips == null || clips.Length == 0) return;
+        if (SoundManager.Instance == null) return;
 
         int index = Random.Range(0, clips.Length);
-        audioSource.PlayOneShot(clips[index], volume);
+        SoundManager.Instance.PlaySfxOneShot(clips[index], volume);
     }
 
     // ---------- 배틀 이벤트(Binder)에서 직접 호출 ----------

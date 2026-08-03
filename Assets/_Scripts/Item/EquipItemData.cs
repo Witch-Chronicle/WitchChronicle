@@ -6,7 +6,7 @@ using UnityEngine;
 /// </summary>
 public abstract class EquipItemData : ItemData
 {
-    [Header("공통 스탯")]
+    [Header("장착 보너스 스탯")]
     public int hpBonus;            // 체력
     public int mpBonus;
     public int spellPowerBonus;    // 마력(공격력)

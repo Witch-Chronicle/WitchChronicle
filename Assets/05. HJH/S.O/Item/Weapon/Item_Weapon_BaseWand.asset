@@ -12,13 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72d436f2a6c47f94a9ca4d10458559de, type: 3}
   m_Name: Item_Weapon_BaseWand
   m_EditorClassIdentifier: Assembly-CSharp::WeaponItemData
-  itemId: 2
+  itemId: 0
   itemName: "\uB098\uBB34 \uC644\uB4DC"
   description: "\uACAC\uC2B5\uC0DD\uB4E4\uC774 \uAC00\uC7A5 \uBA3C\uC800 \uC0AC\uC6A9\uD558\uB294
     \uB098\uBB34 \uC644\uB4DC.\\n\uB2E4\uB8E8\uAE30 \uC27D\uACE0 \uAC00\uBCCD\uB2E4."
   itemType: 2
   itemGrade: 0
   icon: {fileID: 21300000, guid: 5d7061fc7da05ce44add317708ec7215, type: 3}
+  mainCategory: 0
+  subCategory: 0
   maxStack: 99
   buyPrice: 1000
   sellPrice: 500
@@ -32,5 +34,4 @@ MonoBehaviour:
   luckBonus: 0
   requiredLevel: 1
   equipSlotType: 0
-  ownerCharacter: 0
   weaponType: 1

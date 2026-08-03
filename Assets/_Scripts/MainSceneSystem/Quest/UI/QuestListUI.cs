@@ -122,4 +122,18 @@ public class QuestListUI : MonoBehaviour
         _panelRect.DOKill();
         _panelRect.DOAnchorPosX(targetX, _slideDuration).SetEase(_slideEase);
     }
+
+    /// <summary>
+    /// Blur UI가 표시될 때 호출.
+    /// 기존 Open/Close 상태(_isOpen)는 유지하면서 패널만 잠시 숨김.
+    /// </summary>
+    public void SetVisible(bool visible)
+    {
+        if (_panel == null)
+        {
+            return;
+        }
+
+        _panel.SetActive(visible);
+    }
 }

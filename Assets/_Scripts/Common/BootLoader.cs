@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 public class BootLoader : MonoBehaviour
 {
-    [SerializeField] private SceneId _firstScene = SceneId.Main;
+    [SerializeField] private SceneId _firstScene = SceneId.Title;
     [SerializeField] private TransitionController _transitionController;
 
     private void Start()
@@ -23,6 +23,9 @@ public class BootLoader : MonoBehaviour
             _transitionController.SetCoveredImmediate();
         }
 
-        SceneTransitionManager.Instance.LoadScene(_firstScene, skipCover: true);
+        // Boot -> Title 전환은 전역 TransitionPanel이 전혀 관여하지 않음 (커버도 리빌도 없음).
+        // 계속 "덮인 상태"로 남아있다가, 이후 Title -> Main 전환 시점(TitleController)에서
+        // Main 씬 로드가 끝난 뒤에야 처음으로 리빌(CoveredOut)됨.
+        SceneTransitionManager.Instance.LoadScene(_firstScene, skipCover: true, skipReveal: true);
     }
 }
