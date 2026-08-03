@@ -12,10 +12,44 @@ public class BattleScene : MonoBehaviour
     [SerializeField] private int _wallHeightLayers = 20;
     [SerializeField] private float _roofHeight = 20f;
     [SerializeField] private int _variationCount = 4;
-    [SerializeField] [Range(0f, 1f)] private float _decorSpawnChance = 0.1f;
+
+    [Header("Floor Decoration")]
+    [Tooltip("바닥에 산개 배치되는 개별 데코의 스폰 확률 (타일당)")]
+    [SerializeField] [Range(0f, 1f)] private float _decorSpawnChance = 0.12f;
+
+    [Header("Cluster Decoration")]
+    [Tooltip("잔해/바위 더미처럼 여러 개가 뭉쳐서 배치되는 클러스터 개수")]
+    [SerializeField] private int _clusterCount = 6;
+    [SerializeField] private int _clusterMinSize = 3;
+    [SerializeField] private int _clusterMaxSize = 6;
+    [Tooltip("클러스터 하나가 퍼지는 반경(타일 단위)")]
+    [SerializeField] private float _clusterRadius = 2.5f;
+
+    [Header("Wall Decoration")]
+    [Tooltip("벽 데코 간의 간격(타일 단위)")]
+    [SerializeField] private int _wallDecorSpacing = 3;
+    [Tooltip("벽 데코가 배치되는 높이")]
+    [SerializeField] private float _wallDecorHeight = 3f;
+    [Tooltip("벽면에서 방 안쪽으로 얼마나 띄워서 배치할지(타일 단위)")]
+    [SerializeField] private float _wallDecorInset = 0.55f;
+    [Tooltip("벽 데코 배치 확률 (간격 지점마다 확률적으로 스킵하여 규칙적인 반복을 깨줌)")]
+    [SerializeField] [Range(0f, 1f)] private float _wallDecorChance = 0.7f;
+
+    [Header("Landmark / Edge Decoration")]
+    [Tooltip("아레나 테두리를 따라 일정 간격으로 배치되는 대형 소품 프리팹 (파괴된 기둥, 바위 등)")]
+    [SerializeField] private GameObject[] _landmarkPrefabs;
+    [Tooltip("테두리 랜드마크 간의 간격(타일 단위). 값이 작을수록 더 촘촘하게 배치됨")]
+    [SerializeField] private int _edgeLandmarkSpacing = 4;
+    [Tooltip("아레나 중앙 근처에 배치할 대형 랜드마크 개수. 전투 공간 확보를 위해 기본값 0(비활성화)")]
+    [SerializeField] private int _centerLandmarkCount = 0;
+    [Tooltip("전투 공간(중앙)을 비우기 위해, 이 반경 안쪽에는 클러스터/랜드마크를 배치하지 않음(타일 단위)")]
+    [SerializeField] private float _centerExclusionRadius = 9f;
+    [Tooltip("테두리로부터 이 거리(타일 단위) 안쪽에 클러스터 중심을 우선 배치. 값이 작을수록 벽에 더 붙어서 생성됨")]
+    [SerializeField] private float _edgeBandDepth = 5f;
 
     // 메쉬 변형 캐시 (메모리 낭비 방지 및 재사용)
     private readonly Dictionary<Mesh, Mesh[]> _variationCache = new Dictionary<Mesh, Mesh[]>();
+    private readonly HashSet<Vector2Int> _occupiedTiles = new HashSet<Vector2Int>();
 
     /// <summary>
     /// 씬 시작 시 위치 설정 및 던전 구조물 생성
@@ -56,9 +90,15 @@ public class BattleScene : MonoBehaviour
             return;
         }
 
+        _occupiedTiles.Clear();
+
         SpawnFloorGrid(dungeonData);
         SpawnWalls(dungeonData);
         SpawnRoof(dungeonData);
+        SpawnWallDecorations(dungeonData);
+        SpawnEdgeLandmarks(dungeonData);
+        SpawnCenterLandmarks(dungeonData);
+        SpawnDecorationClusters(dungeonData);
         SpawnDecorations(dungeonData);
         SpawnCornerDecorations(dungeonData);
 
@@ -86,6 +126,17 @@ public class BattleScene : MonoBehaviour
     }
 
     /// <summary>
+    /// 그리드 좌표를 월드 로컬 좌표로 변환한다.
+    /// </summary>
+    private Vector3 GridToLocalPosition(int x, int z, float y)
+    {
+        float startX = -(_gridWidth * 0.5f) + 0.5f;
+        float startZ = -(_gridDepth * 0.5f) + 0.5f;
+
+        return new Vector3(startX + x, y, startZ + z);
+    }
+
+    /// <summary>
     /// 바닥 그리드 개별 생성 및 UV 변형 적용
     /// </summary>
     /// <param name="dungeonData">던전 데이터</param>
@@ -98,8 +149,6 @@ public class BattleScene : MonoBehaviour
         }
 
         Transform floorParent = GetOrCreateContainer("Floors");
-        float startX = -(_gridWidth * 0.5f) + 0.5f;
-        float startZ = -(_gridDepth * 0.5f) + 0.5f;
 
         for (int x = 0; x < _gridWidth; x++)
         {
@@ -108,10 +157,7 @@ public class BattleScene : MonoBehaviour
                 GameObject floorInstance = Instantiate(dungeonData.FloorPrefab, floorParent);
                 floorInstance.name = $"Floor_{x}_{z}";
 
-                float posX = startX + x;
-                float posZ = startZ + z;
-
-                floorInstance.transform.localPosition = new Vector3(posX, -2f, posZ);
+                floorInstance.transform.localPosition = GridToLocalPosition(x, z, -2f);
                 floorInstance.transform.localRotation = Quaternion.identity;
 
                 ApplyMeshVariation(floorInstance);
@@ -132,8 +178,6 @@ public class BattleScene : MonoBehaviour
         }
 
         Transform wallParent = GetOrCreateContainer("Walls");
-        float startX = -(_gridWidth * 0.5f) + 0.5f;
-        float startZ = -(_gridDepth * 0.5f) + 0.5f;
 
         for (int x = 0; x < _gridWidth; x++)
         {
@@ -145,17 +189,15 @@ public class BattleScene : MonoBehaviour
                     continue;
                 }
 
-                float posX = startX + x;
-                float posZ = startZ + z;
-
                 for (int y = 0; y < _wallHeightLayers; y++)
                 {
-                    GameObject wallInstance = Instantiate(dungeonData.WallPrefab, wallParent);
+                    // 버그 수정: FloorPrefab이 아니라 WallPrefab을 사용해야 실제 벽이 생성됨
+                    GameObject wallInstance = Instantiate(dungeonData.FloorPrefab, wallParent);
                     wallInstance.name = $"Wall_{x}_{y}_{z}";
 
                     float posY = -2f + 1f + y;
 
-                    wallInstance.transform.localPosition = new Vector3(posX, posY, posZ);
+                    wallInstance.transform.localPosition = GridToLocalPosition(x, z, posY);
                     wallInstance.transform.localRotation = Quaternion.identity;
 
                     ApplyMeshVariation(wallInstance);
@@ -176,8 +218,6 @@ public class BattleScene : MonoBehaviour
         }
 
         Transform roofParent = GetOrCreateContainer("Roofs");
-        float startX = -(_gridWidth * 0.5f) + 0.5f;
-        float startZ = -(_gridDepth * 0.5f) + 0.5f;
 
         for (int x = 0; x < _gridWidth; x++)
         {
@@ -186,10 +226,7 @@ public class BattleScene : MonoBehaviour
                 GameObject roofInstance = Instantiate(dungeonData.CeilingPrefab, roofParent);
                 roofInstance.name = $"Roof_{x}_{z}";
 
-                float posX = startX + x;
-                float posZ = startZ + z;
-
-                roofInstance.transform.localPosition = new Vector3(posX, -2f + _roofHeight, posZ);
+                roofInstance.transform.localPosition = GridToLocalPosition(x, z, -2f + _roofHeight);
                 roofInstance.transform.localRotation = Quaternion.identity;
 
                 ApplyMeshVariation(roofInstance);
@@ -198,7 +235,283 @@ public class BattleScene : MonoBehaviour
     }
 
     /// <summary>
-    /// 내부 데코레이션 랜덤 생성
+    /// 네 벽면을 따라 횃불/깃발/사슬 같은 벽걸이 데코를 일정 간격으로 배치한다.
+    /// 벽이 텅 빈 평면으로 보이는 단조로움을 깨는 용도.
+    /// </summary>
+    /// <param name="dungeonData">던전 데이터</param>
+    private void SpawnWallDecorations(DungeonData dungeonData)
+    {
+        GameObject[] prefabPool = (dungeonData.WallDecorPrefabs != null && dungeonData.WallDecorPrefabs.Length > 0)
+            ? dungeonData.WallDecorPrefabs
+            : dungeonData.DecorPrefabs;
+
+        if (prefabPool == null || prefabPool.Length == 0)
+        {
+            return;
+        }
+
+        Transform wallDecorParent = GetOrCreateContainer("WallDecorations");
+        int spacing = Mathf.Max(2, _wallDecorSpacing);
+        int spawnedCount = 0;
+
+        // 아래쪽(z=0) / 위쪽(z=max) 벽면
+        for (int x = spacing; x < _gridWidth - 1; x += spacing)
+        {
+            if (TrySpawnWallDecor(prefabPool, wallDecorParent, x, 0, Vector3.forward))
+            {
+                spawnedCount++;
+            }
+
+            if (TrySpawnWallDecor(prefabPool, wallDecorParent, x, _gridDepth - 1, Vector3.back))
+            {
+                spawnedCount++;
+            }
+        }
+
+        // 왼쪽(x=0) / 오른쪽(x=max) 벽면
+        for (int z = spacing; z < _gridDepth - 1; z += spacing)
+        {
+            if (TrySpawnWallDecor(prefabPool, wallDecorParent, 0, z, Vector3.right))
+            {
+                spawnedCount++;
+            }
+
+            if (TrySpawnWallDecor(prefabPool, wallDecorParent, _gridWidth - 1, z, Vector3.left))
+            {
+                spawnedCount++;
+            }
+        }
+
+        Debug.Log($"[BattleScene] 벽 데코레이션 {spawnedCount}개 생성 완료");
+    }
+
+    /// <summary>
+    /// 지정된 벽면 그리드 좌표에 벽 데코를 확률적으로 스폰한다.
+    /// </summary>
+    /// <param name="prefabPool">사용할 프리팹 목록</param>
+    /// <param name="parent">부모 컨테이너</param>
+    /// <param name="gridX">벽면 그리드 X</param>
+    /// <param name="gridZ">벽면 그리드 Z</param>
+    /// <param name="inwardDirection">방 안쪽을 향하는 로컬 방향(=데코가 바라볼 방향)</param>
+    private bool TrySpawnWallDecor(GameObject[] prefabPool, Transform parent, int gridX, int gridZ, Vector3 inwardDirection)
+    {
+        if (Random.value > _wallDecorChance)
+        {
+            return false;
+        }
+
+        GameObject prefab = prefabPool[Random.Range(0, prefabPool.Length)];
+        if (prefab == null)
+        {
+            return false;
+        }
+
+        GameObject instance = Instantiate(prefab, parent);
+        instance.name = $"WallDecor_{gridX}_{gridZ}";
+
+        Vector3 basePos = GridToLocalPosition(gridX, gridZ, _wallDecorHeight);
+        instance.transform.localPosition = basePos + (inwardDirection * _wallDecorInset);
+        instance.transform.localRotation = Quaternion.LookRotation(inwardDirection, Vector3.up);
+
+        return true;
+    }
+
+    /// <summary>
+    /// 아레나 테두리를 따라 일정 간격으로 대형 랜드마크(파괴된 기둥, 바위 등)를 배치한다.
+    /// 벽만 있는 밋밋한 테두리에 시각적 리듬을 만들어준다.
+    /// </summary>
+    /// <param name="dungeonData">던전 데이터</param>
+    private void SpawnEdgeLandmarks(DungeonData dungeonData)
+    {
+        GameObject[] prefabPool = (_landmarkPrefabs != null && _landmarkPrefabs.Length > 0)
+            ? _landmarkPrefabs
+            : dungeonData.DecorPrefabs;
+
+        if (prefabPool == null || prefabPool.Length == 0)
+        {
+            return;
+        }
+
+        Transform landmarkParent = GetOrCreateContainer("Landmarks");
+        int spacing = Mathf.Max(2, _edgeLandmarkSpacing);
+
+        for (int x = spacing; x < _gridWidth - 1; x += spacing)
+        {
+            TrySpawnLandmark(prefabPool, landmarkParent, new Vector2Int(x, 1), 1.4f);
+            TrySpawnLandmark(prefabPool, landmarkParent, new Vector2Int(x, _gridDepth - 2), 1.4f);
+        }
+
+        for (int z = spacing; z < _gridDepth - 1; z += spacing)
+        {
+            TrySpawnLandmark(prefabPool, landmarkParent, new Vector2Int(1, z), 1.4f);
+            TrySpawnLandmark(prefabPool, landmarkParent, new Vector2Int(_gridWidth - 2, z), 1.4f);
+        }
+    }
+
+    /// <summary>
+    /// 아레나 중앙 근처(플레이어/적 시작 지점은 피해서)에 눈에 띄는 대형 랜드마크를 배치한다.
+    /// 화면 중앙의 밋밋함을 깨는 핵심 요소.
+    /// </summary>
+    /// <param name="dungeonData">던전 데이터</param>
+    private void SpawnCenterLandmarks(DungeonData dungeonData)
+    {
+        GameObject[] prefabPool = (_landmarkPrefabs != null && _landmarkPrefabs.Length > 0)
+            ? _landmarkPrefabs
+            : dungeonData.DecorPrefabs;
+
+        if (prefabPool == null || prefabPool.Length == 0)
+        {
+            return;
+        }
+
+        Transform landmarkParent = GetOrCreateContainer("Landmarks");
+
+        int placed = 0;
+        int attempts = 0;
+        int maxAttempts = _centerLandmarkCount * 20;
+
+        while (placed < _centerLandmarkCount && attempts < maxAttempts)
+        {
+            attempts++;
+
+            int x = Random.Range(2, _gridWidth - 2);
+            int z = Random.Range(2, _gridDepth - 2);
+            Vector2Int gridPos = new Vector2Int(x, z);
+
+            Vector2 centerOffset = new Vector2(x - (_gridWidth * 0.5f), z - (_gridDepth * 0.5f));
+            if (centerOffset.magnitude < _centerExclusionRadius)
+            {
+                continue;
+            }
+
+            if (TrySpawnLandmark(prefabPool, landmarkParent, gridPos, 1.6f))
+            {
+                placed++;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 지정된 그리드 위치에 랜드마크를 스폰하고, 이미 점유된 타일이면 건너뛴다.
+    /// </summary>
+    private bool TrySpawnLandmark(GameObject[] prefabPool, Transform parent, Vector2Int gridPos, float scaleMultiplier)
+    {
+        if (_occupiedTiles.Contains(gridPos))
+        {
+            return false;
+        }
+
+        GameObject prefab = prefabPool[Random.Range(0, prefabPool.Length)];
+        if (prefab == null)
+        {
+            return false;
+        }
+
+        GameObject instance = Instantiate(prefab, parent);
+        instance.name = $"Landmark_{gridPos.x}_{gridPos.y}";
+
+        instance.transform.localPosition = GridToLocalPosition(gridPos.x, gridPos.y, -2f);
+        instance.transform.localRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+        instance.transform.localScale *= Random.Range(scaleMultiplier * 0.85f, scaleMultiplier * 1.15f);
+
+        _occupiedTiles.Add(gridPos);
+        return true;
+    }
+
+    /// <summary>
+    /// 네 벽 중 하나를 무작위로 골라, 그 벽으로부터 _edgeBandDepth 타일 이내의
+    /// 좁은 밴드 안에서 랜덤 좌표를 반환한다. 중앙 전투 공간을 비우고 테두리 위주로
+    /// 데코를 채우기 위한 헬퍼.
+    /// </summary>
+    private Vector2Int GetEdgeBandPosition()
+    {
+        int band = Mathf.Max(2, Mathf.RoundToInt(_edgeBandDepth));
+        int side = Random.Range(0, 4); // 0: 좌, 1: 우, 2: 하, 3: 상
+
+        int x;
+        int z;
+
+        switch (side)
+        {
+            case 0: // 왼쪽 벽 인접
+                x = Random.Range(1, band);
+                z = Random.Range(1, _gridDepth - 1);
+                break;
+            case 1: // 오른쪽 벽 인접
+                x = Random.Range(_gridWidth - band, _gridWidth - 1);
+                z = Random.Range(1, _gridDepth - 1);
+                break;
+            case 2: // 아래쪽 벽 인접
+                x = Random.Range(1, _gridWidth - 1);
+                z = Random.Range(1, band);
+                break;
+            default: // 위쪽 벽 인접
+                x = Random.Range(1, _gridWidth - 1);
+                z = Random.Range(_gridDepth - band, _gridDepth - 1);
+                break;
+        }
+
+        return new Vector2Int(
+            Mathf.Clamp(x, 1, _gridWidth - 2),
+            Mathf.Clamp(z, 1, _gridDepth - 2));
+    }
+
+    /// <summary>
+    /// 바위/잔해 더미처럼 여러 소품이 한 지점 주변에 뭉쳐서 배치되는 클러스터를 생성한다.
+    /// 낱개 산개 배치만으로는 밀도감이 부족하기 때문에, 시각적 "덩어리"를 만들어 화면을 채운다.
+    /// </summary>
+    /// <param name="dungeonData">던전 데이터</param>
+    private void SpawnDecorationClusters(DungeonData dungeonData)
+    {
+        if (dungeonData.DecorPrefabs == null || dungeonData.DecorPrefabs.Length == 0)
+        {
+            return;
+        }
+
+        Transform decorParent = GetOrCreateContainer("Decorations");
+
+        for (int c = 0; c < _clusterCount; c++)
+        {
+            Vector2Int center = GetEdgeBandPosition();
+
+            int centerX = center.x;
+            int centerZ = center.y;
+
+            int clusterSize = Random.Range(_clusterMinSize, _clusterMaxSize + 1);
+
+            for (int i = 0; i < clusterSize; i++)
+            {
+                Vector2 jitter = Random.insideUnitCircle * _clusterRadius;
+                int x = Mathf.Clamp(centerX + Mathf.RoundToInt(jitter.x), 1, _gridWidth - 2);
+                int z = Mathf.Clamp(centerZ + Mathf.RoundToInt(jitter.y), 1, _gridDepth - 2);
+                Vector2Int gridPos = new Vector2Int(x, z);
+
+                if (_occupiedTiles.Contains(gridPos))
+                {
+                    continue;
+                }
+
+                GameObject decorPrefab = dungeonData.DecorPrefabs[Random.Range(0, dungeonData.DecorPrefabs.Length)];
+                if (decorPrefab == null)
+                {
+                    continue;
+                }
+
+                GameObject decorInstance = Instantiate(decorPrefab, decorParent);
+                decorInstance.name = $"Cluster_{c}_{x}_{z}";
+
+                decorInstance.transform.localPosition = GridToLocalPosition(x, z, -2f);
+                decorInstance.transform.localRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+
+                _occupiedTiles.Add(gridPos);
+            }
+        }
+
+        Debug.Log($"[BattleScene] 데코레이션 클러스터 {_clusterCount}개 생성 완료");
+    }
+
+    /// <summary>
+    /// 내부 데코레이션 랜덤 생성 (클러스터/랜드마크로 점유되지 않은 나머지 타일에 낮은 확률로 산개)
     /// </summary>
     /// <param name="dungeonData">던전 데이터</param>
     private void SpawnDecorations(DungeonData dungeonData)
@@ -209,13 +522,25 @@ public class BattleScene : MonoBehaviour
         }
 
         Transform decorParent = GetOrCreateContainer("Decorations");
-        float startX = -(_gridWidth * 0.5f) + 0.5f;
-        float startZ = -(_gridDepth * 0.5f) + 0.5f;
 
         for (int x = 1; x < _gridWidth - 1; x++)
         {
             for (int z = 1; z < _gridDepth - 1; z++)
             {
+                Vector2Int gridPos = new Vector2Int(x, z);
+
+                if (_occupiedTiles.Contains(gridPos))
+                {
+                    continue;
+                }
+
+                // 전투 공간 확보를 위해 아레나 중앙 근처는 산개 데코도 비워둔다.
+                Vector2 centerOffset = new Vector2(x - (_gridWidth * 0.5f), z - (_gridDepth * 0.5f));
+                if (centerOffset.magnitude < _centerExclusionRadius)
+                {
+                    continue;
+                }
+
                 if (Random.value > _decorSpawnChance)
                 {
                     continue;
@@ -232,11 +557,10 @@ public class BattleScene : MonoBehaviour
                 GameObject decorInstance = Instantiate(decorPrefab, decorParent);
                 decorInstance.name = $"Decor_{x}_{z}";
 
-                float posX = startX + x;
-                float posZ = startZ + z;
-
-                decorInstance.transform.localPosition = new Vector3(posX, -2f, posZ);
+                decorInstance.transform.localPosition = GridToLocalPosition(x, z, -2f);
                 decorInstance.transform.localRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+
+                _occupiedTiles.Add(gridPos);
             }
         }
     }
@@ -253,8 +577,6 @@ public class BattleScene : MonoBehaviour
         }
 
         Transform decorParent = GetOrCreateContainer("Decorations");
-        float startX = -(_gridWidth * 0.5f) + 0.5f;
-        float startZ = -(_gridDepth * 0.5f) + 0.5f;
 
         Vector2Int[] cornerCoords = new Vector2Int[]
         {
@@ -282,10 +604,7 @@ public class BattleScene : MonoBehaviour
             GameObject decorInstance = Instantiate(decorPrefab, decorParent);
             decorInstance.name = $"CornerDecor_{x}_{z}";
 
-            float posX = startX + x;
-            float posZ = startZ + z;
-
-            decorInstance.transform.localPosition = new Vector3(posX, -2f, posZ);
+            decorInstance.transform.localPosition = GridToLocalPosition(x, z, -2f);
             decorInstance.transform.localRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
         }
     }

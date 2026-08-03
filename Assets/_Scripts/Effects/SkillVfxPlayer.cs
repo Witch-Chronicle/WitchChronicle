@@ -333,7 +333,7 @@ public class SkillVfxPlayer : MonoBehaviour
             yield return new WaitForSeconds(delay);
         }
 
-        PlaySfx(sfx, pos);
+        //PlaySfx(sfx, pos);
         SpawnPrefab(prefab, pos, scale);
         onSpawned?.Invoke();
     }

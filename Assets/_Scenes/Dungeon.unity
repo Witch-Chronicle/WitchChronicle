@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 28b6915621f5489419029b209c5544f4, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -7804,11 +7804,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRenderer
   _environmentContainer: {fileID: 1603218812}
-  _wallHeight: 7
-  _ceilingHeight: 7
+  _wallHeight: 1
+  _ceilingHeight: 6
   _tileSize: 1
+  _wallSize: 6
   _corridorWidth: 5
   _navMeshSurface: {fileID: 2050899454}
+  _doorPivotOffset: {x: -2.2, y: 0, z: 0.5}
 --- !u!114 &2050899451
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7854,12 +7856,8 @@ MonoBehaviour:
   _yOffset: 2
   _yOffsetDeco: 0.5
   _yOffsetWallDeco: 4
-  _wallPadding: -0.5
-  _cornerPadding: 1.5
-  _wallLayerMask:
-    serializedVersion: 2
-    m_Bits: 0
-  _wallCheckMaxDistance: 1.5
+  _wallInsetOffset: -0.1
+  _wallBoundsMargin: 0.6
 --- !u!114 &2050899454
 MonoBehaviour:
   m_ObjectHideFlags: 0

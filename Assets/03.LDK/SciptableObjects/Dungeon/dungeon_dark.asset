@@ -15,9 +15,12 @@ MonoBehaviour:
   Id: dark_1
   DungeonName: "\uBD88\uC758 \uB358\uC804"
   FloorPrefab: {fileID: 2968830504906926872, guid: e5f9b860d4f158041830633198ce81ee, type: 3}
-  WallPrefab: {fileID: 2968830504906926872, guid: 738a82f1abf45734bb1692df0cdbcca5, type: 3}
+  WallPrefab: {fileID: 5151642384990008009, guid: 54c77c1c8d379594e93baab6ad37934c, type: 3}
   CeilingPrefab: {fileID: 2968830504906926872, guid: 738a82f1abf45734bb1692df0cdbcca5, type: 3}
+  DoorPrefab: {fileID: 3960670234233686325, guid: 5719d16d9f035fd4a8fcfaf6ae7bdfd2, type: 3}
+  DoorWallPrefab: {fileID: 0}
   DecorPrefabs:
+  - {fileID: 3693926014911207686, guid: e7a10c0a9b0499548ad26fe2629dc45d, type: 3}
   - {fileID: 1030992304, guid: abc00000000000166612956689332867, type: 3}
   - {fileID: 1030992282, guid: abc00000000007320823481348160304, type: 3}
   - {fileID: 1030992238, guid: abc00000000003778390058708688329, type: 3}
@@ -45,15 +48,18 @@ MonoBehaviour:
   - {fileID: 1030989883, guid: abc00000000013496570538827010555, type: 3}
   - {fileID: 1030989892, guid: abc00000000014172085929998306098, type: 3}
   - {fileID: 1030989910, guid: abc00000000000191386511345966085, type: 3}
+  - {fileID: 574122265314155589, guid: df9e9f4113dde224ea4e91458fcd18ab, type: 3}
+  - {fileID: 1167486005058445278, guid: de97c9a596385f64d829f9c035512bb3, type: 3}
+  - {fileID: 7613198964696299674, guid: 2a6695511ee6fef4e97d355c2ce291ff, type: 3}
   MapSize: {x: 100, y: 100}
   MinPadding: 3
   BSPDepth: 4
   MaxConnectionPerRoom: 1
   ExtraConnectionProbability: 0
-  MinRoomCount: 10
-  MaxRoomCount: 15
-  MinRoomSize: 20
-  MaxRoomSize: 23
+  MinRoomCount: 8
+  MaxRoomCount: 12
+  MinRoomSize: 18
+  MaxRoomSize: 24
   RoomWeights:
   - Type: 2
     Weight: 10
@@ -70,5 +76,5 @@ MonoBehaviour:
   Icon: {fileID: 0}
   Fog: {fileID: 9185907458619771004, guid: 34d5fa90c6b731548b181519817581ae, type: 3}
   DungeonAtmosphere: {fileID: 11400000, guid: 7349cab097403834181a56850579688a, type: 2}
-  HasBoss: 0
-  HasExit: 1
+  HasBoss: 1
+  HasExit: 0

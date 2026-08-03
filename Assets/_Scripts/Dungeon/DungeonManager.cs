@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -93,10 +94,14 @@ public class DungeonManager : MonoBehaviour
         Debug.Log("[DungeonManager] 던전 타일 스폰 완료");
 
         _contentSpawner.SetCorridorTiles(_spawner.CorridorTiles);
+        _contentSpawner.SetWallData(_spawner.WallDataList);
         _contentSpawner.SpawnContent(rooms, _spawner.GetTileSize);
 
-        _minimapData = new MinimapData(_spawner.FloorTiles, _spawner.WallTiles, rooms);
 
+        var wallTilesForMinimap = _spawner.WallTiles.Select(v => new Vector2Int(Mathf.RoundToInt(v.x), Mathf.RoundToInt(v.y))).ToList();
+
+        _minimapData = new MinimapData(_spawner.FloorTiles, wallTilesForMinimap, rooms);
+        
         _minimapRenderer.Render(_minimapData);
 
         Debug.Log("[DungeonManager] 미니맵 텍스처 생성 완료");

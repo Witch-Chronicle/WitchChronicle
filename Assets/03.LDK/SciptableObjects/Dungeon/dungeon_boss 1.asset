@@ -15,8 +15,10 @@ MonoBehaviour:
   Id: hell_2
   DungeonName: "\uC5D8\uB9AC\uACE0\uC2A4 \uC758 \uC9C0\uC625"
   FloorPrefab: {fileID: 2968830504906926872, guid: 18d5d0e4a15adbd48882b4a8eca95943, type: 3}
-  WallPrefab: {fileID: 2968830504906926872, guid: e5f9b860d4f158041830633198ce81ee, type: 3}
+  WallPrefab: {fileID: 5151642384990008009, guid: 54c77c1c8d379594e93baab6ad37934c, type: 3}
   CeilingPrefab: {fileID: 2968830504906926872, guid: e5f9b860d4f158041830633198ce81ee, type: 3}
+  DoorPrefab: {fileID: 3960670234233686325, guid: 5719d16d9f035fd4a8fcfaf6ae7bdfd2, type: 3}
+  DoorWallPrefab: {fileID: 0}
   DecorPrefabs:
   - {fileID: 3156876585393967602, guid: e18cff2ebcc349842bf323f40366542a, type: 3}
   - {fileID: 4457281828551312260, guid: dcf762f7ec1701e49bf5077af2823068, type: 3}
@@ -42,8 +44,8 @@ MonoBehaviour:
   ExtraConnectionProbability: 0
   MinRoomCount: 2
   MaxRoomCount: 2
-  MinRoomSize: 17
-  MaxRoomSize: 20
+  MinRoomSize: 12
+  MaxRoomSize: 24
   RoomWeights:
   - Type: 5
     Weight: 100
