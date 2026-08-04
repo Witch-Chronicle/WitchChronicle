@@ -21,8 +21,8 @@ public sealed class PlayerUIInputReader : MonoBehaviour
     private UIPanelAnimator _integrationPanelAnimator;
 
     [Header("Stat Panel")]
-    [SerializeField]
-    private UIPanelAnimator _statPanelAnimator;
+    [SerializeField] private UIPanelAnimator _statPanelAnimator;
+    [SerializeField] private StatUIController _statUIController;
 
     [Header("Pause Panel")]
     [SerializeField]
@@ -177,41 +177,60 @@ public sealed class PlayerUIInputReader : MonoBehaviour
     /// ESC 입력 처리.
     ///
     /// 우선순위:
-    /// 1. IntegrationPanel 닫기
-    /// 2. StatPanel 닫기
-    /// 3. PausePanel의 설정 화면에서 Pause 화면으로 복귀
-    /// 4. PausePanel 닫기
-    /// 5. 열린 패널이 없으면 PausePanel 열기
+    /// 1. ShopNPC/EnhanceNPC 등 자체 UIPanelAnimator로 열리는 외부 UI 닫기
+    /// 2. IntegrationPanel 닫기
+    /// 3. StatPanel 닫기 (Detail이 열려있으면 Detail만 먼저 닫음)
+    /// 4. PausePanel의 설정 화면에서 Pause 화면으로 복귀
+    /// 5. PausePanel 닫기
+    /// 6. 열린 패널이 없으면 PausePanel 열기
     /// </summary>
     private void HandleEscape()
     {
-        if (
-            _integrationPanelAnimator != null &&
-            _integrationPanelAnimator.IsOpen
-        )
+        // 강화 결과 연출 중이면 Esc 입력 자체를 완전히 무시.
+        // 연출이 끝나(canClose=true) 텍스트까지 다 표시된 상태면 Result Overlay만 닫음.
+        if (EnhancementResultController.Instance != null && EnhancementResultController.Instance.IsOpen)
+        {
+            if (EnhancementResultController.Instance.IsResultPresented)
+            {
+                EnhancementResultController.Instance.Close();
+            }
+
+            return;
+        }
+
+        if (ShopNPC.Instance != null && ShopNPC.Instance.IsOpen)
+        {
+            ShopNPC.Instance.ToggleShop();
+            return;
+        }
+
+        if (EnhanceNPC.Instance != null && EnhanceNPC.Instance.IsOpen)
+        {
+            EnhanceNPC.Instance.ToggleEnhanceUI();
+            return;
+        }
+
+        if (_integrationPanelAnimator != null && _integrationPanelAnimator.IsOpen)
         {
             CloseIntegrationPanel();
             return;
         }
 
-        if (
-            _statPanelAnimator != null &&
-            _statPanelAnimator.IsOpen
-        )
+        if (_statPanelAnimator != null && _statPanelAnimator.IsOpen)
         {
+            if (_statUIController != null && _statUIController.IsDetailOpen)
+            {
+                _statUIController.CloseDetailPanel();
+                return;
+            }
+
             CloseStatPanel();
             return;
         }
 
-        if (
-            _pausePanelAnimator != null &&
-            _pausePanelAnimator.IsOpen
-        )
+        if (_pausePanelAnimator != null && _pausePanelAnimator.IsOpen)
         {
-            if (
-                _pauseController != null &&
-                _pauseController.IsSettingOpen
-            )
+            if (_pauseController != null && _pauseController.IsSettingOpen)
             {
                 _pauseController.ShowPauseView();
                 return;
