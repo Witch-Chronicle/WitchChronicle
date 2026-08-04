@@ -5,13 +5,16 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Pool;
 using TMPro;
+using DG.Tweening;
 
 /// <summary>
 /// ShopNPC가 들고 있는 판매 아이템 목록(List&lt;ItemData&gt;)을 Shop UI에 뿌려주는 역할.
-/// - MainCategory 4종 버튼은 항상 고정 배치하되, 그 상점이 실제로 판매하는 Main만 표시.
-/// - Main 클릭 시, 그 상점이 그 Main 안에서 실제로 파는 SubCategory 버튼만 동적 생성(+"전체"),
-///   판매하지 않는 서브카테고리는 아예 생성하지 않음.
-/// - 아이템 슬롯(ShopItemSlot)은 ObjectPool로 재사용.
+/// - Main 카테고리는 아이콘 버튼(고정 배치). 실제로 판매하는 Main만 활성화, 기본 선택은 그 중 첫 번째.
+///   선택 시 아이콘 스프라이트가 평소/선택 이미지로 교체됨.
+/// - Sub 카테고리는 고정 슬롯 풀(0번=항상 "전체", 나머지는 그 Main의 서브카테고리로 채워짐).
+///   선택 시 각 버튼의 Selected(Image) 알파를 DOTween으로 0/1 트윈.
+/// - 아이템 슬롯(ShopItemSlot)은 ObjectPool로 재사용. 클릭 시 Normal/Selected 토글로 단일 선택 표시,
+///   카테고리 전환 시 선택 초기화.
 /// * 구매 로직은 없음. 진열만 담당.
 /// </summary>
 public class ShopUIController : MonoBehaviour
@@ -21,6 +24,12 @@ public class ShopUIController : MonoBehaviour
     {
         public MainCategory mainCategory;
         public Button mainButton;
+        [Tooltip("이 버튼의 아이콘 Image")]
+        public Image iconImage;
+        [Tooltip("평소(미선택) 아이콘")]
+        public Sprite normalIcon;
+        [Tooltip("선택됐을 때 아이콘")]
+        public Sprite selectedIcon;
     }
 
     [Header("Shop NPC")]
@@ -29,18 +38,13 @@ public class ShopUIController : MonoBehaviour
     [Header("Main Category Btns (항상 고정 배치, 판매 여부에 따라 표시/숨김)")]
     [SerializeField] private List<MainCategoryButton> _mainButtons = new List<MainCategoryButton>();
 
-    [Header("Category Btn 색상")]
-    [SerializeField] private Color _normalBackgroundColor = Color.white;
-    [SerializeField] private Color _normalTextColor = Color.black;
-    [SerializeField] private Color _selectedBackgroundColor = Color.gray;
-    [SerializeField] private Color _selectedTextColor = Color.white;
-
     [Header("Close Btn")]
     [SerializeField] private Button _closeBtn;
 
-    [Header("Sub Category Btns (동적 생성, 실제 판매하는 서브카테고리만)")]
-    [SerializeField] private Button _subCategoryButtonPrefab;
-    [SerializeField] private Transform _subCategoryParent; // BtnsWrap
+    [Header("Sub Category - 재사용 슬롯 풀 (0번 슬롯은 항상 '전체')")]
+    [SerializeField] private List<Button> _subButtonSlots = new List<Button>();
+    [SerializeField] private string _allCategoryLabel = "전체";
+    [SerializeField] private float _subSelectedFadeDuration = 0.15f;
 
     [Header("Item List")]
     [SerializeField] private ShopItemSlot _itemSlotPrefab;
@@ -56,15 +60,14 @@ public class ShopUIController : MonoBehaviour
     [Header("Gold Txt")]
     [SerializeField] private TextMeshProUGUI _goldText;
 
-    private readonly List<GameObject> _spawnedSubCategoryButtons = new List<GameObject>();
-
     private ObjectPool<ShopItemSlot> _slotPool;
     private readonly List<ShopItemSlot> _activeSlots = new List<ShopItemSlot>();
 
     private List<ItemData> _currentSellItems = new List<ItemData>();
-
     private MainCategory _currentMainCategory;
-    private Button _selectedSubCategoryButton;
+    private SubCategory? _currentSubCategory; // null이면 "전체"
+
+    private ShopItemSlot _selectedSlot;
 
     private void Awake()
     {
@@ -113,7 +116,6 @@ public class ShopUIController : MonoBehaviour
         }
         else
         {
-            ClearSubCategoryButtons();
             ReleaseAllSlots();
         }
 
@@ -141,6 +143,11 @@ public class ShopUIController : MonoBehaviour
             _closeBtn.onClick.RemoveListener(OnClickClose);
         }
 
+        for (int i = 0; i < _subButtonSlots.Count; i++)
+        {
+            _subButtonSlots[i]?.onClick.RemoveAllListeners();
+        }
+
         if (PlayerInventory.Instance != null)
         {
             PlayerInventory.Instance.OnGoldChanged -= UpdateGoldText;
@@ -163,6 +170,7 @@ public class ShopUIController : MonoBehaviour
     {
         slot.gameObject.SetActive(true);
         slot.transform.SetAsLastSibling();
+        slot.SetSelected(false);
     }
 
     private void OnReleaseSlot(ShopItemSlot slot)
@@ -207,166 +215,184 @@ public class ShopUIController : MonoBehaviour
     }
 
     /// <summary>
-    /// 대분류 선택 -> 그 안에서 실제 판매하는 서브카테고리 버튼들을 새로 생성(+"전체"), 첫 번째를 기본 선택.
+    /// 대분류 선택 -> 아이콘 이미지 갱신 + 서브카테고리 재구성("전체" 기본 선택).
     /// </summary>
     private void SelectMainCategory(MainCategory category)
     {
         _currentMainCategory = category;
 
-        UpdateMainHighlight();
+        UpdateMainIcons();
+        RebuildSubCategoryButtons(category);
 
-        List<(string label, List<ItemData> items)> subCategories = BuildSubCategories(category);
-
-        ClearSubCategoryButtons();
-
-        Button firstButton = null;
-
-        foreach (var subCategory in subCategories)
+        if (_shopDetailController != null)
         {
-            Button createdButton = CreateSubCategoryButton(subCategory.label, subCategory.items);
-
-            if (firstButton == null)
-            {
-                firstButton = createdButton;
-            }
+            _shopDetailController.HideDetail();
         }
 
-        SetSubCategorySelected(firstButton);
-        ShowItems(subCategories.Count > 0 ? subCategories[0].items : new List<ItemData>());
+        SelectSubCategory(null, animate: false);
     }
 
-    private void UpdateMainHighlight()
+    private void UpdateMainIcons()
     {
         for (int i = 0; i < _mainButtons.Count; i++)
         {
             MainCategoryButton entry = _mainButtons[i];
-            SetButtonHighlighted(entry.mainButton, entry.mainCategory == _currentMainCategory);
+            if (entry.iconImage == null) continue;
+
+            bool isSelected = entry.mainCategory == _currentMainCategory;
+            entry.iconImage.sprite = isSelected ? entry.selectedIcon : entry.normalIcon;
         }
     }
 
-    private void SetButtonHighlighted(Button button, bool isSelected)
-    {
-        if (button == null) return;
-
-        Image background = button.GetComponent<Image>();
-        if (background != null)
-        {
-            background.color = isSelected ? _selectedBackgroundColor : _normalBackgroundColor;
-        }
-
-        TextMeshProUGUI label = button.GetComponentInChildren<TextMeshProUGUI>();
-        if (label != null)
-        {
-            label.color = isSelected ? _selectedTextColor : _normalTextColor;
-        }
-    }
-
-    // ===================== Sub Category (동적 생성) =====================
+    // ===================== Sub Category (고정 슬롯 풀) =====================
 
     /// <summary>
-    /// 지금 선택된 서브카테고리 버튼만 강조 색상으로, 나머지는 기본 색상으로.
+    /// 0번 슬롯은 항상 "전체", 그 뒤로 이 Main의 서브카테고리들을 순서대로 채움.
     /// </summary>
-    private void SetSubCategorySelected(Button selected)
+    private void RebuildSubCategoryButtons(MainCategory category)
     {
-        _selectedSubCategoryButton = selected;
-
-        foreach (var buttonObj in _spawnedSubCategoryButtons)
-        {
-            Button button = buttonObj.GetComponent<Button>();
-            SetButtonHighlighted(button, button == selected);
-        }
-    }
-
-    /// <summary>
-    /// 이 Main 카테고리 안에서 실제로 판매하는 SubCategory만 "전체" + 개별 서브로 구성.
-    /// 판매하지 않는 서브카테고리는 목록 자체에 안 들어감.
-    /// </summary>
-    private List<(string label, List<ItemData> items)> BuildSubCategories(MainCategory category)
-    {
-        var result = new List<(string, List<ItemData>)>();
-
         List<ItemData> itemsInMain = _currentSellItems
             .Where(item => item.mainCategory == category)
             .ToList();
-
-        if (itemsInMain.Count == 0)
-        {
-            return result;
-        }
-
-        result.Add(("전체", itemsInMain));
 
         List<SubCategory> subCategories = itemsInMain
             .Select(item => item.subCategory)
             .Distinct()
             .ToList();
 
-        foreach (SubCategory sub in subCategories)
+        for (int i = 0; i < _subButtonSlots.Count; i++)
         {
-            List<ItemData> filtered = itemsInMain
-                .Where(item => item.subCategory == sub)
-                .ToList();
+            Button slotButton = _subButtonSlots[i];
+            if (slotButton == null) continue;
 
-            result.Add((sub.ToDisplayString(), filtered));
+            slotButton.onClick.RemoveAllListeners();
+
+            if (i == 0)
+            {
+                slotButton.gameObject.SetActive(true);
+
+                TextMeshProUGUI allLabel = slotButton.GetComponentInChildren<TextMeshProUGUI>();
+                if (allLabel != null) allLabel.text = _allCategoryLabel;
+
+                slotButton.onClick.AddListener(() => OnClickSubCategorySlot(null));
+                continue;
+            }
+
+            int subIndex = i - 1;
+
+            if (subIndex >= subCategories.Count)
+            {
+                slotButton.gameObject.SetActive(false);
+                continue;
+            }
+
+            SubCategory sub = subCategories[subIndex];
+
+            slotButton.gameObject.SetActive(true);
+
+            TextMeshProUGUI label = slotButton.GetComponentInChildren<TextMeshProUGUI>();
+            if (label != null) label.text = sub.ToDisplayString();
+
+            slotButton.onClick.AddListener(() => OnClickSubCategorySlot(sub));
         }
-
-        return result;
     }
 
-    private Button CreateSubCategoryButton(string label, List<ItemData> items)
+    private void OnClickSubCategorySlot(SubCategory? subCategory)
     {
-        if (_subCategoryButtonPrefab == null || _subCategoryParent == null)
-        {
-            return null;
-        }
-
-        Button newButton = Instantiate(_subCategoryButtonPrefab, _subCategoryParent);
-
-        TextMeshProUGUI buttonText = newButton.GetComponentInChildren<TextMeshProUGUI>();
-        if (buttonText != null)
-        {
-            buttonText.text = label;
-        }
-
-        newButton.onClick.AddListener(() =>
-        {
-            SetSubCategorySelected(newButton);
-            ShowItems(items);
-        });
-
-        _spawnedSubCategoryButtons.Add(newButton.gameObject);
-
-        return newButton;
+        SelectSubCategory(subCategory, animate: true);
     }
 
-    private void ClearSubCategoryButtons()
+    private void SelectSubCategory(SubCategory? subCategory, bool animate)
     {
-        foreach (var buttonObj in _spawnedSubCategoryButtons)
+        _currentSubCategory = subCategory;
+
+        if (_shopDetailController != null)
         {
-            Destroy(buttonObj);
+            _shopDetailController.HideDetail();
         }
 
-        _spawnedSubCategoryButtons.Clear();
-        _selectedSubCategoryButton = null;
+        UpdateSubSelectedHighlight(animate);
+        ShowItems();
+    }
+
+    /// <summary>
+    /// 선택된 서브카테고리 슬롯의 Selected(Image) 알파만 1로, 나머지는 0으로 DOTween 트윈.
+    /// </summary>
+    private void UpdateSubSelectedHighlight(bool animate)
+    {
+        List<ItemData> itemsInMain = _currentSellItems
+            .Where(item => item.mainCategory == _currentMainCategory)
+            .ToList();
+
+        List<SubCategory> subCategories = itemsInMain
+            .Select(item => item.subCategory)
+            .Distinct()
+            .ToList();
+
+        for (int i = 0; i < _subButtonSlots.Count; i++)
+        {
+            Button slotButton = _subButtonSlots[i];
+            if (slotButton == null || slotButton.gameObject.activeSelf == false) continue;
+
+            bool isSelected;
+
+            if (i == 0)
+            {
+                isSelected = _currentSubCategory == null;
+            }
+            else
+            {
+                int subIndex = i - 1;
+                isSelected = subIndex < subCategories.Count
+                    && _currentSubCategory.HasValue
+                    && _currentSubCategory.Value == subCategories[subIndex];
+            }
+
+            Image selectedImage = FindSelectedIndicator(slotButton);
+            if (selectedImage == null) continue;
+
+            float targetAlpha = isSelected ? 1f : 0f;
+
+            selectedImage.DOKill();
+
+            if (animate)
+            {
+                selectedImage.DOFade(targetAlpha, _subSelectedFadeDuration);
+            }
+            else
+            {
+                Color c = selectedImage.color;
+                c.a = targetAlpha;
+                selectedImage.color = c;
+            }
+        }
+    }
+
+    private Image FindSelectedIndicator(Button slotButton)
+    {
+        Transform selectedTransform = slotButton.transform.Find("Selected");
+        return selectedTransform != null ? selectedTransform.GetComponent<Image>() : null;
     }
 
     // ===================== Item List (Pooled) =====================
 
     /// <summary>
-    /// 선택된 아이템 목록을 Content에 슬롯으로 뿌려준다. itemId 오름차순으로 정렬해서 표시.
+    /// 지금 Main/Sub 조건에 맞는 아이템 목록을 Content에 슬롯으로 뿌려준다. itemId 오름차순 정렬.
+    /// 카테고리를 바꿀 때마다 선택 상태도 초기화됨.
     /// </summary>
-    private void ShowItems(List<ItemData> items)
+    private void ShowItems()
     {
         ReleaseAllSlots();
+        _selectedSlot = null;
 
-        if (_itemSlotPrefab == null || _itemSlotParent == null)
-        {
-            return;
-        }
+        if (_itemSlotPrefab == null || _itemSlotParent == null) return;
 
-        var sortedItems = items.OrderBy(item => item.itemId);
+        var filtered = _currentSellItems
+            .Where(item => item.mainCategory == _currentMainCategory)
+            .Where(item => _currentSubCategory == null || item.subCategory == _currentSubCategory.Value)
+            .OrderBy(item => item.itemId);
 
-        foreach (var itemData in sortedItems)
+        foreach (var itemData in filtered)
         {
             ShopItemSlot slot = _slotPool.Get();
             slot.Setup(itemData, HandleItemSlotClicked);
@@ -389,6 +415,20 @@ public class ShopUIController : MonoBehaviour
 
     private void HandleItemSlotClicked(ItemData itemData)
     {
+        ShopItemSlot clickedSlot = _activeSlots.FirstOrDefault(slot => slot != null && slot.ItemData == itemData);
+
+        if (_selectedSlot != null && _selectedSlot != clickedSlot)
+        {
+            _selectedSlot.SetSelected(false);
+        }
+
+        if (clickedSlot != null)
+        {
+            clickedSlot.SetSelected(true);
+        }
+
+        _selectedSlot = clickedSlot;
+
         if (_shopDetailController != null)
         {
             _shopDetailController.ShowItemDetail(itemData);
@@ -399,7 +439,7 @@ public class ShopUIController : MonoBehaviour
     {
         if (_goldText != null)
         {
-            _goldText.text = gold.ToString();
+            _goldText.text = gold.ToString() + " G";
         }
     }
 

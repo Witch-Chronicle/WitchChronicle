@@ -4,17 +4,21 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// EnhancePanel/EquipList 쪽 Prefab_EnhanceEquipSlot에 붙는 스크립트.
-/// 아이콘 / 이름 / 현재 강화 단계를 표시하고, 클릭하면 강화 미리보기 대상으로 선택됨.
+/// EnhancePanel/EquipList/Carousel 쪽 Prefab_EnhanceEquipSlot_v1.
+/// 아이콘/이름/강화 단계는 공통으로 항상 표시. Normal/Selected만 번갈아 활성화되어 선택 상태 표시.
 /// </summary>
 [RequireComponent(typeof(Button))]
 public class EnhanceEquipSlot : MonoBehaviour
 {
-    [Header("UI 연결")]
-    [SerializeField] private Image _background;
+    [Header("공통 (항상 표시)")]
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _name;
     [SerializeField] private TextMeshProUGUI _enhanceLv;
+
+    [Header("선택 상태 표시 (Normal/Selected 번갈아 활성화)")]
+    [SerializeField] private GameObject _normalObject;
+    [SerializeField] private GameObject _selectedObject;
+
     [SerializeField] private Button _slotButton;
 
     public EquipmentInstance EquipmentInstance { get; private set; }
@@ -29,6 +33,8 @@ public class EnhanceEquipSlot : MonoBehaviour
         }
 
         _slotButton.onClick.AddListener(HandleClick);
+
+        SetSelected(false);
     }
 
     public void Setup(EquipmentInstance equipmentInstance, Action<EquipmentInstance> onClick)
@@ -36,30 +42,20 @@ public class EnhanceEquipSlot : MonoBehaviour
         EquipmentInstance = equipmentInstance;
         _onClickCallback = onClick;
 
-        if (_icon != null)
-        {
-            _icon.sprite = equipmentInstance.baseData.icon;
-        }
+        if (_icon != null) _icon.sprite = equipmentInstance.baseData.icon;
+        if (_name != null) _name.text = equipmentInstance.baseData.itemName;
+        if (_enhanceLv != null) _enhanceLv.text = $"+{equipmentInstance.enhanceLevel}";
 
-        if (_name != null)
-        {
-            _name.text = equipmentInstance.baseData.itemName;
-        }
-
-        if (_enhanceLv != null)
-        {
-            _enhanceLv.text = $"+{equipmentInstance.enhanceLevel}";
-        }
+        SetSelected(false);
     }
 
     /// <summary>
-    /// 선택된 슬롯 강조 표시용. Background 색만 바꾸는 간단한 버전.
+    /// 선택 상태 토글. true면 Selected만 활성, false면 Normal만 활성.
     /// </summary>
     public void SetSelected(bool isSelected)
     {
-        if (_background == null) return;
-
-        _background.color = isSelected ? new Color(1f, 1f, 1f, 0.4f) : new Color(1f, 1f, 1f, 0f);
+        if (_normalObject != null) _normalObject.SetActive(!isSelected);
+        if (_selectedObject != null) _selectedObject.SetActive(isSelected);
     }
 
     private void HandleClick()

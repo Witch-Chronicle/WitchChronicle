@@ -130,7 +130,7 @@ public class ShopDetailController : MonoBehaviour
             if (itemData is EquipItemData equipItemForLevel)
             {
                 _requiredLevelText.gameObject.SetActive(true);
-                _requiredLevelText.text = $"Lv.{equipItemForLevel.requiredLevel}";
+                _requiredLevelText.text = $"착용 레벨 : {equipItemForLevel.requiredLevel}";
             }
             else
             {
