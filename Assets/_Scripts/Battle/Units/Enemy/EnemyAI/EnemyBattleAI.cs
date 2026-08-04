@@ -947,11 +947,11 @@ public class EnemyBattleAI
             return 0f;
         }
 
-        //// 별자리 확인용
-        //if (candidate.SkillData.IsConstellationPathAttack)
-        //{
-        //    return 1000f;
-        //}
+        // 별자리 확인용
+        if (candidate.SkillData.IsConstellationPathAttack)
+        {
+            return 1000f;
+        }
 
         switch (candidate.SkillData.SkillType)
         {
