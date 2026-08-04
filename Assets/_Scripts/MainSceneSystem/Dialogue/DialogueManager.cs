@@ -42,7 +42,7 @@ public class DialogueManager : MonoBehaviour
 
         _currentNPC = npc;
 
-        _currentDialogue = _loader.Load(_currentNPC.dialogueJson);
+        _currentDialogue = _loader.Load(_currentNPC.DialogueJson);
 
         if (_currentDialogue == null)
         {
@@ -66,7 +66,7 @@ public class DialogueManager : MonoBehaviour
         MoveNode(startID);
     }
 
-   /// <summary>
+    /// <summary>
     /// 대화 노드 이동
     /// 해당 노드의 내용 출력 및 퀘스트 이벤트 처리
     /// </summary>
@@ -98,10 +98,10 @@ public class DialogueManager : MonoBehaviour
         DialogueUI.Instance.Show();
 
 
-        bool isLastNode = string.IsNullOrEmpty(_currentNode.next) && 
+        bool isLastNode = string.IsNullOrEmpty(_currentNode.next) &&
         (_currentNode.choices == null || _currentNode.choices.Count == 0);
 
-        DialogueUI.Instance.Refresh(_currentNPC.portrait, _currentNode.speaker, _currentNode.text, isLastNode);
+        DialogueUI.Instance.Refresh(_currentNPC.Portrait, _currentNode.speaker, _currentNode.text, isLastNode);
 
         DialogueUI.Instance.ClearChoices();
 
@@ -152,16 +152,28 @@ public class DialogueManager : MonoBehaviour
         }
 
         ExecuteChoiceQuest(choice);
-
         ExecuteChoiceEvent(choice);
+
+        // 이벤트 실행 중(Shop/Enhance 등 외부 UI가 열리며) 대화창이 이미 닫혔다면,
+        // 대화 흐름을 더 진행하지 않고 여기서 종료.
+        // 단, Show() 시점에 걸었던 EnterUIMode()는 여기서 반드시 짝을 맞춰 풀어줘야 함
+        // (안 그러면 CursorLocker의 카운트가 영구히 어긋나서 다른 UI를 다 닫아도 필드 모드로 복귀 못 함).
+        if (DialogueUI.Instance != null && DialogueUI.Instance.IsPanelActive == false)
+        {
+            _currentDialogue = null;
+            _currentNode = null;
+            _currentNPC = null;
+            _nodeDictionary.Clear();
+
+            CursorLocker.Instance?.ExitUIMode();
+            return;
+        }
 
         if (string.IsNullOrEmpty(choice.next))
         {
             EndDialogue();
-
             return;
         }
-
 
         MoveNode(choice.next);
     }
@@ -185,7 +197,7 @@ public class DialogueManager : MonoBehaviour
     }
 
 
-    
+
     /// <summary>
     /// 선택지 이벤트 처리
     /// </summary>

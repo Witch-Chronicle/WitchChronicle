@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: dungeon_wild
   m_EditorClassIdentifier: Assembly-CSharp::DungeonData
   Id: wild_1
-  DungeonName: "\uBD88\uC758 \uB358\uC804"
+  DungeonName: "\uC57C\uC0DD\uC758 \uB358\uC804"
   FloorPrefab: {fileID: 2968830504906926872, guid: 18d5d0e4a15adbd48882b4a8eca95943, type: 3}
   WallPrefab: {fileID: 5151642384990008009, guid: 54c77c1c8d379594e93baab6ad37934c, type: 3}
   CeilingPrefab: {fileID: 2968830504906926872, guid: 4e8c03054cf184245a7f659a586305b9, type: 3}
@@ -31,6 +31,7 @@ MonoBehaviour:
   - {fileID: 8952341505920055549, guid: 74d74cda192e90049ae36132dfdb95a8, type: 3}
   - {fileID: 1155720430629540053, guid: db2f3437fef47654f9c9b6060582d6cd, type: 3}
   - {fileID: 1680796509485812583, guid: 0881f28a2418a04479ec4f5513cdc16c, type: 3}
+  WallDecorPrefabs: []
   MapSize: {x: 100, y: 100}
   MinPadding: 3
   BSPDepth: 4

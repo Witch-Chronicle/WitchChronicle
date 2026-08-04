@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 257fd23296f4ada4abdc48d80e7a4bb3, type: 3}
+  m_Name: 12.ShrimpSkewer_recipe
+  m_EditorClassIdentifier: Assembly-CSharp::CookingRecipeData
+  recipeName: "\uC0C8\uC6B0 \uAF2C"
+  description: "\uC190\uC9C8\uD55C \uBD95\uC5B4\uB97C \uD1B5\uC9F8\uB85C \uAD6C\uC6CC
+    \uAC89\uC744 \uBC14\uC0AD\uD558\uAC8C \uB9C8\uAC10\uD55C \uC694\uB9AC."
+  ingredients:
+  - specificItem: {fileID: 11400000, guid: b05571391e705694ba6dd5f2eecfabbc, type: 2}
+    amount: 1
+  - specificItem: {fileID: 11400000, guid: d78a9d6ac73711e4cb46caab39ad819c, type: 2}
+    amount: 1
+  - specificItem: {fileID: 11400000, guid: 788113cf4f00a8045903fc3e174cf33b, type: 2}
+    amount: 1
+  result: {fileID: 11400000, guid: 297dab88d1c57fa4c85882d4ef522984, type: 2}

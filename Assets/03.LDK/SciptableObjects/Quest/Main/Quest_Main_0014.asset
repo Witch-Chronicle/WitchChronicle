@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbe15cc1f7ebf744da8f3bb2c409ab19, type: 3}
+  m_Name: Quest_Main_0014
+  m_EditorClassIdentifier: Assembly-CSharp::QuestData
+  id: main_014
+  title: "\uCD5C\uC885\uC7A5 \uC900\uBE44"
+  description: "\uCD5C\uC885 \uC758 \uC804\uD22C\uB97C \uC900\uBE44\uD558\uAE30 \uC704\uD574,
+    \uCE74\uC0B0\uB4DC\uB77C \uC640 \uB300\uD654\uD558\uC790"
+  type: 0
+  objectives:
+  - type: 1
+    targetID: npc_cassandra
+    targetName: "\uCE74\uC0B0\uB4DC\uB77C"
+    requiredCount: 1
+  reward:
+    gold: 400
+    exp: 70
+    itemID: {fileID: 11400000, guid: 9225714edf83a6f4ba7f4f1ef7f15197, type: 2}
+    itemCount: 3
+    recruitNPC: 
+    nextStory: 1
+  nextQuest: {fileID: 11400000, guid: 87aa1bbc5fcf50d449e12b9120795de2, type: 2}

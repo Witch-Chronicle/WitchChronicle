@@ -653,6 +653,11 @@ public class BattleManager : MonoBehaviour
 
         ApplyPlayerBattleResultsToVitals(isVictory);
 
+        if (isVictory)
+        {
+            ProcessMonsterKillQuests();
+        }
+
         Debug.Log($"[BattleManager] Battle End / Winner: {winner}");
 
         if (_clearActorsOnBattleEnd)
@@ -660,6 +665,37 @@ public class BattleManager : MonoBehaviour
             ClearSpawnedActors();
             _spawnedActors.Clear();
             _actorByBattleUnit.Clear();
+        }
+    }
+
+    /// <summary>
+    /// 전투 승리 시 스폰되었던 적들의 퀘스트 처치 수 증가
+    /// </summary>
+    private void ProcessMonsterKillQuests()
+    {
+        if (QuestManager.Instance == null)
+        {
+            return;
+        }
+
+        // 스폰된 모든 전투 참가자 중 '적(Enemy)' 팀의 EnemyId를 전달
+        for (int i = 0; i < _spawnedActors.Count; i++)
+        {
+            BattleActor actor = _spawnedActors[i];
+
+            if (actor != null && actor.TeamType == BattleTeamType.Enemy)
+            {
+                if (actor.EnemyBattleData != null && string.IsNullOrEmpty(actor.EnemyBattleData.EnemyId) == false)
+                {
+                    QuestManager.Instance.AddProgress(
+                        QuestObjectiveType.KillMonster,
+                        actor.EnemyBattleData.EnemyId,
+                        1
+                    );
+
+                    Debug.Log($"[BattleManager] 퀘스트 처치 반영 : {actor.EnemyBattleData.EnemyName} ({actor.EnemyBattleData.EnemyId})");
+                }
+            }
         }
     }
 

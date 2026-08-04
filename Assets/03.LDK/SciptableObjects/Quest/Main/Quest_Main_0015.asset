@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbe15cc1f7ebf744da8f3bb2c409ab19, type: 3}
+  m_Name: Quest_Main_0015
+  m_EditorClassIdentifier: Assembly-CSharp::QuestData
+  id: main_015
+  title: "\uC2EC\uD310\uC758 \uD0D1"
+  description: "\uC9C4\uC9DC \uC6D0\uD749 \uC54C\uB370\uB9AD\uACFC \uCD5C\uC885 \uACB0\uC804\uC744
+    \uBC8C\uC778\uB2E4."
+  type: 0
+  objectives:
+  - type: 4
+    targetID: boss_2
+    targetName: "\uCD5C\uC885 "
+    requiredCount: 1
+  reward:
+    gold: 400
+    exp: 70
+    itemID: {fileID: 11400000, guid: 9225714edf83a6f4ba7f4f1ef7f15197, type: 2}
+    itemCount: 3
+    recruitNPC: 
+    nextStory: 1
+  nextQuest: {fileID: 11400000, guid: 566544fb08b068e4bb872005163a1417, type: 2}

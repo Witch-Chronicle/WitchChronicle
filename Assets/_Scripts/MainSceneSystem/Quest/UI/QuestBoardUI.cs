@@ -69,8 +69,7 @@ public class QuestBoardUI : MonoBehaviour
         Clear();
 
 
-        List<QuestData> quests =
-            QuestBoardManager.Instance.GetBoardQuests();
+        List<QuestData> quests = QuestBoardManager.Instance.GetBoardQuests();
 
 
         foreach (QuestData quest in quests)

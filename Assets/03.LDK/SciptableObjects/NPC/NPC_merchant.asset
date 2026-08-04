@@ -12,17 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25f7fd47791a14f4f8b071b5055a8834, type: 3}
   m_Name: NPC_merchant
   m_EditorClassIdentifier: Assembly-CSharp::NPCData
-  id: npc_merchant
-  npcName: "\uC0C1\uC778"
-  description: "\uC0C1\uC810 \uC8FC\uC778 \uC774\uB2E4"
-  portrait: {fileID: 21300000, guid: 5d9ba4e7d0964044ea54abe409d81dfd, type: 3}
-  prefab: {fileID: 2620826591857867447, guid: d1d63d7bd95726948a98dc594a7ded12, type: 3}
-  dialogueJson: {fileID: 4900000, guid: c83658874a76da64a9b529f3454fd570, type: 3}
-  defaultDialogueID: default
-  runningDialogueID: running
-  completeDialogueID: complete
-  finishedDialogueID: finished
-  startDialogueID: start
-  quest: {fileID: 0}
-  recruitQuest: {fileID: 0}
-  defaultState: 0
+  _npcId: npc_merchant
+  _npcName: "\uC0C1\uC810 \uC8FC\uC778"
+  _description: "\uC0C1\uC810 \uC8FC\uC778 \uC785\uB2C8\uB2E4"
+  _portrait: {fileID: 21300000, guid: f6415798cdf8c714a9108a6a692197f2, type: 3}
+  _prefab: {fileID: 0}
+  _dialogueJson: {fileID: 4900000, guid: c83658874a76da64a9b529f3454fd570, type: 3}
+  _defaultDialogueId: default
+  _startDialogueId: default
+  _runningDialogueId: running
+  _completeDialogueId: complete
+  _finishedDialogueId: reward
+  _questId: 
+  _recruitQuestId: 
+  _defaultNpcState: 0

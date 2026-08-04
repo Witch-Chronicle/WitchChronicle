@@ -2,14 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Pool;
 using TMPro;
-using DG.Tweening;
 
 /// <summary>
 /// EnhancePanel 메인 컨트롤러.
-/// - EquipList: 보유 장비 전체를 나열 (CategorySection 필터링은 추후 추가 예정, 현재 비활성화)
-/// - 슬롯 클릭 시 Enhance/Info + Enhance/Preview + Enhance/Execute에 정보 표시
-/// - EnhanceBtn 클릭 시 EnhanceController에 강화 실행을 위임
+/// - EquipList: 보유 장비를 캐러셀(페이지 단위 5개씩)로 나열. ObjectPool로 최대 5슬롯만 재사용.
+///   count가 5 이하면 Prev/Next 비활성. 그 이상이면 5개씩 페이지 순환(마지막 페이지는 남는 개수만).
+/// - Current/Next: 선택된 장비의 "지금 단계"와 "다음 단계" 스탯을 나란히 비교 표시.
+///   Preview 행은 고정 3슬롯(늘어나는 스탯이 없으면 남는 슬롯 숨김).
+/// - EnhanceBtn 클릭 시 EnhanceController에 강화 실행을 위임.
 /// * 실제 강화 판정/비용 처리는 EnhanceController가 담당. 여기서는 UI 표시/입력만 담당.
 /// </summary>
 public class EnhanceUIController : MonoBehaviour
@@ -24,68 +26,97 @@ public class EnhanceUIController : MonoBehaviour
     [Header("Enhance Controller")]
     [SerializeField] private EnhanceController _enhanceController;
 
-    [Header("Equip List")]
-    [SerializeField] private EnhanceEquipSlot _equipSlotPrefab;
-    [SerializeField] private Transform _equipListParent; // Content
+    [Header("Base Info")]
+    [SerializeField] private TextMeshProUGUI _baseInfoName;
+    [SerializeField] private TextMeshProUGUI _baseInfoGrade;
 
-    [Header("Enhance Info")]
-    [SerializeField] private Image _infoIcon;
-    [SerializeField] private TextMeshProUGUI _infoName;
-    [SerializeField] private TextMeshProUGUI _infoGrade;
+    [Header("Current")]
+    [SerializeField] private Image _currentIcon;
     [SerializeField] private TextMeshProUGUI _currentLvText;
-    [SerializeField] private TextMeshProUGUI _nextLvText;
+    [SerializeField] private List<EnhanceValueRow> _currentValueRows = new List<EnhanceValueRow>(); // 고정 3슬롯
 
-    [Header("Enhance Preview")]
-    [SerializeField] private EnhancePreviewRow _previewRowPrefab;
-    [SerializeField] private Transform _previewRoot; // Preview
+    [Header("Next")]
+    [SerializeField] private Image _nextIcon;
+    [SerializeField] private TextMeshProUGUI _nextLvText;
+    [SerializeField] private List<EnhanceValueRow> _nextValueRows = new List<EnhanceValueRow>(); // 고정 3슬롯
 
     [Header("Enhance Execute - SuccessRate")]
-    [SerializeField] private TextMeshProUGUI _successRateText; // RateTxt
-    [Tooltip("천장까지의 진행률(%) 표시용. 없으면 그냥 비워둬도 됨")]
+    [SerializeField] private TextMeshProUGUI _successRateText;
     [SerializeField] private TextMeshProUGUI _pityProgressText;
-    [Tooltip("천장까지의 진행률을 0~1로 표시하는 슬라이더. 없으면 비워둬도 됨")]
-    [SerializeField] private Slider _pitySlider;
-    [Tooltip("진행률이 100%일 때(확정 성공)만 활성화할 안내 오브젝트")]
+    [SerializeField] private Image _pityFilledImage; // PityBG/PityFilled (Filled Image)
     [SerializeField] private GameObject _pityGuaranteedObject;
-    [Tooltip("진행률이 100%가 아닐 때(=확정 성공이 아닐 때) 활성화할 안내/툴팁 오브젝트")]
     [SerializeField] private GameObject _tooltipObject;
 
     [Header("Enhance Execute - Required")]
     [SerializeField] private EnhanceRequiredRow _requiredRowPrefab;
-    [SerializeField] private Transform _requiredRoot; // RequiredRoot
+    [SerializeField] private Transform _requiredRoot;
 
     [Header("Enhance Execute - Btn")]
     [SerializeField] private Button _enhanceBtn;
 
-    [Header("Result")]
-    [Tooltip("Result 오브젝트에 CanvasGroup 붙여서 연결 (페이드 처리용)")]
-    [SerializeField] private CanvasGroup _resultCanvasGroup;
-    [SerializeField] private TextMeshProUGUI _resultText;
-    [SerializeField] private float _resultFadeDuration = 0.25f;
-    [SerializeField] private float _resultShowDuration = 1.2f;
+    [Header("Enhancement Result")]
+    [SerializeField] private EnhancementResultController _enhancementResultController;
 
-    private readonly List<GameObject> _spawnedEquipSlots = new List<GameObject>();
-    private readonly List<GameObject> _spawnedPreviewRows = new List<GameObject>();
+    [Header("Equip List (Carousel, 순환 윈도우 5칸)")]
+    [SerializeField] private EnhanceEquipSlot _equipSlotPrefab;
+    [SerializeField] private Transform _carouselParent; // Carousel (Horizontal Layout Group)
+    [SerializeField] private Button _prevBtn;
+    [SerializeField] private Button _nextBtn;
+    [SerializeField] private int _pageSize = 5;
+
     private readonly List<GameObject> _spawnedEnhanceRequiredRows = new List<GameObject>();
+
+    private ObjectPool<EnhanceEquipSlot> _slotPool;
+    private readonly List<EnhanceEquipSlot> _activeSlots = new List<EnhanceEquipSlot>();
+    private List<EquipmentInstance> _ownedEquipments = new List<EquipmentInstance>();
+    private int _currentPage;
 
     private EquipmentInstance _selectedInstance;
     private EnhanceEquipSlot _selectedSlot;
+    private bool _isEnhancementResultPlaying;
+
+    private void Awake()
+    {
+        _slotPool = new ObjectPool<EnhanceEquipSlot>(
+            createFunc: CreateSlot,
+            actionOnGet: OnGetSlot,
+            actionOnRelease: OnReleaseSlot,
+            actionOnDestroy: OnDestroySlot,
+            collectionCheck: true,
+            defaultCapacity: _pageSize,
+            maxSize: _pageSize);
+    }
 
     private void OnEnable()
     {
         if (_closeBtn != null) _closeBtn.onClick.AddListener(OnClickClose);
         if (_enhanceBtn != null) _enhanceBtn.onClick.AddListener(OnClickEnhance);
+        if (_prevBtn != null) _prevBtn.onClick.AddListener(OnClickPrev);
+        if (_nextBtn != null) _nextBtn.onClick.AddListener(OnClickNext);
 
-        RefreshEquipList();
+        if (_enhancementResultController != null)
+        {
+            _enhancementResultController.Closed += HandleEnhancementResultClosed;
+        }
+
+        _windowStartIndex = 0;
+
+        RefreshOwnedEquipments();
+        RefreshCarouselWindow();
         ClearSelection();
-        HideResultImmediate();
+
+        _isEnhancementResultPlaying = false;
+
+        if (_ownedEquipments.Count > 0)
+        {
+            SelectEquipment(_ownedEquipments[0]);
+        }
 
         if (PlayerInventory.Instance != null)
         {
             PlayerInventory.Instance.OnGoldChanged += UpdateGoldText;
             UpdateGoldText(PlayerInventory.Instance.Gold);
-
-            PlayerInventory.Instance.OnInventoryChanged += RefreshEquipList;
+            PlayerInventory.Instance.OnInventoryChanged += HandleInventoryChanged;
         }
     }
 
@@ -93,17 +124,28 @@ public class EnhanceUIController : MonoBehaviour
     {
         if (_closeBtn != null) _closeBtn.onClick.RemoveListener(OnClickClose);
         if (_enhanceBtn != null) _enhanceBtn.onClick.RemoveListener(OnClickEnhance);
+        if (_prevBtn != null) _prevBtn.onClick.RemoveListener(OnClickPrev);
+        if (_nextBtn != null) _nextBtn.onClick.RemoveListener(OnClickNext);
+
+        if (_enhancementResultController != null)
+        {
+            _enhancementResultController.Closed -= HandleEnhancementResultClosed;
+        }
 
         if (PlayerInventory.Instance != null)
         {
             PlayerInventory.Instance.OnGoldChanged -= UpdateGoldText;
-            PlayerInventory.Instance.OnInventoryChanged -= RefreshEquipList;
+            PlayerInventory.Instance.OnInventoryChanged -= HandleInventoryChanged;
         }
+    }
+
+    private void OnDestroy()
+    {
+        _slotPool?.Dispose();
     }
 
     private void OnClickClose()
     {
-        // 닫기 전에 클릭 이벤트 제거
         _closeBtn.onClick.RemoveListener(OnClickClose);
 
         if (_enhanceNPC != null)
@@ -116,42 +158,167 @@ public class EnhanceUIController : MonoBehaviour
         }
     }
 
-    // ===================== Equip List =====================
+    // ===================== Object Pool =====================
 
-    private void RefreshEquipList()
+    private EnhanceEquipSlot CreateSlot()
     {
-        ClearEquipSlots();
+        return Instantiate(_equipSlotPrefab, _carouselParent);
+    }
 
-        if (PlayerInventory.Instance == null || _equipSlotPrefab == null || _equipListParent == null)
+    private void OnGetSlot(EnhanceEquipSlot slot)
+    {
+        slot.gameObject.SetActive(true);
+        slot.transform.SetAsLastSibling();
+    }
+
+    private void OnReleaseSlot(EnhanceEquipSlot slot)
+    {
+        slot.gameObject.SetActive(false);
+    }
+
+    private void OnDestroySlot(EnhanceEquipSlot slot)
+    {
+        if (slot != null)
         {
+            Destroy(slot.gameObject);
+        }
+    }
+
+    // ===================== Equip Carousel (페이지 단위) =====================
+
+    private void RefreshOwnedEquipments()
+    {
+        _ownedEquipments = PlayerInventory.Instance != null
+            ? PlayerInventory.Instance.EquipmentInstances
+                .Where(instance => instance != null && instance.baseData != null)
+                .OrderBy(instance => instance.baseData.itemId)
+                .ToList()
+            : new List<EquipmentInstance>();
+    }
+
+    private int _windowStartIndex;
+
+    /// <summary>
+    /// 보유 장비가 _pageSize(5) 이하면 있는 만큼만 표시하고 Prev/Next 비활성화.
+    /// 초과하면 항상 5칸을 순환 윈도우로 표시 (windowStartIndex부터 5개, 끝에 도달하면 처음으로 순환).
+    /// </summary>
+    private void RefreshCarouselWindow()
+    {
+        ReleaseAllSlots();
+
+        int totalCount = _ownedEquipments.Count;
+        bool exceedsPageSize = totalCount > _pageSize;
+
+        if (_prevBtn != null) _prevBtn.gameObject.SetActive(exceedsPageSize);
+        if (_nextBtn != null) _nextBtn.gameObject.SetActive(exceedsPageSize);
+
+        if (totalCount == 0)
+        {
+            ForceRebuildCarouselLayout();
             return;
         }
 
-        var equipmentList = PlayerInventory.Instance.EquipmentInstances
-            .OrderBy(instance => instance.baseData.itemId);
-
-        foreach (var instance in equipmentList)
+        if (exceedsPageSize == false)
         {
-            EnhanceEquipSlot slot = Instantiate(_equipSlotPrefab, _equipListParent);
-            slot.Setup(instance, HandleEquipSlotClicked);
-            _spawnedEquipSlots.Add(slot.gameObject);
+            _windowStartIndex = 0;
+        }
+        else
+        {
+            _windowStartIndex = ((_windowStartIndex % totalCount) + totalCount) % totalCount;
         }
 
-        // 목록이 갱신된 뒤에도 선택 중이던 장비가 있으면 그 정보를 최신 상태로 다시 표시
+        int showCount = Mathf.Min(_pageSize, totalCount);
+
+        for (int i = 0; i < showCount; i++)
+        {
+            int index = (_windowStartIndex + i) % totalCount;
+
+            EnhanceEquipSlot slot = _slotPool.Get();
+            slot.Setup(_ownedEquipments[index], HandleEquipSlotClicked);
+            _activeSlots.Add(slot);
+
+            if (_selectedInstance != null && _ownedEquipments[index] == _selectedInstance)
+            {
+                slot.SetSelected(true);
+                _selectedSlot = slot;
+            }
+        }
+
+        ForceRebuildCarouselLayout();
+    }
+
+    /// <summary>
+    /// 슬롯이 동적으로 늘어나거나 줄어든 직후, Content Size Fitter/Layout Group이
+    /// 한 프레임 늦게 반영되는 것을 방지하기 위해 즉시 강제로 재계산.
+    /// Carousel(자기 크기 계산) -> Main(그 크기를 보고 Prev/Carousel/Next 배치) 순서로 처리.
+    /// </summary>
+    private void ForceRebuildCarouselLayout()
+    {
+        if (_carouselParent == null) return;
+
+        RectTransform carouselRect = _carouselParent as RectTransform;
+        if (carouselRect == null) return;
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(carouselRect);
+
+        RectTransform mainRect = carouselRect.parent as RectTransform;
+        if (mainRect != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(mainRect);
+        }
+    }
+
+    private void ReleaseAllSlots()
+    {
+        for (int i = 0; i < _activeSlots.Count; i++)
+        {
+            if (_activeSlots[i] != null)
+            {
+                _slotPool.Release(_activeSlots[i]);
+            }
+        }
+
+        _activeSlots.Clear();
+        _selectedSlot = null;
+    }
+
+    private void OnClickPrev()
+    {
+        _windowStartIndex--;
+        RefreshCarouselWindow();
+    }
+
+    private void OnClickNext()
+    {
+        _windowStartIndex++;
+        RefreshCarouselWindow();
+    }
+
+
+
+    private void HandleInventoryChanged()
+    {
+        RefreshOwnedEquipments();
+        RefreshCarouselWindow();
+
+        if (_selectedInstance != null && _ownedEquipments.Contains(_selectedInstance) == false)
+        {
+            if (_ownedEquipments.Count > 0)
+            {
+                SelectEquipment(_ownedEquipments[0]);
+            }
+            else
+            {
+                ClearSelection();
+            }
+
+            return;
+        }
+
         if (_selectedInstance != null)
         {
             SelectEquipment(_selectedInstance);
         }
-    }
-
-    private void ClearEquipSlots()
-    {
-        foreach (var slotObj in _spawnedEquipSlots)
-        {
-            Destroy(slotObj);
-        }
-        _spawnedEquipSlots.Clear();
-        _selectedSlot = null;
     }
 
     private void HandleEquipSlotClicked(EquipmentInstance equipmentInstance)
@@ -159,7 +326,7 @@ public class EnhanceUIController : MonoBehaviour
         SelectEquipment(equipmentInstance);
     }
 
-    // ===================== 선택 / 미리보기 / Execute =====================
+    // ===================== 선택 / Current-Next / Execute =====================
 
     private void SelectEquipment(EquipmentInstance instance)
     {
@@ -169,9 +336,11 @@ public class EnhanceUIController : MonoBehaviour
 
         ItemData itemData = instance.baseData;
 
-        if (_infoIcon != null) _infoIcon.sprite = itemData.icon;
-        if (_infoName != null) _infoName.text = itemData.itemName;
-        if (_infoGrade != null) _infoGrade.text = itemData.itemGrade.ToDisplayString();
+        if (_baseInfoName != null) _baseInfoName.text = itemData.itemName;
+        if (_baseInfoGrade != null) _baseInfoGrade.text = itemData.itemGrade.ToDisplayString();
+
+        if (_currentIcon != null) _currentIcon.sprite = itemData.icon;
+        if (_nextIcon != null) _nextIcon.sprite = itemData.icon;
 
         int currentLevel = instance.enhanceLevel;
         EnhanceLevelEntry nextEntry = _enhanceController != null
@@ -183,7 +352,6 @@ public class EnhanceUIController : MonoBehaviour
         if (_currentLvText != null) _currentLvText.text = $"+{currentLevel}";
         if (_nextLvText != null) _nextLvText.text = isMaxLevel ? "MAX" : $"+{nextEntry.level}";
 
-        // 등급별 테이블로 변경 - 이 장비의 등급에 맞는 테이블을 조회
         EnhanceTableData table = _enhanceController != null
             ? _enhanceController.GetTable(itemData.itemGrade)
             : null;
@@ -193,7 +361,9 @@ public class EnhanceUIController : MonoBehaviour
             ? currentStats
             : EquipStatCalculator.GetCurrentStats(itemData as EquipItemData, nextEntry.level, table);
 
-        BuildPreviewRows(currentStats, nextStats);
+        BuildCurrentValueRows(currentStats);
+        BuildNextValueRows(nextStats);
+
         UpdateExecuteSection(nextEntry, isMaxLevel);
     }
 
@@ -204,9 +374,7 @@ public class EnhanceUIController : MonoBehaviour
             _selectedSlot.SetSelected(false);
         }
 
-        _selectedSlot = _spawnedEquipSlots
-            .Select(obj => obj.GetComponent<EnhanceEquipSlot>())
-            .FirstOrDefault(slot => slot != null && slot.EquipmentInstance == instance);
+        _selectedSlot = _activeSlots.FirstOrDefault(slot => slot != null && slot.EquipmentInstance == instance);
 
         if (_selectedSlot != null)
         {
@@ -215,68 +383,117 @@ public class EnhanceUIController : MonoBehaviour
     }
 
     /// <summary>
-    /// 아무것도 선택 안 한 초기 상태로 정보/미리보기/Execute 비우기
+    /// 아무것도 선택 안 한(또는 보유 장비 없음) 초기 상태로 정보/Preview/Execute 비우기.
     /// </summary>
     private void ClearSelection()
     {
         _selectedInstance = null;
         _selectedSlot = null;
 
-        if (_infoIcon != null) _infoIcon.sprite = null;
-        if (_infoName != null) _infoName.text = string.Empty;
-        if (_infoGrade != null) _infoGrade.text = string.Empty;
+        if (_baseInfoName != null) _baseInfoName.text = string.Empty;
+        if (_baseInfoGrade != null) _baseInfoGrade.text = string.Empty;
+
+        if (_currentIcon != null) _currentIcon.sprite = null;
         if (_currentLvText != null) _currentLvText.text = string.Empty;
+        if (_nextIcon != null) _nextIcon.sprite = null;
         if (_nextLvText != null) _nextLvText.text = string.Empty;
+
+        HideAllCurrentValueRows();
+        HideAllNextValueRows();
+
         if (_successRateText != null) _successRateText.text = string.Empty;
         if (_pityProgressText != null) _pityProgressText.text = string.Empty;
-        if (_pitySlider != null) _pitySlider.value = 0f;
+        if (_pityFilledImage != null) _pityFilledImage.fillAmount = 0f;
         SetPityGuaranteed(false);
+
         if (_enhanceBtn != null) _enhanceBtn.interactable = false;
 
-        ClearPreviewRows();
         ClearEnhanceRequiredRows();
     }
 
+    // ===================== Current/Next Value Rows (고정 3슬롯) =====================
+
     /// <summary>
-    /// 0이 아닌 스탯만 골라서 EnhancePreviewRow를 동적으로 생성.
+    /// 0이 아닌 스탯만 골라 고정 3슬롯에 채우고, 남는 슬롯은 숨김.
     /// </summary>
-    private void BuildPreviewRows(EquipStatCalculator.StatSet currentStats, EquipStatCalculator.StatSet nextStats)
+    private void BuildCurrentValueRows(EquipStatCalculator.StatSet stats)
     {
-        ClearPreviewRows();
+        List<(string label, int value)> nonZero = CollectNonZeroStats(stats);
 
-        if (_previewRowPrefab == null || _previewRoot == null) return;
-
-        AddPreviewRowIfNonZero("체력", currentStats.hp, nextStats.hp);
-        AddPreviewRowIfNonZero("마나", currentStats.mp, nextStats.mp);
-        AddPreviewRowIfNonZero("공격력", currentStats.spellPower, nextStats.spellPower);
-        AddPreviewRowIfNonZero("지능", currentStats.intelligence, nextStats.intelligence);
-        AddPreviewRowIfNonZero("방어력", currentStats.defense, nextStats.defense);
-        AddPreviewRowIfNonZero("속도", currentStats.speed, nextStats.speed);
-        AddPreviewRowIfNonZero("행운", currentStats.luck, nextStats.luck);
-    }
-
-    private void AddPreviewRowIfNonZero(string label, int currentValue, int nextValue)
-    {
-        // 원래 0이었던 스탯(강화해도 계속 0)은 미리보기에 표시할 필요 없음
-        if (currentValue == 0) return;
-
-        EnhancePreviewRow row = Instantiate(_previewRowPrefab, _previewRoot);
-        row.Setup(label, currentValue, nextValue);
-        _spawnedPreviewRows.Add(row.gameObject);
-    }
-
-    private void ClearPreviewRows()
-    {
-        foreach (var rowObj in _spawnedPreviewRows)
+        for (int i = 0; i < _currentValueRows.Count; i++)
         {
-            Destroy(rowObj);
+            EnhanceValueRow row = _currentValueRows[i];
+            if (row == null) continue;
+
+            if (i < nonZero.Count)
+            {
+                row.gameObject.SetActive(true);
+                row.Setup(nonZero[i].label, nonZero[i].value);
+            }
+            else
+            {
+                row.gameObject.SetActive(false);
+            }
         }
-        _spawnedPreviewRows.Clear();
+    }
+
+    private void BuildNextValueRows(EquipStatCalculator.StatSet stats)
+    {
+        List<(string label, int value)> nonZero = CollectNonZeroStats(stats);
+
+        for (int i = 0; i < _nextValueRows.Count; i++)
+        {
+            EnhanceValueRow row = _nextValueRows[i];
+            if (row == null) continue;
+
+            if (i < nonZero.Count)
+            {
+                row.gameObject.SetActive(true);
+                row.Setup(nonZero[i].label, nonZero[i].value);
+            }
+            else
+            {
+                row.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private void HideAllCurrentValueRows()
+    {
+        for (int i = 0; i < _currentValueRows.Count; i++)
+        {
+            _currentValueRows[i]?.gameObject.SetActive(false);
+        }
+    }
+
+    private void HideAllNextValueRows()
+    {
+        for (int i = 0; i < _nextValueRows.Count; i++)
+        {
+            _nextValueRows[i]?.gameObject.SetActive(false);
+        }
     }
 
     /// <summary>
-    /// 성공확률 + 필요 골드/재료(보유량 대비) 표시, 강화 버튼 활성화 여부 결정.
+    /// StatSet에서 0이 아닌 스탯만 (라벨, 값) 리스트로 추출. 최대 3개까지만 사용됨(고정 슬롯 제한).
     /// </summary>
+    private List<(string label, int value)> CollectNonZeroStats(EquipStatCalculator.StatSet stats)
+    {
+        List<(string, int)> result = new List<(string, int)>();
+
+        if (stats.hp != 0) result.Add(("체력", stats.hp));
+        if (stats.mp != 0) result.Add(("마나", stats.mp));
+        if (stats.spellPower != 0) result.Add(("공격력", stats.spellPower));
+        if (stats.intelligence != 0) result.Add(("지능", stats.intelligence));
+        if (stats.defense != 0) result.Add(("방어력", stats.defense));
+        if (stats.speed != 0) result.Add(("속도", stats.speed));
+        if (stats.luck != 0) result.Add(("행운", stats.luck));
+
+        return result;
+    }
+
+    // ===================== Execute =====================
+
     private void UpdateExecuteSection(EnhanceLevelEntry nextEntry, bool isMaxLevel)
     {
         ClearEnhanceRequiredRows();
@@ -285,7 +502,7 @@ public class EnhanceUIController : MonoBehaviour
         {
             if (_successRateText != null) _successRateText.text = "MAX";
             if (_pityProgressText != null) _pityProgressText.text = string.Empty;
-            if (_pitySlider != null) _pitySlider.value = 0f;
+            if (_pityFilledImage != null) _pityFilledImage.fillAmount = 0f;
             SetPityGuaranteed(false);
             if (_enhanceBtn != null) _enhanceBtn.interactable = false;
             return;
@@ -311,10 +528,9 @@ public class EnhanceUIController : MonoBehaviour
                 }
             }
 
-            if (_pitySlider != null)
+            if (_pityFilledImage != null)
             {
-                // 슬라이더는 0~1 기준. 퍼센트(0~100)를 0~1로 정규화.
-                _pitySlider.value = pityProgress / 100f;
+                _pityFilledImage.fillAmount = pityProgress / 100f;
             }
 
             SetPityGuaranteed(isPityMax);
@@ -322,7 +538,7 @@ public class EnhanceUIController : MonoBehaviour
         else
         {
             if (_pityProgressText != null) _pityProgressText.text = string.Empty;
-            if (_pitySlider != null) _pitySlider.value = 0f;
+            if (_pityFilledImage != null) _pityFilledImage.fillAmount = 0f;
             SetPityGuaranteed(false);
         }
 
@@ -346,13 +562,12 @@ public class EnhanceUIController : MonoBehaviour
         bool canEnhance = _enhanceController != null && _selectedInstance != null
             && _enhanceController.CanEnhance(_selectedInstance, out _);
 
-        if (_enhanceBtn != null) _enhanceBtn.interactable = canEnhance;
+        if (_enhanceBtn != null)
+        {
+            _enhanceBtn.interactable = canEnhance && !_isEnhancementResultPlaying;
+        }
     }
 
-    /// <summary>
-    /// 확정 성공(100%) 여부에 따라 _pityGuaranteedObject / _tooltipObject를 서로 반대로 토글.
-    /// isGuaranteed가 true면 확정성공 안내만 보이고, false면 툴팁만 보임.
-    /// </summary>
     private void SetPityGuaranteed(bool isGuaranteed)
     {
         if (_pityGuaranteedObject != null) _pityGuaranteedObject.SetActive(isGuaranteed);
@@ -374,60 +589,91 @@ public class EnhanceUIController : MonoBehaviour
         {
             Destroy(rowObj);
         }
+
         _spawnedEnhanceRequiredRows.Clear();
     }
 
     private void OnClickEnhance()
     {
+        if (_isEnhancementResultPlaying) return;
         if (_enhanceController == null || _selectedInstance == null) return;
 
-        // 강화 성공하면 enhanceLevel이 바뀌어버리니, 시도한 단계는 미리 캡처해둔다
         EnhanceLevelEntry attemptedEntry = _enhanceController.GetNextLevelEntry(_selectedInstance);
-        if (attemptedEntry == null) return; // 이미 최대 단계 (버튼이 비활성화되어 있어야 하지만 방어적으로 체크)
+        if (attemptedEntry == null) return;
 
-        int attemptedLevel = attemptedEntry.level;
+        if (_enhanceController.CanEnhance(_selectedInstance, out _) == false) return;
+
+        // TryEnhance()가 인스턴스의 강화 단계와 강화 포인트를 변경하기 전에
+        // 결과 연출에 필요한 이전 값을 먼저 저장한다.
+        int beforeLevel = _selectedInstance.enhanceLevel;
+        float pointBefore = attemptedEntry.pityCount > 0
+            ? _enhanceController.GetPityProgress(_selectedInstance, attemptedEntry)
+            : 0f;
+
+        Sprite equipmentIcon = _selectedInstance.baseData != null
+            ? _selectedInstance.baseData.icon
+            : null;
+
+        _isEnhancementResultPlaying = true;
+
+        if (_enhanceBtn != null)
+        {
+            _enhanceBtn.interactable = false;
+        }
 
         bool isSuccess = _enhanceController.TryEnhance(_selectedInstance);
 
-        ShowResult(isSuccess, attemptedLevel);
+        // TryEnhance() 실행 이후의 실제 값을 사용한다.
+        int afterLevel = _selectedInstance.enhanceLevel;
+        float pointAfter = isSuccess == false && attemptedEntry.pityCount > 0
+            ? _enhanceController.GetPityProgress(_selectedInstance, attemptedEntry)
+            : 0f;
 
-        // 성공/실패 상관없이 최신 상태로 다시 그려줌 (골드/재료 소모, 강화 성공 시 단계 반영)
-        SelectEquipment(_selectedInstance);
-    }
-
-    // ===================== Result 팝업 (DOTween 페이드) =====================
-
-    private void ShowResult(bool isSuccess, int attemptedLevel)
-    {
-        if (_resultText != null)
+        if (_enhancementResultController != null)
         {
-            _resultText.text = isSuccess ? $"+{attemptedLevel} 강화 성공" : $"+{attemptedLevel} 강화 실패";
+            _enhancementResultController.transform.SetAsLastSibling();
+            _enhancementResultController.Play(
+                equipmentIcon,
+                isSuccess,
+                beforeLevel,
+                afterLevel,
+                pointBefore,
+                pointAfter);
         }
-
-        if (_resultCanvasGroup == null) return;
-
-        _resultCanvasGroup.DOKill();
-        _resultCanvasGroup.gameObject.SetActive(true);
-        _resultCanvasGroup.alpha = 0f;
-
-        DOTween.Sequence()
-            .SetTarget(_resultCanvasGroup)
-            .Append(_resultCanvasGroup.DOFade(1f, _resultFadeDuration))
-            .AppendInterval(_resultShowDuration)
-            .Append(_resultCanvasGroup.DOFade(0f, _resultFadeDuration))
-            .OnComplete(() => _resultCanvasGroup.gameObject.SetActive(false));
+        else
+        {
+            Debug.LogWarning("EnhancementResultController가 EnhanceUIController에 연결되지 않았습니다.");
+            HandleEnhancementResultClosed();
+        }
     }
 
     /// <summary>
-    /// 애니메이션 없이 즉시 숨김 (패널이 새로 열릴 때 초기화용)
+    /// 결과 Overlay가 닫힌 뒤 변경된 장비/재화/필요 재료 정보를 갱신한다.
     /// </summary>
-    private void HideResultImmediate()
+    private void HandleEnhancementResultClosed()
     {
-        if (_resultCanvasGroup == null) return;
+        _isEnhancementResultPlaying = false;
 
-        _resultCanvasGroup.DOKill();
-        _resultCanvasGroup.alpha = 0f;
-        _resultCanvasGroup.gameObject.SetActive(false);
+        RefreshOwnedEquipments();
+        RefreshCarouselWindow();
+
+        if (_selectedInstance != null && _ownedEquipments.Contains(_selectedInstance))
+        {
+            SelectEquipment(_selectedInstance);
+        }
+        else if (_ownedEquipments.Count > 0)
+        {
+            SelectEquipment(_ownedEquipments[0]);
+        }
+        else
+        {
+            ClearSelection();
+        }
+
+        if (PlayerInventory.Instance != null)
+        {
+            UpdateGoldText(PlayerInventory.Instance.Gold);
+        }
     }
 
     private void UpdateGoldText(int gold)

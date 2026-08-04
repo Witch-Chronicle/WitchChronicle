@@ -178,7 +178,11 @@ public class QuestManager : MonoBehaviour
         RewardQuest(questID);
     }
 
-
+    // QuestManager.cs 에 추가
+    public QuestData GetQuestData(string questID)
+    {
+        return _database != null ? _database.GetQuest(questID) : null;
+    }
 
     /// <summary>
     /// 보상 지급
@@ -192,6 +196,18 @@ public class QuestManager : MonoBehaviour
             return;
         }
 
+        // 💡 [수정] 진행 중(Running) 상태라면, 목표 진행도를 채우고 Completed 상태로 전환해 줍니다.
+        if (runtime.State == QuestState.Running)
+        {
+            for (int i = 0; i < runtime.Data.objectives.Count; i++)
+            {
+                runtime.Progress[i] = runtime.Data.objectives[i].requiredCount;
+            }
+
+            runtime.State = QuestState.Completed;
+        }
+
+        // 이미 보상을 받은 상태(Rewarded)이거나 시작하지 않은 상태라면 중단
         if (runtime.State != QuestState.Completed)
         {
             return;
@@ -215,18 +231,18 @@ public class QuestManager : MonoBehaviour
         // 경험치 처리
         if (reward.exp > 0)
         {
-            // PlayerManager.Instance.AddExp(reward.exp);
+            //PlayerManager.Instance.AddExp(reward.exp);
             rewardMessages.Add($"경험치 +{reward.exp}");
 
             Debug.Log($"Reward Exp : {reward.exp}");
         }
 
         // 아이템 처리
-        if (!string.IsNullOrEmpty(reward.itemID.ToString()) && reward.itemCount > 0)
+        if (reward.item != null && reward.itemCount > 0) // (ItemData 타입 검사로 수정)
         {
-            rewardMessages.Add($"아이템 {reward.itemID} x {reward.itemCount}");
-            PlayerInventory.Instance.AddItem(reward.itemID, reward.itemCount);
-            Debug.Log($"Reward Item : {reward.itemID} x {reward.itemCount}");
+            rewardMessages.Add($"아이템 {reward.item.name} x {reward.itemCount}");
+            PlayerInventory.Instance.AddItem(reward.item, reward.itemCount);
+            Debug.Log($"Reward Item : {reward.item.name} x {reward.itemCount}");
         }
 
         // NPC 영입 처리
@@ -242,7 +258,7 @@ public class QuestManager : MonoBehaviour
             QuestChainManager.Instance.NextQuest();
         }
 
-         // 출력할 보상이 있을 경우만 출력
+        // 출력할 보상이 있을 경우만 출력
         if (rewardMessages.Count > 0)
         {
             string message = string.Join("\n", rewardMessages);
@@ -250,7 +266,6 @@ public class QuestManager : MonoBehaviour
             ShowMessageManager.Instance.ShowMessage(message);
         }
     }
-
     public List<QuestData> GetAvailableQuests()
     {
         // 데이터베이스의 모든 퀘스트 반환

@@ -19,13 +19,14 @@ MonoBehaviour:
   type: 0
   objectives:
   - type: 4
-    targetID: fire1
+    targetID: classic_1
+    targetName: "\uC77C\uBC18 \uB358\uC804"
     requiredCount: 1
   reward:
-    gold: 1000
-    exp: 100
-    itemID: {fileID: 11400000, guid: 0083d62620d49f74f89ac9c33ae095e9, type: 2}
+    gold: 200
+    exp: 10
+    itemID: {fileID: 11400000, guid: ef3a045dee7a55d44811c0afb618328d, type: 2}
     itemCount: 1
     recruitNPC: 
-    nextStory: 0
-  nextQuest: {fileID: 11400000, guid: 566544fb08b068e4bb872005163a1417, type: 2}
+    nextStory: 1
+  nextQuest: {fileID: 11400000, guid: 5ffe71d2df937cd498f62d0e5a68c056, type: 2}
