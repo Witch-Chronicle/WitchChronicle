@@ -30,7 +30,7 @@ public class NPCManager : MonoBehaviour
 
     public void RegisterNPC(NPC npc)
     {
-        string id = npc.Data.id;
+        string id = npc.Data.NpcId;
 
         if (_spawnedNPCs.ContainsKey(id))
         {

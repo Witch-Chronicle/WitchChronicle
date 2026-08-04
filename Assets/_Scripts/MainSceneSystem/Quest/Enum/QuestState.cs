@@ -1,10 +1,7 @@
 public enum QuestState
 {
-    None,
-
+    NotStarted,
     Running,
-
     Completed,
-
     Rewarded
 }

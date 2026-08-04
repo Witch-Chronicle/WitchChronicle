@@ -42,7 +42,7 @@ public class DialogueManager : MonoBehaviour
 
         _currentNPC = npc;
 
-        _currentDialogue = _loader.Load(_currentNPC.dialogueJson);
+        _currentDialogue = _loader.Load(_currentNPC.DialogueJson);
 
         if (_currentDialogue == null)
         {
@@ -101,7 +101,7 @@ public class DialogueManager : MonoBehaviour
         bool isLastNode = string.IsNullOrEmpty(_currentNode.next) && 
         (_currentNode.choices == null || _currentNode.choices.Count == 0);
 
-        DialogueUI.Instance.Refresh(_currentNPC.portrait, _currentNode.speaker, _currentNode.text, isLastNode);
+        DialogueUI.Instance.Refresh(_currentNPC.Portrait, _currentNode.speaker, _currentNode.text, isLastNode);
 
         DialogueUI.Instance.ClearChoices();
 

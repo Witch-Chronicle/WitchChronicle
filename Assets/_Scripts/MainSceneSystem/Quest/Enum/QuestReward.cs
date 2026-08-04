@@ -7,7 +7,7 @@ public class QuestReward
 
     public int exp;
 
-    public ItemData itemID;
+    public ItemData item;
 
     public int itemCount;
 

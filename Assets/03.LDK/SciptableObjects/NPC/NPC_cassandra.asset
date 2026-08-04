@@ -12,17 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25f7fd47791a14f4f8b071b5055a8834, type: 3}
   m_Name: NPC_cassandra
   m_EditorClassIdentifier: Assembly-CSharp::NPCData
-  id: npc_cassandra
-  npcName: "\uCE74\uC0B0\uB4DC\uB77C"
-  description: "\uCE74\uC0B0\uB4DC\uB77C "
-  portrait: {fileID: 21300000, guid: 5d9ba4e7d0964044ea54abe409d81dfd, type: 3}
-  prefab: {fileID: 0}
-  dialogueJson: {fileID: 4900000, guid: bf9ed8d9e4862dc459f51ac74ae4c3ca, type: 3}
-  defaultDialogueID: default
-  runningDialogueID: running
-  completeDialogueID: complete
-  finishedDialogueID: finished
-  startDialogueID: start
-  quest: {fileID: 11400000, guid: e7dd8d3c7d865ac4081440d8afeb4bb8, type: 2}
-  recruitQuest: {fileID: 0}
-  defaultState: 0
+  _npcId: npc_cassandra
+  _npcName: "\uCE74\uC0B0\uB4DC\uB77C"
+  _description: "\uCE74\uC0B0\uB4DC\uB77C\uC785\uB2C8\uB2E4"
+  _portrait: {fileID: 21300000, guid: 669a5e6f39262bf48840b4d387165243, type: 3}
+  _prefab: {fileID: 0}
+  _dialogueJson: {fileID: 4900000, guid: bf9ed8d9e4862dc459f51ac74ae4c3ca, type: 3}
+  _defaultDialogueId: default
+  _startDialogueId: default
+  _runningDialogueId: running
+  _completeDialogueId: complete
+  _finishedDialogueId: reward
+  _questId: main_000
+  _recruitQuestId: 
+  _defaultNpcState: 0
