@@ -47,6 +47,7 @@ public class ShopNPC : MonoBehaviour
         if (_shopPanelAnimator != null)
         {
             _shopPanelAnimator.SetClosedImmediate();
+            _shopPanelAnimator.OnClosed += HandleShopPanelClosed;
         }
     }
 
@@ -87,6 +88,15 @@ public class ShopNPC : MonoBehaviour
         {
             if (_isShopOpen)
             {
+                // 대화 도중 상점이 열리는 경우, 대화창 패널만 끔 (CursorLocker 상태는 안 건드림)
+                if (DialogueUI.Instance != null)
+                {
+                    DialogueUI.Instance.HidePanelOnly();
+                }
+
+                // 패널을 화면에 표시하기 전에 배경 Blur부터 요청 (캡처 시 패널 자체가 안 찍히도록)
+                UIBackgroundBlurManager.Instance?.Show();
+
                 _shopPanelAnimator.Open();
                 QuestListUI.Instance.Close();
                 CursorLocker.Instance.EnterUIMode();
@@ -96,11 +106,27 @@ public class ShopNPC : MonoBehaviour
                 _shopPanelAnimator.Close();
                 QuestListUI.Instance.Open();
                 CursorLocker.Instance.ExitUIMode();
+
+                // Blur는 여기서 바로 안 끔 - Close 애니메이션이 끝난 뒤 HandleShopPanelClosed()에서 해제
             }
         }
         else
         {
             Debug.LogWarning("[ShopNPC] shopPanelAnimator가 연결되지 않았습니다.");
+        }
+    }
+
+    private void HandleShopPanelClosed()
+    {
+        UIBackgroundBlurManager.Instance?.Hide();
+    }
+
+
+    private void OnDestroy()
+    {
+        if (_shopPanelAnimator != null)
+        {
+            _shopPanelAnimator.OnClosed -= HandleShopPanelClosed;
         }
     }
 }

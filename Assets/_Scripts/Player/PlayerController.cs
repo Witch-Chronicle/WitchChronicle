@@ -23,6 +23,8 @@ public class PlayerController : MonoBehaviour
     private bool _hasGroundedParam;
     private bool _hasMotionSpeedParam;
 
+    private bool _isInputEnabled = true;    // 인풋 막기용으로 추가
+
     private const float Gravity = -9.81f;
 
     private void Awake()
@@ -49,6 +51,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (_isInputEnabled == false) return;   // input 막기
+
         Vector2 input = _moveAction.ReadValue<Vector2>();
 
         // 카메라 기준 이동 방향 (수평 성분만)
@@ -88,6 +92,30 @@ public class PlayerController : MonoBehaviour
             // StarterAssets ThirdPerson 컨트롤러용 파라미터
             if (_hasGroundedParam) _animator.SetBool(GroundedParam, _controller.isGrounded);
             if (_hasMotionSpeedParam) _animator.SetFloat(MotionSpeedParam, 1f);   // 애니메이션 재생 배속
+        }
+    }
+
+    /// <summary>
+    /// 플레이어 입력 활성화 설정
+    /// </summary>
+    /// <param name="isEnabled">입력 활성화 여부</param>
+    public void SetInputEnabled(bool isEnabled)
+    {
+        _isInputEnabled = isEnabled;
+
+        if (_isInputEnabled)
+            return;
+
+        _verticalVelocity = 0f;
+
+        if (_animator == null)
+            return;
+
+        _animator.SetFloat(SpeedParam, 0f);
+
+        if (_hasMotionSpeedParam)
+        {
+            _animator.SetFloat(MotionSpeedParam, 0f);
         }
     }
 }

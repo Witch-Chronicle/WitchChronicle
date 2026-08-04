@@ -154,14 +154,20 @@ public class BattleEncounterContext : MonoBehaviour
         _canEscape = true;
         _isPlayerAdvantage = false;
         _isEnemyAdvantage = false;
+        _battleEncounter = null;
     }
 
     // 추가, 몬스터 파괴
+    /// <summary>
+    /// 저장된 조우 오브젝트 파괴
+    /// </summary>
     public void DestroyEncounter()
     {
-        if (_battleEncounter != null)
-        {
-            _battleEncounter = null;
-        }
+        if (_battleEncounter == null)
+            return;
+
+        Destroy(_battleEncounter.gameObject);
+
+        _battleEncounter = null;
     }
 }

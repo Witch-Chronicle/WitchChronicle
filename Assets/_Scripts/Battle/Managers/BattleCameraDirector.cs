@@ -23,10 +23,17 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private CinemachineCamera _groupTargetOverviewCamera;
     [SerializeField] private CinemachineCamera _itemUseCamera;
 
-
     [Header("Priority")]
     [SerializeField] private int _activePriority = 30;
     [SerializeField] private int _inactivePriority = 0;
+
+    [Header("Cut Timing")]
+    [Tooltip("단일 대상 클로즈업 컷 이후 유지 시간")]
+    [SerializeField] private float _singleCutHoldDuration = 0.12f;
+    [Tooltip("플레이어 등 뒤 피격 컷 이후 유지 시간")]
+    [SerializeField] private float _backCutHoldDuration = 0.08f;
+    [Tooltip("광역 대상 컷 이후 유지 시간")]
+    [SerializeField] private float _groupCutHoldDuration = 0.1f;
 
     [Header("Player Back View")]
     [SerializeField] private float _backDistance = 4.5f;
@@ -111,10 +118,9 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private float _itemUseWaitDuration = 0.35f;
 
     private Coroutine _waitRoutine;
-    private Coroutine _cutRoutine;
     private CinemachineCamera _activeCamera;
-    private CinemachineBlendDefinition _cachedDefaultBlend;
-    private bool _hasCachedDefaultBlend;
+    private bool _forceNextCut;
+    private ICinemachineCamera _forcedCutTarget;
 
     /// <summary>
     /// 참조 자동 연결
@@ -141,6 +147,10 @@ public class BattleCameraDirector : MonoBehaviour
     /// </summary>
     private void OnEnable()
     {
+        CinemachineCore.GetBlendOverride -= HandleBlendOverride;
+
+        CinemachineCore.GetBlendOverride += HandleBlendOverride;
+
         if (_battleUIContext == null)
         {
             return;
@@ -155,8 +165,10 @@ public class BattleCameraDirector : MonoBehaviour
     /// </summary>
     private void OnDisable()
     {
+        CinemachineCore.GetBlendOverride -= HandleBlendOverride;
+
         StopWaitRoutine();
-        StopCutRoutine();
+        ClearCutRequest();
 
         if (_battleUIContext == null)
         {
@@ -193,6 +205,7 @@ public class BattleCameraDirector : MonoBehaviour
     private void HandleBattleEnded(BattleTeamType winner)
     {
         StopWaitRoutine();
+        ClearCutRequest();
     }
 
     /// <summary>
@@ -229,6 +242,45 @@ public class BattleCameraDirector : MonoBehaviour
             _backRoll,
             _backWaitDuration,
             _backTweenDuration,
+            onComplete);
+    }
+
+    /// <summary>
+    /// 플레이어 등 뒤 구도 컷 재생
+    /// </summary>
+    /// <param name="unit">기준 유닛</param>
+    /// <param name="onComplete">완료 콜백</param>
+    public void PlayPlayerBackViewCut(
+        BattleUnit unit,
+        Action onComplete = null)
+    {
+        if (TryGetActorTransform(unit, out Transform actorTransform) == false)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        Vector3 focusPosition =
+            actorTransform.position +
+            actorTransform.forward * _backLookForward +
+            Vector3.up * _backLookHeight;
+
+        Vector3 cameraPosition =
+            actorTransform.position -
+            actorTransform.forward * _backDistance +
+            actorTransform.right * _backSideOffset +
+            Vector3.up * _backHeight;
+
+        ApplyCameraPose(
+            _playerBackCamera,
+            cameraPosition,
+            focusPosition,
+            _backFov,
+            _backRoll);
+
+        ActivateCameraCut(
+            _playerBackCamera,
+            _backCutHoldDuration,
             onComplete);
     }
 
@@ -431,6 +483,44 @@ public class BattleCameraDirector : MonoBehaviour
     }
 
     /// <summary>
+    /// 단일 대상 정면 근접 구도 컷 재생
+    /// </summary>
+    /// <param name="target">바라볼 대상 유닛</param>
+    /// <param name="onComplete">완료 콜백</param>
+    public void PlaySingleTargetOverviewCut(
+        BattleUnit target,
+        Action onComplete = null)
+    {
+        if (TryGetActorTransform(target, out Transform targetTransform) == false)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        Vector3 focusPosition =
+            targetTransform.position +
+            Vector3.up * _singleLookHeight;
+
+        Vector3 cameraPosition =
+            targetTransform.position +
+            targetTransform.forward * _singleFrontDistance +
+            targetTransform.right * _singleSideOffset +
+            Vector3.up * _singleHeight;
+
+        ApplyCameraPose(
+            _singleTargetOverviewCamera,
+            cameraPosition,
+            focusPosition,
+            _singleFov,
+            _singleRoll);
+
+        ActivateCameraCut(
+            _singleTargetOverviewCamera,
+            _singleCutHoldDuration,
+            onComplete);
+    }
+
+    /// <summary>
     /// 그룹 대상(AllEnemies / SingleAlly / AllAllies 스킬) 구도 재생.
     /// targetTeam이 Enemy면 적 전체 중심 앞쪽에서 적들의 정면이 보이는 구도,
     /// targetTeam이 Player면 아군 전체 중심 뒤쪽에서 아군들의 뒷모습이 보이는 구도(PlayerBackView와 유사).
@@ -498,6 +588,77 @@ public class BattleCameraDirector : MonoBehaviour
         ActivateCamera(
             _groupTargetOverviewCamera,
             _groupWaitDuration,
+            onComplete);
+    }
+
+    /// <summary>
+    /// 그룹 대상 구도 컷 재생
+    /// </summary>
+    /// <param name="actor">행동 주체 유닛</param>
+    /// <param name="targetTeam">바라볼 대상 팀</param>
+    /// <param name="onComplete">완료 콜백</param>
+    public void PlayGroupTargetOverviewCut(
+        BattleUnit actor,
+        BattleTeamType targetTeam,
+        Action onComplete = null)
+    {
+        if (TryGetActorTransform(actor, out Transform actorTransform) == false)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        Vector3 groupCenter =
+            GetTeamCenter(
+                targetTeam,
+                actorTransform.position);
+
+        Vector3 cameraPosition;
+        Vector3 focusPosition;
+        float fov;
+        float roll;
+
+        if (targetTeam == BattleTeamType.Enemy)
+        {
+            cameraPosition =
+                groupCenter -
+                actorTransform.forward * _groupEnemyFrontDistance +
+                actorTransform.right * _groupEnemySideOffset +
+                Vector3.up * _groupEnemyHeight;
+
+            focusPosition =
+                groupCenter +
+                Vector3.up * _groupEnemyFocusHeight;
+
+            fov = _groupEnemyFov;
+            roll = _groupEnemyRoll;
+        }
+        else
+        {
+            cameraPosition =
+                groupCenter -
+                actorTransform.forward * _groupAllyBackDistance +
+                actorTransform.right * _groupAllySideOffset +
+                Vector3.up * _groupAllyHeight;
+
+            focusPosition =
+                groupCenter +
+                Vector3.up * _groupAllyFocusHeight;
+
+            fov = _groupAllyFov;
+            roll = _groupAllyRoll;
+        }
+
+        ApplyCameraPose(
+            _groupTargetOverviewCamera,
+            cameraPosition,
+            focusPosition,
+            fov,
+            roll);
+
+        ActivateCameraCut(
+            _groupTargetOverviewCamera,
+            _groupCutHoldDuration,
             onComplete);
     }
 
@@ -651,7 +812,7 @@ public class BattleCameraDirector : MonoBehaviour
         float waitDuration,
         Action onComplete)
     {
-        StopCutRoutine();
+        ClearCutRequest();
 
         ApplyActiveCameraPriority(
             targetCamera);
@@ -686,24 +847,10 @@ public class BattleCameraDirector : MonoBehaviour
             return;
         }
 
-        StopCutRoutine();
         StopWaitRoutine();
 
-        if (_cinemachineBrain != null)
-        {
-            _cachedDefaultBlend =
-                _cinemachineBrain.DefaultBlend;
-
-            _hasCachedDefaultBlend = true;
-
-            _cinemachineBrain.DefaultBlend =
-                new CinemachineBlendDefinition(
-                    CinemachineBlendDefinition.Styles.Cut,
-                    0f);
-
-            _cutRoutine = StartCoroutine(
-                RestoreDefaultBlendNextFrame());
-        }
+        _forceNextCut = true;
+        _forcedCutTarget = targetCamera;
 
         ApplyActiveCameraPriority(
             targetCamera);
@@ -720,15 +867,40 @@ public class BattleCameraDirector : MonoBehaviour
     }
 
     /// <summary>
-    /// 다음 프레임 기본 블렌드 복구
+    /// 요청된 카메라 전환 Cut 처리
     /// </summary>
-    private IEnumerator RestoreDefaultBlendNextFrame()
+    /// <param name="fromCamera">기존 카메라</param>
+    /// <param name="toCamera">전환 카메라</param>
+    /// <param name="defaultBlend">기본 블렌드</param>
+    /// <param name="owner">블렌드 요청 주체</param>
+    /// <returns>적용 블렌드</returns>
+    private CinemachineBlendDefinition HandleBlendOverride(
+        ICinemachineCamera fromCamera,
+        ICinemachineCamera toCamera,
+        CinemachineBlendDefinition defaultBlend,
+        UnityEngine.Object owner)
     {
-        yield return null;
+        if (_forceNextCut == false ||
+            owner != _cinemachineBrain ||
+            toCamera != _forcedCutTarget)
+        {
+            return defaultBlend;
+        }
 
-        RestoreDefaultBlend();
+        ClearCutRequest();
 
-        _cutRoutine = null;
+        return new CinemachineBlendDefinition(
+            CinemachineBlendDefinition.Styles.Cut,
+            0f);
+    }
+
+    /// <summary>
+    /// Cut 요청 초기화
+    /// </summary>
+    private void ClearCutRequest()
+    {
+        _forceNextCut = false;
+        _forcedCutTarget = null;
     }
 
     /// <summary>
@@ -777,37 +949,6 @@ public class BattleCameraDirector : MonoBehaviour
 
         StopCoroutine(_waitRoutine);
         _waitRoutine = null;
-    }
-
-    /// <summary>
-    /// 컷 전환 루틴 중단
-    /// </summary>
-    private void StopCutRoutine()
-    {
-        if (_cutRoutine != null)
-        {
-            StopCoroutine(_cutRoutine);
-            _cutRoutine = null;
-        }
-
-        RestoreDefaultBlend();
-    }
-
-    /// <summary>
-    /// Cinemachine 기본 블렌드 복구
-    /// </summary>
-    private void RestoreDefaultBlend()
-    {
-        if (_cinemachineBrain == null ||
-            _hasCachedDefaultBlend == false)
-        {
-            return;
-        }
-
-        _cinemachineBrain.DefaultBlend =
-            _cachedDefaultBlend;
-
-        _hasCachedDefaultBlend = false;
     }
 
     /// <summary>

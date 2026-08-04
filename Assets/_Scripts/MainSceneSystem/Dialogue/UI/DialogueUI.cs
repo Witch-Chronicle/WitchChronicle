@@ -46,7 +46,10 @@ public class DialogueUI : MonoBehaviour
 
     private string _currentText;
 
-
+    /// <summary>
+    /// 대화창 패널이 지금 활성 상태인지 여부. 외부(상점 등)가 대화 흐름을 가로챘는지 확인하는 용도.
+    /// </summary>
+    public bool IsPanelActive => _panel.activeSelf;
 
     /// <summary>
     /// 싱글톤 초기화 및 입력 연결
@@ -108,54 +111,64 @@ public class DialogueUI : MonoBehaviour
     public void Refresh(Sprite portrait, string speaker, string text, bool lastNode)
     {
         _portrait.sprite = portrait;
-
         _speakerText.text = speaker;
-
         _currentText = text;
-
         _lastNode = lastNode;
 
+        // 타이핑 효과 없이 즉시 전체 텍스트 표시
+        if (_typingCoroutine != null)
+        {
+            StopCoroutine(_typingCoroutine);
+            _typingCoroutine = null;
+        }
 
+        _isTyping = false;
+        _dialogueText.text = text;
+
+        if (_lastNode)
+        {
+            StartCoroutine(EndDialogueAfterDelay());
+        }
+
+        /*
         if (_typingCoroutine != null)
         {
             StopCoroutine(_typingCoroutine);
         }
-
-
         _typingCoroutine = StartCoroutine(Typing(text));
+        */
     }
 
-
+    /// <summary>
+    /// 타이핑 없이 즉시 표시하는 경우, 마지막 노드라면 기존과 동일하게 잠깐 대기 후 대화 종료.
+    /// </summary>
+    private IEnumerator EndDialogueAfterDelay()
+    {
+        yield return new WaitForSeconds(1f);
+        DialogueManager.Instance.EndDialogue();
+    }
 
     /// <summary>
     /// 대사 타이핑 출력
     /// </summary>
+    /*
     private IEnumerator Typing(string text)
     {
         _isTyping = true;
-
-
         _dialogueText.text = "";
-
-
         foreach (char c in text)
         {
             _dialogueText.text += c;
-
             yield return new WaitForSeconds(_typingSpeed);
         }
-
-
         _isTyping = false;
-
-
         if (_lastNode)
         {
             yield return new WaitForSeconds(1f);
-
             DialogueManager.Instance.EndDialogue();
         }
     }
+    */
 
 
 
@@ -225,5 +238,32 @@ public class DialogueUI : MonoBehaviour
 
 
         _isTyping = false;
+    }
+
+    /// <summary>
+    /// 대화창 패널만 숨김. CursorLocker 상태는 건드리지 않음.
+    /// 대화 도중 다른 UI(상점 등)로 전환되는 경우, 그 UI가 자체적으로 EnterUIMode를 다시 걸 것이므로
+    /// 여기서 ExitUIMode를 호출하면 순간적으로 필드 모드로 풀렸다가 다시 잠기는 깜빡임이 생길 수 있음.
+    /// 타이핑 코루틴도 같이 정지시켜서, 패널이 꺼진 뒤에도 백그라운드에서 계속 도는 것을 방지.
+    /// </summary>
+    public void HidePanelOnly()
+    {
+        Debug.Log($"[DialogueUI] HidePanelOnly 호출됨. panel active={_panel.activeSelf}, typingCoroutine null? {_typingCoroutine == null}");
+
+        if (_panel.activeSelf == false)
+        {
+            return;
+        }
+
+        if (_typingCoroutine != null)
+        {
+            StopCoroutine(_typingCoroutine);
+            _typingCoroutine = null;
+            Debug.Log("[DialogueUI] 타이핑 코루틴 정지됨");
+        }
+
+        _isTyping = false;
+
+        _panel.SetActive(false);
     }
 }

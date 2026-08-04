@@ -175,6 +175,19 @@ MonoBehaviour:
   _roofHeight: 20
   _variationCount: 4
   _decorSpawnChance: 0.1
+  _clusterCount: 6
+  _clusterMinSize: 3
+  _clusterMaxSize: 6
+  _clusterRadius: 2.5
+  _wallDecorSpacing: 3
+  _wallDecorHeight: 3
+  _wallDecorInset: 0.55
+  _wallDecorChance: 0.7
+  _landmarkPrefabs: []
+  _edgeLandmarkSpacing: 4
+  _centerLandmarkCount: 0
+  _centerExclusionRadius: 9
+  _edgeBandDepth: 5
 --- !u!1 &95647713
 GameObject:
   m_ObjectHideFlags: 0
@@ -614,10 +627,10 @@ MonoBehaviour:
   _impactDelay: 0.3
   _battleEndDelay: 1.5
   _battleCameraDirector: {fileID: 1867479331}
-  _constellationPathBattleManager: {fileID: 0}
-  _battlePresentationBinder: {fileID: 0}
-  _battleActionBanner: {fileID: 0}
-  _enemyActionBannerHoldDuration: 0.2
+  _constellationPathBattleManager: {fileID: 379774968}
+  _battlePresentationBinder: {fileID: 338119916}
+  _battleActionBanner: {fileID: 567879309}
+  _enemyActionBannerHoldDuration: 2
   _statusEffectDatabase: {fileID: 11400000, guid: 717e46805c562334d84f64b0ad47202e, type: 2}
 --- !u!114 &338119914
 MonoBehaviour:
@@ -820,6 +833,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 899025f422efcba48b187b744f86614f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathController
+--- !u!114 &379774968 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2283237506136837190, guid: 0701b1705d801054ebcc90322e00270f, type: 3}
+  m_PrefabInstance: {fileID: 379774965}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23307f79dd4226141b5dff05b6b48a86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathBattleManager
 --- !u!1 &418915745
 GameObject:
   m_ObjectHideFlags: 0
@@ -869,7 +893,7 @@ MonoBehaviour:
   _battleHudCanvasGroup: {fileID: 567879308}
   _hudShowDuration: 0.2
   _startDelay: 0.7
-  _enemyViewHoldDuration: 0.5
+  _enemyViewHoldDuration: 4
   _defaultViewHoldDuration: 0.15
 --- !u!1001 &466403587
 PrefabInstance:
@@ -1582,6 +1606,10 @@ PrefabInstance:
       propertyPath: _battleRewardManager
       value: 
       objectReference: {fileID: 338119915}
+    - target: {fileID: 5208976929627029751, guid: 8a24a400e68f4b64ea715197e7a54c88, type: 3}
+      propertyPath: _hiddenOffsetX
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5605834105462255571, guid: 8a24a400e68f4b64ea715197e7a54c88, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -1626,6 +1654,22 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7418047173060774487, guid: 8a24a400e68f4b64ea715197e7a54c88, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7418047173060774487, guid: 8a24a400e68f4b64ea715197e7a54c88, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7418047173060774487, guid: 8a24a400e68f4b64ea715197e7a54c88, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 300
+      objectReference: {fileID: 0}
+    - target: {fileID: 7418047173060774487, guid: 8a24a400e68f4b64ea715197e7a54c88, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -250
+      objectReference: {fileID: 0}
     - target: {fileID: 9152241502927945718, guid: 8a24a400e68f4b64ea715197e7a54c88, type: 3}
       propertyPath: m_SizeDelta.x
       value: 0
@@ -1645,6 +1689,17 @@ CanvasGroup:
   m_CorrespondingSourceObject: {fileID: 9063146655261522743, guid: 8a24a400e68f4b64ea715197e7a54c88, type: 3}
   m_PrefabInstance: {fileID: 567879306}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &567879309 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5208976929627029751, guid: 8a24a400e68f4b64ea715197e7a54c88, type: 3}
+  m_PrefabInstance: {fileID: 567879306}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f150b9e5e87b14243932c24a90dea9fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BattleActionBanner
 --- !u!1 &598687271
 GameObject:
   m_ObjectHideFlags: 0
@@ -1807,116 +1862,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1084ba532f77f0458b84c8cd5f4fd0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterStats
---- !u!1 &649560333
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 649560334}
-  - component: {fileID: 649560338}
-  - component: {fileID: 649560337}
-  - component: {fileID: 649560336}
-  - component: {fileID: 649560335}
-  m_Layer: 5
-  m_Name: EnemyActionBanner
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &649560334
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 649560333}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 1
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -50, y: -250}
-  m_SizeDelta: {x: 600, y: 50}
-  m_Pivot: {x: 1, y: 1}
---- !u!114 &649560335
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 649560333}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.28235295}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &649560336
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 649560333}
-  m_CullTransparentMesh: 1
---- !u!114 &649560337
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 649560333}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f150b9e5e87b14243932c24a90dea9fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BattleActionBanner
-  _canvasGroup: {fileID: 649560338}
-  _panelRoot: {fileID: 649560334}
-  _actorNameText: {fileID: 0}
-  _actionNameText: {fileID: 0}
-  _showDuration: 0.18
-  _hideDuration: 0.12
-  _hiddenOffsetX: -80
-  _showEase: 9
-  _hideEase: 8
---- !u!225 &649560338
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 649560333}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 0
 --- !u!1 &660840212
 GameObject:
   m_ObjectHideFlags: 0
@@ -2585,6 +2530,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1778118703630469799, guid: ec0118bc1f143734e9a616877c0871e8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 5464e0a237afcf746ace07744d84cd9f, type: 3}
+    - target: {fileID: 1778118703630469799, guid: ec0118bc1f143734e9a616877c0871e8, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778118703630469799, guid: ec0118bc1f143734e9a616877c0871e8, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1778118703630469799, guid: ec0118bc1f143734e9a616877c0871e8, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2914306145672311775, guid: ec0118bc1f143734e9a616877c0871e8, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -2669,6 +2630,10 @@ PrefabInstance:
       propertyPath: _pathController
       value: 
       objectReference: {fileID: 379774967}
+    - target: {fileID: 6261901398248521890, guid: ec0118bc1f143734e9a616877c0871e8, type: 3}
+      propertyPath: _timerFillImage
+      value: 
+      objectReference: {fileID: 953412815}
     - target: {fileID: 7475613317738316369, guid: ec0118bc1f143734e9a616877c0871e8, type: 3}
       propertyPath: m_Name
       value: ConstellationPathCanvas
@@ -2693,6 +2658,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eab486104d9cc8947a9b57cf61c868f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathUIController
+--- !u!114 &953412815 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 48847288185696722, guid: ec0118bc1f143734e9a616877c0871e8, type: 3}
+  m_PrefabInstance: {fileID: 953412813}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!1 &1061783585
 GameObject:
   m_ObjectHideFlags: 0
@@ -3965,8 +3941,11 @@ MonoBehaviour:
   _itemUseCamera: {fileID: 214328016}
   _activePriority: 30
   _inactivePriority: 0
+  _singleCutHoldDuration: 0.12
+  _backCutHoldDuration: 0.08
+  _groupCutHoldDuration: 0.1
   _backDistance: 4.5
-  _backHeight: 0.4
+  _backHeight: 0.5
   _backLookHeight: 1.2
   _backLookForward: 4
   _backFov: 52
@@ -3998,9 +3977,9 @@ MonoBehaviour:
   _skillDrawSideOffset: 5
   _skillDrawRoll: 0
   _skillDrawWaitDuration: 0.35
-  _singleFrontDistance: 3
-  _singleSideOffset: 0
-  _singleHeight: 0
+  _singleFrontDistance: 5
+  _singleSideOffset: 2
+  _singleHeight: 2
   _singleLookHeight: 1
   _singleFov: 70
   _singleRoll: 0
@@ -4963,4 +4942,3 @@ SceneRoots:
   - {fileID: 1554497068131324832}
   - {fileID: 567879306}
   - {fileID: 2052179069}
-  - {fileID: 649560334}

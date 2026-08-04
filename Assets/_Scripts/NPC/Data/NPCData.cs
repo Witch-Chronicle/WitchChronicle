@@ -1,45 +1,59 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NPC_", menuName = "Game/NPC")]
+/// <summary>
+/// NPC 데이터 프로필 및 대화 ID Suffix를 관리하는 ScriptableObject입니다.
+/// </summary>
+[CreateAssetMenu(fileName = "NewNPCData", menuName = "ScriptableObjects/NPCData")]
 public class NPCData : ScriptableObject
 {
-    [Header("Basic")]
-
-    public string id;
-
-    public string npcName;
-
+    [Header("Basic Info")]
+    [SerializeField] private string _npcId;
+    [SerializeField] private string _npcName;
     [TextArea(3, 5)]
-    public string description;
+    [SerializeField] private string _description;
 
-    [Header("Visual")]
+    [Header("Visual Assets")]
+    [SerializeField] private Sprite _portrait;
+    [SerializeField] private GameObject _prefab;
 
-    public Sprite portrait;
+    [Header("Dialogue Assets & IDs")]
+    [SerializeField] private TextAsset _dialogueJson;
+    [SerializeField] private string _defaultDialogueId = "default";
+    [SerializeField] private string _startDialogueId = "default";
+    [SerializeField] private string _runningDialogueId = "running";
+    [SerializeField] private string _completeDialogueId = "complete";
+    [SerializeField] private string _finishedDialogueId = "reward";
 
-    public GameObject prefab;
+    [Header("Quest Info")]
+    [SerializeField] private string _questId;
+    [SerializeField] private string _recruitQuestId;
 
-    [Header("Dialogue")] // 다양한 대화를 위한, running 일때 다른 반응, complete 일때 다른 반응
+    [Header("NPC State")]
+    [SerializeField] private NPC_State _defaultNpcState = NPC_State.Normal;
 
-    public TextAsset dialogueJson;
+    // Basic Info Properties
+    public string NpcId => _npcId;
+    public string NpcName => _npcName;
+    public string Description => _description;
 
-    public string defaultDialogueID;
+    // Visual Assets Properties
+    public Sprite Portrait => _portrait;
+    public GameObject Prefab => _prefab;
 
-    public string runningDialogueID;
+    // Dialogue Data Properties
+    public TextAsset DialogueJson => _dialogueJson;
+    public string DefaultDialogueId => _defaultDialogueId;
+    public string StartDialogueId => _startDialogueId;
+    public string RunningDialogueId => _runningDialogueId;
+    public string CompleteDialogueId => _completeDialogueId;
+    public string FinishedDialogueId => _finishedDialogueId;
 
-    public string completeDialogueID;
+    // Quest Info Properties
+    public string QuestId => _questId;
+    public string RecruitQuestId => _recruitQuestId;
 
-    public string finishedDialogueID;
-
-    public string startDialogueID;
-
-    [Header("Quest")]
-    public QuestData quest;
-
-    public QuestData recruitQuest;
-
-    [Header("Default")]
-
-    public NPC_State defaultState;
+    // State Property
+    public NPC_State DefaultNpcState => _defaultNpcState;
 }
 
 public enum NPC_State

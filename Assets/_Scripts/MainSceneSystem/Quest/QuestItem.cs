@@ -7,17 +7,11 @@ using UnityEngine;
 /// </summary>
 public class QuestItem : MonoBehaviour
 {
-    [SerializeField]
-    private TMP_Text _titleText;
+    [SerializeField] private TMP_Text _titleText;
 
+    [SerializeField] private TMP_Text _progressText;
 
-    [SerializeField]
-    private TMP_Text _progressText;
-
-
-    [SerializeField]
-    private TMP_Text _stateText;
-
+    [SerializeField] private TMP_Text _stateText;
 
     private QuestRuntime _runtime;
 
@@ -48,22 +42,16 @@ public class QuestItem : MonoBehaviour
         _titleText.text = _runtime.Data.title;
 
 
-        _stateText.text =
-            GetStateText(_runtime.State);
-
+        _stateText.text = GetStateText(_runtime.State);
 
         string text = "";
 
-
         for (int i = 0; i < _runtime.Data.objectives.Count; i++)
         {
-            QuestObjective objective =
-                _runtime.Data.objectives[i];
+            QuestObjective objective = _runtime.Data.objectives[i];
 
 
-            text +=
-                $"{GetObjectiveText(objective)} " +
-                $"{_runtime.Progress[i]}/{objective.requiredCount}\n";
+            text += $"{GetObjectiveText(objective)} " + $"{_runtime.Progress[i]}/{objective.requiredCount}\n";
         }
 
 
@@ -83,7 +71,7 @@ public class QuestItem : MonoBehaviour
 
 
             case QuestState.Completed:
-                return "완료 - 보상 받기";
+                return "보상 받기";
 
 
             case QuestState.Rewarded:
@@ -104,26 +92,26 @@ public class QuestItem : MonoBehaviour
         switch (objective.type)
         {
             case QuestObjectiveType.KillMonster:
-                return $"{objective.targetID} 처치";
+                return $"{objective.targetName} 처치";
 
 
             case QuestObjectiveType.TalkNPC:
-                return $"{objective.targetID}와 대화";
+                return $"{objective.targetName}와 대화";
 
 
             case QuestObjectiveType.CollectItem:
-                return $"{objective.targetID} 획득";
+                return $"{objective.targetName} 획득";
 
 
             case QuestObjectiveType.ClearDungeon:
-                return $"{objective.targetID} 클리어";
+                return $"{objective.targetName} 클리어";
 
 
             case QuestObjectiveType.RecruitNPC:
-                return $"{objective.targetID} 합류";
+                return $"{objective.targetName} 합류";
         }
 
 
-        return objective.targetID;
+        return objective.targetName;
     }
 }
