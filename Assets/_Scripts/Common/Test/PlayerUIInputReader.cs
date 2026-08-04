@@ -186,6 +186,18 @@ public sealed class PlayerUIInputReader : MonoBehaviour
     /// </summary>
     private void HandleEscape()
     {
+        // 강화 결과 연출 중이면 Esc 입력 자체를 완전히 무시.
+        // 연출이 끝나(canClose=true) 텍스트까지 다 표시된 상태면 Result Overlay만 닫음.
+        if (EnhancementResultController.Instance != null && EnhancementResultController.Instance.IsOpen)
+        {
+            if (EnhancementResultController.Instance.IsResultPresented)
+            {
+                EnhancementResultController.Instance.Close();
+            }
+
+            return;
+        }
+
         if (ShopNPC.Instance != null && ShopNPC.Instance.IsOpen)
         {
             ShopNPC.Instance.ToggleShop();
@@ -206,7 +218,6 @@ public sealed class PlayerUIInputReader : MonoBehaviour
 
         if (_statPanelAnimator != null && _statPanelAnimator.IsOpen)
         {
-            // Detail이 열려있으면 StatPanel을 닫는 대신 Detail만 닫음
             if (_statUIController != null && _statUIController.IsDetailOpen)
             {
                 _statUIController.CloseDetailPanel();

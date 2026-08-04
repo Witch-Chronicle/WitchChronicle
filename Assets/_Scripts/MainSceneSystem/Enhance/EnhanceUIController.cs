@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Pool;
 using TMPro;
-using DG.Tweening;
 
 /// <summary>
 /// EnhancePanel 메인 컨트롤러.
@@ -55,11 +54,8 @@ public class EnhanceUIController : MonoBehaviour
     [Header("Enhance Execute - Btn")]
     [SerializeField] private Button _enhanceBtn;
 
-    [Header("Result")]
-    [SerializeField] private CanvasGroup _resultCanvasGroup;
-    [SerializeField] private TextMeshProUGUI _resultText;
-    [SerializeField] private float _resultFadeDuration = 0.25f;
-    [SerializeField] private float _resultShowDuration = 1.2f;
+    [Header("Enhancement Result")]
+    [SerializeField] private EnhancementResultController _enhancementResultController;
 
     [Header("Equip List (Carousel, 순환 윈도우 5칸)")]
     [SerializeField] private EnhanceEquipSlot _equipSlotPrefab;
@@ -77,6 +73,7 @@ public class EnhanceUIController : MonoBehaviour
 
     private EquipmentInstance _selectedInstance;
     private EnhanceEquipSlot _selectedSlot;
+    private bool _isEnhancementResultPlaying;
 
     private void Awake()
     {
@@ -97,12 +94,18 @@ public class EnhanceUIController : MonoBehaviour
         if (_prevBtn != null) _prevBtn.onClick.AddListener(OnClickPrev);
         if (_nextBtn != null) _nextBtn.onClick.AddListener(OnClickNext);
 
+        if (_enhancementResultController != null)
+        {
+            _enhancementResultController.Closed += HandleEnhancementResultClosed;
+        }
+
         _windowStartIndex = 0;
 
         RefreshOwnedEquipments();
         RefreshCarouselWindow();
         ClearSelection();
-        HideResultImmediate();
+
+        _isEnhancementResultPlaying = false;
 
         if (_ownedEquipments.Count > 0)
         {
@@ -123,6 +126,11 @@ public class EnhanceUIController : MonoBehaviour
         if (_enhanceBtn != null) _enhanceBtn.onClick.RemoveListener(OnClickEnhance);
         if (_prevBtn != null) _prevBtn.onClick.RemoveListener(OnClickPrev);
         if (_nextBtn != null) _nextBtn.onClick.RemoveListener(OnClickNext);
+
+        if (_enhancementResultController != null)
+        {
+            _enhancementResultController.Closed -= HandleEnhancementResultClosed;
+        }
 
         if (PlayerInventory.Instance != null)
         {
@@ -554,7 +562,10 @@ public class EnhanceUIController : MonoBehaviour
         bool canEnhance = _enhanceController != null && _selectedInstance != null
             && _enhanceController.CanEnhance(_selectedInstance, out _);
 
-        if (_enhanceBtn != null) _enhanceBtn.interactable = canEnhance;
+        if (_enhanceBtn != null)
+        {
+            _enhanceBtn.interactable = canEnhance && !_isEnhancementResultPlaying;
+        }
     }
 
     private void SetPityGuaranteed(bool isGuaranteed)
@@ -584,50 +595,85 @@ public class EnhanceUIController : MonoBehaviour
 
     private void OnClickEnhance()
     {
+        if (_isEnhancementResultPlaying) return;
         if (_enhanceController == null || _selectedInstance == null) return;
 
         EnhanceLevelEntry attemptedEntry = _enhanceController.GetNextLevelEntry(_selectedInstance);
         if (attemptedEntry == null) return;
 
-        int attemptedLevel = attemptedEntry.level;
+        if (_enhanceController.CanEnhance(_selectedInstance, out _) == false) return;
+
+        // TryEnhance()가 인스턴스의 강화 단계와 강화 포인트를 변경하기 전에
+        // 결과 연출에 필요한 이전 값을 먼저 저장한다.
+        int beforeLevel = _selectedInstance.enhanceLevel;
+        float pointBefore = attemptedEntry.pityCount > 0
+            ? _enhanceController.GetPityProgress(_selectedInstance, attemptedEntry)
+            : 0f;
+
+        Sprite equipmentIcon = _selectedInstance.baseData != null
+            ? _selectedInstance.baseData.icon
+            : null;
+
+        _isEnhancementResultPlaying = true;
+
+        if (_enhanceBtn != null)
+        {
+            _enhanceBtn.interactable = false;
+        }
 
         bool isSuccess = _enhanceController.TryEnhance(_selectedInstance);
 
-        ShowResult(isSuccess, attemptedLevel);
+        // TryEnhance() 실행 이후의 실제 값을 사용한다.
+        int afterLevel = _selectedInstance.enhanceLevel;
+        float pointAfter = isSuccess == false && attemptedEntry.pityCount > 0
+            ? _enhanceController.GetPityProgress(_selectedInstance, attemptedEntry)
+            : 0f;
 
-        SelectEquipment(_selectedInstance);
+        if (_enhancementResultController != null)
+        {
+            _enhancementResultController.transform.SetAsLastSibling();
+            _enhancementResultController.Play(
+                equipmentIcon,
+                isSuccess,
+                beforeLevel,
+                afterLevel,
+                pointBefore,
+                pointAfter);
+        }
+        else
+        {
+            Debug.LogWarning("EnhancementResultController가 EnhanceUIController에 연결되지 않았습니다.");
+            HandleEnhancementResultClosed();
+        }
     }
 
-    // ===================== Result 팝업 (DOTween 페이드) =====================
-
-    private void ShowResult(bool isSuccess, int attemptedLevel)
+    /// <summary>
+    /// 결과 Overlay가 닫힌 뒤 변경된 장비/재화/필요 재료 정보를 갱신한다.
+    /// </summary>
+    private void HandleEnhancementResultClosed()
     {
-        if (_resultText != null)
+        _isEnhancementResultPlaying = false;
+
+        RefreshOwnedEquipments();
+        RefreshCarouselWindow();
+
+        if (_selectedInstance != null && _ownedEquipments.Contains(_selectedInstance))
         {
-            _resultText.text = isSuccess ? $"+{attemptedLevel} 강화 성공" : $"+{attemptedLevel} 강화 실패";
+            SelectEquipment(_selectedInstance);
+        }
+        else if (_ownedEquipments.Count > 0)
+        {
+            SelectEquipment(_ownedEquipments[0]);
+        }
+        else
+        {
+            ClearSelection();
         }
 
-        if (_resultCanvasGroup == null) return;
-
-        _resultCanvasGroup.DOKill();
-        _resultCanvasGroup.gameObject.SetActive(true);
-        _resultCanvasGroup.alpha = 0f;
-
-        DOTween.Sequence()
-            .SetTarget(_resultCanvasGroup)
-            .Append(_resultCanvasGroup.DOFade(1f, _resultFadeDuration))
-            .AppendInterval(_resultShowDuration)
-            .Append(_resultCanvasGroup.DOFade(0f, _resultFadeDuration))
-            .OnComplete(() => _resultCanvasGroup.gameObject.SetActive(false));
-    }
-
-    private void HideResultImmediate()
-    {
-        if (_resultCanvasGroup == null) return;
-
-        _resultCanvasGroup.DOKill();
-        _resultCanvasGroup.alpha = 0f;
-        _resultCanvasGroup.gameObject.SetActive(false);
+        if (PlayerInventory.Instance != null)
+        {
+            UpdateGoldText(PlayerInventory.Instance.Gold);
+        }
     }
 
     private void UpdateGoldText(int gold)
