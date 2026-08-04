@@ -746,7 +746,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22bb70ddaadda0b438f01ee2027dafd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterAudio
-  audioSource: {fileID: 4825157371394156992}
   footstepClips:
   - {fileID: 8300000, guid: 3515527f48a854c658f6654d89c03d44, type: 3}
   - {fileID: 8300000, guid: becc44e5c724942ff9db71e50e0cf47f, type: 3}
@@ -755,13 +754,21 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 1834ec69586af4bccb2b0595d9065d3e, type: 3}
   footstepVolume: 0.1
   attackClips: []
+  attackVolume: 0.3
   skillClips: []
+  skillVolume: 0.3
   hitClips: []
+  hitVolume: 0.15
   statusClips: []
+  statusVolume: 0.3
   parryClips: []
+  parryVolume: 0.3
   deathClips: []
+  deathVolume: 0.3
   victoryClips: []
+  victoryVolume: 0.3
   jointAttackClips: []
+  jointAttackVolume: 0.3
 --- !u!82 &4825157371394156992
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2561,6 +2568,7 @@ GameObject:
   - component: {fileID: 8102033964070200037}
   - component: {fileID: 8229916799388483326}
   - component: {fileID: 3480695942536940843}
+  - component: {fileID: 7822502900948639785}
   m_Layer: 0
   m_Name: Ariel
   m_TagString: Player
@@ -2705,6 +2713,25 @@ MonoBehaviour:
   _stats: {fileID: 8229916799388483326}
   _growthConfig: {fileID: 11400000, guid: f47e7c54984504a4ca964f3138fe3f45, type: 2}
   _resetCost: 500
+--- !u!114 &7822502900948639785
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560493996318386368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c0018312d38fa64dbabb8d24367e627, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WitchChronicle.Fishing.FishingAnimatorHook
+  animator: {fileID: 1225852485558496439}
+  isFishingBool: IsFishing
+  castTrigger: Cast
+  biteTrigger: Bite
+  reelTrigger: Reel
+  catchSuccessTrigger: CatchSuccess
+  catchFailTrigger: CatchFail
 --- !u!1 &1562030576368215012
 GameObject:
   m_ObjectHideFlags: 0

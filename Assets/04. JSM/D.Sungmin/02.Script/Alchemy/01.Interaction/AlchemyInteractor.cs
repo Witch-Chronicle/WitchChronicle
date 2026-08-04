@@ -100,9 +100,15 @@ namespace WitchChronicle.Alchemy
         {
             if (_playerRef == null) return;
 
-            // ThirdPersonController 스크립트 잠금 (Move 호출 자체를 막음)
-            var controller = _playerRef.GetComponent<ThirdPersonController>();
-            if (controller != null) controller.enabled = !locked;
+            // 이동 스크립트 잠금 (Move 호출 자체를 막음)
+            // 우리 캐릭터(PlayerController)와 StarterAssets 양쪽 모두 대응
+            string[] moverTypeNames = { "PlayerController", "ThirdPersonController", "StarterAssetsInputs" };
+
+            for (int i = 0; i < moverTypeNames.Length; i++)
+            {
+                var mover = _playerRef.GetComponent(moverTypeNames[i]) as MonoBehaviour;
+                if (mover != null) mover.enabled = !locked;
+            }
 
             // CharacterController도 잠금 (물리 이동 봉인)
             var cc = _playerRef.GetComponent<CharacterController>();

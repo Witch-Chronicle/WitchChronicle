@@ -83,6 +83,20 @@ public class FishingManager : MonoBehaviour
     // ─────────────────────────────────────────────────────────
 
     /// <summary>
+    /// 애니메이터 훅을 런타임에 연결한다.
+    /// 플레이어 캐릭터는 FieldPartySpawner가 실행 중에 생성하므로
+    /// 인스펙터로 미리 연결할 수 없어, 낚시 진입 시점에 FishingSpot이 넘겨준다.
+    /// </summary>
+    /// <param name="hook">플레이어에 붙어 있는 훅. null이면 무시</param>
+    public void BindAnimatorHook(WitchChronicle.Fishing.FishingAnimatorHook hook)
+    {
+        if (hook != null)
+        {
+            animatorHook = hook;
+        }
+    }
+
+    /// <summary>
     /// 낚시 스팟에서 F키 상호작용 시 호출.
     /// 카메라·캐릭터 전환은 FishingSpot이 이미 처리한 상태.
     /// </summary>
