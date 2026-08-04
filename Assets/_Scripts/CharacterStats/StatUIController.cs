@@ -64,7 +64,7 @@ public class StatUIController : MonoBehaviour
     [SerializeField] private TMP_Text _characterNameTxt;
     [SerializeField] private TMP_Text _levelTxt;
     [SerializeField] private TMP_Text _expTxt;
-    [SerializeField] private Slider _expSlider;
+    [SerializeField] private Image _expFilledImg;
 
     [Header("Stat Info")]
     [SerializeField] private TMP_Text _availableStatTxt;
@@ -88,6 +88,11 @@ public class StatUIController : MonoBehaviour
     [SerializeField] private List<CombatStatRow> _combatStatRows = new List<CombatStatRow>();
 
     private StatController _currentStatController;
+
+    /// <summary>
+    /// 지금 Detail 패널이 열려있는지 여부. PlayerUIInputReader의 Esc 처리 분기에 사용됨.
+    /// </summary>
+    public bool IsDetailOpen => _detailPanelAnimator != null && _detailPanelAnimator.IsOpen;
 
     private void Awake()
     {
@@ -182,7 +187,7 @@ public class StatUIController : MonoBehaviour
         RefreshDetailUI();
     }
 
-    private void CloseDetailPanel()
+    public void CloseDetailPanel()
     {
         if (_detailPanelAnimator != null)
         {
@@ -264,7 +269,7 @@ public class StatUIController : MonoBehaviour
 
         if (_levelTxt != null) _levelTxt.text = $"Lv. {level}";
         if (_expTxt != null) _expTxt.text = $"{exp}/{expToNext}";
-        if (_expSlider != null) _expSlider.value = expToNext > 0 ? (float)exp / expToNext : 0f;
+        if (_expFilledImg != null) _expFilledImg.fillAmount = expToNext > 0 ? (float)exp / expToNext : 0f;
         if (_availableStatTxt != null) _availableStatTxt.text = $"보유 스탯 포인트 : {availablePoints}";
 
         CharacterStats characterStats = _currentStatController.Stats;
