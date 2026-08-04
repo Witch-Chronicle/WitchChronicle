@@ -38,6 +38,13 @@ public class ConstellationPathNodeView :
     [SerializeField]
     private Sprite _idleSprite;
 
+    [Header("Star Size")]
+    [SerializeField, Range(0.1f, 2f)]
+    private float _idleStarScale = 1f;
+
+    [SerializeField, Range(0.1f, 2f)]
+    private float _completedStarScale = 0.5f;
+
     [SerializeField]
     private Sprite _completedSprite;
 
@@ -578,6 +585,9 @@ public class ConstellationPathNodeView :
         SetStarSprite(
             _idleSprite);
 
+        SetStarScale(
+            _idleStarScale);
+
         SetImageAlpha(
             _ambientGlowImage,
             _lockedAmbientAlpha);
@@ -597,6 +607,9 @@ public class ConstellationPathNodeView :
         SetStarSprite(
             _idleSprite);
 
+        SetStarScale(
+            _idleStarScale);
+
         SetImageAlpha(
             _ambientGlowImage,
             _availableAmbientAlpha);
@@ -613,6 +626,9 @@ public class ConstellationPathNodeView :
 
         SetStarSprite(
             _completedSprite);
+
+        SetStarScale(
+            _completedStarScale);
 
         SetImageAlpha(
             _ambientGlowImage,
@@ -1139,5 +1155,24 @@ public class ConstellationPathNodeView :
             _resolutionRoutine);
 
         _resolutionRoutine = null;
+    }
+
+    /// <summary>
+    /// 별 본체 크기 변경
+    /// </summary>
+    /// <param name="scale">적용 크기 배율</param>
+    private void SetStarScale(
+        float scale)
+    {
+        if (_starImage == null)
+        {
+            return;
+        }
+
+        _starImage.rectTransform.localScale =
+            Vector3.one *
+            Mathf.Max(
+                0.01f,
+                scale);
     }
 }
