@@ -7,5 +7,7 @@ public class QuestObjective
 
     public string targetID;
 
+    public string targetName;
+
     public int requiredCount;
 }

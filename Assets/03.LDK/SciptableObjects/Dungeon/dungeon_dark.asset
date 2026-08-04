@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: dungeon_dark
   m_EditorClassIdentifier: Assembly-CSharp::DungeonData
   Id: dark_1
-  DungeonName: "\uBD88\uC758 \uB358\uC804"
+  DungeonName: "\uC800\uC8FC\uC758 \uB358\uC804"
   FloorPrefab: {fileID: 2968830504906926872, guid: e5f9b860d4f158041830633198ce81ee, type: 3}
   WallPrefab: {fileID: 5151642384990008009, guid: 54c77c1c8d379594e93baab6ad37934c, type: 3}
   CeilingPrefab: {fileID: 2968830504906926872, guid: 738a82f1abf45734bb1692df0cdbcca5, type: 3}
@@ -51,6 +51,7 @@ MonoBehaviour:
   - {fileID: 574122265314155589, guid: df9e9f4113dde224ea4e91458fcd18ab, type: 3}
   - {fileID: 1167486005058445278, guid: de97c9a596385f64d829f9c035512bb3, type: 3}
   - {fileID: 7613198964696299674, guid: 2a6695511ee6fef4e97d355c2ce291ff, type: 3}
+  WallDecorPrefabs: []
   MapSize: {x: 100, y: 100}
   MinPadding: 3
   BSPDepth: 4
@@ -76,5 +77,5 @@ MonoBehaviour:
   Icon: {fileID: 0}
   Fog: {fileID: 9185907458619771004, guid: 34d5fa90c6b731548b181519817581ae, type: 3}
   DungeonAtmosphere: {fileID: 11400000, guid: 7349cab097403834181a56850579688a, type: 2}
-  HasBoss: 1
-  HasExit: 0
+  HasBoss: 0
+  HasExit: 1

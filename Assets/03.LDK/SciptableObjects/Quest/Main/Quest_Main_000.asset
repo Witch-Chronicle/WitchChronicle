@@ -10,21 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cbe15cc1f7ebf744da8f3bb2c409ab19, type: 3}
-  m_Name: Quest_Rep_001
+  m_Name: Quest_Main_000
   m_EditorClassIdentifier: Assembly-CSharp::QuestData
-  id: rep_001
-  title: "\uB291\uB300 \uC0AC\uB0E5"
-  description: "\uB291\uB300 3 \uB9C8\uB9AC \uCC98\uCE58"
-  type: 2
-  objectives:
-  - type: 2
-    targetID: wolf
-    requiredCount: 3
+  id: main_000
+  title: "\uCE74\uC0B0\uB4DC\uB77C\uC640 \uB300\uD654"
+  description: "\uC61B \uC2A4\uC2B9 \uCE74\uC0B0\uB4DC\uB77C\uC758 \uC77C\uAE30\uB97C
+    \uBC1C\uACAC\uD588\uB2E4. \uADF8\uB140\uB97C \uCC3E\uC544\uAC00\uBCF4\uC790."
+  type: 0
+  objectives: []
   reward:
-    gold: 1000
-    exp: 1000
-    itemID: {fileID: 11400000, guid: 4e9336f2e1f64144893371d82ab30caa, type: 2}
+    gold: 0
+    exp: 10
+    item: {fileID: 0}
     itemCount: 0
     recruitNPC: 
-    nextStory: 0
-  nextQuest: {fileID: 0}
+    nextStory: 1
+  nextQuest: {fileID: 11400000, guid: e7dd8d3c7d865ac4081440d8afeb4bb8, type: 2}

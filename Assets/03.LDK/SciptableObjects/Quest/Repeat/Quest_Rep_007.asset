@@ -10,16 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cbe15cc1f7ebf744da8f3bb2c409ab19, type: 3}
-  m_Name: Quest_Requit
+  m_Name: Quest_Rep_007
   m_EditorClassIdentifier: Assembly-CSharp::QuestData
-  id: 
-  title: 
-  description: 
-  type: 0
-  objectives: []
+  id: rep_007
+  title: "\uB9DD\uB839 \uCC98\uCE58(\uC800\uC8FC \uB358\uC804)"
+  description: "\uB9DD\uB839 \uCC98\uCE58 5 \uB9C8\uB9AC"
+  type: 2
+  objectives:
+  - type: 2
+    targetID: enemy_dark_ghost
+    targetName: "\uB9DD\uB839"
+    requiredCount: 5
   reward:
-    gold: 0
-    exp: 0
+    gold: 100
+    exp: 100
     itemID: {fileID: 0}
     itemCount: 0
+    recruitNPC: 
+    nextStory: 0
   nextQuest: {fileID: 0}
