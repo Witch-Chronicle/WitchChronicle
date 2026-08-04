@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 6131689766468485476}
   - component: {fileID: 8592595811034977018}
   m_Layer: 0
-  m_Name: PF_TestEnemy
+  m_Name: BattleSpawnedEnemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -250,6 +250,8 @@ MonoBehaviour:
     Scale: 0.3
     Offset: {x: 0, y: 0, z: 0}
     ApplySfx: {fileID: 8300000, guid: c7dce7eb081913043946915845a6cc6f, type: 3}
+  _audioSource: {fileID: 0}
+  _sfxVolume: 0.3
 --- !u!114 &8592595811034977018
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -268,6 +270,8 @@ MonoBehaviour:
   _dieTrigger: TriggerDie
   _deathHideDelay: 1.5
   _hideTarget: {fileID: 0}
+  _attackImpactNormalizedTime: 0.45
+  _animationTimeout: 1
 --- !u!1001 &1785868669887140386
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -614,6 +618,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5291806943818061185, guid: 720c31d0432253942b698bba76a46cb1, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5971716164110481308, guid: 720c31d0432253942b698bba76a46cb1, type: 3}
+      propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6348079229960555013, guid: 720c31d0432253942b698bba76a46cb1, type: 3}
