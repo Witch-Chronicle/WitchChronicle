@@ -182,6 +182,79 @@ public class SceneTransitionManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 화면 전환 연출 없는 Additive 씬 로드
+    /// </summary>
+    /// <param name="sceneName">로드 씬 이름</param>
+    /// <param name="onBeforeLoad">로드 직전 콜백</param>
+    /// <param name="onLoaded">로드 완료 콜백</param>
+    public void LoadSceneAdditiveWithoutTransition(
+        string sceneName,
+        Action onBeforeLoad = null,
+        Action onLoaded = null)
+    {
+        if (IsLoading)
+        {
+            Debug.LogWarning(
+                $"[SceneTransitionManager] 이미 씬 전환 중입니다. 요청 무시: {sceneName}");
+
+            return;
+        }
+
+        if (string.IsNullOrEmpty(sceneName))
+        {
+            Debug.LogWarning(
+                "[SceneTransitionManager] sceneName이 비어있습니다.");
+
+            return;
+        }
+
+        StartCoroutine(
+            LoadSceneAdditiveWithoutTransitionRoutine(
+                sceneName,
+                onBeforeLoad,
+                onLoaded));
+    }
+
+    /// <summary>
+    /// 화면 전환 연출 없는 Additive 씬 로드 진행
+    /// </summary>
+    /// <param name="sceneName">로드 씬 이름</param>
+    /// <param name="onBeforeLoad">로드 직전 콜백</param>
+    /// <param name="onLoaded">로드 완료 콜백</param>
+    private IEnumerator LoadSceneAdditiveWithoutTransitionRoutine(
+        string sceneName,
+        Action onBeforeLoad,
+        Action onLoaded)
+    {
+        IsLoading = true;
+
+        onBeforeLoad?.Invoke();
+
+        AsyncOperation operation =
+            SceneManager.LoadSceneAsync(
+                sceneName,
+                LoadSceneMode.Additive);
+
+        if (operation == null)
+        {
+            Debug.LogError(
+                $"[SceneTransitionManager] 씬을 찾을 수 없습니다: {sceneName}");
+
+            IsLoading = false;
+            yield break;
+        }
+
+        while (operation.isDone == false)
+        {
+            yield return null;
+        }
+
+        onLoaded?.Invoke();
+
+        IsLoading = false;
+    }
+
+    /// <summary>
     /// Additive로 로드했던 씬을 제거 (전투 종료 후 전투 씬만 정리)
     /// </summary>
     public void UnloadScene(string sceneName, Action onUnloaded = null)

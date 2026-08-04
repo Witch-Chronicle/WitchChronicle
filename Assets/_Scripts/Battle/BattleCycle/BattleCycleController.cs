@@ -755,7 +755,11 @@ public class BattleCycleController : MonoBehaviour
                     _actionEndHoldDuration);
             }
 
-            RestoreDefaultBattleCamera();
+            if (actionRequest.Actor != null &&
+                actionRequest.Actor.TeamType == BattleTeamType.Player)
+            {
+                RestoreDefaultBattleCamera();
+            }
         }
 
         OnTurnOrderChanged?.Invoke();
@@ -836,11 +840,12 @@ public class BattleCycleController : MonoBehaviour
             yield break;
         }
 
-        _battleActionBanner?.Show(actionRequest);
+        _battleActionBanner?.Show(
+            actionRequest);
 
         bool isActorViewCompleted = false;
 
-        _battleCameraDirector.PlaySingleTargetOverview(
+        _battleCameraDirector.PlaySingleTargetOverviewCut(
             actionRequest.Actor,
             () => isActorViewCompleted = true);
 
@@ -895,19 +900,20 @@ public class BattleCycleController : MonoBehaviour
 
         if (isGroupTarget)
         {
-            _battleCameraDirector.PlayTargetOverview(
-                cameraTarget,
+            _battleCameraDirector.PlayGroupTargetOverviewCut(
+                actionRequest.Actor,
+                cameraTarget.TeamType,
                 () => isTargetViewCompleted = true);
         }
         else if (cameraTarget.TeamType == BattleTeamType.Player)
         {
-            _battleCameraDirector.PlayPlayerBackView(
+            _battleCameraDirector.PlayPlayerBackViewCut(
                 cameraTarget,
                 () => isTargetViewCompleted = true);
         }
         else
         {
-            _battleCameraDirector.PlaySingleTargetOverview(
+            _battleCameraDirector.PlaySingleTargetOverviewCut(
                 cameraTarget,
                 () => isTargetViewCompleted = true);
         }
