@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6df93aa8a2379f04abe3ffa4fcbdc37a, type: 3}
+  m_Name: dungeon_dark
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonData
+  Id: dark_1
+  DungeonName: "\uC800\uC8FC\uBC1B\uC740 \uB545"
+  DungeonIcon: {fileID: 21300000, guid: 28528ebdb48decf42a73b28d3f2b6d91, type: 3}
+  Description: "\uAC80\uC740 \uC800\uC8FC\uAC00 \uC2A4\uBA70\uB4E0 \uD3D0\uD5C8\uC758
+    \uB545.\\n\uC6D0\uD55C\uC744 \uD488\uC740 \uC601\uD63C\uB4E4\uC774 \uBC29\uD669\uD558\uBA70
+    \uB5A0\uB3C8\uB2E4."
+  RequiredQuest: {fileID: 11400000, guid: 331c527716a43ed469ca8d3b6e5fe5bd, type: 2}
+  EnemyPool:
+  - {fileID: 11400000, guid: e464e38c81aa81f48ad9953fdbb78188, type: 2}
+  - {fileID: 11400000, guid: 1752b055934804d4c96923653807f3b3, type: 2}
+  - {fileID: 11400000, guid: e1b4db4cd35da744bb663ea554db5ef7, type: 2}
+  - {fileID: 11400000, guid: 9ba9da080d582754c8bf776bc9f2f03c, type: 2}
+  - {fileID: 11400000, guid: 3b1981e3adb69584ca4edbb76500baff, type: 2}
+  - {fileID: 11400000, guid: 4383f73a266553b41b519e36cb05ec9b, type: 2}
+  FloorPrefab: {fileID: 2968830504906926872, guid: e5f9b860d4f158041830633198ce81ee, type: 3}
+  WallPrefab: {fileID: 5151642384990008009, guid: 54c77c1c8d379594e93baab6ad37934c, type: 3}
+  CeilingPrefab: {fileID: 2968830504906926872, guid: 738a82f1abf45734bb1692df0cdbcca5, type: 3}
+  DoorPrefab: {fileID: 3960670234233686325, guid: 5719d16d9f035fd4a8fcfaf6ae7bdfd2, type: 3}
+  DoorWallPrefab: {fileID: 0}
+  DecorPrefabs:
+  - {fileID: 3693926014911207686, guid: e7a10c0a9b0499548ad26fe2629dc45d, type: 3}
+  - {fileID: 1030992304, guid: abc00000000000166612956689332867, type: 3}
+  - {fileID: 1030992282, guid: abc00000000007320823481348160304, type: 3}
+  - {fileID: 1030992238, guid: abc00000000003778390058708688329, type: 3}
+  - {fileID: 1030992216, guid: abc00000000016882973811301943871, type: 3}
+  - {fileID: 1030992198, guid: abc00000000008076672260047248511, type: 3}
+  - {fileID: 1030992180, guid: abc00000000014745605174516167561, type: 3}
+  - {fileID: 1030992348, guid: abc00000000009366842529473335653, type: 3}
+  - {fileID: 1030992326, guid: abc00000000018341995826438526174, type: 3}
+  - {fileID: 1030992370, guid: abc00000000014921817115746232092, type: 3}
+  - {fileID: 1030992064, guid: abc00000000001424491044653731891, type: 3}
+  - {fileID: 1030992055, guid: abc00000000003602206591326685032, type: 3}
+  - {fileID: 1030989814, guid: abc00000000004928058318135229430, type: 3}
+  - {fileID: 1030989828, guid: abc00000000018252033537885080541, type: 3}
+  - {fileID: 1030989837, guid: abc00000000009758838933452477108, type: 3}
+  - {fileID: 1030989855, guid: abc00000000005684586284913277267, type: 3}
+  - {fileID: 1030989869, guid: abc00000000004500283291099384560, type: 3}
+  - {fileID: 1030989883, guid: abc00000000013496570538827010555, type: 3}
+  - {fileID: 1030989892, guid: abc00000000014172085929998306098, type: 3}
+  - {fileID: 1030989910, guid: abc00000000000191386511345966085, type: 3}
+  - {fileID: 1030989814, guid: abc00000000004928058318135229430, type: 3}
+  - {fileID: 1030989828, guid: abc00000000018252033537885080541, type: 3}
+  - {fileID: 1030989837, guid: abc00000000009758838933452477108, type: 3}
+  - {fileID: 1030989855, guid: abc00000000005684586284913277267, type: 3}
+  - {fileID: 1030989869, guid: abc00000000004500283291099384560, type: 3}
+  - {fileID: 1030989883, guid: abc00000000013496570538827010555, type: 3}
+  - {fileID: 1030989892, guid: abc00000000014172085929998306098, type: 3}
+  - {fileID: 1030989910, guid: abc00000000000191386511345966085, type: 3}
+  - {fileID: 574122265314155589, guid: df9e9f4113dde224ea4e91458fcd18ab, type: 3}
+  - {fileID: 1167486005058445278, guid: de97c9a596385f64d829f9c035512bb3, type: 3}
+  - {fileID: 7613198964696299674, guid: 2a6695511ee6fef4e97d355c2ce291ff, type: 3}
+  WallDecorPrefabs: []
+  MapSize: {x: 100, y: 100}
+  MinPadding: 3
+  BSPDepth: 4
+  MaxConnectionPerRoom: 1
+  ExtraConnectionProbability: 0
+  MinRoomCount: 8
+  MaxRoomCount: 12
+  MinRoomSize: 18
+  MaxRoomSize: 24
+  RoomWeights:
+  - Type: 2
+    Weight: 10
+  - Type: 1
+    Weight: 80
+  - Type: 4
+    Weight: 18
+  - Type: 3
+    Weight: 7
+  RoomContentTable: {fileID: 11400000, guid: bd44f582cb94e724d82d4b8344701650, type: 2}
+  _decorationTable: {fileID: 11400000, guid: 7503744bd5222fc408494674fd01b125, type: 2}
+  BGM: {fileID: 0}
+  Skybox: {fileID: 0}
+  Icon: {fileID: 0}
+  Fog: {fileID: 9185907458619771004, guid: 34d5fa90c6b731548b181519817581ae, type: 3}
+  DungeonAtmosphere: {fileID: 11400000, guid: 7349cab097403834181a56850579688a, type: 2}
+  HasBoss: 0
+  HasExit: 1

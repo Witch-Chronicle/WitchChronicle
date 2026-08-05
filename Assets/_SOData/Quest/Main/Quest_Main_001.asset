@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbe15cc1f7ebf744da8f3bb2c409ab19, type: 3}
+  m_Name: Quest_Main_001
+  m_EditorClassIdentifier: Assembly-CSharp::QuestData
+  id: main_001
+  title: "\uCE74\uC0B0\uB4DC\uB77C\uC758 \uBD80\uD0C1"
+  description: "\uCE74\uC0B0\uB4DC\uB77C \uAC00 \uC9C0\uD558 \uB358\uC804\uC744 \uD0D0\uC0C9\uD574\uB2EC\uB77C\uACE0
+    \uD55C\uB2E4,"
+  type: 0
+  objectives:
+  - type: 4
+    targetID: classic_1
+    targetName: "\uC9C0\uD558 \uB358\uC804"
+    requiredCount: 1
+  reward:
+    gold: 200
+    exp: 10
+    item: {fileID: 0}
+    itemCount: 1
+    recruitNPC: 
+    nextStory: 1
+  nextQuest: {fileID: 11400000, guid: 5ffe71d2df937cd498f62d0e5a68c056, type: 2}

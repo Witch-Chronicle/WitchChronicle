@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbe15cc1f7ebf744da8f3bb2c409ab19, type: 3}
+  m_Name: Quest_Main_003
+  m_EditorClassIdentifier: Assembly-CSharp::QuestData
+  id: main_003
+  title: "\uC140\uB808\uB124 \uB3D9\uB8CC \uC601\uC785"
+  description: "\uB358\uC804\uC744 \uC870\uC0AC\uD558\uAE30 \uC704\uD574\uC11C\uB294
+    \uD63C\uC790\uC11C\uB294 \uC548\uB41C\uB2E4, \uB3D9\uB8CC\uB97C \uC601\uC785\uD558\uC790"
+  type: 0
+  objectives:
+  - type: 1
+    targetID: selene
+    targetName: "\uC140\uB808\uB124"
+    requiredCount: 1
+  reward:
+    gold: 250
+    exp: 10
+    item: {fileID: 0}
+    itemCount: 0
+    recruitNPC: selene
+    nextStory: 1
+  nextQuest: {fileID: 11400000, guid: 0b3f91037ef468a43be623f35a6ff984, type: 2}
