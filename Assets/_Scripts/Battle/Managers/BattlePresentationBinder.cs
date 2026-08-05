@@ -14,6 +14,11 @@ public class BattlePresentationBinder : MonoBehaviour
     [SerializeField] private BattleCycleController _battleCycleController;
     [SerializeField] private SkillVfxPlayer _skillVfxPlayer;
 
+    [Header("Basic Attack")]
+    [Tooltip("기본 공격은 SkillData를 싣지 않아 VFX·사운드가 나오지 않는다. " +
+             "여기에 01.BasicAttack SO를 넣으면 그 연출 설정을 기본 공격에 사용한다")]
+    [SerializeField] private SkillData _basicAttackPresentation;
+
     /// <summary>
     /// 유닛별 연출 바인딩 정보
     /// </summary>
@@ -137,8 +142,11 @@ public class BattlePresentationBinder : MonoBehaviour
             return;
         }
 
+        // 스킬은 자기 SkillData를, 기본 공격은 인스펙터에 지정한 연출용 SO를 쓴다
+        SkillData vfxSource = ResolveVfxSource(actionRequest);
+
         bool hasVfx =
-            actionRequest.HasSkill &&
+            vfxSource != null &&
             _skillVfxPlayer != null;
 
         int remainingCount =
@@ -176,7 +184,7 @@ public class BattlePresentationBinder : MonoBehaviour
                 GatherTargetTransforms(actionRequest);
 
             _skillVfxPlayer.Play(
-                actionRequest.SkillData,
+                vfxSource,
                 casterTransform,
                 targets,
                 onImpact,
@@ -186,6 +194,27 @@ public class BattlePresentationBinder : MonoBehaviour
         {
             onImpact?.Invoke();
         }
+    }
+
+    /// <summary>
+    /// 이 행동의 VFX·사운드 설정을 담은 SkillData를 고른다.
+    /// 스킬이면 그 스킬 자신, 기본 공격이면 인스펙터에 지정한 연출용 SO.
+    /// </summary>
+    /// <param name="actionRequest">실행 행동 요청</param>
+    /// <returns>연출 기준 SkillData. 없으면 null</returns>
+    private SkillData ResolveVfxSource(BattleActionRequest actionRequest)
+    {
+        if (actionRequest.HasSkill)
+        {
+            return actionRequest.SkillData;
+        }
+
+        if (actionRequest.CommandType == CommandType.Attack)
+        {
+            return _basicAttackPresentation;
+        }
+
+        return null;
     }
 
     /// <summary>
