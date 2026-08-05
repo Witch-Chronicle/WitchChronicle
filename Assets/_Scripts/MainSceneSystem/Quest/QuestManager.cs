@@ -222,7 +222,7 @@ public class QuestManager : MonoBehaviour
         // 골드 처리
         if (reward.gold > 0)
         {
-            // PlayerManager.Instance.AddGold(reward.gold);
+            PlayerInventory.Instance.AddGold(reward.gold);
             Debug.Log($"Reward Gold : {reward.gold}");
 
             rewardMessages.Add($"골드 +{reward.gold}");
@@ -231,7 +231,7 @@ public class QuestManager : MonoBehaviour
         // 경험치 처리
         if (reward.exp > 0)
         {
-            //PlayerManager.Instance.AddExp(reward.exp);
+            PersistentCharacterManager.Instance.AddExpToActiveParty(reward.exp);
             rewardMessages.Add($"경험치 +{reward.exp}");
 
             Debug.Log($"Reward Exp : {reward.exp}");
@@ -249,7 +249,24 @@ public class QuestManager : MonoBehaviour
         if (string.IsNullOrEmpty(reward.recruitNPC) == false)
         {
             rewardMessages.Add($"동료 영입 : {reward.recruitNPC}");
-            RecruitManager.Instance.Recruit(reward.recruitNPC);
+
+            // PersistentCharacterManager를 통해 캐릭터 즉시 영입!
+            if (PersistentCharacterManager.Instance != null)
+            {
+                PersistentCharacterManager.Instance.RecruitCharacter(reward.recruitNPC, addToActiveParty: true);
+            }
+
+            // 필드에 서 있던 해당 NPC 오브젝트 즉시 제거/비활성화
+            if (NPCManager.Instance != null)
+            {
+                NPC fieldNpc = NPCManager.Instance.GetNPC(reward.recruitNPC);
+
+                if (fieldNpc != null)
+                {
+                    Destroy(fieldNpc.gameObject); // 또는 Destroy(fieldNpc.gameObject);
+                }
+            }
+
             Debug.Log($"Reward Recruit : {reward.recruitNPC}");
         }
         
@@ -264,6 +281,11 @@ public class QuestManager : MonoBehaviour
             string message = string.Join("\n", rewardMessages);
 
             ShowMessageManager.Instance.ShowMessage(message);
+        }
+
+        if (QuestListUI.Instance != null)
+        {
+            QuestListUI.Instance.Refresh();
         }
     }
     public List<QuestData> GetAvailableQuests()

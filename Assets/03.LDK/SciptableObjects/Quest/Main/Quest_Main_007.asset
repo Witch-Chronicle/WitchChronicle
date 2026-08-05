@@ -19,7 +19,7 @@ MonoBehaviour:
   type: 0
   objectives:
   - type: 1
-    targetID: npc_laia
+    targetID: laia
     targetName: "\uB77C\uC774\uC544"
     requiredCount: 1
   reward:
@@ -27,6 +27,6 @@ MonoBehaviour:
     exp: 15
     item: {fileID: 0}
     itemCount: 0
-    recruitNPC: 
+    recruitNPC: laia
     nextStory: 1
   nextQuest: {fileID: 11400000, guid: ae6967900b0f03b478e841f6414338b3, type: 2}

@@ -796,8 +796,20 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1693964155697068518, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: _allCharacters.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1693964155697068518, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: '_allCharacters.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1302953592}
+    - target: {fileID: 1693964155697068518, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: _activePartyCharacterIds.Array.size
-      value: 3
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1693964155697068518, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: '_activePartyCharacterIds.Array.data[1]'
+      value: ariel
       objectReference: {fileID: 0}
     - target: {fileID: 1693964155697068518, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: '_activePartyCharacterIds.Array.data[3]'
@@ -963,6 +975,10 @@ PrefabInstance:
       propertyPath: _inventorySlots.Array.data[12].Quantity
       value: 10
       objectReference: {fileID: 0}
+    - target: {fileID: 2964660695343242101, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: _isRecruited
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3469586829837637645, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: _transitionController
       value: 
@@ -1025,7 +1041,7 @@ PrefabInstance:
       objectReference: {fileID: 5184525591463372757}
     - target: {fileID: 5130393263288171507, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: _isRecruited
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5451293232219028195, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: m_IsActive
@@ -1082,6 +1098,10 @@ PrefabInstance:
     - target: {fileID: 6267072962474743221, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6290646362565705069, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: _isRecruited
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6410455175308979901, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: m_IsActive
@@ -1166,6 +1186,17 @@ MonoBehaviour:
   _gachaKey: 290
   _equipKey: 291
   _giveAmount: 5
+--- !u!114 &1302953592 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5500038262723426307, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+  m_PrefabInstance: {fileID: 1302953589}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9106ca27f9f6f043a9a94c2816ff483, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PersistentCharacterUnit
 --- !u!1 &1342724862
 GameObject:
   m_ObjectHideFlags: 0

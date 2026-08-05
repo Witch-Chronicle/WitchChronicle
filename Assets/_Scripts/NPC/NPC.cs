@@ -11,6 +11,8 @@ public class NPC : MonoBehaviour, ITFInteractable
         {
             NPCManager.Instance.RegisterNPC(this);
         }
+
+        CheckAlreadyRecruited();
     }
 
     public NPCData Data => _npcData;
@@ -33,6 +35,27 @@ public class NPC : MonoBehaviour, ITFInteractable
         if (DialogueManager.Instance != null)
         {
             DialogueManager.Instance.StartDialogue(_npcData, dialogueID);
+        }
+    }
+
+    /// <summary>
+    /// 이미 영입된 캐릭터인지 확인 후 필드에서 제거
+    /// </summary>
+    public void CheckAlreadyRecruited()
+    {
+        if (_npcData == null) return;
+
+        if (PersistentCharacterManager.Instance != null)
+        {
+            // NPCData의 NpcId로 영입 상태 조회
+            if (PersistentCharacterManager.Instance.TryGetCharacter(_npcData.NpcId, out var character))
+            {
+                if (character != null && character.IsRecruited)
+                {
+                    Debug.Log($"[{_npcData.NpcName}] 이미 영입된 캐릭터이므로 필드에서 비활성화합니다.");
+                    Destroy(gameObject); // 또는 Destroy(gameObject);
+                }
+            }
         }
     }
 

@@ -120,6 +120,11 @@ public class QuestTestHelper : MonoBehaviour
         // 3. 퀘스트 상태를 Completed로 변경
         runtime.State = QuestState.Completed;
 
+        if (QuestListUI.Instance != null)
+        {
+            QuestListUI.Instance.Refresh();
+        }
+
         Debug.Log($"<color=yellow>[QuestTestHelper] 퀘스트[{questID}] 목표 달성 성공! (NPC 대화 가능 상태)</color>");
     }
 
