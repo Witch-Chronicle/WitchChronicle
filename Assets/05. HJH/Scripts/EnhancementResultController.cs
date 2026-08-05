@@ -42,6 +42,8 @@ public sealed class EnhancementResultController : MonoBehaviour
     [SerializeField] private Color failureGlowColor = new Color32(135, 132, 140, 255);
     [SerializeField] private Color successTextColor = new Color32(233, 231, 221, 255);
     [SerializeField] private Color failureTextColor = new Color32(162, 160, 159, 255);
+    [Tooltip("강화 실패 시 아이템 아이콘에 곱해지는 어두운 틴트 색상")]
+    [SerializeField] private Color failureIconTintColor = new Color32(140, 140, 140, 255);
 
     [Header("Timing")]
     [SerializeField, Min(0.05f)] private float overlayFadeTime = 0.22f;
@@ -227,6 +229,9 @@ public sealed class EnhancementResultController : MonoBehaviour
             .SetEase(Ease.OutCubic));
         targetSequence.Join(glowImage.DOFade(0.08f, resultEffectTime));
         targetSequence.Join(magicCircleImage.DOFade(0f, resultEffectTime * 0.75f));
+        targetSequence.Join(itemIcon
+            .DOColor(failureIconTintColor, resultEffectTime)
+            .SetEase(Ease.OutCubic));
         targetSequence.Join(itemRoot
             .DOShakeAnchorPos(
                 duration: 0.42f,
@@ -288,6 +293,7 @@ public sealed class EnhancementResultController : MonoBehaviour
 
         itemRoot.anchoredPosition = Vector2.zero;
         itemRoot.localScale = Vector3.one * 0.72f;
+        itemIcon.color = Color.white; // 이전 실패 연출에서 남았을 수 있는 틴트를 항상 원래 색으로 리셋
         SetImageAlpha(itemIcon, 0f);
 
         glowRect.anchoredPosition = Vector2.zero;
@@ -314,7 +320,7 @@ public sealed class EnhancementResultController : MonoBehaviour
         DOTween.Kill(magicCircleRect);
         DOTween.Kill(magicCircleImage);
         DOTween.Kill(itemRoot);
-        DOTween.Kill(itemIcon);
+        DOTween.Kill(itemIcon); // DOColor, DOFade 등 itemIcon에 걸린 모든 트윈이 여기 포함됨
         DOTween.Kill(resultTextGroup);
         DOTween.Kill(resultTextGroup.transform);
         DOTween.Kill(overlayGroup);

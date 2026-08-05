@@ -8,10 +8,17 @@ using UnityEngine;
 public class QuestItem : MonoBehaviour
 {
     [SerializeField] private TMP_Text _titleText;
-
     [SerializeField] private TMP_Text _progressText;
-
     [SerializeField] private TMP_Text _stateText;
+
+    [Header("Base / Complete 비주얼 전환")]
+    [SerializeField] private GameObject _baseObject;
+    [SerializeField] private GameObject _completeObject;
+    [SerializeField] private GameObject _completedImg;
+
+    [Header("StateTxt 색상")]
+    [SerializeField] private Color _normalStateColor = Color.white;
+    [SerializeField] private Color _completedStateColor = new Color32(255, 215, 0, 255); // 황금색
 
     private QuestRuntime _runtime;
 
@@ -38,24 +45,35 @@ public class QuestItem : MonoBehaviour
             return;
         }
 
-
         _titleText.text = _runtime.Data.title;
-
-
         _stateText.text = GetStateText(_runtime.State);
 
         string text = "";
-
         for (int i = 0; i < _runtime.Data.objectives.Count; i++)
         {
             QuestObjective objective = _runtime.Data.objectives[i];
-
-
             text += $"{GetObjectiveText(objective)} " + $"{_runtime.Progress[i]}/{objective.requiredCount}\n";
         }
-
-
         _progressText.text = text;
+
+        UpdateCompletionVisual(_runtime.State);
+    }
+
+    /// <summary>
+    /// Running이면 Base 비주얼, Completed/Rewarded면 Complete 비주얼(+CompletedImg, StateTxt 황금색).
+    /// </summary>
+    private void UpdateCompletionVisual(QuestState state)
+    {
+        bool isCompleteVisual = state == QuestState.Completed || state == QuestState.Rewarded;
+
+        if (_baseObject != null) _baseObject.SetActive(!isCompleteVisual);
+        if (_completeObject != null) _completeObject.SetActive(isCompleteVisual);
+        if (_completedImg != null) _completedImg.SetActive(isCompleteVisual);
+
+        if (_stateText != null)
+        {
+            _stateText.color = isCompleteVisual ? _completedStateColor : _normalStateColor;
+        }
     }
 
 
