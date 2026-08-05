@@ -2569,7 +2569,6 @@ GameObject:
   - component: {fileID: 8229916799388483326}
   - component: {fileID: 3480695942536940843}
   - component: {fileID: 7822502900948639785}
-  - component: {fileID: 8900320360193215500}
   m_Layer: 0
   m_Name: Ariel
   m_TagString: Player
@@ -2733,20 +2732,6 @@ MonoBehaviour:
   reelTrigger: Reel
   catchSuccessTrigger: CatchSuccess
   catchFailTrigger: CatchFail
---- !u!114 &8900320360193215500
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1560493996318386368}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 513bad2aa1052b34aa5d21e06fe20d15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FieldWeaponVisibility
-  _weaponRoot: {fileID: 5509813948312261610}
-  _armedScene: 2
 --- !u!1 &1562030576368215012
 GameObject:
   m_ObjectHideFlags: 0
@@ -11587,10 +11572,5 @@ PrefabInstance:
 --- !u!4 &1280271914667028281 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2445042071379482497, guid: 68f87c0ea4bcd774b95a55c013824f37, type: 3}
-  m_PrefabInstance: {fileID: 3470859462990280888}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &5509813948312261610 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: -262278752661951662, guid: 68f87c0ea4bcd774b95a55c013824f37, type: 3}
   m_PrefabInstance: {fileID: 3470859462990280888}
   m_PrefabAsset: {fileID: 0}
