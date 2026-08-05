@@ -20,6 +20,7 @@ namespace WitchChronicle.IdleFarming
 
         private void OnTriggerEnter(Collider other)
         {
+            Debug.Log($"[FarmZone] Enter: {other.name} / tag: {other.tag}");
             if (!other.CompareTag("Player")) return;
             SetSlotNear(true);
         }
