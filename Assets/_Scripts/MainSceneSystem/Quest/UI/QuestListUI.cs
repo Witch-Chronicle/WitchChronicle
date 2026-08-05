@@ -68,6 +68,8 @@ public class QuestListUI : MonoBehaviour
     {
         Clear();
 
+        if (QuestManager.Instance == null) return;
+
         List<QuestRuntime> quests = QuestManager.Instance.GetRunningQuests();
 
         foreach (QuestRuntime quest in quests)
