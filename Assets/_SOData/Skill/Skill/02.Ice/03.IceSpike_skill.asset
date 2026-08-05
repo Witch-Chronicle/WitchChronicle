@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 03.IceSpike_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_ice_003
   _skillName: "\uC544\uC774\uC2A4 \uC2A4\uD30C\uC774\uD06C"
   _description: "\uB300\uC0C1 \uBC1C \uBC11\uC5D0\uC11C \uC5BC\uC74C \uD30C\uD3B8\uC774
     \uC19F\uAD6C\uCCD0 \uC624\uB974\uB294 \uB0C9\uAE30 \uB9C8\uBC95.\uBC14"
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: -1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0.5
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 4900000, guid: c5976bd432f94c24d94173bc9b4225b5, type: 3}
   _drawExampleSprite: {fileID: 21300000, guid: 537326e0d247b53449f219b744056443, type: 3}

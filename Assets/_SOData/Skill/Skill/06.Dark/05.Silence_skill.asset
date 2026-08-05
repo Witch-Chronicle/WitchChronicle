@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 05.Silence_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_dark_005
   _skillName: "\uC0AC\uC77C\uB7F0\uC2A4"
   _description: "\uC5B4\uB460\uC758 \uCC38\uACA9\uC73C\uB85C \uC801\uC758 \uBAA9\uC18C\uB9AC\uB97C
     \uC557\uC544\uAC00 \uC2A4\uD0AC\uC744 \uBD09\uC778\uD55C\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: -1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0.5
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 03.CureSlumber_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_cure_003
   _skillName: "\uD050\uC5B4 \uC2AC\uB7FC\uBC84"
   _description: "\uAE4A\uC740 \uC7A0\uC5D0 \uBE60\uC9C4 \uB300\uC0C1\uC758 \uC758\uC2DD\uC744
     \uC77C\uAE68\uC6B4\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: 0, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

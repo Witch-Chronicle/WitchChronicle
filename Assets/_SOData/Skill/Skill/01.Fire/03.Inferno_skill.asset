@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 03.Inferno_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_fire_003
   _skillName: "\uC778\uD398\uB974\uB178"
   _description: "\uC804\uC7A5\uC744 \uBD88\uBC14\uB2E4\uB85C \uB9CC\uB4DC\uB294 \uAC70\uB300\uD55C
     \uD654\uC5FC \uD3ED\uD48D\uC744 \uC77C\uC73C\uCF1C \uC801 \uC804\uCCB4\uB97C
@@ -41,6 +41,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: -1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

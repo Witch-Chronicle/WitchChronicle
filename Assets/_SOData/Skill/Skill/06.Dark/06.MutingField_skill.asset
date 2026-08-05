@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 06.MutingField_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_dark_006
   _skillName: "\uBBA4\uD305 \uD544\uB4DC"
   _description: "\uACF5\uD5C8\uC758 \uBE44\uB97C \uB0B4\uB824 \uC801 \uC804\uCCB4\uC758
     \uB9C8\uB825\uC744 \uBD09\uC778\uD55C\uB2E4"
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: -1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

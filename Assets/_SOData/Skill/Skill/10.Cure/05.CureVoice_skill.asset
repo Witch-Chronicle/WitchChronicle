@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 05.CureVoice_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_cure_005
   _skillName: "\uD050\uC5B4 \uBCF4\uC774\uC2A4"
   _description: "\uBD09\uC778\uB41C \uC5B8\uB839\uC744 \uB418\uC0B4\uB824 \uB300\uC0C1\uC758
     \uBAA9\uC18C\uB9AC\uB97C \uB418\uCC3E\uB294\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: 0, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

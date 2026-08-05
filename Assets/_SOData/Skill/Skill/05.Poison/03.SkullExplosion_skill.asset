@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 03.SkullExplosion_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_poison_003
   _skillName: "\uC2A4\uCEEC \uC775\uC2A4\uD50C\uB85C\uC804"
   _description: "\uD574\uACE8 \uD615\uC0C1\uC758 \uB3C5 \uD3ED\uBC1C\uC744 \uC77C\uC73C\uCF1C
     \uC801\uC744 \uAC15\uD0C0\uD55C\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: -1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0.7
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

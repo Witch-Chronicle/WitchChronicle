@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 04.Ignition_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_fire_004
   _skillName: "\uC774\uADF8\uB2C8\uC158"
   _description: "\uC801\uC758 \uBAB8\uC5D0 \uBD88\uC528\uB97C \uC2EC\uC5B4 \uD654\uC0C1
     \uC0C1\uD0DC\uB85C \uB9CC\uB4DC\uB294 \uD654\uC5FC \uC800\uC8FC."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: -1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 4900000, guid: 112093092474c1e4bb5cf844288da83c, type: 3}
   _drawExampleSprite: {fileID: 21300000, guid: ea34877517b936e499e31361ab24c551, type: 3}

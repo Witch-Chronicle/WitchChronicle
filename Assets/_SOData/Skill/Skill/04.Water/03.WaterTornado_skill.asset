@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 03.WaterTornado_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_water_003
   _skillName: "\uC6CC\uD130 \uD1A0\uB124\uC774\uB3C4"
   _description: "\uAC70\uB300\uD55C \uBB3C\uC758 \uC18C\uC6A9\uB3CC\uC774\uB97C \uC77C\uC73C\uCF1C
     \uC801 \uC804\uCCB4\uB97C \uD729\uC4F8\uC5B4\uBC84\uB9B0\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: 0, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 4900000, guid: 8be476b014a00824ab5c57ef8e357cf0, type: 3}
   _drawExampleSprite: {fileID: 21300000, guid: 5758c9bd35502424f9338751e9f44935, type: 3}

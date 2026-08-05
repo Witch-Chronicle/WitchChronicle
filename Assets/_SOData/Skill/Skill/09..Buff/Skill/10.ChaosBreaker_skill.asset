@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 10.ChaosBreaker_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_buff_010
   _skillName: "\uCE74\uC624\uC2A4 \uBE0C\uB808\uC774\uCEE4"
   _description: "\uD63C\uB3C8\uC758 \uD30C\uB3D9\uC73C\uB85C \uC801 \uC804\uCCB4\uC758
     \uB9C8\uBC95 \uBC29\uC5B4\uB97C \uD30C\uAD34\uD55C\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: 1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

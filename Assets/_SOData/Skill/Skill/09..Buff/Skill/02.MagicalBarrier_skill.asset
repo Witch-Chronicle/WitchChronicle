@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 02.MagicalBarrier_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_buff_002
   _skillName: "\uB9E4\uC9C0\uCEEC \uBCA0\uB9AC\uC5B4"
   _description: "\uC544\uAD70\uC5D0\uAC8C \uB9C8\uBC95\uC758 \uBC29\uBCBD\uC744 \uB458\uB7EC
     \uB9C8\uBC95 \uBC29\uC5B4\uB825\uC744 \uAC15\uD654\uD55C\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: 1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

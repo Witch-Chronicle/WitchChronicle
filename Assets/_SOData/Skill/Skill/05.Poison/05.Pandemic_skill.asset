@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 05.Pandemic_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_poison_005
   _skillName: "\uD310\uB370\uBBF9"
   _description: "\uC5ED\uBCD1\uC744 \uD37C\uB728\uB824 \uC801 \uC804\uCCB4\uB97C
     \uC911\uB3C5\uC2DC\uD0A4\uB294 \uC5ED\uBCD1 \uB9C8\uBC95."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: 3, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

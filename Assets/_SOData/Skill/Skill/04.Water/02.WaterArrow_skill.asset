@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 02.WaterArrow_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_water_002
   _skillName: "\uC6CC\uD130 \uC560\uB85C\uC6B0"
   _description: "\uC608\uB9AC\uD55C \uBB3C\uC758 \uD654\uC0B4\uC744 \uB9CC\uB4E4\uC5B4
     \uC801\uC744 \uAD00\uD1B5\uD55C\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: 0, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 4900000, guid: e06f6795a9c44504b9f00d02839148a9, type: 3}
   _drawExampleSprite: {fileID: 21300000, guid: 41eef3ac27961b2458bc7355fea06693, type: 3}

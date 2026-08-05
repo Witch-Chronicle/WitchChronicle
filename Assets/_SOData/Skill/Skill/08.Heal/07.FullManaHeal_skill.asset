@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 07.FullManaHeal_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_heal_007
   _skillName: "\uD480 \uB9C8\uB098 \uD790"
   _description: "\uB9C8\uB825\uC758 \uC815\uC218\uB97C \uC8FC\uC785\uD574 \uB300\uC0C1\uC758
     \uB9C8\uB098\uB97C \uC644\uC804\uD788 \uD68C\uBCF5\uC2DC\uD0A8\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: -1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0.5
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 05.DreamWave_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_water_005
   _skillName: "\uB4DC\uB9BC \uC6E8\uC774\uBE0C"
   _description: "\uBABD\uD658\uC758 \uBB3C \uD654\uC0B4\uC744 \uBC1C\uC0AC\uD574
     \uC801 \uC804\uCCB4\uB97C \uC7A0\uB4E4\uAC8C \uD55C\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: 2, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

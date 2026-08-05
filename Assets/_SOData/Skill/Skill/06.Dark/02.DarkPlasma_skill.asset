@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 02.DarkPlasma_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_dark_002
   _skillName: "\uB2E4\uD06C \uD50C\uB77C\uC988\uB9C8"
   _description: "\uBD89\uC740 \uC554\uD751 \uD50C\uB77C\uC2A4 \uAD6C\uCCB4\uB97C
     \uBC1C\uC0AC\uD574 \uC801\uC744 \uD0DC\uC6B4\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: 0.3, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 4900000, guid: 1fc442d1ca25e354e83432c2be408412, type: 3}
   _drawExampleSprite: {fileID: 21300000, guid: 87b0225949db4d042a1aa99e3ca062cc, type: 3}

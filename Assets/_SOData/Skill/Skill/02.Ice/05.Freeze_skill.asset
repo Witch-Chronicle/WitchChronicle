@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 05.Freeze_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_ice_005
   _skillName: "\uD504\uB9AC\uC988"
   _description: "\uC801\uC758 \uBAB8\uC744 \uC5BC\uB824 \uC6C0\uC9C1\uC784\uC744
     \uBD09\uC778\uD558\uB294 \uB9C8\uBE44 \uB9C8\uBC95."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: -0.9, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

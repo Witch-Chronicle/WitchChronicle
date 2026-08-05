@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 13.EarthRend_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_ND_013
   _skillName: "\uC5B4\uC2A4 \uB80C\uB4DC"
   _description: "\uB300\uC9C0\uB97C \uAC08\uB77C \uADF8 \uC5EC\uD30C\uB85C \uC801\uC744
     \uD0C0\uACA9\uD55C\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: -3, y: -1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0.3
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

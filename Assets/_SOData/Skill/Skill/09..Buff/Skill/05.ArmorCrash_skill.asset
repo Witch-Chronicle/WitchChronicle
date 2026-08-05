@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 05.ArmorCrash_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_buff_005
   _skillName: "\uC544\uBA38 \uD06C\uB798\uC26C"
   _description: "\uC801\uC758 \uB9C8\uBC95 \uBC29\uC5B4\uB97C \uC0B0\uC0B0\uC774
     \uBD80\uC218\uC5B4 \uB9C8\uBC95 \uBC29\uC5B4\uB825\uC744 \uC57D\uD654\uC2DC\uD0A8\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: 1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

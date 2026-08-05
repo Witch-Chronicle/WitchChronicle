@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 02.MagicCard_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_ND_002
   _skillName: "\uB9E4\uC9C1 \uCE74\uB4DC"
   _description: "\uB9C8\uB825\uC744 \uB2F4\uC740 \uCE74\uB4DC\uB97C \uB0A0\uB824
     \uC801\uC744 \uBCA0\uC5B4\uB0B8\uB2E4"
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: 1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

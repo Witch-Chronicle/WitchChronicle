@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f01e855d1c949c54ea29a846b01089f8, type: 3}
+  m_Name: 01.Health_potion_common
+  m_EditorClassIdentifier: Assembly-CSharp::PotionItemData
+  itemId: 11001
+  itemName: "\uCCB4\uB825 \uD3EC\uC158"
+  description: "\uB9C8\uC2DC\uBA74 \uCD5C\uB300 HP\uC758 30%\uB97C \uD68C\uBCF5\uD55C\uB2E4."
+  itemType: 0
+  itemGrade: 0
+  icon: {fileID: 21300000, guid: 97bd47b0830747f4f8a7aa2394f5402f, type: 3}
+  mainCategory: 1
+  subCategory: 8
+  maxStack: 99
+  buyPrice: 10
+  sellPrice: 0
+  canSell: 1
+  consumableType: 0
+  value: 0
+  _potionGrade: 0
+  _potionEffect: 0
+  _healRatio: 0.3
+  _cureStatusEffectType: 0

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: 03.Acceleration_skill
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: skill_buff_003
   _skillName: "\uC561\uC140\uB7EC\uB808\uC774\uC158"
   _description: "\uC544\uAD70\uC5D0\uAC8C \uC2E0\uC18D\uC758 \uAC00\uD638\uB97C \uBD80\uC5EC\uD574
     \uC18D\uB3C4\uB97C \uB04C\uC5B4\uC62C\uB9B0\uB2E4."
@@ -40,6 +40,8 @@ MonoBehaviour:
   _hitVfxOffset: {x: 0, y: 1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}
