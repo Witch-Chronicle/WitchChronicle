@@ -18,6 +18,7 @@ public class BattleEncounter : MonoBehaviour
 
     private readonly List<DungeonMonster> _dungeonMonsters = new List<DungeonMonster>();
     private bool _isBattleStarted;
+    private bool _isBattleTransitionStarted;
 
     public IReadOnlyList<EnemyBattleData> AssignedEnemies => _assignedEnemies;
 
@@ -174,20 +175,59 @@ public class BattleEncounter : MonoBehaviour
     }
 
     /// <summary>
-    /// 전투 시작 이벤트 처리
+    /// 적 선공 전투 시작 처리
     /// </summary>
     public void HandleCombatStarted()
     {
         Debug.Log("2. BattleEncounter가 신호를 받음");
+
         if (_isBattleStarted)
         {
             return;
         }
 
         _isBattleStarted = true;
+        _isPlayerAdvantage = false;
+        _isEnemyAdvantage = true;
+
         StartBattleTransition();
 
-        Debug.Log("[BattleEncounter] HandleCombatStarted 호출");
+        Debug.Log("[BattleEncounter] 적 선공 전투 시작");
+    }
+
+    /// <summary>
+    /// 플레이어 선공 전투 예약
+    /// </summary>
+    /// <returns>예약 성공 여부</returns>
+    public bool PreparePlayerAdvantageBattle()
+    {
+        if (_isBattleStarted)
+        {
+            return false;
+        }
+
+        _isBattleStarted = true;
+        _isPlayerAdvantage = true;
+        _isEnemyAdvantage = false;
+
+        Debug.Log(
+            "[BattleEncounter] 플레이어 선공 예약");
+
+        return true;
+    }
+
+    /// <summary>
+    /// 예약된 전투 진입 시작
+    /// </summary>
+    public void StartPreparedBattle()
+    {
+        if (_isBattleStarted == false ||
+            _isBattleTransitionStarted)
+        {
+            return;
+        }
+
+        StartBattleTransition();
     }
 
     /// <summary>
@@ -195,8 +235,14 @@ public class BattleEncounter : MonoBehaviour
     /// </summary>
     private void StartBattleTransition()
     {
-        Debug.Log(
-            "3. 전투 진입 연출 시작");
+        if (_isBattleTransitionStarted)
+        {
+            return;
+        }
+
+        _isBattleTransitionStarted = true;
+
+        Debug.Log("3. 전투 진입 연출 시작");
 
         if (_assignedEnemies.Count <= 0)
         {

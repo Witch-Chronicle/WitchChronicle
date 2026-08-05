@@ -2569,6 +2569,8 @@ GameObject:
   - component: {fileID: 8229916799388483326}
   - component: {fileID: 3480695942536940843}
   - component: {fileID: 7822502900948639785}
+  - component: {fileID: -2764434808695427520}
+  - component: {fileID: 1674790948735769706}
   m_Layer: 0
   m_Name: Ariel
   m_TagString: Player
@@ -2732,6 +2734,51 @@ MonoBehaviour:
   reelTrigger: Reel
   catchSuccessTrigger: CatchSuccess
   catchFailTrigger: CatchFail
+--- !u!114 &-2764434808695427520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560493996318386368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac9152edb9aa76c49bbbce955eec0462, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FieldTargetingController
+  _inputAsset: {fileID: -944628639613478452, guid: 7652894dcd0af2049b3707e773c62f0f, type: 3}
+  _cameraTransform: {fileID: 0}
+  _targetMask:
+    serializedVersion: 2
+    m_Bits: 2048
+  _obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
+  _lockRange: 10
+  _lockAngle: 45
+  _releaseRangeMultiplier: 1.2
+  _maxDetectionCount: 32
+  _distanceScoreWeight: 0.35
+--- !u!114 &1674790948735769706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560493996318386368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 054ad7d7545664d42bbe9777379d5e01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FieldAttackController
+  _inputAsset: {fileID: -944628639613478452, guid: 7652894dcd0af2049b3707e773c62f0f, type: 3}
+  _targetingController: {fileID: -2764434808695427520}
+  _animator: {fileID: 1225852485558496439}
+  _attackSocket: {fileID: 3052828569744010218}
+  _lightningVfxPrefab: {fileID: 6209405405914531843, guid: 2fd0e80d5ab9d654f9384f884d595a12, type: 3}
+  _attackTrigger: Attack
+  _effectDelay: 0.15
+  _battleStartDelay: 0.12
 --- !u!1 &1562030576368215012
 GameObject:
   m_ObjectHideFlags: 0
@@ -10268,7 +10315,8 @@ Transform:
   m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 3052828569744010218}
   m_Father: {fileID: 2036867488533385812}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!137 &5375766449461281677
@@ -10444,6 +10492,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034bc47afcbf5e141a58d5c20b7808e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: EPO::EPOOutline.TargetStateListener
+--- !u!1 &8432730919811799899
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3052828569744010218}
+  m_Layer: 0
+  m_Name: FieldAttackSocket
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3052828569744010218
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8432730919811799899}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1692400353685809323}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8477761005604867982
 GameObject:
   m_ObjectHideFlags: 0
