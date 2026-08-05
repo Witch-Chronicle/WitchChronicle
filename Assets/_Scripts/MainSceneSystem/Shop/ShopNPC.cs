@@ -72,14 +72,6 @@ public class ShopNPC : MonoBehaviour
         _shopPanelAnimator = shopUIController.GetComponent<UIPanelAnimator>();
     }
 
-    private void Update()
-    {
-        if (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
-        {
-            ToggleShop();
-        }
-    }
-
     public void ToggleShop()
     {
         _isShopOpen = !_isShopOpen;

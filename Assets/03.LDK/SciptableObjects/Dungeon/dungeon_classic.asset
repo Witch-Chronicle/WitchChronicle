@@ -13,7 +13,19 @@ MonoBehaviour:
   m_Name: dungeon_classic
   m_EditorClassIdentifier: Assembly-CSharp::DungeonData
   Id: classic_1
-  DungeonName: "\uC77C\uBC18 \uB358\uC804"
+  DungeonName: "\uC9C0\uD558 \uB358\uC804"
+  DungeonIcon: {fileID: 21300000, guid: 75b0ba5ae32a7b5449d5387de449b2f5, type: 3}
+  Description: "\uBE5B\uC774 \uB2FF\uC9C0 \uC54A\uB294 \uC5B4\uB460\uC758 \uBBF8\uAD81.\\n\uC624\uB79C
+    \uC138\uC6D4 \uC7A0\uB4E4\uC5B4 \uC788\uB358 \uAC83\uB4E4\uC774 \uAE68\uC5B4\uB098\uAE30\uB97C
+    \uAE30\uB2E4\uB9B0\uB2E4."
+  RequiredQuest: {fileID: 11400000, guid: e7dd8d3c7d865ac4081440d8afeb4bb8, type: 2}
+  EnemyPool:
+  - {fileID: 11400000, guid: ea0a33d93509e054ba691cab44d83a11, type: 2}
+  - {fileID: 11400000, guid: 650b814c0a23ba94198a8effecd7b3eb, type: 2}
+  - {fileID: 11400000, guid: 602ce25a775b0694d9dee1d276c43f82, type: 2}
+  - {fileID: 11400000, guid: d6dfe483ed6d9444bbdafaf8a054c6ea, type: 2}
+  - {fileID: 11400000, guid: 311461bef81e5d54bb55d948fbfecf4e, type: 2}
+  - {fileID: 11400000, guid: eb517d02fa6b8124ba9721e3bee47e25, type: 2}
   FloorPrefab: {fileID: 2968830504906926872, guid: b6eeea8ad0c672342af960ea4229b9ef, type: 3}
   WallPrefab: {fileID: 5151642384990008009, guid: 54c77c1c8d379594e93baab6ad37934c, type: 3}
   CeilingPrefab: {fileID: 2396082444373089105, guid: f2175a29cf2eb3f4aae9639e1de729be, type: 3}
@@ -35,6 +47,7 @@ MonoBehaviour:
   - {fileID: 1030992216, guid: abc00000000016882973811301943871, type: 3}
   - {fileID: 1030992238, guid: abc00000000003778390058708688329, type: 3}
   - {fileID: 1030992687, guid: abc00000000008799884702711077847, type: 3}
+  WallDecorPrefabs: []
   MapSize: {x: 100, y: 100}
   MinPadding: 3
   BSPDepth: 4
