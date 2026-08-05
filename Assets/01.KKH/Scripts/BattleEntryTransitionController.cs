@@ -1,9 +1,9 @@
 using System;
-using System.Collections.Generic;
 using DG.Tweening;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Rendering;
 
 /// <summary>
 /// 전투 진입 화면 깨짐 연출 제어
@@ -18,28 +18,20 @@ public class BattleEntryTransitionController : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private CanvasGroup _rootCanvasGroup;
-    [SerializeField] private RectTransform _crackRoot;
-    [SerializeField] private Image _crackImage;
-    [SerializeField] private RectTransform _shardRoot;
-    [SerializeField]
-    private List<RectTransform> _shards =
-        new List<RectTransform>();
-    [SerializeField] private Image _flashImage;
     [SerializeField] private Image _blackoutImage;
+    [SerializeField] private Volume _entryVolume;
 
-    [Header("Crack Timing")]
-    [Tooltip("균열 등장 시간")]
-    [SerializeField] private float _crackShowDuration = 0.08f;
-    [Tooltip("균열이 화면에 유지되는 시간")]
-    [SerializeField] private float _freezeDuration = 1f;
+    [Header("Hit Stop")]
+    [Tooltip("전투 진입 직후 화면이 정지된 채 유지되는 시간")]
+    [SerializeField] private float _hitStopDuration = 0.1f;
 
-    [Header("Camera Pull Back")]
-    [Tooltip("카메라가 뒤로 빠지는 시간")]
-    [SerializeField] private float _pullBackDuration = 0.35f;
-    [Tooltip("카메라가 뒤로 빠지는 거리")]
-    [SerializeField] private float _pullBackDistance = 1.5f;
-    [Tooltip("뒤로 빠질 때 카메라 기울기")]
-    [SerializeField] private float _pullBackRoll = 4f;
+    [Header("Slow Push In")]
+    [Tooltip("카메라가 천천히 접근하는 시간")]
+    [SerializeField] private float _pushInDuration = 0.55f;
+    [Tooltip("카메라가 천천히 접근하는 거리")]
+    [SerializeField] private float _pushInDistance = 1.2f;
+    [Tooltip("천천히 접근한 뒤의 FOV")]
+    [SerializeField] private float _pushInFov = 52f;
 
     [Header("Suction")]
     [Tooltip("화면 안으로 빨려 들어가는 시간")]
@@ -49,28 +41,18 @@ public class BattleEntryTransitionController : MonoBehaviour
     [Tooltip("빨려 들어갈 때 최종 FOV")]
     [SerializeField] private float _suctionFov = 90f;
 
-    [Header("Glass Shards")]
-    [Tooltip("유리 조각 화면 밖 이동 거리")]
-    [SerializeField] private float _shardFlyDistance = 1100f;
-    [Tooltip("유리 조각 회전량")]
-    [SerializeField] private float _shardRotation = 180f;
-    [Tooltip("유리 조각 최종 확대 비율")]
-    [SerializeField] private float _shardEndScale = 1.35f;
-
     [Header("Screen Effect")]
-    [SerializeField] private float _flashInDuration = 0.04f;
-    [SerializeField] private float _flashOutDuration = 0.1f;
-    [SerializeField] private float _blackoutDuration = 0.25f;
+    [SerializeField] private float _blackoutDuration = 0.18f;
     [SerializeField] private float _revealDuration = 0.3f;
 
-    private readonly List<Vector2> _shardStartPositions =
-        new List<Vector2>();
+    [Header("Post Processing")]
+    [Tooltip("느린 접근 종료 시 후처리 강도")]
+    [Range(0f, 1f)]
+    [SerializeField] private float _pushInEffectWeight = 0.25f;
 
-    private readonly List<Quaternion> _shardStartRotations =
-        new List<Quaternion>();
-
-    private readonly List<Vector3> _shardStartScales =
-        new List<Vector3>();
+    [Tooltip("흡입 종료 시 후처리 강도")]
+    [Range(0f, 1f)]
+    [SerializeField] private float _suctionEffectWeight = 1f;
 
     private Camera _mainCamera;
     private Transform _cameraTransform;
@@ -105,7 +87,6 @@ public class BattleEntryTransitionController : MonoBehaviour
 
         Instance = this;
 
-        CacheShardTransforms();
         HideImmediate();
     }
 
@@ -213,38 +194,13 @@ public class BattleEntryTransitionController : MonoBehaviour
         _transitionSequence = DOTween.Sequence();
         _transitionSequence.SetUpdate(true);
 
-        _transitionSequence.Append(
-            _crackImage
-                .DOFade(
-                    1f,
-                    _crackShowDuration)
-                .SetEase(Ease.OutQuad));
+        if (_hitStopDuration > 0f)
+        {
+            _transitionSequence.AppendInterval(
+                _hitStopDuration);
+        }
 
-        _transitionSequence.AppendInterval(
-            _freezeDuration);
-
-        _transitionSequence.AppendCallback(
-            ShowShards);
-
-        _transitionSequence.Append(
-            _flashImage
-                .DOFade(
-                    1f,
-                    _flashInDuration)
-                .SetEase(Ease.OutQuad));
-
-        AppendPullBackAnimation();
-
-        _transitionSequence.Append(
-            _flashImage
-                .DOFade(
-                    0f,
-                    _flashOutDuration)
-                .SetEase(Ease.OutQuad));
-
-        _transitionSequence.AppendCallback(
-            HideCrack);
-
+        AppendSlowPushInAnimation();
         AppendSuctionAnimation();
 
         _transitionSequence.OnComplete(
@@ -252,44 +208,54 @@ public class BattleEntryTransitionController : MonoBehaviour
     }
 
     /// <summary>
-    /// 카메라 후퇴 연출 추가
+    /// 카메라 느린 접근 연출 추가
     /// </summary>
-    private void AppendPullBackAnimation()
+    private void AppendSlowPushInAnimation()
     {
         if (_cameraTransform == null)
         {
             _transitionSequence.AppendInterval(
-                _pullBackDuration);
+                _pushInDuration);
 
             return;
         }
 
-        Vector3 pullBackPosition =
-            _cameraStartPosition -
+        Vector3 pushInPosition =
+            _cameraStartPosition +
             (_cameraStartRotation *
              Vector3.forward) *
-            _pullBackDistance;
-
-        Quaternion pullBackRotation =
-            _cameraStartRotation *
-            Quaternion.Euler(
-                0f,
-                0f,
-                _pullBackRoll);
+            _pushInDistance;
 
         _transitionSequence.Append(
             _cameraTransform
                 .DOMove(
-                    pullBackPosition,
-                    _pullBackDuration)
-                .SetEase(Ease.OutCubic));
+                    pushInPosition,
+                    _pushInDuration)
+                .SetEase(Ease.OutSine));
 
-        _transitionSequence.Join(
-            _cameraTransform
-                .DORotateQuaternion(
-                    pullBackRotation,
-                    _pullBackDuration)
-                .SetEase(Ease.OutCubic));
+        if (_mainCamera != null)
+        {
+            _transitionSequence.Join(
+                DOTween.To(
+                        () => _mainCamera.fieldOfView,
+                        value =>
+                            _mainCamera.fieldOfView = value,
+                        _pushInFov,
+                        _pushInDuration)
+                    .SetEase(Ease.OutSine));
+        }
+
+        if (_entryVolume != null)
+        {
+            _transitionSequence.Join(
+                DOTween.To(
+                        () => _entryVolume.weight,
+                        value =>
+                            _entryVolume.weight = value,
+                        _pushInEffectWeight,
+                        _pushInDuration)
+                    .SetEase(Ease.InOutSine));
+        }
     }
 
     /// <summary>
@@ -313,14 +279,7 @@ public class BattleEntryTransitionController : MonoBehaviour
                     .DOMove(
                         suctionPosition,
                         _suctionDuration)
-                    .SetEase(Ease.InCubic));
-
-            _transitionSequence.Join(
-                _cameraTransform
-                    .DORotateQuaternion(
-                        _cameraStartRotation,
-                        _suctionDuration)
-                    .SetEase(Ease.InCubic));
+                    .SetEase(Ease.InExpo));
         }
         else
         {
@@ -337,10 +296,20 @@ public class BattleEntryTransitionController : MonoBehaviour
                             _mainCamera.fieldOfView = value,
                         _suctionFov,
                         _suctionDuration)
-                    .SetEase(Ease.InCubic));
+                    .SetEase(Ease.InExpo));
         }
 
-        AppendShardAnimations();
+        if (_entryVolume != null)
+        {
+            _transitionSequence.Join(
+                DOTween.To(
+                        () => _entryVolume.weight,
+                        value =>
+                            _entryVolume.weight = value,
+                        _suctionEffectWeight,
+                        _suctionDuration)
+                    .SetEase(Ease.InExpo));
+        }
 
         float blackoutStartTime =
             suctionStartTime +
@@ -349,89 +318,15 @@ public class BattleEntryTransitionController : MonoBehaviour
                 _suctionDuration -
                 _blackoutDuration);
 
-        _transitionSequence.Insert(
-            blackoutStartTime,
-            _blackoutImage
-                .DOFade(
-                    1f,
-                    _blackoutDuration)
-                .SetEase(Ease.InQuad));
-    }
-
-    /// <summary>
-    /// 유리 조각 이탈 연출 추가
-    /// </summary>
-    private void AppendShardAnimations()
-    {
-        for (int i = 0; i < _shards.Count; i++)
+        if (_blackoutImage != null)
         {
-            RectTransform shard = _shards[i];
-
-            if (shard == null ||
-                i >= _shardStartPositions.Count)
-            {
-                continue;
-            }
-
-            Vector2 direction =
-                _shardStartPositions[i];
-
-            if (direction.sqrMagnitude <= 0.001f)
-            {
-                float angle =
-                    360f / Mathf.Max(
-                        1,
-                        _shards.Count) * i;
-
-                direction =
-                    new Vector2(
-                        Mathf.Cos(
-                            angle *
-                            Mathf.Deg2Rad),
-                        Mathf.Sin(
-                            angle *
-                            Mathf.Deg2Rad));
-            }
-
-            direction.Normalize();
-
-            Vector2 targetPosition =
-                _shardStartPositions[i] +
-                direction *
-                _shardFlyDistance;
-
-            float rotationDirection =
-                i % 2 == 0
-                    ? 1f
-                    : -1f;
-
-            _transitionSequence.Join(
-                shard
-                    .DOAnchorPos(
-                        targetPosition,
-                        _suctionDuration)
-                    .SetEase(Ease.InCubic));
-
-            _transitionSequence.Join(
-                shard
-                    .DORotate(
-                        new Vector3(
-                            0f,
-                            0f,
-                            _shardRotation *
-                            rotationDirection),
-                        _suctionDuration,
-                        RotateMode.FastBeyond360)
-                    .SetRelative()
-                    .SetEase(Ease.InCubic));
-
-            _transitionSequence.Join(
-                shard
-                    .DOScale(
-                        _shardStartScales[i] *
-                        _shardEndScale,
-                        _suctionDuration)
-                    .SetEase(Ease.InCubic));
+            _transitionSequence.Insert(
+                blackoutStartTime,
+                _blackoutImage
+                    .DOFade(
+                        1f,
+                        _blackoutDuration)
+                    .SetEase(Ease.InQuad));
         }
     }
 
@@ -453,12 +348,10 @@ public class BattleEntryTransitionController : MonoBehaviour
         }
 
         _cameraInputController =
-            FindFirstObjectByType<
-                CinemachineInputAxisController>();
+            FindFirstObjectByType<CinemachineInputAxisController>();
 
         _playerController =
-            FindFirstObjectByType<
-                PlayerController>();
+            FindFirstObjectByType<PlayerController>();
     }
 
     /// <summary>
@@ -570,131 +463,8 @@ public class BattleEntryTransitionController : MonoBehaviour
             _rootCanvasGroup.blocksRaycasts = true;
         }
 
-        SetImageAlpha(
-            _crackImage,
-            0f);
-
-        SetImageAlpha(
-            _flashImage,
-            0f);
-
-        SetImageAlpha(
-            _blackoutImage,
-            0f);
-
-        if (_crackRoot != null)
-        {
-            _crackRoot.localScale =
-                Vector3.one;
-        }
-
-        ResetShards();
-    }
-
-    /// <summary>
-    /// 유리 조각 표시
-    /// </summary>
-    private void ShowShards()
-    {
-        for (int i = 0; i < _shards.Count; i++)
-        {
-            RectTransform shard =
-                _shards[i];
-
-            if (shard == null)
-            {
-                continue;
-            }
-
-            Image shardImage =
-                shard.GetComponent<Image>();
-
-            SetImageAlpha(
-                shardImage,
-                1f);
-        }
-    }
-
-    /// <summary>
-    /// 균열 이미지 숨김
-    /// </summary>
-    private void HideCrack()
-    {
-        SetImageAlpha(
-            _crackImage,
-            0f);
-    }
-
-    /// <summary>
-    /// 유리 조각 시작 Transform 저장
-    /// </summary>
-    private void CacheShardTransforms()
-    {
-        _shardStartPositions.Clear();
-        _shardStartRotations.Clear();
-        _shardStartScales.Clear();
-
-        for (int i = 0; i < _shards.Count; i++)
-        {
-            RectTransform shard =
-                _shards[i];
-
-            if (shard == null)
-            {
-                _shardStartPositions.Add(
-                    Vector2.zero);
-
-                _shardStartRotations.Add(
-                    Quaternion.identity);
-
-                _shardStartScales.Add(
-                    Vector3.one);
-
-                continue;
-            }
-
-            _shardStartPositions.Add(
-                shard.anchoredPosition);
-
-            _shardStartRotations.Add(
-                shard.localRotation);
-
-            _shardStartScales.Add(
-                shard.localScale);
-        }
-    }
-
-    /// <summary>
-    /// 유리 조각 시작 상태 복구
-    /// </summary>
-    private void ResetShards()
-    {
-        for (int i = 0; i < _shards.Count; i++)
-        {
-            RectTransform shard =
-                _shards[i];
-
-            if (shard == null ||
-                i >= _shardStartPositions.Count)
-            {
-                continue;
-            }
-
-            shard.DOKill();
-
-            shard.anchoredPosition =
-                _shardStartPositions[i];
-
-            shard.localRotation =
-                _shardStartRotations[i];
-
-            shard.localScale =
-                _shardStartScales[i];
-
-            SetImageAlpha(
-                shard.GetComponent<Image>(),
-                0f);
-        }
+        SetImageAlpha(_blackoutImage, 0f);
+        SetEntryVolumeWeight(0f);
     }
 
     /// <summary>
@@ -702,6 +472,8 @@ public class BattleEntryTransitionController : MonoBehaviour
     /// </summary>
     private void HandleBlackoutReached()
     {
+        SetEntryVolumeWeight(0f);
+
         RestoreTimeScale();
         RestoreFieldControl();
 
@@ -724,19 +496,8 @@ public class BattleEntryTransitionController : MonoBehaviour
             _rootCanvasGroup.blocksRaycasts = false;
         }
 
-        SetImageAlpha(
-            _crackImage,
-            0f);
-
-        SetImageAlpha(
-            _flashImage,
-            0f);
-
-        SetImageAlpha(
-            _blackoutImage,
-            0f);
-
-        ResetShards();
+        SetImageAlpha(_blackoutImage, 0f);
+        SetEntryVolumeWeight(0f);
     }
 
     /// <summary>
@@ -758,5 +519,21 @@ public class BattleEntryTransitionController : MonoBehaviour
 
         color.a = alpha;
         image.color = color;
+    }
+
+    /// <summary>
+    /// 전투 진입 후처리 강도 설정
+    /// </summary>
+    /// <param name="weight">후처리 강도</param>
+    private void SetEntryVolumeWeight(
+        float weight)
+    {
+        if (_entryVolume == null)
+        {
+            return;
+        }
+
+        _entryVolume.weight =
+            Mathf.Clamp01(weight);
     }
 }

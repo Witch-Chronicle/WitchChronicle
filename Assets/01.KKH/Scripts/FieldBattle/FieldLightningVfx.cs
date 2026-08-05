@@ -16,6 +16,8 @@ public class FieldLightningVfx : MonoBehaviour
     private LineRenderer _lineRenderer;
     private Transform _startPoint;
     private Transform _endPoint;
+    private Vector3 _fixedEndPosition;
+    private bool _useFixedEndPosition;
 
     /// <summary>
     /// LineRenderer 참조 초기화
@@ -30,7 +32,7 @@ public class FieldLightningVfx : MonoBehaviour
     }
 
     /// <summary>
-    /// 번개 이펙트 재생
+    /// Transform 대상 번개 재생
     /// </summary>
     /// <param name="startPoint">시작 위치</param>
     /// <param name="endPoint">도착 위치</param>
@@ -41,6 +43,27 @@ public class FieldLightningVfx : MonoBehaviour
         _startPoint = startPoint;
         _endPoint = endPoint;
 
+        _useFixedEndPosition = false;
+
+        StopAllCoroutines();
+        StartCoroutine(PlayRoutine());
+    }
+
+    /// <summary>
+    /// 고정 좌표 대상 번개 재생
+    /// </summary>
+    /// <param name="startPoint">시작 위치</param>
+    /// <param name="endPosition">도착 좌표</param>
+    public void Play(
+        Transform startPoint,
+        Vector3 endPosition)
+    {
+        _startPoint = startPoint;
+        _endPoint = null;
+
+        _fixedEndPosition = endPosition;
+        _useFixedEndPosition = true;
+
         StopAllCoroutines();
         StartCoroutine(PlayRoutine());
     }
@@ -50,9 +73,13 @@ public class FieldLightningVfx : MonoBehaviour
     /// </summary>
     private IEnumerator PlayRoutine()
     {
+        bool hasEndPoint =
+            _useFixedEndPosition ||
+            _endPoint != null;
+
         if (_lineRenderer == null ||
             _startPoint == null ||
-            _endPoint == null)
+            hasEndPoint == false)
         {
             Destroy(gameObject);
             yield break;
@@ -65,7 +92,8 @@ public class FieldLightningVfx : MonoBehaviour
         while (elapsedTime < _duration)
         {
             if (_startPoint == null ||
-                _endPoint == null)
+                (_useFixedEndPosition == false &&
+                 _endPoint == null))
             {
                 break;
             }
@@ -101,7 +129,9 @@ public class FieldLightningVfx : MonoBehaviour
             _startPoint.position;
 
         Vector3 endPosition =
-            _endPoint.position;
+            _useFixedEndPosition
+                ? _fixedEndPosition
+                : _endPoint.position;
 
         Vector3 direction =
             endPosition -
