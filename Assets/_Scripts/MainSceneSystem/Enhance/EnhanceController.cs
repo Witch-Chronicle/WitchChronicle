@@ -129,6 +129,8 @@ public class EnhanceController : MonoBehaviour
             return false;
         }
 
+        SaveManager.RequestSave();
+
         if (!CanEnhance(instance, out EnhanceLevelEntry nextEntry))
         {
             if (nextEntry == null)

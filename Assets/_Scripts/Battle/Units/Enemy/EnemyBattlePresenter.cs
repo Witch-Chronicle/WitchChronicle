@@ -27,6 +27,7 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
     [SerializeField] private float _attackImpactNormalizedTime = 0.45f;
 
     private Animator _animator;
+    private MonsterAnimationController _animationController;
 
     private Coroutine _animationRoutine;
 
@@ -46,10 +47,25 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
         }
     }
 
+    /// <summary>자식 모델의 MonsterAnimationController를 지연 조회.</summary>
+    private MonsterAnimationController ResolvedAnimationController
+    {
+        get
+        {
+            if (_animationController == null)
+            {
+                _animationController = GetComponentInChildren<MonsterAnimationController>();
+            }
+
+            return _animationController;
+        }
+    }
+
     /// <summary>몬스터는 Idle이 기본 상태라 완료 대기만 초기화.</summary>
     public void ResetToIdle()
     {
         StopAnimationRoutine();
+        ResolvedAnimationController?.ResetToIdle();
     }
 
     public void PlayAttack(
@@ -61,10 +77,33 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
             index == 1 ||
             (index < 0 && UnityEngine.Random.value < 0.5f);
 
-        PlayTriggeredAnimation(
-            second ? _attackTrigger2 : _attackTrigger1,
-            onImpact,
-            onComplete);
+        int attackIndex = second ? 2 : 1;
+
+        if (ResolvedAnimationController != null)
+        {
+            Animator animator = ResolvedAnimator;
+            int previousStateHash = animator != null ? animator.GetCurrentAnimatorStateInfo(0).fullPathHash : 0;
+
+            StopAnimationRoutine();
+            ResolvedAnimationController.PlayAttack(attackIndex);
+
+            if (onImpact != null || onComplete != null)
+            {
+                _animationRoutine = StartCoroutine(
+                    WaitForTriggeredStateComplete(
+                        animator,
+                        previousStateHash,
+                        onImpact,
+                        onComplete));
+            }
+        }
+        else
+        {
+            PlayTriggeredAnimation(
+                second ? _attackTrigger2 : _attackTrigger1,
+                onImpact,
+                onComplete);
+        }
     }
 
     /// <summary>몬스터엔 전용 스킬 모션이 없어 두 번째 공격 모션으로 대체.</summary>
@@ -81,16 +120,46 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
 
     public void PlayHit(Action onComplete = null)
     {
-        PlayTriggeredAnimation(
-            _getHitTrigger,
-            null,
-            onComplete);
+        if (ResolvedAnimationController != null)
+        {
+            Animator animator = ResolvedAnimator;
+            int previousStateHash = animator != null ? animator.GetCurrentAnimatorStateInfo(0).fullPathHash : 0;
+
+            StopAnimationRoutine();
+            ResolvedAnimationController.PlayGetHit();
+
+            if (onComplete != null)
+            {
+                _animationRoutine = StartCoroutine(
+                    WaitForTriggeredStateComplete(
+                        animator,
+                        previousStateHash,
+                        null,
+                        onComplete));
+            }
+        }
+        else
+        {
+            PlayTriggeredAnimation(
+                _getHitTrigger,
+                null,
+                onComplete);
+        }
     }
 
     public void PlayDeath(Action onComplete = null)
     {
         StopAnimationRoutine();
-        SetTriggerSafe(_dieTrigger);
+
+        if (ResolvedAnimationController != null)
+        {
+            ResolvedAnimationController.PlayDie();
+        }
+        else
+        {
+            SetTriggerSafe(_dieTrigger);
+        }
+
         StartCoroutine(HideAfterDeath(onComplete));
     }
 

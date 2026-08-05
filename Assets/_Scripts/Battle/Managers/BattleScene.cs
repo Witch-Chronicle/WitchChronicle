@@ -25,16 +25,6 @@ public class BattleScene : MonoBehaviour
     [Tooltip("클러스터 하나가 퍼지는 반경(타일 단위)")]
     [SerializeField] private float _clusterRadius = 2.5f;
 
-    [Header("Wall Decoration")]
-    [Tooltip("벽 데코 간의 간격(타일 단위)")]
-    [SerializeField] private int _wallDecorSpacing = 3;
-    [Tooltip("벽 데코가 배치되는 높이")]
-    [SerializeField] private float _wallDecorHeight = 3f;
-    [Tooltip("벽면에서 방 안쪽으로 얼마나 띄워서 배치할지(타일 단위)")]
-    [SerializeField] private float _wallDecorInset = 0.55f;
-    [Tooltip("벽 데코 배치 확률 (간격 지점마다 확률적으로 스킵하여 규칙적인 반복을 깨줌)")]
-    [SerializeField] [Range(0f, 1f)] private float _wallDecorChance = 0.7f;
-
     [Header("Landmark / Edge Decoration")]
     [Tooltip("아레나 테두리를 따라 일정 간격으로 배치되는 대형 소품 프리팹 (파괴된 기둥, 바위 등)")]
     [SerializeField] private GameObject[] _landmarkPrefabs;
@@ -95,7 +85,6 @@ public class BattleScene : MonoBehaviour
         SpawnFloorGrid(dungeonData);
         SpawnWalls(dungeonData);
         SpawnRoof(dungeonData);
-        SpawnWallDecorations(dungeonData);
         SpawnEdgeLandmarks(dungeonData);
         SpawnCenterLandmarks(dungeonData);
         SpawnDecorationClusters(dungeonData);
@@ -234,88 +223,7 @@ public class BattleScene : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 네 벽면을 따라 횃불/깃발/사슬 같은 벽걸이 데코를 일정 간격으로 배치한다.
-    /// 벽이 텅 빈 평면으로 보이는 단조로움을 깨는 용도.
-    /// </summary>
-    /// <param name="dungeonData">던전 데이터</param>
-    private void SpawnWallDecorations(DungeonData dungeonData)
-    {
-        GameObject[] prefabPool = (dungeonData.WallDecorPrefabs != null && dungeonData.WallDecorPrefabs.Length > 0)
-            ? dungeonData.WallDecorPrefabs
-            : dungeonData.DecorPrefabs;
-
-        if (prefabPool == null || prefabPool.Length == 0)
-        {
-            return;
-        }
-
-        Transform wallDecorParent = GetOrCreateContainer("WallDecorations");
-        int spacing = Mathf.Max(2, _wallDecorSpacing);
-        int spawnedCount = 0;
-
-        // 아래쪽(z=0) / 위쪽(z=max) 벽면
-        for (int x = spacing; x < _gridWidth - 1; x += spacing)
-        {
-            if (TrySpawnWallDecor(prefabPool, wallDecorParent, x, 0, Vector3.forward))
-            {
-                spawnedCount++;
-            }
-
-            if (TrySpawnWallDecor(prefabPool, wallDecorParent, x, _gridDepth - 1, Vector3.back))
-            {
-                spawnedCount++;
-            }
-        }
-
-        // 왼쪽(x=0) / 오른쪽(x=max) 벽면
-        for (int z = spacing; z < _gridDepth - 1; z += spacing)
-        {
-            if (TrySpawnWallDecor(prefabPool, wallDecorParent, 0, z, Vector3.right))
-            {
-                spawnedCount++;
-            }
-
-            if (TrySpawnWallDecor(prefabPool, wallDecorParent, _gridWidth - 1, z, Vector3.left))
-            {
-                spawnedCount++;
-            }
-        }
-
-        Debug.Log($"[BattleScene] 벽 데코레이션 {spawnedCount}개 생성 완료");
-    }
-
-    /// <summary>
-    /// 지정된 벽면 그리드 좌표에 벽 데코를 확률적으로 스폰한다.
-    /// </summary>
-    /// <param name="prefabPool">사용할 프리팹 목록</param>
-    /// <param name="parent">부모 컨테이너</param>
-    /// <param name="gridX">벽면 그리드 X</param>
-    /// <param name="gridZ">벽면 그리드 Z</param>
-    /// <param name="inwardDirection">방 안쪽을 향하는 로컬 방향(=데코가 바라볼 방향)</param>
-    private bool TrySpawnWallDecor(GameObject[] prefabPool, Transform parent, int gridX, int gridZ, Vector3 inwardDirection)
-    {
-        if (Random.value > _wallDecorChance)
-        {
-            return false;
-        }
-
-        GameObject prefab = prefabPool[Random.Range(0, prefabPool.Length)];
-        if (prefab == null)
-        {
-            return false;
-        }
-
-        GameObject instance = Instantiate(prefab, parent);
-        instance.name = $"WallDecor_{gridX}_{gridZ}";
-
-        Vector3 basePos = GridToLocalPosition(gridX, gridZ, _wallDecorHeight);
-        instance.transform.localPosition = basePos + (inwardDirection * _wallDecorInset);
-        instance.transform.localRotation = Quaternion.LookRotation(inwardDirection, Vector3.up);
-
-        return true;
-    }
-
+    
     /// <summary>
     /// 아레나 테두리를 따라 일정 간격으로 대형 랜드마크(파괴된 기둥, 바위 등)를 배치한다.
     /// 벽만 있는 밋밋한 테두리에 시각적 리듬을 만들어준다.

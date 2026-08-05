@@ -107,6 +107,8 @@ public class SkillInventory : MonoBehaviour
         Debug.Log($"[SkillInventory] 스킬 습득: {skill.SkillName} (Tier {skill.Tier})");
 
         OnSkillLearned?.Invoke(skill);
+
+        SaveManager.RequestSave();
         return true;
     }
 
