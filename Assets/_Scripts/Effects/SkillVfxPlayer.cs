@@ -296,6 +296,17 @@ public class SkillVfxPlayer : MonoBehaviour
         Transform target,
         System.Action onImpact)
     {
+        // 공격 모션에서 실제로 던지는 순간에 맞추기 위한 발사 지연
+        if (skill.ProjectileLaunchDelay > 0f)
+        {
+            yield return new WaitForSeconds(skill.ProjectileLaunchDelay);
+        }
+
+        // 스킬별 비행 시간이 있으면 그 값, 없으면(0) 전역값
+        float travelTime = skill.ProjectileTravelTime > 0f
+            ? skill.ProjectileTravelTime
+            : _projectileTravelTime;
+
         Vector3 end = TargetSpawnPos(skill, target);
         Vector3 dir = end - start;
         Quaternion rot = dir.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(dir) : Quaternion.identity;
@@ -309,7 +320,7 @@ public class SkillVfxPlayer : MonoBehaviour
 
         float t = 0f;
 
-        while (t < _projectileTravelTime)
+        while (t < travelTime)
         {
             t += Time.deltaTime;
 
@@ -323,7 +334,7 @@ public class SkillVfxPlayer : MonoBehaviour
                 proj.transform.position = Vector3.Lerp(
                     start,
                     end,
-                    t / _projectileTravelTime);
+                    t / travelTime);
             }
 
             yield return null;

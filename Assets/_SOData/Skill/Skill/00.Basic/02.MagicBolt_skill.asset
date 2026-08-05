@@ -38,8 +38,10 @@ MonoBehaviour:
   _hitVfxPrefab: {fileID: 1594239829313766, guid: cfb4a671812a3e246be9e97692c8fd22, type: 3}
   _castVfxOffset: {x: 0, y: 0, z: 0}
   _hitVfxOffset: {x: 0, y: 1, z: 0}
-  _castVfxScale: 0
-  _hitVfxScale: 0
+  _castVfxScale: 0.3
+  _hitVfxScale: 0.3
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}
