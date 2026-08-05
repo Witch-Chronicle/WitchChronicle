@@ -14,18 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestData
   id: main_010
   title: "\uBD88\uC758 \uC8FC\uC778 \uCC98\uCE58"
-  description: "\uBD88\uC758 \uB358\uC804\uC5D0 \uC788\uB294 \uC8FC\uC778\uC744 \uCC98\uCE58\uD558\uC5EC
-    \uD3ED\uC8FC\uB97C \uC5B5\uC81C \uD558\uC790."
+  description: "\uD654\uC5FC \uC9C0\uB300\uC5D0 \uC788\uB294 \uBD88\uC758 \uC8FC\uC778\uC744
+    \uCC98\uCE58\uD558\uC5EC \uD3ED\uC8FC\uB97C \uC5B5\uC81C \uD558\uC790."
   type: 0
   objectives:
   - type: 4
     targetID: fire_2
-    targetName: "\uBD88\uC758 \uB358\uC804"
+    targetName: "\uD654\uC5FC \uC9C0\uB300"
     requiredCount: 1
   reward:
     gold: 700
     exp: 15
-    itemID: {fileID: 11400000, guid: fc10ba10a3ad3f54191991c14ce695d0, type: 2}
+    item: {fileID: 0}
     itemCount: 2
     recruitNPC: 
     nextStory: 1

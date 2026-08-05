@@ -100,7 +100,11 @@ public class SceneTransitionManager : MonoBehaviour
         if (skipCover == false)
         {
             yield return CoverScreenRoutine();
+
         }
+
+        UIBackgroundBlurManager.Instance?.Hide();
+
 
         onBeforeLoad?.Invoke();
 
@@ -158,6 +162,8 @@ public class SceneTransitionManager : MonoBehaviour
         yield return CoverScreenRoutine();
 
         // 화면이 완전히 가려진 시점 - 씬 로드 시작 전에 미리 정리할 것들(예: 이전 씬 카메라/컨트롤러 비활성화)을 처리
+        UIBackgroundBlurManager.Instance?.Hide();
+
         onCovered?.Invoke();
 
         AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
@@ -271,6 +277,8 @@ public class SceneTransitionManager : MonoBehaviour
     private IEnumerator UnloadSceneRoutine(string sceneName, Action onUnloaded)
     {
         yield return CoverScreenRoutine();
+
+        UIBackgroundBlurManager.Instance?.Hide();
 
         AsyncOperation operation = SceneManager.UnloadSceneAsync(sceneName);
 

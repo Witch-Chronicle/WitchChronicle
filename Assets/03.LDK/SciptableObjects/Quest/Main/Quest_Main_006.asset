@@ -13,19 +13,19 @@ MonoBehaviour:
   m_Name: Quest_Main_006
   m_EditorClassIdentifier: Assembly-CSharp::QuestData
   id: main_006
-  title: "\uC57C\uC0DD \uB358\uC804 \uC815\uC0C1\uD654"
-  description: "\uB9C8\uBB3C\uC758 \uBCF4\uC2A4\uB97C \uCC98\uCE58\uD558\uC5EC, \uC57C\uC0DD
-    \uB358\uC804\uC744 \uC7A0\uC7AC\uC6B0\uC790"
+  title: "\uB179\uC0C9 \uBC00\uB9BC \uC815\uC0C1\uD654"
+  description: "\uB9C8\uBB3C\uC758 \uBCF4\uC2A4\uB97C \uCC98\uCE58\uD558\uC5EC, \uB179\uC0C9
+    \uBC00\uB9BC\uC744 \uC815\uD654\uD558\uC790"
   type: 0
   objectives:
   - type: 4
     targetID: wild_1
-    targetName: "\uC57C\uC0DD \uB358\uC804"
+    targetName: "\uB179\uC0C9 \uBC00\uB9BC"
     requiredCount: 1
   reward:
     gold: 400
     exp: 15
-    itemID: {fileID: 11400000, guid: 7d6b2598fa89f9447ab022ad1f56ce86, type: 2}
+    item: {fileID: 0}
     itemCount: 2
     recruitNPC: 
     nextStory: 1

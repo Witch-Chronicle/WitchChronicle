@@ -13,7 +13,20 @@ MonoBehaviour:
   m_Name: dungeon_wild
   m_EditorClassIdentifier: Assembly-CSharp::DungeonData
   Id: wild_1
-  DungeonName: "\uC57C\uC0DD\uC758 \uB358\uC804"
+  DungeonName: "\uB179\uC0C9 \uBC00\uB9BC"
+  DungeonIcon: {fileID: 21300000, guid: 8a00f669bbd7d1349932a1ad85f5eb41, type: 3}
+  Description: "\uBB38\uBA85\uC758 \uC190\uAE38\uC774 \uB2FF\uC9C0 \uC54A\uC740 \uC6D0\uC2DC\uC758
+    \uBC00\uB9BC.\\n\uC0AC\uB098\uC6B4 \uC9D0\uC2B9\uB4E4\uC774 \uC601\uC5ED\uC744
+    \uC9C0\uD0A4\uACE0 \uC788\uB2E4."
+  RequiredQuest: {fileID: 11400000, guid: 0b3f91037ef468a43be623f35a6ff984, type: 2}
+  EnemyPool:
+  - {fileID: 11400000, guid: 7407f62e16edfcb4cac5938f61d7d74b, type: 2}
+  - {fileID: 11400000, guid: dbb6013013cafa942be9e24a576f6203, type: 2}
+  - {fileID: 11400000, guid: cbdec1329fd01b548b67f28dec21ca27, type: 2}
+  - {fileID: 11400000, guid: 8d31e0f63020f9c44be01a943782c50e, type: 2}
+  - {fileID: 11400000, guid: b6e057a6e4588d34ea92b6877d0a45ef, type: 2}
+  - {fileID: 11400000, guid: db1f84bced486a1499dba876bfb4aa45, type: 2}
+  - {fileID: 11400000, guid: cff0a6b71d6695142b96db5bbc1f32ae, type: 2}
   FloorPrefab: {fileID: 2968830504906926872, guid: 18d5d0e4a15adbd48882b4a8eca95943, type: 3}
   WallPrefab: {fileID: 5151642384990008009, guid: 54c77c1c8d379594e93baab6ad37934c, type: 3}
   CeilingPrefab: {fileID: 2968830504906926872, guid: 4e8c03054cf184245a7f659a586305b9, type: 3}
