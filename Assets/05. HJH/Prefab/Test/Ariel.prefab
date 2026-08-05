@@ -651,6 +651,7 @@ GameObject:
   - component: {fileID: 1225852485558496439}
   - component: {fileID: 4591853345917737866}
   - component: {fileID: 4825157371394156992}
+  - component: {fileID: 2367145658887746820}
   m_Layer: 0
   m_Name: ariel_ver2
   m_TagString: Untagged
@@ -866,6 +867,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &2367145658887746820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 499443745095271460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6fdbf2364ea0f849915f82354b1da55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FieldAttackAnimationEventRelay
+  _attackController: {fileID: 1674790948735769706}
 --- !u!1 &560894992214609329
 GameObject:
   m_ObjectHideFlags: 0
@@ -2776,9 +2790,26 @@ MonoBehaviour:
   _animator: {fileID: 1225852485558496439}
   _attackSocket: {fileID: 3052828569744010218}
   _lightningVfxPrefab: {fileID: 6209405405914531843, guid: 2fd0e80d5ab9d654f9384f884d595a12, type: 3}
-  _attackTrigger: Attack
-  _effectDelay: 0.15
-  _battleStartDelay: 0.12
+  _encounterCameraController: {fileID: 0}
+  _playerController: {fileID: 8541305895195945523}
+  _hitVfxPrefab: {fileID: 3894621978031112059, guid: 594dbf2e6d47af1448c23c5bc4b3df45, type: 3}
+  _hitVfxPositionOffset: {x: 0, y: 0, z: 0}
+  _hitVfxRotationOffset: {x: 0, y: 0, z: 0}
+  _hitVfxScale: 1
+  _hitVfxLifetime: 1.5
+  _attackTrigger: FieldAttack
+  _animationEventTimeout: 2.5
+  _impactHoldDuration: 0.1
+  _encounterViewHoldDuration: 0.08
+  _freeAttackRange: 8
+  _freeAttackObstacleMask:
+    serializedVersion: 2
+    m_Bits: 1
+  _freeAttackImpactVfxPrefab: {fileID: 1996815043310994508, guid: ca168918dcbdf16499c659dd970e55c3, type: 3}
+  _freeAttackImpactRotationOffset: {x: 0, y: 0, z: 0}
+  _freeAttackImpactScale: 1
+  _freeAttackImpactLifetime: 1.5
+  _freeAttackRecoveryDuration: 0.15
 --- !u!1 &1562030576368215012
 GameObject:
   m_ObjectHideFlags: 0
