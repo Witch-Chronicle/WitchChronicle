@@ -179,10 +179,6 @@ MonoBehaviour:
   _clusterMinSize: 3
   _clusterMaxSize: 6
   _clusterRadius: 2.5
-  _wallDecorSpacing: 3
-  _wallDecorHeight: 3
-  _wallDecorInset: 0.55
-  _wallDecorChance: 0.7
   _landmarkPrefabs: []
   _edgeLandmarkSpacing: 4
   _centerLandmarkCount: 0
@@ -3973,13 +3969,13 @@ MonoBehaviour:
   _singleCutHoldDuration: 0.12
   _backCutHoldDuration: 0.08
   _groupCutHoldDuration: 0.1
-  _backDistance: 4.5
-  _backHeight: 0.5
-  _backLookHeight: 1.2
-  _backLookForward: 4
-  _backFov: 52
-  _backSideOffset: 5
-  _backRoll: 0
+  _backDistance: 3
+  _backHeight: 1.3
+  _backLookHeight: -0.5
+  _backLookForward: 10
+  _backFov: 70
+  _backSideOffset: 1.5
+  _backRoll: 4
   _backWaitDuration: 0.35
   _backTweenDuration: 0.4
   _overviewBackDistance: 3
@@ -3995,8 +3991,8 @@ MonoBehaviour:
   _skillHeight: -0.55
   _skillFocusHeight: 1.05
   _skillTargetFocusWeight: 0.5
-  _skillFov: 90
-  _skillRoll: 3.5
+  _skillFov: 100
+  _skillRoll: 5
   _skillWaitDuration: 0.4
   _skillDrawDistance: 7
   _skillDrawHeight: 0.4
