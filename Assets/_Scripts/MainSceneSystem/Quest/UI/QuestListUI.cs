@@ -21,6 +21,7 @@ public class QuestListUI : MonoBehaviour
     [SerializeField] private RectTransform _panelRect; // _panel의 RectTransform
     [SerializeField] private float _slideDuration = 0.3f;
     [SerializeField] private Ease _slideEase = Ease.OutQuad;
+    [SerializeField] private float _hiddenExtraOffset = 40f;
 
     private float _visiblePosX;
     private float _hiddenPosX;
@@ -55,7 +56,7 @@ public class QuestListUI : MonoBehaviour
         if (_panelRect != null)
         {
             _visiblePosX = _panelRect.anchoredPosition.x;
-            _hiddenPosX = _visiblePosX + _panelRect.rect.width;
+            _hiddenPosX = _visiblePosX + _panelRect.rect.width + _hiddenExtraOffset;
         }
 
         _isInitialized = true;
