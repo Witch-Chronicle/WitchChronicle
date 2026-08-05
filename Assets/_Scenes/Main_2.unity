@@ -4477,7 +4477,7 @@ MonoBehaviour:
   _characterNameTxt: {fileID: 962757746}
   _levelTxt: {fileID: 379061512}
   _expTxt: {fileID: 1735728669}
-  _expSlider: {fileID: 2059988716}
+  _expFilledImg: {fileID: 0}
   _availableStatTxt: {fileID: 910634163}
   _statRows:
   - statType: 0
@@ -120473,19 +120473,28 @@ MonoBehaviour:
   _mainButtons:
   - mainCategory: 0
     mainButton: {fileID: 533610058}
+    iconImage: {fileID: 0}
+    normalIcon: {fileID: 0}
+    selectedIcon: {fileID: 0}
   - mainCategory: 1
     mainButton: {fileID: 1698966410}
+    iconImage: {fileID: 0}
+    normalIcon: {fileID: 0}
+    selectedIcon: {fileID: 0}
   - mainCategory: 2
     mainButton: {fileID: 1411750111}
+    iconImage: {fileID: 0}
+    normalIcon: {fileID: 0}
+    selectedIcon: {fileID: 0}
   - mainCategory: 3
     mainButton: {fileID: 1319817593}
-  _normalBackgroundColor: {r: 1, g: 1, b: 1, a: 1}
-  _normalTextColor: {r: 0, g: 0, b: 0, a: 1}
-  _selectedBackgroundColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  _selectedTextColor: {r: 1, g: 1, b: 1, a: 1}
+    iconImage: {fileID: 0}
+    normalIcon: {fileID: 0}
+    selectedIcon: {fileID: 0}
   _closeBtn: {fileID: 848819620}
-  _subCategoryButtonPrefab: {fileID: 7179303778059673495, guid: 6388492dabddce648a2ea4879e3e412f, type: 3}
-  _subCategoryParent: {fileID: 1570617785}
+  _subButtonSlots: []
+  _allCategoryLabel: "\uC804\uCCB4"
+  _subSelectedFadeDuration: 0.15
   _itemSlotPrefab: {fileID: 4367171900393196124, guid: d996cd3e5ace3234d83c2d14e04e50b5, type: 3}
   _itemSlotParent: {fileID: 1222464952}
   _poolDefaultCapacity: 20
@@ -216533,7 +216542,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5619004985470291284, guid: 1b85089bf97007a4dbb3254700392a46, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 245.17
+      value: 237.48
       objectReference: {fileID: 0}
     - target: {fileID: 5619004985470291284, guid: 1b85089bf97007a4dbb3254700392a46, type: 3}
       propertyPath: m_LocalPosition.y
@@ -216541,7 +216550,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5619004985470291284, guid: 1b85089bf97007a4dbb3254700392a46, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 375.73
+      value: 376.38
       objectReference: {fileID: 0}
     - target: {fileID: 5619004985470291284, guid: 1b85089bf97007a4dbb3254700392a46, type: 3}
       propertyPath: m_LocalRotation.w
@@ -268043,6 +268052,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UITestInputReader
   _integrationPanelAnimator: {fileID: 1691429682}
   _statPanelAnimator: {fileID: 39126921}
+  _statUIController: {fileID: 0}
   _pausePanelAnimator: {fileID: 1291012681}
   _pauseController: {fileID: 0}
   _inputAsset: {fileID: 0}
@@ -327949,27 +327959,28 @@ MonoBehaviour:
   _enhanceNPC: {fileID: 0}
   _goldText: {fileID: 1354994693}
   _enhanceController: {fileID: 337842103}
-  _equipSlotPrefab: {fileID: 2958770760615428365, guid: 334c752e519031b4da2d62dbf4022aed, type: 3}
-  _equipListParent: {fileID: 151098009}
-  _infoIcon: {fileID: 1307717302}
-  _infoName: {fileID: 139111616}
-  _infoGrade: {fileID: 680264407}
+  _baseInfoName: {fileID: 0}
+  _baseInfoGrade: {fileID: 0}
+  _currentIcon: {fileID: 0}
   _currentLvText: {fileID: 2135680425}
+  _currentValueRows: []
+  _nextIcon: {fileID: 0}
   _nextLvText: {fileID: 953191016}
-  _previewRowPrefab: {fileID: 1335294629814570734, guid: 18ce6458dd803f04bba9ebf60208e66c, type: 3}
-  _previewRoot: {fileID: 2023843304}
+  _nextValueRows: []
   _successRateText: {fileID: 1003281495}
   _pityProgressText: {fileID: 444288116}
-  _pitySlider: {fileID: 673382984}
+  _pityFilledImage: {fileID: 0}
   _pityGuaranteedObject: {fileID: 1084274150}
   _tooltipObject: {fileID: 2006221102}
   _requiredRowPrefab: {fileID: 2549208763193724016, guid: 38c51c1c3ad24e8428dccf7c32a6b8c9, type: 3}
   _requiredRoot: {fileID: 1446782948}
   _enhanceBtn: {fileID: 1780796374}
-  _resultCanvasGroup: {fileID: 1370341806}
-  _resultText: {fileID: 1393423672}
-  _resultFadeDuration: 0.25
-  _resultShowDuration: 1.2
+  _enhancementResultController: {fileID: 0}
+  _equipSlotPrefab: {fileID: 2958770760615428365, guid: 334c752e519031b4da2d62dbf4022aed, type: 3}
+  _carouselParent: {fileID: 0}
+  _prevBtn: {fileID: 0}
+  _nextBtn: {fileID: 0}
+  _pageSize: 5
 --- !u!222 &1881977817
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -328906,7 +328917,7 @@ Transform:
   m_GameObject: {fileID: 1887388244}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -0.825, y: -1, z: -0}
+  m_LocalPosition: {x: -0.825, y: 0, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Pool;
 using TMPro;
+using DG.Tweening;
 
 /// <summary>
 /// EnhancePanel 메인 컨트롤러.
@@ -64,16 +65,42 @@ public class EnhanceUIController : MonoBehaviour
     [SerializeField] private Button _nextBtn;
     [SerializeField] private int _pageSize = 5;
 
+    [Header("Equip Filter - Panel")]
+    [SerializeField] private Button _filterButton;
+    [SerializeField] private GameObject _filterPanel;
+    [SerializeField] private CanvasGroup _filterPanelCanvasGroup;
+    [SerializeField] private float _filterPanelFadeDuration = 0.15f;
+    [SerializeField] private Toggle _weaponFilterToggle;
+    [SerializeField] private Toggle _robeFilterToggle;
+    [SerializeField] private Toggle _cloakFilterToggle;
+    [SerializeField] private Toggle _glovesFilterToggle;
+    [SerializeField] private Toggle _shoesFilterToggle;
+    [SerializeField] private Toggle _necklaceFilterToggle;
+    [SerializeField] private Toggle _earringFilterToggle;
+    [SerializeField] private Toggle _ringFilterToggle;
+
+    [Header("Equip Filter - Button Visual")]
+    [SerializeField] private Image _filterButtonBackground;
+    [SerializeField] private Image _filterButtonBorder;
+    [SerializeField] private Image _filterButtonIcon;
+    [SerializeField] private GameObject _filterActiveMark;
+    [SerializeField] private Color _filterNormalBackground = new Color32(36, 34, 40, 90);
+    [SerializeField] private Color _filterActiveBackground = new Color32(91, 86, 96, 140);
+    [SerializeField] private Color _filterNormalColor = new Color32(162, 160, 159, 190);
+    [SerializeField] private Color _filterActiveColor = new Color32(233, 231, 221, 255);
+
     private readonly List<GameObject> _spawnedEnhanceRequiredRows = new List<GameObject>();
 
     private ObjectPool<EnhanceEquipSlot> _slotPool;
     private readonly List<EnhanceEquipSlot> _activeSlots = new List<EnhanceEquipSlot>();
+    private List<EquipmentInstance> _allOwnedEquipments = new List<EquipmentInstance>();
     private List<EquipmentInstance> _ownedEquipments = new List<EquipmentInstance>();
-    private int _currentPage;
+    private readonly HashSet<EquipSlotType> _selectedFilters = new HashSet<EquipSlotType>();
 
     private EquipmentInstance _selectedInstance;
     private EnhanceEquipSlot _selectedSlot;
     private bool _isEnhancementResultPlaying;
+    private bool _wasFilterActive;
 
     private void Awake()
     {
@@ -93,12 +120,16 @@ public class EnhanceUIController : MonoBehaviour
         if (_enhanceBtn != null) _enhanceBtn.onClick.AddListener(OnClickEnhance);
         if (_prevBtn != null) _prevBtn.onClick.AddListener(OnClickPrev);
         if (_nextBtn != null) _nextBtn.onClick.AddListener(OnClickNext);
+        if (_filterButton != null) _filterButton.onClick.AddListener(OnClickFilterButton);
+
+        AddFilterToggleListeners();
 
         if (_enhancementResultController != null)
         {
             _enhancementResultController.Closed += HandleEnhancementResultClosed;
         }
 
+        ResetFiltersImmediate();
         _windowStartIndex = 0;
 
         RefreshOwnedEquipments();
@@ -126,6 +157,19 @@ public class EnhanceUIController : MonoBehaviour
         if (_enhanceBtn != null) _enhanceBtn.onClick.RemoveListener(OnClickEnhance);
         if (_prevBtn != null) _prevBtn.onClick.RemoveListener(OnClickPrev);
         if (_nextBtn != null) _nextBtn.onClick.RemoveListener(OnClickNext);
+        if (_filterButton != null) _filterButton.onClick.RemoveListener(OnClickFilterButton);
+
+        RemoveFilterToggleListeners();
+
+        if (_filterButton != null)
+        {
+            _filterButton.transform.DOKill();
+        }
+
+        if (_filterPanelCanvasGroup != null)
+        {
+            _filterPanelCanvasGroup.DOKill();
+        }
 
         if (_enhancementResultController != null)
         {
@@ -158,6 +202,242 @@ public class EnhanceUIController : MonoBehaviour
         }
     }
 
+    // ===================== Equip Filter =====================
+
+    private void AddFilterToggleListeners()
+    {
+        if (_weaponFilterToggle != null) _weaponFilterToggle.onValueChanged.AddListener(OnWeaponFilterChanged);
+        if (_robeFilterToggle != null) _robeFilterToggle.onValueChanged.AddListener(OnRobeFilterChanged);
+        if (_cloakFilterToggle != null) _cloakFilterToggle.onValueChanged.AddListener(OnCloakFilterChanged);
+        if (_glovesFilterToggle != null) _glovesFilterToggle.onValueChanged.AddListener(OnGlovesFilterChanged);
+        if (_shoesFilterToggle != null) _shoesFilterToggle.onValueChanged.AddListener(OnShoesFilterChanged);
+        if (_necklaceFilterToggle != null) _necklaceFilterToggle.onValueChanged.AddListener(OnNecklaceFilterChanged);
+        if (_earringFilterToggle != null) _earringFilterToggle.onValueChanged.AddListener(OnEarringFilterChanged);
+        if (_ringFilterToggle != null) _ringFilterToggle.onValueChanged.AddListener(OnRingFilterChanged);
+    }
+
+    private void RemoveFilterToggleListeners()
+    {
+        if (_weaponFilterToggle != null) _weaponFilterToggle.onValueChanged.RemoveListener(OnWeaponFilterChanged);
+        if (_robeFilterToggle != null) _robeFilterToggle.onValueChanged.RemoveListener(OnRobeFilterChanged);
+        if (_cloakFilterToggle != null) _cloakFilterToggle.onValueChanged.RemoveListener(OnCloakFilterChanged);
+        if (_glovesFilterToggle != null) _glovesFilterToggle.onValueChanged.RemoveListener(OnGlovesFilterChanged);
+        if (_shoesFilterToggle != null) _shoesFilterToggle.onValueChanged.RemoveListener(OnShoesFilterChanged);
+        if (_necklaceFilterToggle != null) _necklaceFilterToggle.onValueChanged.RemoveListener(OnNecklaceFilterChanged);
+        if (_earringFilterToggle != null) _earringFilterToggle.onValueChanged.RemoveListener(OnEarringFilterChanged);
+        if (_ringFilterToggle != null) _ringFilterToggle.onValueChanged.RemoveListener(OnRingFilterChanged);
+    }
+
+    private void OnClickFilterButton()
+    {
+        if (_filterPanel == null) return;
+
+        bool willOpen = !_filterPanel.activeSelf;
+
+        if (willOpen)
+        {
+            OpenFilterPanel();
+        }
+        else
+        {
+            CloseFilterPanel();
+        }
+    }
+
+    private void OpenFilterPanel()
+    {
+        if (_filterPanel == null) return;
+
+        _filterPanel.SetActive(true);
+        _filterPanel.transform.SetAsLastSibling();
+
+        if (_filterPanelCanvasGroup == null) return;
+
+        _filterPanelCanvasGroup.DOKill();
+        _filterPanelCanvasGroup.interactable = false;
+        _filterPanelCanvasGroup.blocksRaycasts = false;
+
+        _filterPanelCanvasGroup
+            .DOFade(1f, _filterPanelFadeDuration)
+            .SetUpdate(true)
+            .OnComplete(() =>
+            {
+                _filterPanelCanvasGroup.interactable = true;
+                _filterPanelCanvasGroup.blocksRaycasts = true;
+            });
+    }
+
+    private void CloseFilterPanel()
+    {
+        if (_filterPanel == null) return;
+
+        if (_filterPanelCanvasGroup == null)
+        {
+            _filterPanel.SetActive(false);
+            return;
+        }
+
+        _filterPanelCanvasGroup.DOKill();
+        _filterPanelCanvasGroup.interactable = false;
+        _filterPanelCanvasGroup.blocksRaycasts = false;
+
+        _filterPanelCanvasGroup
+            .DOFade(0f, _filterPanelFadeDuration)
+            .SetUpdate(true)
+            .OnComplete(() => _filterPanel.SetActive(false));
+    }
+
+    private void OnWeaponFilterChanged(bool isOn) => SetEquipmentFilter(EquipSlotType.Weapon, isOn);
+    private void OnRobeFilterChanged(bool isOn) => SetEquipmentFilter(EquipSlotType.Robe, isOn);
+    private void OnCloakFilterChanged(bool isOn) => SetEquipmentFilter(EquipSlotType.Cloak, isOn);
+    private void OnGlovesFilterChanged(bool isOn) => SetEquipmentFilter(EquipSlotType.Gloves, isOn);
+    private void OnShoesFilterChanged(bool isOn) => SetEquipmentFilter(EquipSlotType.Shoes, isOn);
+    private void OnNecklaceFilterChanged(bool isOn) => SetEquipmentFilter(EquipSlotType.Necklace, isOn);
+    private void OnEarringFilterChanged(bool isOn) => SetEquipmentFilter(EquipSlotType.Earring, isOn);
+    private void OnRingFilterChanged(bool isOn) => SetEquipmentFilter(EquipSlotType.Ring, isOn);
+
+    private void SetEquipmentFilter(EquipSlotType slotType, bool isOn)
+    {
+        if (isOn)
+        {
+            _selectedFilters.Add(slotType);
+        }
+        else
+        {
+            _selectedFilters.Remove(slotType);
+        }
+
+        ApplyFiltersAndRefreshSelection();
+        UpdateFilterButtonVisual(true);
+    }
+
+    /// <summary>
+    /// 선택된 필터가 없으면 전체 장비를 표시하고,
+    /// 하나 이상이면 해당 EquipSlotType의 장비만 표시한다.
+    /// </summary>
+    private void ApplyEquipmentFilters()
+    {
+        if (_selectedFilters.Count == 0)
+        {
+            _ownedEquipments = new List<EquipmentInstance>(_allOwnedEquipments);
+            return;
+        }
+
+        _ownedEquipments = _allOwnedEquipments
+            .Where(instance =>
+            {
+                EquipItemData equipData = instance.baseData as EquipItemData;
+                return equipData != null && _selectedFilters.Contains(equipData.equipSlotType);
+            })
+            .ToList();
+    }
+
+    private void ApplyFiltersAndRefreshSelection()
+    {
+        ApplyEquipmentFilters();
+
+        if (_selectedInstance == null || !_ownedEquipments.Contains(_selectedInstance))
+        {
+            _selectedInstance = _ownedEquipments.Count > 0 ? _ownedEquipments[0] : null;
+        }
+
+        _windowStartIndex = _selectedInstance != null
+            ? Mathf.Max(0, _ownedEquipments.IndexOf(_selectedInstance))
+            : 0;
+
+        RefreshCarouselWindow();
+
+        if (_selectedInstance != null)
+        {
+            SelectEquipment(_selectedInstance);
+        }
+        else
+        {
+            ClearSelection();
+        }
+    }
+
+    private void ResetFiltersImmediate()
+    {
+        _selectedFilters.Clear();
+
+        SetToggleWithoutNotify(_weaponFilterToggle, false);
+        SetToggleWithoutNotify(_robeFilterToggle, false);
+        SetToggleWithoutNotify(_cloakFilterToggle, false);
+        SetToggleWithoutNotify(_glovesFilterToggle, false);
+        SetToggleWithoutNotify(_shoesFilterToggle, false);
+        SetToggleWithoutNotify(_necklaceFilterToggle, false);
+        SetToggleWithoutNotify(_earringFilterToggle, false);
+        SetToggleWithoutNotify(_ringFilterToggle, false);
+
+        if (_filterPanelCanvasGroup != null)
+        {
+            _filterPanelCanvasGroup.DOKill();
+            _filterPanelCanvasGroup.alpha = 0f;
+            _filterPanelCanvasGroup.interactable = false;
+            _filterPanelCanvasGroup.blocksRaycasts = false;
+        }
+
+        if (_filterPanel != null)
+        {
+            _filterPanel.SetActive(false);
+        }
+
+        _wasFilterActive = false;
+        UpdateFilterButtonVisual(false);
+    }
+
+    private static void SetToggleWithoutNotify(Toggle toggle, bool value)
+    {
+        if (toggle != null)
+        {
+            toggle.SetIsOnWithoutNotify(value);
+        }
+    }
+
+    private void UpdateFilterButtonVisual(bool animate)
+    {
+        bool isFilterActive = _selectedFilters.Count > 0;
+
+        if (_filterButtonBackground != null)
+        {
+            _filterButtonBackground.color = isFilterActive
+                ? _filterActiveBackground
+                : _filterNormalBackground;
+        }
+
+        if (_filterButtonBorder != null)
+        {
+            _filterButtonBorder.color = isFilterActive
+                ? _filterActiveColor
+                : _filterNormalColor;
+        }
+
+        if (_filterButtonIcon != null)
+        {
+            _filterButtonIcon.color = isFilterActive
+                ? _filterActiveColor
+                : _filterNormalColor;
+        }
+
+        if (_filterActiveMark != null)
+        {
+            _filterActiveMark.SetActive(isFilterActive);
+        }
+
+        if (animate && isFilterActive && !_wasFilterActive && _filterButton != null)
+        {
+            Transform buttonTransform = _filterButton.transform;
+            buttonTransform.DOKill();
+            buttonTransform.localScale = Vector3.one;
+            buttonTransform
+                .DOPunchScale(Vector3.one * 0.08f, 0.25f, 4, 0.5f)
+                .SetUpdate(true);
+        }
+
+        _wasFilterActive = isFilterActive;
+    }
+
     // ===================== Object Pool =====================
 
     private EnhanceEquipSlot CreateSlot()
@@ -188,12 +468,14 @@ public class EnhanceUIController : MonoBehaviour
 
     private void RefreshOwnedEquipments()
     {
-        _ownedEquipments = PlayerInventory.Instance != null
+        _allOwnedEquipments = PlayerInventory.Instance != null
             ? PlayerInventory.Instance.EquipmentInstances
                 .Where(instance => instance != null && instance.baseData != null)
                 .OrderBy(instance => instance.baseData.itemId)
                 .ToList()
             : new List<EquipmentInstance>();
+
+        ApplyEquipmentFilters();
     }
 
     private int _windowStartIndex;
@@ -680,7 +962,7 @@ public class EnhanceUIController : MonoBehaviour
     {
         if (_goldText != null)
         {
-            _goldText.text = gold.ToString();
+            _goldText.text = gold.ToString() + " G";
         }
     }
 }

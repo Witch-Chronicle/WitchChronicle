@@ -19,7 +19,7 @@ MonoBehaviour:
   type: 0
   objectives:
   - type: 1
-    targetID: npc_selene
+    targetID: selene
     targetName: "\uC140\uB808\uB124"
     requiredCount: 1
   reward:
@@ -27,6 +27,6 @@ MonoBehaviour:
     exp: 10
     item: {fileID: 0}
     itemCount: 0
-    recruitNPC: selene_npc
+    recruitNPC: selene
     nextStory: 1
   nextQuest: {fileID: 11400000, guid: 0b3f91037ef468a43be623f35a6ff984, type: 2}

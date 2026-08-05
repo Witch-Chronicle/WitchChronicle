@@ -19,7 +19,7 @@ MonoBehaviour:
   type: 0
   objectives:
   - type: 1
-    targetID: npc_fay
+    targetID: fay
     targetName: "\uD398\uC774"
     requiredCount: 1
   reward:
@@ -27,6 +27,6 @@ MonoBehaviour:
     exp: 10
     item: {fileID: 0}
     itemCount: 0
-    recruitNPC: 
+    recruitNPC: fay
     nextStory: 1
   nextQuest: {fileID: 11400000, guid: 331c527716a43ed469ca8d3b6e5fe5bd, type: 2}
