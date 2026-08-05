@@ -233,6 +233,8 @@ public class PersistentCharacterManager : MonoBehaviour
             TryAddToActiveParty(characterId);
         }
 
+        SaveManager.RequestSave();
+
         return true;
     }
 
@@ -405,6 +407,9 @@ public class PersistentCharacterManager : MonoBehaviour
             }
 
             character.StatController.AddExp(amount);
+            Debug.Log($"[PersistentCharacterManager] {character.CharacterName} 경험치 +{amount} (현재 Exp: {character.StatController.Exp})");
         }
+
+        SaveManager.RequestSave();
     }
 }

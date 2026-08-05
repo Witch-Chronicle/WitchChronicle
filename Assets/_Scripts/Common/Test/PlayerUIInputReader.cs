@@ -188,7 +188,8 @@ public sealed class PlayerUIInputReader : MonoBehaviour
     {
         // 강화 결과 연출 중이면 Esc 입력 자체를 완전히 무시.
         // 연출이 끝나(canClose=true) 텍스트까지 다 표시된 상태면 Result Overlay만 닫음.
-        if (EnhancementResultController.Instance != null && EnhancementResultController.Instance.IsOpen)
+        if (EnhancementResultController.Instance != null &&
+            EnhancementResultController.Instance.IsOpen)
         {
             if (EnhancementResultController.Instance.IsResultPresented)
             {
@@ -201,6 +202,13 @@ public sealed class PlayerUIInputReader : MonoBehaviour
         if (ShopNPC.Instance != null && ShopNPC.Instance.IsOpen)
         {
             ShopNPC.Instance.ToggleShop();
+            return;
+        }
+
+        // 추가
+        if (PortalNPC.Instance != null && PortalNPC.Instance.IsOpen)
+        {
+            PortalNPC.Instance.TogglePortal();
             return;
         }
 

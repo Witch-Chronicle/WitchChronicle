@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6df93aa8a2379f04abe3ffa4fcbdc37a, type: 3}
+  m_Name: dungeon_classic
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonData
+  Id: classic_1
+  DungeonName: "\uC9C0\uD558 \uB358\uC804"
+  DungeonIcon: {fileID: 21300000, guid: 75b0ba5ae32a7b5449d5387de449b2f5, type: 3}
+  Description: "\uBE5B\uC774 \uB2FF\uC9C0 \uC54A\uB294 \uC5B4\uB460\uC758 \uBBF8\uAD81.\\n\uC624\uB79C
+    \uC138\uC6D4 \uC7A0\uB4E4\uC5B4 \uC788\uB358 \uAC83\uB4E4\uC774 \uAE68\uC5B4\uB098\uAE30\uB97C
+    \uAE30\uB2E4\uB9B0\uB2E4."
+  RequiredQuest: {fileID: 11400000, guid: e7dd8d3c7d865ac4081440d8afeb4bb8, type: 2}
+  EnemyPool:
+  - {fileID: 11400000, guid: ea0a33d93509e054ba691cab44d83a11, type: 2}
+  - {fileID: 11400000, guid: 650b814c0a23ba94198a8effecd7b3eb, type: 2}
+  - {fileID: 11400000, guid: 602ce25a775b0694d9dee1d276c43f82, type: 2}
+  - {fileID: 11400000, guid: d6dfe483ed6d9444bbdafaf8a054c6ea, type: 2}
+  - {fileID: 11400000, guid: 311461bef81e5d54bb55d948fbfecf4e, type: 2}
+  - {fileID: 11400000, guid: eb517d02fa6b8124ba9721e3bee47e25, type: 2}
+  FloorPrefab: {fileID: 2968830504906926872, guid: b6eeea8ad0c672342af960ea4229b9ef, type: 3}
+  WallPrefab: {fileID: 5151642384990008009, guid: 54c77c1c8d379594e93baab6ad37934c, type: 3}
+  CeilingPrefab: {fileID: 2396082444373089105, guid: f2175a29cf2eb3f4aae9639e1de729be, type: 3}
+  DoorPrefab: {fileID: 3960670234233686325, guid: 5719d16d9f035fd4a8fcfaf6ae7bdfd2, type: 3}
+  DoorWallPrefab: {fileID: 0}
+  DecorPrefabs:
+  - {fileID: 574122265314155589, guid: 27b8d777f92a2924b948860036e76e8b, type: 3}
+  - {fileID: 3693926014911207686, guid: e7a10c0a9b0499548ad26fe2629dc45d, type: 3}
+  - {fileID: 1167486005058445278, guid: de97c9a596385f64d829f9c035512bb3, type: 3}
+  - {fileID: 7613198964696299674, guid: 2a6695511ee6fef4e97d355c2ce291ff, type: 3}
+  - {fileID: 1030998881, guid: abc00000000001447774881241271710, type: 3}
+  - {fileID: 1030992326, guid: abc00000000018341995826438526174, type: 3}
+  - {fileID: 1030992348, guid: abc00000000009366842529473335653, type: 3}
+  - {fileID: 1030992304, guid: abc00000000000166612956689332867, type: 3}
+  - {fileID: 1030992064, guid: abc00000000001424491044653731891, type: 3}
+  - {fileID: 1030992055, guid: abc00000000003602206591326685032, type: 3}
+  - {fileID: 1030992180, guid: abc00000000014745605174516167561, type: 3}
+  - {fileID: 1030992198, guid: abc00000000008076672260047248511, type: 3}
+  - {fileID: 1030992216, guid: abc00000000016882973811301943871, type: 3}
+  - {fileID: 1030992238, guid: abc00000000003778390058708688329, type: 3}
+  - {fileID: 1030992687, guid: abc00000000008799884702711077847, type: 3}
+  WallDecorPrefabs: []
+  MapSize: {x: 100, y: 100}
+  MinPadding: 3
+  BSPDepth: 4
+  MaxConnectionPerRoom: 1
+  ExtraConnectionProbability: 0
+  MinRoomCount: 8
+  MaxRoomCount: 12
+  MinRoomSize: 18
+  MaxRoomSize: 24
+  RoomWeights:
+  - Type: 2
+    Weight: 5
+  - Type: 1
+    Weight: 70
+  - Type: 4
+    Weight: 20
+  - Type: 3
+    Weight: 5
+  RoomContentTable: {fileID: 11400000, guid: afb95ba883bf32243a7f8ac84e1154fe, type: 2}
+  _decorationTable: {fileID: 11400000, guid: d250eabb332bb9246acc170c64b5bd52, type: 2}
+  BGM: {fileID: 0}
+  Skybox: {fileID: 0}
+  Icon: {fileID: 0}
+  Fog: {fileID: 9185907458619771004, guid: 4ddb6e5d9f6585643aa58fcd01891d3c, type: 3}
+  DungeonAtmosphere: {fileID: 11400000, guid: 442f43698e9e3f3499a0ef8b870de691, type: 2}
+  HasBoss: 0
+  HasExit: 1

@@ -65,6 +65,9 @@ public class PlayerSkillLoadout : MonoBehaviour
             return false;
 
         _equippedSkills.Add(skillData);
+
+        SaveManager.RequestSave();
+
         return true;
     }
 

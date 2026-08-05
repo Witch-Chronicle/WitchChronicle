@@ -16,13 +16,13 @@ namespace WitchChronicle.IdleFarming
 
         [Header("Growing 표시")]
         [SerializeField] private Image _growingSeedIcon;
-        [SerializeField] private TextMeshProUGUI _growingSeedName;
-        [SerializeField] private TextMeshProUGUI _timerText;
+        [SerializeField] private TextMeshProUGUI _growingSeedName;   // "감자"
+        [SerializeField] private TextMeshProUGUI _timerText;         // "02:34" 만
 
         [Header("ReadyToHarvest 표시")]
         [SerializeField] private Image _readySeedIcon;
-        [SerializeField] private TextMeshProUGUI _readySeedName;
-        [SerializeField] private TextMeshProUGUI _readyCountText;
+        [SerializeField] private TextMeshProUGUI _readySeedName;     // "감자"
+        [SerializeField] private TextMeshProUGUI _readyCountText;    // "×3" 만
 
         [Header("표시 제어")]
         [SerializeField] private CanvasGroup _canvasGroup;
@@ -44,13 +44,19 @@ namespace WitchChronicle.IdleFarming
 
         private void LateUpdate()
         {
+            if (_mainCamera == null)
+            {
+                _mainCamera = Camera.main;
+                if (_mainCamera == null) return;
+            }
+
             if (!_isPlayerNear)
             {
                 ApplyVisibility(false);
                 return;
             }
 
-            if (_worldTarget == null || _mainCamera == null)
+            if (_worldTarget == null)
             {
                 ApplyVisibility(false);
                 return;
@@ -84,9 +90,6 @@ namespace WitchChronicle.IdleFarming
             _worldTarget = target;
         }
 
-        /// <summary>
-        /// FarmZoneTrigger가 호출: 플레이어가 팜 존 안에 있는지
-        /// </summary>
         public void SetPlayerNear(bool near)
         {
             _isPlayerNear = near;
@@ -109,49 +112,50 @@ namespace WitchChronicle.IdleFarming
         }
 
         private void ShowGrowing(SeedData seed, float remainingSeconds)
-{
-    if (_growingRoot != null) _growingRoot.SetActive(true);
-    if (_readyRoot != null) _readyRoot.SetActive(false);
+        {
+            if (_growingRoot != null) _growingRoot.SetActive(true);
+            if (_readyRoot != null) _readyRoot.SetActive(false);
 
-    if (seed != null)
-    {
-        if (_growingSeedIcon != null && seed.seedSprite != null)
-            _growingSeedIcon.sprite = seed.seedSprite;
+            if (seed != null)
+            {
+                if (_growingSeedIcon != null && seed.seedSprite != null)
+                    _growingSeedIcon.sprite = seed.seedSprite;
 
-        // 씨앗 이름 (첫 줄) — "감자"
-        if (_growingSeedName != null)
-            _growingSeedName.text = seed.seedName;
-    }
+                // 씨앗 이름 — "감자"
+                if (_growingSeedName != null)
+                    _growingSeedName.text = seed.harvestName;
+            }
 
-    // 상태 + 타이머 (두번째 줄) — "자라는 중\n02:34"
-    if (_timerText != null)
-    {
-        int total = Mathf.CeilToInt(remainingSeconds);
-        int m = total / 60;
-        int s = total % 60;
-        _timerText.text = $"자라는 중\n{m:D2}:{s:D2}";
-    }
-}
+            // 타이머만 표시 — "02:34"
+            if (_timerText != null)
+            {
+                int total = Mathf.CeilToInt(remainingSeconds);
+                int m = total / 60;
+                int s = total % 60;
+                _timerText.text = $"{m:D2}:{s:D2}";
+            }
+        }
 
-private void ShowReady(SeedData seed, int pendingCount)
-{
-    if (_growingRoot != null) _growingRoot.SetActive(false);
-    if (_readyRoot != null) _readyRoot.SetActive(true);
+        private void ShowReady(SeedData seed, int pendingCount)
+        {
+            if (_growingRoot != null) _growingRoot.SetActive(false);
+            if (_readyRoot != null) _readyRoot.SetActive(true);
 
-    if (seed != null)
-    {
-        if (_readySeedIcon != null && seed.harvestSprite != null)
-            _readySeedIcon.sprite = seed.harvestSprite;
+            if (seed != null)
+            {
+                if (_readySeedIcon != null && seed.harvestSprite != null)
+                    _readySeedIcon.sprite = seed.harvestSprite;
 
-        // 씨앗 이름 (첫 줄) — "감자"
-        if (_readySeedName != null)
-            _readySeedName.text = seed.seedName;
-    }
+                // 씨앗 이름 — "감자"
+                if (_readySeedName != null)
+                    _readySeedName.text = seed.harvestName;
+            }
 
-    // 상태 + 개수 (두번째 줄) — "수확 가능\n×15"
-    if (_readyCountText != null)
-        _readyCountText.text = $"수확 가능\n×{pendingCount}";
-}
+            // 개수만 표시 — "×3"
+            if (_readyCountText != null)
+                _readyCountText.text = $"×{pendingCount}";
+        }
+
         private void HideAll()
         {
             if (_growingRoot != null) _growingRoot.SetActive(false);

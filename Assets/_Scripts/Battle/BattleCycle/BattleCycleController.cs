@@ -235,6 +235,21 @@ public class BattleCycleController : MonoBehaviour
 
         BattleTeamType winner = default;
 
+        if (TryGetAdvantageTeam(
+                out BattleTeamType advantageTeam))
+        {
+            yield return RunAdvantagePhase(
+                advantageTeam);
+
+            if (TryGetWinner(out winner))
+            {
+                yield return StartCoroutine(
+                    EndBattleAfterDelay(winner));
+
+                yield break;
+            }
+        }
+
         while (TryGetWinner(out winner) == false)
         {
             _roundCount++;
@@ -262,11 +277,14 @@ public class BattleCycleController : MonoBehaviour
 
                 OnTurnOrderChanged?.Invoke();
 
-                yield return RunUnitTurn(currentUnit);
+                yield return RunUnitTurn(
+                    currentUnit);
 
                 if (TryGetWinner(out winner))
                 {
-                    yield return StartCoroutine(EndBattleAfterDelay(winner));
+                    yield return StartCoroutine(
+                        EndBattleAfterDelay(winner));
+
                     yield break;
                 }
             }
@@ -278,7 +296,124 @@ public class BattleCycleController : MonoBehaviour
             yield return null;
         }
 
-        yield return StartCoroutine(EndBattleAfterDelay(winner));
+        yield return StartCoroutine(
+            EndBattleAfterDelay(winner));
+    }
+
+    /// <summary>
+    /// 선공 진영 선제 행동 진행
+    /// </summary>
+    /// <param name="advantageTeam">선공 진영</param>
+    private IEnumerator RunAdvantagePhase(
+        BattleTeamType advantageTeam)
+    {
+        BuildAdvantageTurnOrder(
+            advantageTeam);
+
+        if (_turnOrder.Count == 0)
+        {
+            yield break;
+        }
+
+        Debug.Log(
+            $"[Battle] Advantage Phase Start / " +
+            $"Team: {advantageTeam}");
+
+        for (int i = 0; i < _turnOrder.Count; i++)
+        {
+            BattleUnit currentUnit =
+                _turnOrder[i];
+
+            if (currentUnit == null ||
+                currentUnit.IsAlive == false)
+            {
+                continue;
+            }
+
+            _currentTurnOrderIndex = i;
+
+            OnTurnOrderChanged?.Invoke();
+
+            yield return RunUnitTurn(
+                currentUnit,
+                false);
+
+            if (TryGetWinner(out _))
+            {
+                break;
+            }
+        }
+
+        _currentTurnOrderIndex = -1;
+
+        OnTurnOrderChanged?.Invoke();
+
+        Debug.Log(
+            $"[Battle] Advantage Phase End / " +
+            $"Team: {advantageTeam}");
+    }
+
+    /// <summary>
+    /// 선공 진영 반환
+    /// </summary>
+    /// <param name="advantageTeam">선공 진영</param>
+    /// <returns>선공 존재 여부</returns>
+    private bool TryGetAdvantageTeam(
+        out BattleTeamType advantageTeam)
+    {
+        advantageTeam = default;
+
+        BattleEncounterContext encounterContext =
+            BattleEncounterContext.Instance;
+
+        if (encounterContext == null ||
+            encounterContext.HasEncounter == false)
+        {
+            return false;
+        }
+
+        if (encounterContext.IsPlayerAdvantage ==
+            encounterContext.IsEnemyAdvantage)
+        {
+            return false;
+        }
+
+        advantageTeam =
+            encounterContext.IsPlayerAdvantage
+                ? BattleTeamType.Player
+                : BattleTeamType.Enemy;
+
+        return true;
+    }
+
+    /// <summary>
+    /// 선공 진영 턴 순서 생성
+    /// </summary>
+    /// <param name="advantageTeam">선공 진영</param>
+    private void BuildAdvantageTurnOrder(
+        BattleTeamType advantageTeam)
+    {
+        _turnOrder.Clear();
+
+        _turnOrder.AddRange(
+            _battleUnits
+                .Where(unit =>
+                    unit != null &&
+                    unit.IsAlive &&
+                    unit.TeamType == advantageTeam)
+                .OrderByDescending(unit =>
+                    unit.Speed));
+
+        _currentTurnOrderIndex = -1;
+
+        Debug.Log(
+            "[Battle] Advantage Turn Order: " +
+            string.Join(
+                " → ",
+                _turnOrder.Select(unit =>
+                    unit.UnitName)));
+
+        OnTurnOrderChanged?.Invoke();
     }
 
     /// <summary>
@@ -300,7 +435,8 @@ public class BattleCycleController : MonoBehaviour
     /// </summary>
     /// <param name="unit">턴 유닛</param>
     private IEnumerator RunUnitTurn(
-        BattleUnit unit)
+        BattleUnit unit,
+        bool processStatusEffects = true)
     {
         _battleState = BattleState.TurnStart;
 
@@ -320,8 +456,11 @@ public class BattleCycleController : MonoBehaviour
             $"[Battle] {unit.UnitName} Turn Start / " +
             $"Actions: {actionCount}");
 
-        // 턴 시작: 화상·독 등 지속 피해 tick 적용
-        _statusEffectController.ProcessTurnStart(unit);
+        // 정상 라운드 턴 시작 상태이상 처리
+        if (processStatusEffects)
+        {
+            _statusEffectController.ProcessTurnStart(unit);
+        }
 
         while (_currentTurnContext.CanAct && unit.IsAlive)
         {
@@ -374,8 +513,11 @@ public class BattleCycleController : MonoBehaviour
 
         _battleState = BattleState.TurnEnd;
 
-        // 턴 종료: 상태이상 지속턴 감소 및 만료 처리 (지속피해 tick·행동불가 판정은 미포함)
-        _statusEffectController.ProcessTurnEnd(unit);
+        // 정상 라운드 턴 종료 상태이상 처리
+        if (processStatusEffects)
+        {
+            _statusEffectController.ProcessTurnEnd(unit);
+        }
 
         OnTurnEnded?.Invoke(unit);
 
