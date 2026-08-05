@@ -45,7 +45,7 @@ public class DialogueEventManager : MonoBehaviour
                 break;
 
             case "OpenEnhance":
-                if(ShopNPC.Instance == null)
+                if(EnhanceNPC.Instance == null)
                 {
                     Debug.LogError("EnhanceNPC Instance Missing");
 
