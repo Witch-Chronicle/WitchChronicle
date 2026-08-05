@@ -394,6 +394,8 @@ public class CharacterStats : MonoBehaviour
             magicDefense,
             speed,
             luck);
+            
+        SaveManager.RequestSave();
     }
 
     /// <summary>
@@ -499,5 +501,17 @@ public class CharacterStats : MonoBehaviour
 
         int slotCount = _baseSpellSlotCount + intelligence / _intelligencePerAdditionalSlot;
         return Mathf.Min(_maxSpellSlotCount, slotCount);
+    }
+
+    /// <summary>
+    /// 세이브 데이터 로드 시 레벨, 경험치, 남은 스탯 포인트를 복원합니다.
+    /// </summary>
+    public void SetLevelAndExp(int level, int exp, int availableStatPoints)
+    {
+        _level = Mathf.Max(1, level);
+        _exp = Mathf.Max(0, exp);
+        _availableStatPoints = Mathf.Max(0, availableStatPoints);
+
+        RecalculateStats();
     }
 }
