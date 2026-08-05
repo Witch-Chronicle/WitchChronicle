@@ -400,6 +400,8 @@ public class BattleCycleController : MonoBehaviour
                 .OrderByDescending(unit =>
                     unit.Speed));
 
+        ApplyFirstRoundAdvantage();
+
         _currentTurnOrderIndex = -1;
 
         Debug.Log(
@@ -410,6 +412,67 @@ public class BattleCycleController : MonoBehaviour
                     unit.UnitName)));
 
         OnTurnOrderChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// 첫 라운드 선공 유닛 우선 배치
+    /// </summary>
+    private void ApplyFirstRoundAdvantage()
+    {
+        if (_roundCount != 1)
+        {
+            return;
+        }
+
+        BattleEncounterContext encounterContext =
+            BattleEncounterContext.Instance;
+
+        if (encounterContext == null ||
+            encounterContext.HasEncounter == false)
+        {
+            return;
+        }
+
+        // 둘 다 false면 일반 조우, 둘 다 true면 잘못된 상태
+        if (encounterContext.IsPlayerAdvantage ==
+            encounterContext.IsEnemyAdvantage)
+        {
+            return;
+        }
+
+        BattleTeamType advantageTeam =
+            encounterContext.IsPlayerAdvantage
+                ? BattleTeamType.Player
+                : BattleTeamType.Enemy;
+
+        BattleUnit priorityUnit =
+            _battleUnits.FirstOrDefault(unit =>
+                unit != null &&
+                unit.IsAlive &&
+                unit.TeamType == advantageTeam);
+
+        if (priorityUnit == null)
+        {
+            return;
+        }
+
+        int currentIndex =
+            _turnOrder.IndexOf(priorityUnit);
+
+        if (currentIndex <= 0)
+        {
+            return;
+        }
+
+        _turnOrder.RemoveAt(currentIndex);
+        _turnOrder.Insert(
+            0,
+            priorityUnit);
+
+        Debug.Log(
+            $"[Battle] First Round Advantage / " +
+            $"Team: {advantageTeam} / " +
+            $"Unit: {priorityUnit.UnitName}");
     }
 
     /// <summary>
