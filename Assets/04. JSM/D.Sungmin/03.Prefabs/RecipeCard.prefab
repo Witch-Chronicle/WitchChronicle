@@ -666,7 +666,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 100}
+  m_SizeDelta: {x: 711, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &78848535538230622
 CanvasRenderer:
@@ -689,14 +689,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.7012578, g: 0.8433265, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: f50d8eccaa6dad940bdbdef0b34977b4, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -768,3 +768,7 @@ MonoBehaviour:
   _priceText: {fileID: 4652400091151157910}
   _selectHighlight: {fileID: 2523547422078422492}
   _button: {fileID: 8998676095026546924}
+  _backgroundImage: {fileID: 0}
+  _commonBackground: {fileID: 21300000, guid: f50d8eccaa6dad940bdbdef0b34977b4, type: 3}
+  _rareBackground: {fileID: 21300000, guid: aa24251fdad3e894e9e40352fc96f0eb, type: 3}
+  _legendaryBackground: {fileID: 21300000, guid: e180b75d56d9cbc42a10da6dc4c14f4a, type: 3}

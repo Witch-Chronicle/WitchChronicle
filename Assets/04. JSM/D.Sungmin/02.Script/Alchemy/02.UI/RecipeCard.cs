@@ -8,7 +8,7 @@ namespace WitchChronicle.Alchemy
 {
     /// <summary>
     /// 레시피 리스트에 표시되는 카드 하나.
-    /// 요리/포션 공통 사용.
+    /// 요리/포션 공통 사용. 등급별로 배경 이미지가 다름.
     /// </summary>
     public class RecipeCard : MonoBehaviour
     {
@@ -19,6 +19,12 @@ namespace WitchChronicle.Alchemy
         [SerializeField] private TextMeshProUGUI _priceText;
         [SerializeField] private GameObject _selectHighlight;
         [SerializeField] private Button _button;
+
+        [Header("등급별 배경 이미지")]
+        [SerializeField] private Image _backgroundImage;
+        [SerializeField] private Sprite _commonBackground;
+        [SerializeField] private Sprite _rareBackground;
+        [SerializeField] private Sprite _legendaryBackground;
 
         private object _recipeData;
         private Action<object> _onClickCallback;
@@ -51,6 +57,8 @@ namespace WitchChronicle.Alchemy
             if (_ingredientsText != null)
                 _ingredientsText.text = BuildIngredientsText(recipe.ingredients);
 
+            ApplyFoodGradeBackground(recipe.result.foodGrade);
+
             SetHighlighted(false);
         }
 
@@ -76,7 +84,40 @@ namespace WitchChronicle.Alchemy
             if (_ingredientsText != null)
                 _ingredientsText.text = BuildIngredientsText(recipe.ingredients);
 
+            ApplyPotionGradeBackground(recipe.resultPotion.PotionGrade);
+
             SetHighlighted(false);
+        }
+
+        private void ApplyFoodGradeBackground(FoodGrade grade)
+        {
+            if (_backgroundImage == null) return;
+
+            Sprite target = grade switch
+            {
+                FoodGrade.Common => _commonBackground,
+                FoodGrade.Rare => _rareBackground,
+                FoodGrade.Legendary => _legendaryBackground,
+                _ => _commonBackground
+            };
+
+            if (target != null)
+                _backgroundImage.sprite = target;
+        }
+
+        private void ApplyPotionGradeBackground(PotionGrade grade)
+        {
+            if (_backgroundImage == null) return;
+
+            Sprite target = grade switch
+            {
+                PotionGrade.Common => _commonBackground,
+                PotionGrade.Rare => _rareBackground,
+                _ => _commonBackground
+            };
+
+            if (target != null)
+                _backgroundImage.sprite = target;
         }
 
         private string BuildIngredientsText(List<IngredientSlot> ingredients)
