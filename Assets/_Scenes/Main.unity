@@ -54868,6 +54868,39 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1673596290135437052, guid: 053f581f84d78f0428b3f567ae19fc4b, type: 3}
   m_PrefabInstance: {fileID: 418550800}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &418550802 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2953607398597571516, guid: 053f581f84d78f0428b3f567ae19fc4b, type: 3}
+  m_PrefabInstance: {fileID: 418550800}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6f01b18e9b687541a2bcd1216b964fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WitchChronicle.IdleFarming.PlotHarvestPanel
+--- !u!114 &418550803 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1714073620553377722, guid: 053f581f84d78f0428b3f567ae19fc4b, type: 3}
+  m_PrefabInstance: {fileID: 418550800}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d29eb954e969da41a8bfab538fef4d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WitchChronicle.IdleFarming.PlotSeedSelectPanel
+--- !u!114 &418550804 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 374455826928952881, guid: 053f581f84d78f0428b3f567ae19fc4b, type: 3}
+  m_PrefabInstance: {fileID: 418550800}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b55a525d4a434a14aa4d12589f792087, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WitchChronicle.IdleFarming.PlotUnlockPanel
 --- !u!1001 &419096399
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -70551,6 +70584,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7226458671931213690, guid: c6b7e533b67a5bc4e89c4078577ee6ad, type: 3}
   m_PrefabInstance: {fileID: 524526855}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &524526857 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5017505947371911714, guid: c6b7e533b67a5bc4e89c4078577ee6ad, type: 3}
+  m_PrefabInstance: {fileID: 524526855}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 186d19bc479853a4f99d09222a8561b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WitchChronicle.Alchemy.AlchemyPanel
 --- !u!1001 &524550710
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -166696,6 +166740,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6464097675874943520, guid: 418a8e55105e8d64e9ca9da30fd1dfd1, type: 3}
+      propertyPath: _alchemyPanel
+      value: 
+      objectReference: {fileID: 524526857}
     - target: {fileID: 7391445247648551345, guid: 418a8e55105e8d64e9ca9da30fd1dfd1, type: 3}
       propertyPath: m_Name
       value: CauldronRoot
@@ -273004,7 +273052,7 @@ Terrain:
   m_GameObject: {fileID: 1963907732}
   m_Enabled: 1
   serializedVersion: 6
-  m_TerrainData: {fileID: 0}
+  m_TerrainData: {fileID: 15600000, guid: 6dcd01633b4c2504bab5f9c31d2884f7, type: 2}
   m_TreeDistance: 3517
   m_TreeBillboardDistance: 50
   m_TreeCrossFadeLength: 5
@@ -299700,11 +299748,11 @@ PrefabInstance:
     - target: {fileID: 3772179202182152678, guid: cfcb16d8f5dbf2c4393a7a46de09d7a2, type: 3}
       propertyPath: _unlockPanel
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 418550804}
     - target: {fileID: 3772179202182152678, guid: cfcb16d8f5dbf2c4393a7a46de09d7a2, type: 3}
       propertyPath: _harvestPanel
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 418550802}
     - target: {fileID: 3772179202182152678, guid: cfcb16d8f5dbf2c4393a7a46de09d7a2, type: 3}
       propertyPath: _hudCanvasRoot
       value: 
@@ -299712,7 +299760,7 @@ PrefabInstance:
     - target: {fileID: 3772179202182152678, guid: cfcb16d8f5dbf2c4393a7a46de09d7a2, type: 3}
       propertyPath: _seedSelectPanel
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 418550803}
     - target: {fileID: 3772179202182152678, guid: cfcb16d8f5dbf2c4393a7a46de09d7a2, type: 3}
       propertyPath: _floatingUIPrefab
       value: 
