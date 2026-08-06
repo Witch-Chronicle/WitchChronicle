@@ -30,6 +30,12 @@ public class NPC : MonoBehaviour, ITFInteractable
             return;
         }
 
+        // 상호작용한 방향을 바라보게 함 (컴포넌트가 붙어 있는 NPC만)
+        if (interactor != null && TryGetComponent(out NpcLookAtPlayer lookAt))
+        {
+            lookAt.FaceTarget(interactor.transform);
+        }
+
         string dialogueID = GetDialogueID();
 
         if (DialogueManager.Instance != null)
