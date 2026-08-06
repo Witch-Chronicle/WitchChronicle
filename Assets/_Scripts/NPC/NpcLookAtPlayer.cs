@@ -58,10 +58,8 @@ public class NpcLookAtPlayer : MonoBehaviour
     {
         if (_isFacing)
         {
-            // 대화창이 닫히면 복귀 대기 시작
-            bool dialogueOpen = DialogueUI.Instance != null && DialogueUI.Instance.IsPanelActive;
-
-            if (dialogueOpen == false)
+            // 대화창뿐 아니라 상점·강화 같은 후속 UI까지 모두 닫힌 뒤에 복귀 대기 시작
+            if (IsInteractionOpen() == false)
             {
                 _restoreTimer += Time.deltaTime;
 
@@ -81,5 +79,18 @@ public class NpcLookAtPlayer : MonoBehaviour
             transform.rotation,
             _targetRotation,
             1f - Mathf.Exp(-_turnSpeed * Time.deltaTime));
+    }
+
+    /// <summary>
+    /// NPC와의 상호작용이 아직 이어지는 중인지 판단.
+    /// </summary>
+    private static bool IsInteractionOpen()
+    {
+        if (CursorLocker.Instance != null)
+        {
+            return CursorLocker.Instance.IsUIMode;
+        }
+
+        return DialogueUI.Instance != null && DialogueUI.Instance.IsPanelActive;
     }
 }

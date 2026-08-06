@@ -2585,6 +2585,7 @@ GameObject:
   - component: {fileID: 7822502900948639785}
   - component: {fileID: -2764434808695427520}
   - component: {fileID: 1674790948735769706}
+  - component: {fileID: 3963717224038693021}
   m_Layer: 0
   m_Name: Ariel
   m_TagString: Player
@@ -2791,7 +2792,6 @@ MonoBehaviour:
   _attackSocket: {fileID: 3052828569744010218}
   _lightningVfxPrefab: {fileID: 6209405405914531843, guid: 2fd0e80d5ab9d654f9384f884d595a12, type: 3}
   _encounterCameraController: {fileID: 0}
-  _playerController: {fileID: 8541305895195945523}
   _hitVfxPrefab: {fileID: 3894621978031112059, guid: 594dbf2e6d47af1448c23c5bc4b3df45, type: 3}
   _hitVfxPositionOffset: {x: 0, y: 0, z: 0}
   _hitVfxRotationOffset: {x: 0, y: 0, z: 0}
@@ -2810,6 +2810,22 @@ MonoBehaviour:
   _freeAttackImpactScale: 1
   _freeAttackImpactLifetime: 1.5
   _freeAttackRecoveryDuration: 0.15
+--- !u!114 &3963717224038693021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560493996318386368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00be0ba22801cfa409af5912c87ad8d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FishingEquipSwitcher
+  _weaponRoot: {fileID: 5509813948312261610}
+  _fishingRodRoot: {fileID: 8611153429401075151}
+  _animator: {fileID: 1225852485558496439}
+  _isFishingParam: IsFishing
 --- !u!1 &1562030576368215012
 GameObject:
   m_ObjectHideFlags: 0
@@ -8204,6 +8220,7 @@ Transform:
   - {fileID: 3681521078262997449}
   - {fileID: 2148867319693165310}
   - {fileID: 1280271914667028281}
+  - {fileID: 2467422847854322732}
   m_Father: {fileID: 2858137481106372940}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6582297665840234494
@@ -11605,6 +11622,93 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034bc47afcbf5e141a58d5c20b7808e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: EPO::EPOOutline.TargetStateListener
+--- !u!1001 &855975597532389007
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1683334328123454630}
+    m_Modifications:
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.6855956
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: -0.22560778
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.23967682
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.023
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.013
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.239
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.49487782
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.5050702
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.5050703
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.4948778
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -91.168
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 270
+      objectReference: {fileID: 0}
+    - target: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8962725309741032256, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_Name
+      value: WoodFishingRod
+      objectReference: {fileID: 0}
+    - target: {fileID: 8962725309741032256, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: -4161369568681901532, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+--- !u!4 &2467422847854322732 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3017136067231365795, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+  m_PrefabInstance: {fileID: 855975597532389007}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8611153429401075151 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8962725309741032256, guid: 855656b6e75727140be81302f7c4d71a, type: 3}
+  m_PrefabInstance: {fileID: 855975597532389007}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3470859462990280888
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11616,6 +11720,10 @@ PrefabInstance:
     - target: {fileID: -262278752661951662, guid: 68f87c0ea4bcd774b95a55c013824f37, type: 3}
       propertyPath: m_Name
       value: ArielWeapon
+      objectReference: {fileID: 0}
+    - target: {fileID: -262278752661951662, guid: 68f87c0ea4bcd774b95a55c013824f37, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2445042071379482497, guid: 68f87c0ea4bcd774b95a55c013824f37, type: 3}
       propertyPath: m_LocalScale.x
@@ -11684,5 +11792,10 @@ PrefabInstance:
 --- !u!4 &1280271914667028281 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2445042071379482497, guid: 68f87c0ea4bcd774b95a55c013824f37, type: 3}
+  m_PrefabInstance: {fileID: 3470859462990280888}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &5509813948312261610 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -262278752661951662, guid: 68f87c0ea4bcd774b95a55c013824f37, type: 3}
   m_PrefabInstance: {fileID: 3470859462990280888}
   m_PrefabAsset: {fileID: 0}
