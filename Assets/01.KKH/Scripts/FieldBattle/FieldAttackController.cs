@@ -14,7 +14,6 @@ public class FieldAttackController : MonoBehaviour
     [SerializeField] private Transform _attackSocket;
     [SerializeField] private FieldLightningVfx _lightningVfxPrefab;
     [SerializeField] private FieldEncounterCameraController _encounterCameraController;
-    [SerializeField] private PlayerController _playerController;
 
     [Header("Hit Vfx")]
     [SerializeField] private GameObject _hitVfxPrefab;
@@ -55,18 +54,20 @@ public class FieldAttackController : MonoBehaviour
     [SerializeField] private float _freeAttackRecoveryDuration = 0.15f;
 
     private InputAction _attackAction;
-    private Coroutine _attackRoutine;
+    private InputAction _moveAction;
 
+    private Coroutine _attackRoutine;
     private FieldCombatTarget _currentTarget;
 
     private bool _isAttacking;
     private bool _isImpactNotified;
+    private bool _isAnimationFinished;
 
     private readonly RaycastHit[] _freeAttackHits = new RaycastHit[16];
     private Vector3 _freeAttackDirection;
     private bool _isLockedAttack;
 
-    private bool _playerControllerWasEnabled;
+    private bool _moveActionWasEnabled;
     private bool _isMovementLocked;
 
     /// <summary>
@@ -81,6 +82,11 @@ public class FieldAttackController : MonoBehaviour
             _attackAction =
                 _inputAsset.FindAction(
                     "Player/Attack",
+                    throwIfNotFound: true);
+
+            _moveAction =
+                _inputAsset.FindAction(
+                    "Player/Move",
                     throwIfNotFound: true);
         }
     }
@@ -120,12 +126,8 @@ public class FieldAttackController : MonoBehaviour
                 _attackRoutine);
         }
 
-        if (BattleEntryTransitionController.Instance == null ||
-            BattleEntryTransitionController.Instance.IsPlaying == false)
-        {
-            SetAttackMovementLocked(
-                false);
-        }
+        SetAttackMovementLocked(
+            false);
 
         ResetAttackState();
     }
@@ -195,6 +197,7 @@ public class FieldAttackController : MonoBehaviour
 
         _isAttacking = true;
         _isImpactNotified = false;
+        _isAnimationFinished = false;
 
         SetAttackMovementLocked(true);
 
@@ -218,8 +221,11 @@ public class FieldAttackController : MonoBehaviour
     /// </summary>
     private IEnumerator AttackRoutine()
     {
-        RotateTowardTarget(
-            _currentTarget);
+        if (_isLockedAttack)
+        {
+            RotateTowardTarget(
+                _currentTarget);
+        }
 
         bool isAnimationStarted =
             PlayAttackAnimation();
@@ -230,15 +236,18 @@ public class FieldAttackController : MonoBehaviour
                 "[FieldAttack] 공격 애니메이션 실행 실패");
 
             NotifyAttackImpact();
+
+            _isAnimationFinished = true;
         }
         else
         {
-            float elapsedTime = 0f;
+            float impactWaitTime = 0f;
 
             while (_isImpactNotified == false &&
-                   elapsedTime < _animationEventTimeout)
+                   impactWaitTime <
+                   _animationEventTimeout)
             {
-                elapsedTime +=
+                impactWaitTime +=
                     Time.unscaledDeltaTime;
 
                 yield return null;
@@ -249,35 +258,55 @@ public class FieldAttackController : MonoBehaviour
         {
             Debug.LogWarning(
                 "[FieldAttack] Impact 이벤트 누락 / " +
-                "피격 및 전투 진입 강제 실행");
+                "피격 강제 실행");
 
             NotifyAttackImpact();
         }
 
-        // 비록온 공격 종료
+        // 비록온 공격 애니메이션 종료 대기
         if (_isLockedAttack == false)
         {
+            float finishWaitTime = 0f;
+
+            while (_isAnimationFinished == false &&
+                   finishWaitTime <
+                   _animationEventTimeout)
+            {
+                finishWaitTime +=
+                    Time.unscaledDeltaTime;
+
+                yield return null;
+            }
+
+            if (_isAnimationFinished == false)
+            {
+                Debug.LogWarning(
+                    "[FieldAttack] Finished 이벤트 누락 / " +
+                    "공격 상태 강제 종료");
+            }
+
             if (_freeAttackRecoveryDuration > 0f)
             {
                 yield return new WaitForSecondsRealtime(
                     _freeAttackRecoveryDuration);
             }
 
-            SetAttackMovementLocked(false);
+            SetAttackMovementLocked(
+                false);
 
             ResetAttackState();
 
             yield break;
         }
 
-        // 1. 기존 록온 화면에서 피격 이펙트 0.1초 출력
+        // 기존 록온 화면에서 피격 이펙트 출력
         if (_impactHoldDuration > 0f)
         {
             yield return new WaitForSecondsRealtime(
                 _impactHoldDuration);
         }
 
-        // 2. Encounter Camera 위치 설정 및 Priority 상승
+        // Encounter Camera 위치 설정 및 Priority 상승
         if (_encounterCameraController != null &&
             _currentTarget != null)
         {
@@ -287,18 +316,17 @@ public class FieldAttackController : MonoBehaviour
                     _currentTarget);
         }
 
-        // 3. Cinemachine이 Encounter Camera Cut을 적용하고
-        // 실제 화면에 한 프레임 출력할 시간 확보
+        // Cinemachine Cut 반영 및 화면 출력 대기
         yield return new WaitForEndOfFrame();
 
-        // 4. Encounter 구도 0.08초 유지
+        // Encounter Camera 구도 유지
         if (_encounterViewHoldDuration > 0f)
         {
             yield return new WaitForSecondsRealtime(
                 _encounterViewHoldDuration);
         }
 
-        // 5. 현재 Encounter 구도를 기준으로 Push In 시작
+        // Encounter 구도 기준 전투 진입
         BattleEncounter encounter =
             _currentTarget != null
                 ? _currentTarget.BattleEncounter
@@ -412,6 +440,22 @@ public class FieldAttackController : MonoBehaviour
         }
 
         PlayFreeAttackVfx();
+    }
+
+    /// <summary>
+    /// 공격 애니메이션 종료 Animation Event 처리
+    /// </summary>
+    public void NotifyAttackFinished()
+    {
+        if (_isAttacking == false)
+        {
+            return;
+        }
+
+        _isAnimationFinished = true;
+
+        Debug.Log(
+            "[FieldAttack] Finished Event");
     }
 
     /// <summary>
@@ -542,12 +586,6 @@ public class FieldAttackController : MonoBehaviour
             _encounterCameraController =
                 FindFirstObjectByType<FieldEncounterCameraController>();
         }
-
-        if (_playerController == null)
-        {
-            _playerController =
-                GetComponent<PlayerController>();
-        }
     }
 
     /// <summary>
@@ -563,6 +601,7 @@ public class FieldAttackController : MonoBehaviour
 
         _isAttacking = false;
         _isImpactNotified = false;
+        _isAnimationFinished = false;
         _isLockedAttack = false;
     }
 
@@ -769,13 +808,13 @@ public class FieldAttackController : MonoBehaviour
     }
 
     /// <summary>
-    /// 필드 공격 이동 잠금 설정
+    /// 공격 중 이동 입력 잠금 설정
     /// </summary>
     /// <param name="isLocked">잠금 여부</param>
     private void SetAttackMovementLocked(
         bool isLocked)
     {
-        if (_playerController == null ||
+        if (_moveAction == null ||
             _isMovementLocked == isLocked)
         {
             return;
@@ -783,29 +822,22 @@ public class FieldAttackController : MonoBehaviour
 
         if (isLocked)
         {
-            _playerControllerWasEnabled =
-                _playerController.enabled;
+            _moveActionWasEnabled =
+                _moveAction.enabled;
 
-            _playerController.SetInputEnabled(
-                false);
-
-            _playerController.enabled =
-                false;
+            _moveAction.Disable();
 
             _isMovementLocked = true;
 
             return;
         }
 
-        _playerController.enabled =
-            _playerControllerWasEnabled;
-
-        if (_playerController.enabled)
+        if (_moveActionWasEnabled)
         {
-            _playerController.SetInputEnabled(
-                true);
+            _moveAction.Enable();
         }
 
+        _moveActionWasEnabled = false;
         _isMovementLocked = false;
     }
 }

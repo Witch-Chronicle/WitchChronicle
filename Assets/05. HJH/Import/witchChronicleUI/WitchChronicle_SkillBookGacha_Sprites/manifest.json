@@ -1,0 +1,65 @@
+{
+  "package": "Witch Chronicle - Skill Book Gacha Sprite Pack",
+  "version": "1.0.0",
+  "logic": "Roll tier, then select uniformly from all skills in that tier. Already-owned result converts to gold.",
+  "folders": {
+    "Books": "3 generated animation poses",
+    "Effects": "Tintable reveal and magic FX",
+    "Particles": "UI particle textures",
+    "UI": "Panels, buttons, overlays"
+  },
+  "nineSlice": {
+    "result_panel_bg.png": [
+      18,
+      18,
+      18,
+      18
+    ],
+    "result_panel_frame.png": [
+      18,
+      18,
+      18,
+      18
+    ],
+    "duplicate_notice_bg.png": [
+      12,
+      12,
+      12,
+      12
+    ],
+    "duplicate_notice_frame.png": [
+      12,
+      12,
+      12,
+      12
+    ],
+    "btn_confirm_bg_*.png": [
+      18,
+      18,
+      18,
+      18
+    ],
+    "btn_confirm_frame_*.png": [
+      18,
+      18,
+      18,
+      18
+    ],
+    "skill_reveal_slot_*.png": [
+      20,
+      20,
+      20,
+      20
+    ]
+  },
+  "recommendedSequence": [
+    "dim",
+    "book_closed",
+    "book_half_open",
+    "book_open",
+    "magic circles + gather rays",
+    "white flash",
+    "final skill icon + tier-tinted burst",
+    "new skill result OR duplicate-to-gold result"
+  ]
+}

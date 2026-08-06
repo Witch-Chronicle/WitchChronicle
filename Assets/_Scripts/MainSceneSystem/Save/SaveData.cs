@@ -9,6 +9,8 @@ public class SaveData
 {
     public int Version = 1;
 
+    public List<WitchChronicle.IdleFarming.PlotSaveData> FarmPlots = new();
+
     // 플레이어 재화 데이터
     public int Gold;
 

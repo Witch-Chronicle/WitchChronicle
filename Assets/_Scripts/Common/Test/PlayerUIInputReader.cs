@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 ///
 /// - I: 통합 패널
 /// - C: 스탯 패널
+/// - K: 스킬 장착 패널
 /// - ESC: 열린 패널 닫기 / Pause 패널 열기
 /// - Tab: 퀘스트 리스트 토글
 ///
@@ -24,10 +25,17 @@ public sealed class PlayerUIInputReader : MonoBehaviour
     [SerializeField] private UIPanelAnimator _statPanelAnimator;
     [SerializeField] private StatUIController _statUIController;
 
+    [Header("Skill Equip Panel")]
+    [SerializeField]
+    private UIPanelAnimator _skillEquipPanelAnimator;
+
+    [Header("Skill Gacha Result Overlay")]
+    [SerializeField]
+    private SkillGachaResultOverlayController _skillGachaResultOverlayController;
+
     [Header("Pause Panel")]
     [SerializeField]
     private UIPanelAnimator _pausePanelAnimator;
-
     [SerializeField]
     private PauseController _pauseController;
 
@@ -82,6 +90,11 @@ public sealed class PlayerUIInputReader : MonoBehaviour
             ToggleStatPanel();
         }
 
+        if (Keyboard.current.kKey.wasPressedThisFrame)
+        {
+            ToggleSkillEquipPanel();
+        }
+
         if (Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             HandleEscape();
@@ -124,6 +137,7 @@ public sealed class PlayerUIInputReader : MonoBehaviour
          */
         _integrationPanelAnimator?.SetClosedImmediate();
         _statPanelAnimator?.SetClosedImmediate();
+        _skillEquipPanelAnimator?.SetClosedImmediate();
         _pausePanelAnimator?.SetClosedImmediate();
     }
 
@@ -139,6 +153,12 @@ public sealed class PlayerUIInputReader : MonoBehaviour
         {
             _statPanelAnimator.OnClosed +=
                 HandleStatPanelClosed;
+        }
+
+        if (_skillEquipPanelAnimator != null)
+        {
+            _skillEquipPanelAnimator.OnClosed +=
+                HandleSkillEquipPanelClosed;
         }
 
         if (_pausePanelAnimator != null)
@@ -162,6 +182,12 @@ public sealed class PlayerUIInputReader : MonoBehaviour
                 HandleStatPanelClosed;
         }
 
+        if (_skillEquipPanelAnimator != null)
+        {
+            _skillEquipPanelAnimator.OnClosed -=
+                HandleSkillEquipPanelClosed;
+        }
+
         if (_pausePanelAnimator != null)
         {
             _pausePanelAnimator.OnClosed -=
@@ -177,12 +203,13 @@ public sealed class PlayerUIInputReader : MonoBehaviour
     /// ESC 입력 처리.
     ///
     /// 우선순위:
-    /// 1. ShopNPC/EnhanceNPC 등 자체 UIPanelAnimator로 열리는 외부 UI 닫기
+    /// 1. ShopNPC/EnhanceNPC/PortalNPC 등 자체 UIPanelAnimator로 열리는 외부 UI 닫기
     /// 2. IntegrationPanel 닫기
-    /// 3. StatPanel 닫기 (Detail이 열려있으면 Detail만 먼저 닫음)
-    /// 4. PausePanel의 설정 화면에서 Pause 화면으로 복귀
-    /// 5. PausePanel 닫기
-    /// 6. 열린 패널이 없으면 PausePanel 열기
+    /// 3. SkillEquipPanel 닫기
+    /// 4. StatPanel 닫기 (Detail이 열려있으면 Detail만 먼저 닫음)
+    /// 5. PausePanel의 설정 화면에서 Pause 화면으로 복귀
+    /// 6. PausePanel 닫기
+    /// 7. 열린 패널이 없으면 PausePanel 열기
     /// </summary>
     private void HandleEscape()
     {
@@ -199,13 +226,25 @@ public sealed class PlayerUIInputReader : MonoBehaviour
             return;
         }
 
+        // 가챠 결과 연출 중에도 동일하게 처리.
+        // 연출 중(IsResultPresented == false)이면 Esc 완전 무시,
+        // 결과가 다 표시된 뒤라면 Overlay만 닫는다.
+        if (_skillGachaResultOverlayController != null &&
+            _skillGachaResultOverlayController.IsOpen)
+        {
+            if (_skillGachaResultOverlayController.IsResultPresented)
+            {
+                _skillGachaResultOverlayController.Close();
+            }
+            return;
+        }
+
         if (ShopNPC.Instance != null && ShopNPC.Instance.IsOpen)
         {
             ShopNPC.Instance.ToggleShop();
             return;
         }
 
-        // 추가
         if (PortalNPC.Instance != null && PortalNPC.Instance.IsOpen)
         {
             PortalNPC.Instance.TogglePortal();
@@ -221,6 +260,12 @@ public sealed class PlayerUIInputReader : MonoBehaviour
         if (_integrationPanelAnimator != null && _integrationPanelAnimator.IsOpen)
         {
             CloseIntegrationPanel();
+            return;
+        }
+
+        if (_skillEquipPanelAnimator != null && _skillEquipPanelAnimator.IsOpen)
+        {
+            CloseSkillEquipPanel();
             return;
         }
 
@@ -252,7 +297,7 @@ public sealed class PlayerUIInputReader : MonoBehaviour
     }
 
     /// <summary>
-    /// Integration, Stat, Pause 패널 중 하나라도 열려 있는지 확인합니다.
+    /// Integration, Stat, SkillEquip, Pause 패널 중 하나라도 열려 있는지 확인합니다.
     /// </summary>
     private bool IsAnyPanelOpen()
     {
@@ -264,11 +309,15 @@ public sealed class PlayerUIInputReader : MonoBehaviour
             _statPanelAnimator != null &&
             _statPanelAnimator.IsOpen;
 
+        bool skillEquipOpen =
+            _skillEquipPanelAnimator != null &&
+            _skillEquipPanelAnimator.IsOpen;
+
         bool pauseOpen =
             _pausePanelAnimator != null &&
             _pausePanelAnimator.IsOpen;
 
-        return integrationOpen || statOpen || pauseOpen;
+        return integrationOpen || statOpen || skillEquipOpen || pauseOpen;
     }
 
     #endregion
@@ -283,7 +332,6 @@ public sealed class PlayerUIInputReader : MonoBehaviour
                 "[PlayerUIInputReader] IntegrationPanelAnimator가 연결되지 않았습니다.",
                 this
             );
-
             return;
         }
 
@@ -313,7 +361,6 @@ public sealed class PlayerUIInputReader : MonoBehaviour
          * 패널 자체가 Blur 이미지에 포함되지 않습니다.
          */
         ShowBackgroundBlur();
-
         _integrationPanelAnimator.Open();
         CursorLocker.Instance?.EnterUIMode();
     }
@@ -352,7 +399,6 @@ public sealed class PlayerUIInputReader : MonoBehaviour
                 "[PlayerUIInputReader] StatPanelAnimator가 연결되지 않았습니다.",
                 this
             );
-
             return;
         }
 
@@ -378,7 +424,6 @@ public sealed class PlayerUIInputReader : MonoBehaviour
         }
 
         ShowBackgroundBlur();
-
         _statPanelAnimator.Open();
         CursorLocker.Instance?.EnterUIMode();
     }
@@ -401,6 +446,63 @@ public sealed class PlayerUIInputReader : MonoBehaviour
 
     #endregion
 
+    #region Skill Equip Panel
+
+    public void ToggleSkillEquipPanel()
+    {
+        if (_skillEquipPanelAnimator == null)
+        {
+            Debug.LogWarning(
+                "[PlayerUIInputReader] SkillEquipPanelAnimator가 연결되지 않았습니다.",
+                this
+            );
+            return;
+        }
+
+        if (_skillEquipPanelAnimator.IsOpen)
+        {
+            CloseSkillEquipPanel();
+            return;
+        }
+
+        if (IsAnyPanelOpen())
+        {
+            return;
+        }
+
+        OpenSkillEquipPanel();
+    }
+
+    private void OpenSkillEquipPanel()
+    {
+        if (_skillEquipPanelAnimator == null)
+        {
+            return;
+        }
+
+        ShowBackgroundBlur();
+        _skillEquipPanelAnimator.Open();
+        CursorLocker.Instance?.EnterUIMode();
+    }
+
+    private void CloseSkillEquipPanel()
+    {
+        if (_skillEquipPanelAnimator == null)
+        {
+            return;
+        }
+
+        _skillEquipPanelAnimator.Close();
+        CursorLocker.Instance?.ExitUIMode();
+    }
+
+    private void HandleSkillEquipPanelClosed()
+    {
+        HideBackgroundBlur();
+    }
+
+    #endregion
+
     #region Pause Panel
 
     /// <summary>
@@ -414,7 +516,6 @@ public sealed class PlayerUIInputReader : MonoBehaviour
                 "[PlayerUIInputReader] PausePanelAnimator가 연결되지 않았습니다.",
                 this
             );
-
             return;
         }
 
@@ -440,7 +541,6 @@ public sealed class PlayerUIInputReader : MonoBehaviour
                 "[PlayerUIInputReader] PausePanelAnimator가 연결되지 않았습니다.",
                 this
             );
-
             return;
         }
 
@@ -450,10 +550,8 @@ public sealed class PlayerUIInputReader : MonoBehaviour
          * 동작할 수 있지만, 캡처 순서를 일관되게 유지하는 편이 안전합니다.
          */
         ShowBackgroundBlur();
-
         _pausePanelAnimator.Open();
         CursorLocker.Instance?.EnterUIMode();
-
         Time.timeScale = 0f;
     }
 
@@ -494,7 +592,6 @@ public sealed class PlayerUIInputReader : MonoBehaviour
                 "[PlayerUIInputReader] QuestListUI.Instance가 없습니다.",
                 this
             );
-
             return;
         }
 
@@ -517,7 +614,6 @@ public sealed class PlayerUIInputReader : MonoBehaviour
                 "[PlayerUIInputReader] UIBackgroundBlurManager.Instance가 없습니다.",
                 this
             );
-
             return;
         }
 
@@ -580,7 +676,6 @@ public sealed class PlayerUIInputReader : MonoBehaviour
                 "[PlayerUIInputReader] SceneTransitionManager.Instance가 null입니다.",
                 this
             );
-
             return;
         }
 
@@ -589,9 +684,7 @@ public sealed class PlayerUIInputReader : MonoBehaviour
          * OnClosed 이벤트가 호출되지 않을 수 있으므로 강제로 정리합니다.
          */
         UIBackgroundBlurManager.Instance?.ForceHide();
-
         Time.timeScale = 1f;
-
         SceneTransitionManager.Instance.LoadScene(sceneId);
     }
 

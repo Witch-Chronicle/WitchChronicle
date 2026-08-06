@@ -43,4 +43,17 @@ public static class SkillTextFormatter
             default: return string.Empty;
         }
     }
+
+    public static string GetTargetTypeText(TargetType type)
+    {
+        switch (type)
+        {
+            case TargetType.SingleEnemy: return "적 단일";
+            case TargetType.AllEnemies: return "적 전체";
+            case TargetType.SingleAlly: return "아군 단일";
+            case TargetType.AllAllies: return "아군 전체";
+            case TargetType.Self: return "자신";
+            default: return string.Empty;
+        }
+    }
 }
