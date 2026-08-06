@@ -389,6 +389,7 @@ GameObject:
   - component: {fileID: 4302065095148807347}
   - component: {fileID: 1282334984857676612}
   - component: {fileID: 6731138976939314514}
+  - component: {fileID: 2418184242802061401}
   - component: {fileID: 3244250633305005808}
   m_Layer: 0
   m_Name: EnemyWorldSpaceCanvas
@@ -469,7 +470,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!114 &6731138976939314514
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -487,6 +488,18 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!225 &2418184242802061401
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4272062399518411916}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!114 &3244250633305005808
 MonoBehaviour:
   m_ObjectHideFlags: 0
