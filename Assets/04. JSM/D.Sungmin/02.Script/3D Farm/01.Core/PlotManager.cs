@@ -21,9 +21,30 @@ namespace WitchChronicle.IdleFarming
         [SerializeField] private PlotFloatingUI _floatingUIPrefab;
         [SerializeField] private RectTransform _hudCanvasRoot;
 
+        [Header("팝업 중 잠글 설정")]
+        [Tooltip("플레이어 태그 (Player Controller가 붙은 오브젝트)")]
+        [SerializeField] private string _playerTag = "Player";
+        [Tooltip("잠글 스크립트 이름 목록 (Ariel에 붙은 컴포넌트 이름들)")]
+        [SerializeField] private List<string> _lockScriptNames = new List<string>
+        {
+            "PlayerController",
+            "FieldTargetingController",
+            "FieldAttackController"
+        };
+        [Tooltip("CharacterController도 잠글지")]
+        [SerializeField] private bool _lockCharacterController = true;
+        [Tooltip("Animator Speed 파라미터명 (없거나 다르면 조정)")]
+        [SerializeField] private string _animatorSpeedParam = "Speed";
+
         private readonly List<PlotSlot> _slots = new List<PlotSlot>();
         private readonly List<PlotFloatingUI> _floatingUIs = new List<PlotFloatingUI>();
         private int _openPanelCount = 0;
+
+        // 런타임에 찾은 플레이어 참조 (캐싱)
+        private GameObject _cachedPlayer;
+        private List<Behaviour> _cachedLockComponents = new List<Behaviour>();
+        private CharacterController _cachedCharacterController;
+        private Animator _cachedAnimator;
 
         public PlotConfig Config => _config;
         public int AllSeedsCount => _allSeeds.Count;
@@ -138,9 +159,6 @@ namespace WitchChronicle.IdleFarming
 
         // ====== 플레이어 존 진입/이탈 ======
 
-        /// <summary>
-        /// [사용 안 함, 남겨둠] 팜 존 전체의 FloatingUI 일괄 표시/숨김
-        /// </summary>
         public void SetAllFloatingUIsPlayerNear(bool near)
         {
             for (int i = 0; i < _floatingUIs.Count; i++)
@@ -150,9 +168,6 @@ namespace WitchChronicle.IdleFarming
             }
         }
 
-        /// <summary>
-        /// 특정 PlotSlot에 해당하는 FloatingUI만 표시/숨김
-        /// </summary>
         public void SetFloatingUINearBySlot(PlotSlot slot, bool near)
         {
             if (slot == null) return;
@@ -164,9 +179,6 @@ namespace WitchChronicle.IdleFarming
                 _floatingUIs[index].SetPlayerNear(near);
         }
 
-        /// <summary>
-        /// 특정 PlotIndex에 해당하는 FloatingUI만 표시/숨김
-        /// </summary>
         public void SetFloatingUINearByIndex(int plotIndex, bool near)
         {
             for (int i = 0; i < _slots.Count; i++)
@@ -180,15 +192,15 @@ namespace WitchChronicle.IdleFarming
             }
         }
 
-        // ====== 커서 제어 ======
+        // ====== 팝업 열림/닫힘: 커서 + 입력 잠금 ======
 
         public void NotifyPanelOpened()
         {
             _openPanelCount++;
             if (_openPanelCount == 1)
             {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
+                EnsurePlayerCached();
+                LockGameplayInput(true);
             }
         }
 
@@ -197,9 +209,87 @@ namespace WitchChronicle.IdleFarming
             _openPanelCount = Mathf.Max(0, _openPanelCount - 1);
             if (_openPanelCount == 0)
             {
+                LockGameplayInput(false);
+            }
+        }
+
+        /// <summary>
+        /// 플레이어가 런타임에 생성되므로 팝업 열릴 때마다 캐시 유효성 확인 후 없으면 다시 찾음
+        /// </summary>
+        private void EnsurePlayerCached()
+        {
+            if (_cachedPlayer != null && _cachedLockComponents.Count > 0) return;
+
+            _cachedPlayer = GameObject.FindGameObjectWithTag(_playerTag);
+            if (_cachedPlayer == null)
+            {
+                Debug.LogWarning($"[PlotManager] '{_playerTag}' 태그를 가진 플레이어를 찾을 수 없음");
+                return;
+            }
+
+            _cachedLockComponents.Clear();
+
+            // 스크립트 이름으로 컴포넌트 찾기
+            var allComponents = _cachedPlayer.GetComponents<Behaviour>();
+            foreach (var comp in allComponents)
+            {
+                if (comp == null) continue;
+                string compName = comp.GetType().Name;
+                if (_lockScriptNames.Contains(compName))
+                {
+                    _cachedLockComponents.Add(comp);
+                    Debug.Log($"[PlotManager] 잠금 대상 등록: {compName}");
+                }
+            }
+
+            // CharacterController
+            if (_lockCharacterController)
+                _cachedCharacterController = _cachedPlayer.GetComponent<CharacterController>();
+
+            // Animator (자식 오브젝트에 있을 수도 있음)
+            _cachedAnimator = _cachedPlayer.GetComponentInChildren<Animator>();
+        }
+
+        private void LockGameplayInput(bool locked)
+        {
+            // 커서 처리
+            if (locked)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
+
+            // 플레이어 스크립트들 잠금
+            foreach (var comp in _cachedLockComponents)
+            {
+                if (comp != null)
+                    comp.enabled = !locked;
+            }
+
+            // CharacterController 잠금
+            if (_cachedCharacterController != null)
+                _cachedCharacterController.enabled = !locked;
+
+            // 팝업 열릴 때 이동 애니메이션 리셋
+            if (locked && _cachedAnimator != null && !string.IsNullOrEmpty(_animatorSpeedParam))
+            {
+                if (HasParameter(_cachedAnimator, _animatorSpeedParam))
+                    _cachedAnimator.SetFloat(_animatorSpeedParam, 0f);
+            }
+        }
+
+        private bool HasParameter(Animator animator, string paramName)
+        {
+            foreach (var param in animator.parameters)
+            {
+                if (param.name == paramName) return true;
+            }
+            return false;
         }
 
         // ====== 주기적 갱신 ======
