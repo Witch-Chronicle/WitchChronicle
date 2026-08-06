@@ -49,8 +49,8 @@ public class DungeonButton : MonoBehaviour
             _button.onClick.AddListener(HandleClick);
         }
 
-        // 초기 상태는 선택 해제 상태로 통일
-        SetSelected(false, false);
+        // // 초기 상태는 선택 해제 상태로 통일
+        // SetSelected(false, false);
     }
 
     private void OnDestroy()

@@ -157,4 +157,93 @@ public static class SkillEquipService
     {
         return character != null ? character.PlayerSkillLoadout : null;
     }
+
+    /// <summary>이 스킬을 장착 중인 파티원과 슬롯 인덱스를 찾는다. 없으면 false.</summary>
+    public static bool TryFindEquippedOwner(
+        List<PersistentCharacterUnit> party,
+        SkillData skill,
+        out PersistentCharacterUnit owner,
+        out int slotIndex)
+    {
+        owner = null;
+        slotIndex = -1;
+
+        if (party == null || skill == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < party.Count; i++)
+        {
+            PlayerSkillLoadout loadout = GetLoadout(party[i]);
+
+            if (loadout == null)
+            {
+                continue;
+            }
+
+            IReadOnlyList<SkillData> equipped = loadout.EquippedSkills;
+
+            for (int j = 0; j < equipped.Count; j++)
+            {
+                if (equipped[j] == skill)
+                {
+                    owner = party[i];
+                    slotIndex = j;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>해당 캐릭터의 비어있는 첫 슬롯 인덱스. 없으면 -1.</summary>
+    public static int GetFirstEmptySlot(PersistentCharacterUnit character)
+    {
+        PlayerSkillLoadout loadout = GetLoadout(character);
+
+        if (loadout == null)
+        {
+            return -1;
+        }
+
+        int slotCount = loadout.GetMaxSkillSlotCount();
+        IReadOnlyList<SkillData> equipped = loadout.EquippedSkills;
+
+        for (int i = 0; i < slotCount; i++)
+        {
+            SkillData skill = i < equipped.Count ? equipped[i] : null;
+
+            if (skill == null)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /// <summary>
+    /// 다른 캐릭터가 이미 장착 중이면 그쪽을 먼저 해제한 뒤 target의 slotIndex에 장착한다.
+    /// (같은 스킬을 여러 캐릭터가 동시에 들 수 없도록 자동 이전)
+    /// </summary>
+    public static bool EquipWithTransfer(
+        List<PersistentCharacterUnit> party,
+        PersistentCharacterUnit target,
+        int slotIndex,
+        SkillData skill)
+    {
+        if (TryFindEquippedOwner(party, skill, out PersistentCharacterUnit owner, out int ownerSlot))
+        {
+            if (owner == target && ownerSlot == slotIndex)
+            {
+                return true; // 이미 그 자리에 있음
+            }
+
+            UnequipAt(owner, ownerSlot);
+        }
+
+        return EquipAt(target, slotIndex, skill);
+    }
 }

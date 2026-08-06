@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
+  m_Name: 01.CureFlame_skill
+  m_EditorClassIdentifier: Assembly-CSharp::SkillData
+  _skillId: skill_cure_001
+  _skillName: "\uD050\uC5B4 \uD50C\uB808\uC784"
+  _description: "\uD654\uC5FC\uC758 \uC794\uC7AC\uB97C \uC53B\uC5B4\uB0B4\uB824 \uB300\uC0C1\uC758
+    \uD654\uC0C1\uC744 \uC9C4\uD654\uD55C\uB2E4."
+  _tier: 3
+  _mpCost: 0
+  _elementType: 0
+  _skillType: 7
+  _damageType: 1
+  _power: 0
+  _targetType: 2
+  _statusEffectType: 6
+  _statusChance: 0
+  _cureStatusEffectType: 0
+  _buffData: {fileID: 0}
+  _presentationType: 2
+  _skillIcon: {fileID: 21300000, guid: a9a3448f8d9e99741ad17c12d4f7993a, type: 3}
+  _voiceClip: {fileID: 0}
+  _impactDelay: 0
+  _castSfx: {fileID: 8300000, guid: 5b6f4ed21e48cf143ba464c1fe220ffa, type: 3}
+  _hitSfx: {fileID: 8300000, guid: 31aeeb90bed81d140866f8674081cb27, type: 3}
+  _castVfxPrefab: {fileID: 4124775738041080689, guid: 2e8727a2bedb0d644837e708157a9328, type: 3}
+  _projectileVfxPrefab: {fileID: 0}
+  _hitVfxPrefab: {fileID: 3083726464446560820, guid: da6a811c29e698e4d854e1477664e8e6, type: 3}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
+  _hitVfxOffset: {x: 0, y: 0, z: 0}
+  _castVfxScale: 0
+  _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
+  _constellationPathSequenceData: {fileID: 0}
+  _drawGuideJson: {fileID: 0}
+  _drawExampleSprite: {fileID: 0}

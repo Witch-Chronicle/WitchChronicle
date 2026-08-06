@@ -31,4 +31,17 @@ public class FieldAttackAnimationEventRelay : MonoBehaviour
 
         _attackController.NotifyAttackImpact();
     }
+
+    /// <summary>
+    /// 공격 애니메이션 종료 전달
+    /// </summary>
+    public void OnFieldAttackFinished()
+    {
+        if (_attackController == null)
+        {
+            return;
+        }
+
+        _attackController.NotifyAttackFinished();
+    }
 }

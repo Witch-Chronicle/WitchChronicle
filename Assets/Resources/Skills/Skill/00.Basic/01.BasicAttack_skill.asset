@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
+  m_Name: 01.BasicAttack_skill
+  m_EditorClassIdentifier: Assembly-CSharp::SkillData
+  _skillId: skill_basic_001
+  _skillName: "\uAE30\uBCF8 \uACF5\uACA9"
+  _description: "\uBB34\uAE30\uB97C \uC0AC\uC6A9\uD55C \uAE30\uBCF8\uC801\uC778 \uBB3C\uB9AC
+    \uACF5\uACA9."
+  _tier: 0
+  _mpCost: 0
+  _elementType: 0
+  _skillType: 0
+  _damageType: 0
+  _power: 5
+  _targetType: 0
+  _statusEffectType: 0
+  _statusChance: 0
+  _cureStatusEffectType: 0
+  _buffData: {fileID: 0}
+  _presentationType: 0
+  _skillIcon: {fileID: 0}
+  _voiceClip: {fileID: 0}
+  _impactDelay: 0
+  _castSfx: {fileID: 8300000, guid: 30b32009639b62340a74cd67ac8aa4d5, type: 3}
+  _hitSfx: {fileID: 8300000, guid: 23a0eb44a17bf51438213c6ef60d9fea, type: 3}
+  _castVfxPrefab: {fileID: 3707245041207063528, guid: 3ee28394dc5f16a4196d3fafcbd55b61, type: 3}
+  _projectileVfxPrefab: {fileID: 6729598477372940667, guid: e89a143ebe8f2974da32809ffdb70f67, type: 3}
+  _hitVfxPrefab: {fileID: 3017430761128806937, guid: e2c7173ca6c84bf46a15fff274005dee, type: 3}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
+  _hitVfxOffset: {x: 0, y: 0, z: 0}
+  _castVfxScale: 0.3
+  _hitVfxScale: 0.3
+  _projectileTravelTime: 0.4
+  _projectileLaunchDelay: 0.2
+  _constellationPathSequenceData: {fileID: 0}
+  _drawGuideJson: {fileID: 0}
+  _drawExampleSprite: {fileID: 0}

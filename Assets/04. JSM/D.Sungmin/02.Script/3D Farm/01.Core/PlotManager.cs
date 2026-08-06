@@ -66,7 +66,6 @@ namespace WitchChronicle.IdleFarming
         private void Start()
         {
             AutoRegisterPlots();
-            InitializeFresh();
         }
 
         // ====== 슬롯 등록 ======
@@ -298,6 +297,54 @@ namespace WitchChronicle.IdleFarming
         {
             foreach (var slot in _slots)
                 slot.UpdateCycle();
+        }
+
+        public List<PlotSaveData> GetFarmSaveData()
+        {
+            List<PlotSaveData> saveDataList = new List<PlotSaveData>();
+            foreach (var slot in _slots)
+            {
+                if (slot != null)
+                    saveDataList.Add(slot.ToSaveData());
+            }
+            return saveDataList;
+        }
+
+        public void LoadFarmSaveData(List<PlotSaveData> savedPlots)
+        {
+            // 저장된 데이터가 없으면 신규 시작 (기본 밭 해제)
+            if (savedPlots == null || savedPlots.Count == 0)
+            {
+                InitializeFresh();
+                return;
+            }
+
+            Dictionary<int, PlotSaveData> dataMap = new Dictionary<int, PlotSaveData>();
+            foreach (var p in savedPlots)
+            {
+                if (p != null) dataMap[p.plotIndex] = p;
+            }
+
+            foreach (var slot in _slots)
+            {
+                if (slot == null) continue;
+
+                if (dataMap.TryGetValue(slot.PlotIndex, out var saveData))
+                {
+                    SeedData seed = FindSeedByName(saveData.plantedSeedItemId);
+                    // 💡 Initialize() 안에서 UpdateCycle()이 불려 오프라인 지난 시간만큼 작물이 자랍니다!
+                    slot.Initialize(saveData, seed);
+                }
+                else
+                {
+                    var fresh = new PlotSaveData(slot.PlotIndex);
+                    fresh.state = slot.PlotIndex < _config.initialUnlockedCount ? PlotState.Empty : PlotState.Locked;
+                    fresh.SetCycleStartTime(System.DateTime.Now);
+                    slot.Initialize(fresh, null);
+                }
+            }
+
+            Debug.Log($"[PlotManager] 농사 데이터 및 오프라인 시간 복원 완료 (총 {_slots.Count}개 밭)");
         }
     }
 }
