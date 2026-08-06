@@ -104,6 +104,11 @@ public sealed class PlayerUIInputReader : MonoBehaviour
         {
             ToggleQuestList();
         }
+
+        if (Keyboard.current.tKey.wasPressedThisFrame)
+        {
+            ToggleMainHUD();
+        }
     }
 
     #region Initialization
@@ -704,4 +709,25 @@ public sealed class PlayerUIInputReader : MonoBehaviour
          */
         Time.timeScale = 1f;
     }
+
+    #region Main HUD
+
+    /// <summary>
+    /// MainHUDPanel 슬라이드 인/아웃 토글입니다.
+    /// </summary>
+    public void ToggleMainHUD()
+    {
+        if (MainHUDUIController.Instance == null)
+        {
+            Debug.LogWarning(
+                "[PlayerUIInputReader] MainHUDUIController.Instance가 없습니다.",
+                this
+            );
+            return;
+        }
+
+        MainHUDUIController.Instance.ToggleSlide();
+    }
+
+    #endregion
 }

@@ -27,6 +27,7 @@ public class ShopController : MonoBehaviour
         if (!PlayerInventory.Instance.TrySpendGold(totalPrice))
         {
             Debug.Log($"[ShopController] 골드 부족 (필요: {totalPrice})");
+            AlertManager.Instance?.Enqueue(AlertType.NotEnoughGold);
             return false;
         }
 
@@ -42,6 +43,7 @@ public class ShopController : MonoBehaviour
         PlayerInventory.Instance.RaiseInventoryChanged();
 
         Debug.Log($"[ShopController] 구매 완료: {itemData.itemName} x{amount}");
+        AlertManager.Instance?.Enqueue(AlertType.BuyItems, itemData.itemName, amount);
         return true;
     }
 }

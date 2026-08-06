@@ -21,7 +21,7 @@ public class DungeonMonster : MonoBehaviour
     private NavMeshAgent _agent;
     private Transform _targetPlayer;
     private Coroutine _chaseCoroutine;
-    
+
     private float _detectionDistanceSqr;
     private float _combatDistanceSqr;
 
@@ -39,11 +39,11 @@ public class DungeonMonster : MonoBehaviour
     private void Awake()
     {
         _agent = GetComponent<NavMeshAgent>();
-        
+
         // 연산 최적화를 위한 제곱근 캐싱
         _detectionDistanceSqr = _detectionDistance * _detectionDistance;
         _combatDistanceSqr = _combatDistance * _combatDistance;
-        
+
         _agent.stoppingDistance = _combatDistance;
     }
 
@@ -65,7 +65,7 @@ public class DungeonMonster : MonoBehaviour
     private void Update()
     {
         // 런타임 중 플레이어 참조가 끊길 경우 재검색
-        if (_targetPlayer == null) 
+        if (_targetPlayer == null)
         {
             FindPlayer();
             if (_targetPlayer == null) return;
@@ -81,7 +81,7 @@ public class DungeonMonster : MonoBehaviour
                 // 감지 거리 안으로 들어오면 추적 개시
                 if (distanceSqr <= _detectionDistanceSqr)
                 {
-                    if(IsPlayerInsideRoom())
+                    if (IsPlayerInsideRoom())
                     {
                         SetState(AIState.Chasing);
                     }
@@ -94,12 +94,12 @@ public class DungeonMonster : MonoBehaviour
                     SetState(AIState.Idle);
                     break;
                 }
-                if(distanceSqr <= _combatDistanceSqr)
+                if (distanceSqr <= _combatDistanceSqr)
                 {
                     SetState(AIState.Combat);
                 }
                 break;
-                
+
             case AIState.Combat:
                 break;
         }
@@ -149,7 +149,7 @@ public class DungeonMonster : MonoBehaviour
             case AIState.Chasing:
                 if (_agent.isActiveAndEnabled)
                 {
-                    if(_noticePaticle != null)
+                    if (_noticePaticle != null)
                     {
                         _noticePaticle.Play();
                     }
@@ -166,9 +166,9 @@ public class DungeonMonster : MonoBehaviour
                     ResetAgentPath();
                 }
                 _monsterAnimation.SetIsMoving(false);
-                ShowMessageManager.Instance.ShowMessage("전투 개시");
+                // ShowMessageManager.Instance.ShowMessage("전투 개시");
                 Debug.Log("1. 몬스터가 전투 이벤트를 호출함");
-                OnCombatStarted?.Invoke(); 
+                OnCombatStarted?.Invoke();
                 break;
         }
     }

@@ -12,6 +12,8 @@ public class NPCData : ScriptableObject
     [TextArea(3, 5)]
     [SerializeField] private string _description;
 
+    [SerializeField] private string _prompt;
+
     [Header("Visual Assets")]
     [SerializeField] private Sprite _portrait;
     [SerializeField] private GameObject _prefab;
@@ -35,6 +37,7 @@ public class NPCData : ScriptableObject
     public string NpcId => _npcId;
     public string NpcName => _npcName;
     public string Description => _description;
+    public string Prompt => _prompt;
 
     // Visual Assets Properties
     public Sprite Portrait => _portrait;

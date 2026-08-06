@@ -233,7 +233,7 @@ public class QuestManager : MonoBehaviour
         {
             PersistentCharacterManager.Instance.AddExpToActiveParty(reward.exp);
             rewardMessages.Add($"경험치 +{reward.exp}");
-
+            AlertManager.Instance?.Enqueue(AlertType.ExpAcquired, reward.exp);
             Debug.Log($"Reward Exp : {reward.exp}");
         }
 
@@ -242,6 +242,7 @@ public class QuestManager : MonoBehaviour
         {
             rewardMessages.Add($"아이템 {reward.item.name} x {reward.itemCount}");
             PlayerInventory.Instance.AddItem(reward.item, reward.itemCount);
+            AlertManager.Instance?.Enqueue(AlertType.ItemAcquired, reward.item.itemName, reward.itemCount);
             Debug.Log($"Reward Item : {reward.item.name} x {reward.itemCount}");
         }
 
@@ -269,7 +270,7 @@ public class QuestManager : MonoBehaviour
 
             Debug.Log($"Reward Recruit : {reward.recruitNPC}");
         }
-        
+
         if (reward.nextStory)
         {
             QuestChainManager.Instance.NextQuest();
@@ -280,7 +281,7 @@ public class QuestManager : MonoBehaviour
         {
             string message = string.Join("\n", rewardMessages);
 
-            ShowMessageManager.Instance.ShowMessage(message);
+            // ShowMessageManager.Instance.ShowMessage(message);
         }
 
         if (QuestListUI.Instance != null)
@@ -291,7 +292,7 @@ public class QuestManager : MonoBehaviour
     public List<QuestData> GetAvailableQuests()
     {
         // 데이터베이스의 모든 퀘스트 반환
-        return _database.GetAllQuest(); 
+        return _database.GetAllQuest();
     }
 
 }
