@@ -13,4 +13,12 @@ public enum AlertType
     NotEnoughMaterial,
 
     BuyItems,
+
+    ReturnToMain,
+    ApplyRewardEvent,
+    ApplyTrapEvent,
+    ApplyDebuffEvent,
+
+    ExpAcquired,
+
 }

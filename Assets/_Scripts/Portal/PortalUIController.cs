@@ -352,11 +352,6 @@ public class PortalUIController : MonoBehaviour
         {
             string lockedReason = GetLockedReasonText(_selectedDungeon);
 
-            if (ShowMessageManager.Instance != null)
-            {
-                ShowMessageManager.Instance.ShowMessage(lockedReason);
-            }
-
             Debug.Log(
                 $"[PortalUIController] 입장 불가: {lockedReason}",
                 this
@@ -377,12 +372,7 @@ public class PortalUIController : MonoBehaviour
 
         DungeonSelection.CurrentDungeonData = _selectedDungeon;
 
-        if (ShowMessageManager.Instance != null)
-        {
-            ShowMessageManager.Instance.ShowMessage(
-                $"{_selectedDungeon.DungeonName}에 입장합니다."
-            );
-        }
+
 
         Debug.Log(
             $"[PortalUIController] {_selectedDungeon.DungeonName} 입장",

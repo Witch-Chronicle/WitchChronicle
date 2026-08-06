@@ -163,6 +163,7 @@ public sealed class UIBackgroundBlurManager : MonoBehaviour
          * QuestListUI에 이미 존재하는 Close()를 사용합니다.
          */
         HideQuestList();
+        HideMainHUD();
 
         CaptureAndBlur(sourceCamera);
         SetBlurVisible(true);
@@ -191,6 +192,7 @@ public sealed class UIBackgroundBlurManager : MonoBehaviour
 
         SetBlurVisible(false);
         ShowQuestList();
+        ShowMainHUD();
     }
 
     /// <summary>
@@ -371,7 +373,7 @@ public sealed class UIBackgroundBlurManager : MonoBehaviour
             QuestListUI.Instance.Close();
         }
 
-        ShowMessageManager.Instance?.BlockByUI();
+        // ShowMessageManager.Instance?.BlockByUI();
     }
 
     private void ShowQuestList()
@@ -381,7 +383,27 @@ public sealed class UIBackgroundBlurManager : MonoBehaviour
             QuestListUI.Instance.Open();
         }
 
-        ShowMessageManager.Instance?.UnblockByUI();
+        // ShowMessageManager.Instance?.UnblockByUI();
+    }
+
+    private void HideMainHUD()
+    {
+        if (MainHUDUIController.Instance != null)
+        {
+            MainHUDUIController.Instance.Close();
+        }
+
+        // ShowMessageManager.Instance?.BlockByUI();
+    }
+
+    private void ShowMainHUD()
+    {
+        if (MainHUDUIController.Instance != null)
+        {
+            MainHUDUIController.Instance.Open();
+        }
+
+        // ShowMessageManager.Instance?.UnblockByUI();
     }
 
     /// <summary>

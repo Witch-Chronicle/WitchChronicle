@@ -91,12 +91,14 @@ public class ShopNPC : MonoBehaviour
 
                 _shopPanelAnimator.Open();
                 QuestListUI.Instance.Close();
+                MainHUDUIController.Instance.Close();
                 CursorLocker.Instance.EnterUIMode();
             }
             else
             {
                 _shopPanelAnimator.Close();
                 QuestListUI.Instance.Open();
+                MainHUDUIController.Instance.Open();
                 CursorLocker.Instance.ExitUIMode();
 
                 // Blur는 여기서 바로 안 끔 - Close 애니메이션이 끝난 뒤 HandleShopPanelClosed()에서 해제
