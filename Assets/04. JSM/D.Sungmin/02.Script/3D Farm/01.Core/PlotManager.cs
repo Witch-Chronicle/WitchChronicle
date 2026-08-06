@@ -66,6 +66,11 @@ namespace WitchChronicle.IdleFarming
         private void Start()
         {
             AutoRegisterPlots();
+
+            if (SaveManager.Instance != null && SaveManager.Instance.CurrentSaveData != null)
+            {
+                LoadFarmSaveData(SaveManager.Instance.CurrentSaveData.FarmPlots);
+            }
         }
 
         // ====== 슬롯 등록 ======
@@ -346,5 +351,6 @@ namespace WitchChronicle.IdleFarming
 
             Debug.Log($"[PlotManager] 농사 데이터 및 오프라인 시간 복원 완료 (총 {_slots.Count}개 밭)");
         }
+        
     }
 }
