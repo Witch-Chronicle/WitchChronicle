@@ -958,9 +958,11 @@ public class BattleCycleController : MonoBehaviour
     /// </summary>
     /// <param name="actionRequest">실행 행동 요청</param>
     /// <param name="targets">해결된 대상 목록</param>
+    /// <param name="showTargetView">대상 피격 구도 표시 여부</param>
     private IEnumerator PlayEnemyActionCamera(
         BattleActionRequest actionRequest,
-        IReadOnlyList<BattleUnit> targets = null)
+        IReadOnlyList<BattleUnit> targets = null,
+        bool showTargetView = true)
     {
         if (actionRequest == null ||
             actionRequest.Actor == null ||
@@ -1009,6 +1011,11 @@ public class BattleCycleController : MonoBehaviour
         }
 
         _battleActionBanner?.Hide();
+
+        if (showTargetView == false)
+        {
+            yield break;
+        }
 
         BattleUnit cameraTarget =
             actionRequest.Target;
@@ -1427,6 +1434,17 @@ public class BattleCycleController : MonoBehaviour
                     actionRequest,
                     targets);
 
+            yield break;
+        }
+
+        yield return PlayEnemyActionCamera(
+            actionRequest,
+            targets,
+            false);
+
+        if (_battleState ==
+            BattleState.BattleEnd)
+        {
             yield break;
         }
 
