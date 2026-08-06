@@ -22,6 +22,7 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private CinemachineCamera _skillDrawCamera;
     [SerializeField] private CinemachineCamera _singleTargetOverviewCamera;
     [SerializeField] private CinemachineCamera _groupTargetOverviewCamera;
+    [SerializeField] private CinemachineCamera _constellationDefenseCamera;
     [SerializeField] private CinemachineCamera _itemUseCamera;
 
     [Header("Priority")]
@@ -130,8 +131,17 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private float _groupAllyFocusHeight = 1.0f;
     [SerializeField] private float _groupAllyFov = 55f;
     [SerializeField] private float _groupAllyRoll = 0f;
-
     [SerializeField] private float _groupWaitDuration = 0.35f;
+
+    [Header("Constellation Defense View")]
+    [SerializeField] private float _constellationBackDistance = 6f;
+    [SerializeField] private float _constellationSideOffset = 0.4f;
+    [SerializeField] private float _constellationHeight = 2.2f;
+    [Range(0f, 1f)][SerializeField] private float _constellationEnemyFocusWeight = 0.62f;
+    [SerializeField] private float _constellationFocusHeight = 1.1f;
+    [SerializeField] private float _constellationFov = 62f;
+    [SerializeField] private float _constellationRoll = 0f;
+    [SerializeField] private float _constellationWaitDuration = 0.08f;
 
     [Header("Item Use View (아이템 사용)")]
     [SerializeField] private float _itemUseDistance = 4.0f;
@@ -1014,6 +1024,7 @@ public class BattleCameraDirector : MonoBehaviour
         SetCameraPriority(_skillDrawCamera, _inactivePriority);
         SetCameraPriority(_singleTargetOverviewCamera, _inactivePriority);
         SetCameraPriority(_groupTargetOverviewCamera, _inactivePriority);
+        SetCameraPriority(_constellationDefenseCamera, _inactivePriority);
         SetCameraPriority(_itemUseCamera, _inactivePriority);
 
         SetCameraPriority(targetCamera, _activePriority);
@@ -1334,6 +1345,118 @@ public class BattleCameraDirector : MonoBehaviour
     }
 
     /// <summary>
+    /// 별자리 방어 전장 구도 재생
+    /// </summary>
+    /// <param name="attacker">적 공격 유닛</param>
+    /// <param name="target">공격 대상 플레이어</param>
+    /// <param name="onComplete">완료 콜백</param>
+    public void PlayConstellationDefenseView(
+        BattleUnit attacker,
+        BattleUnit target,
+        Action onComplete = null)
+    {
+        if (_constellationDefenseCamera == null ||
+            TryGetActorTransform(
+                attacker,
+                out Transform attackerTransform) == false)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        Transform targetTransform = null;
+
+        if (TryGetActorTransform(
+                target,
+                out targetTransform) == false)
+        {
+            TryGetFirstTeamActorTransform(
+                BattleTeamType.Player,
+                out targetTransform);
+        }
+
+        Vector3 playerFallbackPosition =
+            targetTransform != null
+                ? targetTransform.position
+                : attackerTransform.position -
+                  attackerTransform.forward * 6f;
+
+        Vector3 playerCenter =
+            GetTeamCenter(
+                BattleTeamType.Player,
+                playerFallbackPosition);
+
+        Vector3 attackerPosition =
+            attackerTransform.position;
+
+        Vector3 viewForward =
+            attackerPosition -
+            playerCenter;
+
+        viewForward.y = 0f;
+
+        if (viewForward.sqrMagnitude <= 0.0001f &&
+            targetTransform != null)
+        {
+            viewForward =
+                targetTransform.forward;
+
+            viewForward.y = 0f;
+        }
+
+        if (viewForward.sqrMagnitude <= 0.0001f)
+        {
+            viewForward =
+                -attackerTransform.forward;
+
+            viewForward.y = 0f;
+        }
+
+        if (viewForward.sqrMagnitude <= 0.0001f)
+        {
+            viewForward =
+                Vector3.forward;
+        }
+
+        viewForward.Normalize();
+
+        Vector3 viewRight =
+            Vector3.Cross(
+                Vector3.up,
+                viewForward).normalized;
+
+        Vector3 cameraPosition =
+            playerCenter -
+            viewForward *
+            _constellationBackDistance +
+            viewRight *
+            _constellationSideOffset +
+            Vector3.up *
+            _constellationHeight;
+
+        Vector3 focusPosition =
+            Vector3.Lerp(
+                playerCenter,
+                attackerPosition,
+                Mathf.Clamp01(
+                    _constellationEnemyFocusWeight)) +
+            Vector3.up *
+            _constellationFocusHeight;
+
+        ApplyCameraPose(
+            _constellationDefenseCamera,
+            cameraPosition,
+            focusPosition,
+            _constellationFov,
+            _constellationRoll);
+
+        ActivateCamera(
+            _constellationDefenseCamera,
+            _constellationWaitDuration,
+            onComplete);
+    }
+
+    /// <summary>
     /// 별자리 공격 사전 카메라 연출
     /// 공격자 강조 후 전투 부감 구도 전환.
     /// - attacker가 아군이면: SkillLowAngle(근접 로우앵글) -> TargetOverview 순서로 연출.
@@ -1361,8 +1484,9 @@ public class BattleCameraDirector : MonoBehaviour
 
         if (attacker.TeamType == BattleTeamType.Enemy)
         {
-            PlayTargetOverview(
-                overviewUnit,
+            PlayConstellationDefenseView(
+                attacker,
+                target,
                 onComplete);
 
             return;
