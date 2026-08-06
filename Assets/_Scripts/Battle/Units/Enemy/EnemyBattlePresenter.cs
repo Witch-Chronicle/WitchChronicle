@@ -24,7 +24,7 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
     [SerializeField] private GameObject _hideTarget;
 
     [Range(0f, 1f)]
-    [SerializeField] private float _attackImpactNormalizedTime = 0.45f;
+    private float _attackImpactNormalizedTime = 0f;
 
     private Animator _animator;
     private MonsterAnimationController _animationController;

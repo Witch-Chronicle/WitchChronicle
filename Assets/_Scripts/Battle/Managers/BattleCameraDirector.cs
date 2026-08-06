@@ -15,6 +15,7 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private CinemachineBrain _cinemachineBrain;
 
     [Header("Cinemachine Cameras")]
+    [SerializeField] private CinemachineCamera _battleEntryCamera;
     [SerializeField] private CinemachineCamera _playerBackCamera;
     [SerializeField] private CinemachineCamera _targetOverviewCamera;
     [SerializeField] private CinemachineCamera _skillLowAngleCamera;
@@ -34,6 +35,33 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private float _backCutHoldDuration = 0.08f;
     [Tooltip("광역 대상 컷 이후 유지 시간")]
     [SerializeField] private float _groupCutHoldDuration = 0.1f;
+
+    [Header("Battle Entry View")]
+    [Tooltip("진입 연출 시작 시 플레이어 진영 뒤쪽 거리")]
+    [SerializeField] private float _entryStartBackDistance = 9f;
+    [Tooltip("진입 연출 종료 시 플레이어 진영 뒤쪽 거리")]
+    [SerializeField] private float _entryEndBackDistance = 6.5f;
+    [Tooltip("진입 연출 시작 카메라 높이")]
+    [SerializeField] private float _entryStartHeight = 3.4f;
+    [Tooltip("진입 연출 종료 카메라 높이")]
+    [SerializeField] private float _entryEndHeight = 2.5f;
+    [Tooltip("진입 카메라 좌우 오프셋")]
+    [SerializeField] private float _entrySideOffset = -0.6f;
+    [Tooltip("주시점에 적 진영이 반영되는 비율")]
+    [Range(0f, 1f)]
+    [SerializeField] private float _entryEnemyFocusWeight = 0.55f;
+    [Tooltip("진입 카메라 주시 높이")]
+    [SerializeField] private float _entryFocusHeight = 1.1f;
+    [Tooltip("진입 연출 시작 FOV")]
+    [SerializeField] private float _entryStartFov = 68f;
+    [Tooltip("진입 연출 종료 FOV")]
+    [SerializeField] private float _entryEndFov = 56f;
+    [Tooltip("진입 카메라 롤")]
+    [SerializeField] private float _entryRoll = 0f;
+    [Tooltip("진입 카메라 이동 시간")]
+    [SerializeField] private float _entryMoveDuration = 0.55f;
+    [Tooltip("Entry Camera 컷 후 이동 시작까지 대기 시간")]
+    [SerializeField] private float _entryMoveStartDelay = 0.08f;
 
     [Header("Player Back View")]
     [SerializeField] private float _backDistance = 4.5f;
@@ -117,6 +145,8 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private float _itemUseRoll = 0f;
     [SerializeField] private float _itemUseWaitDuration = 0.35f;
 
+    private Sequence _entrySequence;
+
     private Coroutine _waitRoutine;
     private CinemachineCamera _activeCamera;
     private bool _forceNextCut;
@@ -165,9 +195,11 @@ public class BattleCameraDirector : MonoBehaviour
     /// </summary>
     private void OnDisable()
     {
+        StopBattleEntryTween();
+        StopWaitRoutine();
+
         CinemachineCore.GetBlendOverride -= HandleBlendOverride;
 
-        StopWaitRoutine();
         ClearCutRequest();
 
         if (_battleUIContext == null)
@@ -204,6 +236,7 @@ public class BattleCameraDirector : MonoBehaviour
     /// <param name="winner">승리 팀</param>
     private void HandleBattleEnded(BattleTeamType winner)
     {
+        StopBattleEntryTween();
         StopWaitRoutine();
         ClearCutRequest();
     }
@@ -282,6 +315,192 @@ public class BattleCameraDirector : MonoBehaviour
             _playerBackCamera,
             _backCutHoldDuration,
             onComplete);
+    }
+
+    /// <summary>
+    /// 전투 시작 와이드 카메라 연출
+    /// </summary>
+    /// <param name="onComplete">완료 콜백</param>
+    public void PlayBattleEntryView(
+        Action onComplete = null)
+    {
+        if (_battleEntryCamera == null ||
+            TryGetFirstTeamActorTransform(
+                BattleTeamType.Player,
+                out Transform playerTransform) == false)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        StopBattleEntryTween();
+
+        Vector3 playerCenter =
+            GetTeamCenter(
+                BattleTeamType.Player,
+                playerTransform.position);
+
+        Vector3 enemyFallbackPosition =
+            playerCenter +
+            playerTransform.forward * 7f;
+
+        Vector3 enemyCenter =
+            GetTeamCenter(
+                BattleTeamType.Enemy,
+                enemyFallbackPosition);
+
+        Vector3 viewForward =
+            enemyCenter -
+            playerCenter;
+
+        viewForward.y = 0f;
+
+        if (viewForward.sqrMagnitude <= 0.0001f)
+        {
+            viewForward =
+                playerTransform.forward;
+
+            viewForward.y = 0f;
+        }
+
+        if (viewForward.sqrMagnitude <= 0.0001f)
+        {
+            viewForward =
+                Vector3.forward;
+        }
+
+        viewForward.Normalize();
+
+        Vector3 viewRight =
+            Vector3.Cross(
+                Vector3.up,
+                viewForward).normalized;
+
+        Vector3 focusPosition =
+            Vector3.Lerp(
+                playerCenter,
+                enemyCenter,
+                Mathf.Clamp01(
+                    _entryEnemyFocusWeight)) +
+            Vector3.up *
+            _entryFocusHeight;
+
+        Vector3 startPosition =
+            playerCenter -
+            viewForward *
+            _entryStartBackDistance +
+            viewRight *
+            _entrySideOffset +
+            Vector3.up *
+            _entryStartHeight;
+
+        Vector3 endPosition =
+            playerCenter -
+            viewForward *
+            _entryEndBackDistance +
+            viewRight *
+            _entrySideOffset +
+            Vector3.up *
+            _entryEndHeight;
+
+        ApplyCameraPose(
+            _battleEntryCamera,
+            startPosition,
+            focusPosition,
+            _entryStartFov,
+            _entryRoll);
+
+        ActivateCameraCut(
+            _battleEntryCamera,
+            0f,
+            null);
+
+        if (_entryMoveDuration <= 0f)
+        {
+            ApplyCameraPose(
+                _battleEntryCamera,
+                endPosition,
+                focusPosition,
+                _entryEndFov,
+                _entryRoll);
+
+            onComplete?.Invoke();
+            return;
+        }
+
+        Quaternion endRotation =
+            GetLookRotation(
+                endPosition,
+                focusPosition);
+
+        endRotation *=
+            Quaternion.Euler(
+                0f,
+                0f,
+                _entryRoll);
+
+        float currentFov =
+            _entryStartFov;
+
+        Transform cameraTransform =
+            _battleEntryCamera.transform;
+
+        _entrySequence =
+            DOTween.Sequence();
+
+        if (_entryMoveStartDelay > 0f)
+        {
+            _entrySequence.AppendInterval(
+                _entryMoveStartDelay);
+        }
+
+        _entrySequence.Append(
+            cameraTransform
+                .DOMove(
+                    endPosition,
+                    _entryMoveDuration)
+                .SetEase(
+                    Ease.InOutSine));
+
+        _entrySequence.Join(
+            cameraTransform
+                .DORotateQuaternion(
+                    endRotation,
+                    _entryMoveDuration)
+                .SetEase(
+                    Ease.InOutSine));
+
+        _entrySequence.Join(
+            DOTween.To(
+                    () => currentFov,
+                    value =>
+                    {
+                        currentFov =
+                            value;
+
+                        LensSettings lens =
+                            _battleEntryCamera.Lens;
+
+                        lens.FieldOfView =
+                            value;
+
+                        _battleEntryCamera.Lens =
+                            lens;
+                    },
+                    _entryEndFov,
+                    _entryMoveDuration)
+                .SetEase(
+                    Ease.InOutSine));
+
+        _entrySequence
+            .SetUpdate(true)
+            .OnComplete(() =>
+            {
+                _entrySequence =
+                    null;
+
+                onComplete?.Invoke();
+            });
     }
 
     /// <summary>
@@ -788,6 +1007,7 @@ public class BattleCameraDirector : MonoBehaviour
     private void ApplyActiveCameraPriority(
         CinemachineCamera targetCamera)
     {
+        SetCameraPriority(_battleEntryCamera, _inactivePriority);
         SetCameraPriority(_playerBackCamera, _inactivePriority);
         SetCameraPriority(_targetOverviewCamera, _inactivePriority);
         SetCameraPriority(_skillLowAngleCamera, _inactivePriority);
@@ -978,6 +1198,48 @@ public class BattleCameraDirector : MonoBehaviour
 
         actorTransform = actor.transform;
         return true;
+    }
+
+    /// <summary>
+    /// 특정 팀 첫 번째 생존 Actor Transform 검색
+    /// </summary>
+    /// <param name="teamType">검색 팀</param>
+    /// <param name="actorTransform">검색된 Transform</param>
+    /// <returns>검색 성공 여부</returns>
+    private bool TryGetFirstTeamActorTransform(
+        BattleTeamType teamType,
+        out Transform actorTransform)
+    {
+        actorTransform = null;
+
+        if (_battleManager == null ||
+            _battleManager.SpawnedActors == null)
+        {
+            return false;
+        }
+
+        for (int i = 0;
+             i < _battleManager.SpawnedActors.Count;
+             i++)
+        {
+            BattleActor actor =
+                _battleManager.SpawnedActors[i];
+
+            if (actor == null ||
+                actor.TeamType != teamType ||
+                actor.HasBattleUnit == false ||
+                actor.BattleUnit.IsAlive == false)
+            {
+                continue;
+            }
+
+            actorTransform =
+                actor.transform;
+
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -1233,5 +1495,19 @@ public class BattleCameraDirector : MonoBehaviour
         return teamType == BattleTeamType.Player
             ? BattleTeamType.Enemy
             : BattleTeamType.Player;
+    }
+
+    /// <summary>
+    /// 전투 시작 카메라 Tween 정지
+    /// </summary>
+    private void StopBattleEntryTween()
+    {
+        if (_entrySequence == null)
+        {
+            return;
+        }
+
+        _entrySequence.Kill();
+        _entrySequence = null;
     }
 }

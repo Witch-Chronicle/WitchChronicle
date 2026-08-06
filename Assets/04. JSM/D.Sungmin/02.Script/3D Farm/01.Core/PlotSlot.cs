@@ -89,6 +89,9 @@ namespace WitchChronicle.IdleFarming
             _state = PlotState.Empty;
             OnStateChanged?.Invoke(this);
             RefreshVisual();
+
+            SaveManager.RequestSave(); // 밭 해제 시 세이브 요청!
+
             return true;
         }
 
@@ -103,6 +106,9 @@ namespace WitchChronicle.IdleFarming
 
             OnStateChanged?.Invoke(this);
             RefreshVisual();
+
+            SaveManager.RequestSave(); // 세이브 요청!
+
             return true;
         }
 
@@ -120,6 +126,9 @@ namespace WitchChronicle.IdleFarming
 
             OnStateChanged?.Invoke(this);
             RefreshVisual();
+
+            SaveManager.RequestSave(); // 세이브 요청!
+
             return true;
         }
 

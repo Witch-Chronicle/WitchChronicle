@@ -30,6 +30,7 @@ public class EnhanceUIController : MonoBehaviour
     [Header("Base Info")]
     [SerializeField] private TextMeshProUGUI _baseInfoName;
     [SerializeField] private TextMeshProUGUI _baseInfoGrade;
+    [SerializeField] private GameObject _equipEmptyTxt;
 
     [Header("Current")]
     [SerializeField] private Image _currentIcon;
@@ -613,16 +614,26 @@ public class EnhanceUIController : MonoBehaviour
     private void SelectEquipment(EquipmentInstance instance)
     {
         _selectedInstance = instance;
-
         UpdateSelectedSlotHighlight(instance);
+
+        if (_equipEmptyTxt != null) _equipEmptyTxt.SetActive(false);
 
         ItemData itemData = instance.baseData;
 
         if (_baseInfoName != null) _baseInfoName.text = itemData.itemName;
         if (_baseInfoGrade != null) _baseInfoGrade.text = itemData.itemGrade.ToDisplayString();
 
-        if (_currentIcon != null) _currentIcon.sprite = itemData.icon;
-        if (_nextIcon != null) _nextIcon.sprite = itemData.icon;
+        if (_currentIcon != null)
+        {
+            _currentIcon.sprite = itemData.icon;
+            _currentIcon.enabled = itemData.icon != null;
+        }
+
+        if (_nextIcon != null)
+        {
+            _nextIcon.sprite = itemData.icon;
+            _nextIcon.enabled = itemData.icon != null;
+        }
 
         int currentLevel = instance.enhanceLevel;
         EnhanceLevelEntry nextEntry = _enhanceController != null
@@ -672,12 +683,25 @@ public class EnhanceUIController : MonoBehaviour
         _selectedInstance = null;
         _selectedSlot = null;
 
+        if (_equipEmptyTxt != null) _equipEmptyTxt.SetActive(true);
+
         if (_baseInfoName != null) _baseInfoName.text = string.Empty;
         if (_baseInfoGrade != null) _baseInfoGrade.text = string.Empty;
 
-        if (_currentIcon != null) _currentIcon.sprite = null;
+        if (_currentIcon != null)
+        {
+            _currentIcon.sprite = null;
+            _currentIcon.enabled = false;
+        }
+
         if (_currentLvText != null) _currentLvText.text = string.Empty;
-        if (_nextIcon != null) _nextIcon.sprite = null;
+
+        if (_nextIcon != null)
+        {
+            _nextIcon.sprite = null;
+            _nextIcon.enabled = false;
+        }
+
         if (_nextLvText != null) _nextLvText.text = string.Empty;
 
         HideAllCurrentValueRows();
