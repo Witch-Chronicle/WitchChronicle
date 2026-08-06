@@ -137,6 +137,8 @@ public class SaveManager : MonoBehaviour
                 _skillDatabase.Add(skill.SkillId, skill);
             }
         }
+        
+        Debug.Log($"<color=yellow>[SaveManager] Resources에서 찾은 아이템: {_itemDatabase.Count}개, 스킬: {_skillDatabase.Count}개</color>");
     }
 
     // =================================================================
