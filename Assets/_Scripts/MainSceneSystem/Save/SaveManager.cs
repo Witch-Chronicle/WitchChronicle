@@ -5,8 +5,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// 전체 게임 데이터 저장 / 로드 관리자
-/// 어디서든 SaveManager.RequestSave(); 만 부르면 프레임 끝에 안전하게 자동 저장됩니다.
+/// 전체 게임 데이터 저장 / 로드 / 리셋 관리자
+/// - 어디서든 SaveManager.RequestSave(); 만 부르면 프레임 끝에 안전하게 자동 저장됩니다.
+/// - 로드 중에는 자동 세이브가 덮어써지지 않도록 차단 처리되어 있습니다.
+/// - 숫자 0 키를 누르면 세이브 파일(save.json)을 삭제하고 Boot 씬부터 완전히 깨끗하게 리셋합니다.
 /// </summary>
 public class SaveManager : MonoBehaviour
 {
@@ -16,14 +18,23 @@ public class SaveManager : MonoBehaviour
     [Tooltip("자동 저장 주기 (초 단위)")]
     [SerializeField] private float _autoSaveInterval = 60f;
 
+    [Header("디버그 / 리셋 키 설정")]
+    [Tooltip("이 키를 누르면 세이브 파일이 삭제되고 첫 씬(Boot)으로 완벽 초기화됩니다 (기본: 숫자 0키)")]
+    [SerializeField] private KeyCode _resetToNewGameKey = KeyCode.Alpha0;
+
     private string SaveFilePath => Path.Combine(Application.persistentDataPath, "save.json");
 
-    // 이번 프레임에 세이브 요청이 있었는지 나타내는 플래그 (프레임 병합용)
+    // 이번 프레임에 세이브 요청이 있었는지 나타내는 플래그 (프레임 병합 최적화용)
     private bool _isSavePending;
+
+    // 💡 [핵심] 데이터를 로드하는 동안 세이브가 덮어씌워지는 것을 방지하는 차단 플래그
+    private bool _isLoadingData;
 
     // 에셋 자동 조회를 위한 딕셔너리 캐시
     private readonly Dictionary<int, ItemData> _itemDatabase = new();
     private readonly Dictionary<string, SkillData> _skillDatabase = new();
+
+    public SaveData CurrentSaveData { get; private set; }
 
     private void Awake()
     {
@@ -38,13 +49,11 @@ public class SaveManager : MonoBehaviour
 
         BuildAssetDatabases();
 
-        SceneManager.sceneLoaded += OnSceneLoaded;
         Application.quitting += OnApplicationQuit;
     }
 
     private void OnDestroy()
     {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
         Application.quitting -= OnApplicationQuit;
     }
 
@@ -67,7 +76,35 @@ public class SaveManager : MonoBehaviour
     {
         if (Instance != null)
         {
+            // 💡 로드 중이거나 데이터 복원 중일 때는 자동으로 세이브되는 것을 완전히 차단!
+            if (Instance._isLoadingData) return;
+
             Instance._isSavePending = true;
+        }
+    }
+
+    private void Update()
+    {
+        bool isResetPressed = false;
+
+        // 숫자 0 키 감지 (신형 & 구형 Input 모두 지원)
+#if ENABLE_INPUT_SYSTEM
+        if (UnityEngine.InputSystem.Keyboard.current != null &&
+            UnityEngine.InputSystem.Keyboard.current.digit0Key.wasPressedThisFrame)
+        {
+            isResetPressed = true;
+        }
+#endif
+
+        if (Input.GetKeyDown(_resetToNewGameKey))
+        {
+            isResetPressed = true;
+        }
+
+        // 숫자 0 키를 누르면 세이브 파일 삭제 후 Boot 씬 완벽 재시작
+        if (isResetPressed)
+        {
+            ResetByDeletingFile();
         }
     }
 
@@ -77,7 +114,7 @@ public class SaveManager : MonoBehaviour
     /// </summary>
     private void LateUpdate()
     {
-        if (_isSavePending)
+        if (_isSavePending && !_isLoadingData)
         {
             _isSavePending = false;
             SaveAll();
@@ -90,17 +127,9 @@ public class SaveManager : MonoBehaviour
         RequestSave();
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        if (scene.name == SceneId.Main.ToString() || scene.name == SceneId.Dungeon.ToString())
-        {
-            RequestSave();
-        }
-    }
-
     private void OnApplicationPause(bool pause)
     {
-        if (pause)
+        if (pause && !_isLoadingData)
         {
             Debug.Log("[SaveManager] 앱 일시정지/백그라운드 전환 감지 - 저장 실행");
             SaveAll();
@@ -142,16 +171,60 @@ public class SaveManager : MonoBehaviour
     }
 
     // =================================================================
+    // RESET BY DELETING FILE & RESTART (완벽 리셋)
+    // =================================================================
+    [ContextMenu("Reset By Deleting File (파일 삭제 후 Boot 리셋)")]
+    public void ResetByDeletingFile()
+    {
+        _isSavePending = false;
+        _isLoadingData = false;
+        CancelInvoke(nameof(AutoSaveTick));
+
+        if (File.Exists(SaveFilePath))
+        {
+            File.Delete(SaveFilePath);
+            Debug.Log("<color=red>[SaveManager] save.json 세이브 파일 삭제 완료!</color>");
+        }
+
+        if (Application.isPlaying)
+        {
+            Time.timeScale = 1f;
+            DestroyPersistentObjects();
+            SceneManager.LoadScene(0);
+        }
+    }
+
+    private void DestroyPersistentObjects()
+    {
+        PersistentRoot[] roots = FindObjectsByType<PersistentRoot>(FindObjectsSortMode.None);
+        foreach (var root in roots)
+        {
+            if (root != null) Destroy(root.gameObject);
+        }
+
+        if (PlayerInventory.Instance != null) Destroy(PlayerInventory.Instance.gameObject);
+        if (PersistentCharacterManager.Instance != null) Destroy(PersistentCharacterManager.Instance.gameObject);
+        if (QuestManager.Instance != null) Destroy(QuestManager.Instance.gameObject);
+        if (UIBackgroundBlurManager.Instance != null) Destroy(UIBackgroundBlurManager.Instance.gameObject);
+
+        Destroy(gameObject);
+    }
+
+    // =================================================================
     // SAVE ALL
     // =================================================================
     public void SaveAll()
     {
+        if (_isLoadingData) return;
+
         try
         {
             SaveData data = new SaveData();
             data.Version = 1;
 
-             // 농사 밭 세이브 데이터 저장
+            CurrentSaveData = data;
+
+            // 농사 밭 세이브 데이터 저장
             if (WitchChronicle.IdleFarming.PlotManager.Instance != null)
             {
                 data.FarmPlots = WitchChronicle.IdleFarming.PlotManager.Instance.GetFarmSaveData();
@@ -162,7 +235,6 @@ public class SaveManager : MonoBehaviour
             {
                 data.Gold = PlayerInventory.Instance.Gold;
 
-                // 💡 [핵심] 동일한 ItemId를 가진 아이템은 수량(Quantity)을 하나로 합쳐서 저장!
                 Dictionary<int, int> itemTotals = new Dictionary<int, int>();
 
                 foreach (var slot in PlayerInventory.Instance.InventorySlots)
@@ -178,7 +250,6 @@ public class SaveManager : MonoBehaviour
                     }
                 }
 
-                // 합쳐진 수량으로 세이브 데이터 생성
                 foreach (var kvp in itemTotals)
                 {
                     data.InventoryItems.Add(new ItemStackSaveData
@@ -188,7 +259,6 @@ public class SaveManager : MonoBehaviour
                     });
                 }
 
-                // 보유 장비 인스턴스 (장비는 개별 강화 수치가 있으므로 기존 유지)
                 foreach (var eq in PlayerInventory.Instance.EquipmentInstances)
                 {
                     if (eq != null && eq.baseData != null)
@@ -216,7 +286,6 @@ public class SaveManager : MonoBehaviour
                     charData.CharacterId = unit.CharacterId;
                     charData.IsRecruited = unit.IsRecruited;
 
-                    // 스탯 & 레벨
                     if (unit.StatController != null && unit.StatController.Stats != null)
                     {
                         CharacterStats stats = unit.StatController.Stats;
@@ -233,14 +302,12 @@ public class SaveManager : MonoBehaviour
                         charData.AllocatedLuck = stats.AllocatedLuck;
                     }
 
-                    // 체력 / 마나
                     if (unit.CharacterVitals != null)
                     {
                         charData.CurrentHp = unit.CharacterVitals.CurrentHp;
                         charData.CurrentMp = unit.CharacterVitals.CurrentMp;
                     }
 
-                    // 장착 스킬
                     if (unit.PlayerSkillLoadout != null)
                     {
                         foreach (var skill in unit.PlayerSkillLoadout.EquippedSkills)
@@ -249,7 +316,6 @@ public class SaveManager : MonoBehaviour
                         }
                     }
 
-                    // 장착 장비
                     if (unit.CharacterEquipment != null)
                     {
                         foreach (EquipSlotType slotType in Enum.GetValues(typeof(EquipSlotType)))
@@ -320,6 +386,9 @@ public class SaveManager : MonoBehaviour
     // =================================================================
     public void LoadAll()
     {
+        // 💡 [핵심] 로드 작업 시작 시 자동 세이브 요청을 전면 차단합니다.
+        _isLoadingData = true;
+
         try
         {
             if (!File.Exists(SaveFilePath))
@@ -333,12 +402,15 @@ public class SaveManager : MonoBehaviour
 
             if (data == null) return;
 
+            CurrentSaveData = data;
+
+            // 1. 농장 밭 데이터 복원
             if (WitchChronicle.IdleFarming.PlotManager.Instance != null)
             {
                 WitchChronicle.IdleFarming.PlotManager.Instance.LoadFarmSaveData(data.FarmPlots);
             }
 
-            // 1. 습득 스킬 복원
+            // 2. 습득 스킬 복원
             if (SkillInventory.Instance != null && data.LearnedSkillIds != null)
             {
                 foreach (string skillId in data.LearnedSkillIds)
@@ -350,7 +422,7 @@ public class SaveManager : MonoBehaviour
                 }
             }
 
-            // 2. 인벤토리 및 장비 복원
+            // 3. 인벤토리 및 장비 복원
             if (PlayerInventory.Instance != null)
             {
                 int currentGold = PlayerInventory.Instance.Gold;
@@ -371,6 +443,8 @@ public class SaveManager : MonoBehaviour
 
                 if (data.EquipmentInstances != null)
                 {
+                    EnhanceController enhanceCtrl = FindFirstObjectByType<EnhanceController>();
+
                     foreach (var eqSave in data.EquipmentInstances)
                     {
                         if (_itemDatabase.TryGetValue(eqSave.ItemId, out ItemData itemData) && itemData is EquipItemData equipItem)
@@ -382,7 +456,6 @@ public class SaveManager : MonoBehaviour
                                 lastAdded.enhanceLevel = eqSave.EnhanceLevel;
                                 lastAdded.enhanceAttemptCount = eqSave.EnhanceAttemptCount;
 
-                                EnhanceController enhanceCtrl = FindFirstObjectByType<EnhanceController>();
                                 if (enhanceCtrl != null)
                                 {
                                     EnhanceTableData table = enhanceCtrl.GetTable(equipItem.itemGrade);
@@ -392,9 +465,11 @@ public class SaveManager : MonoBehaviour
                         }
                     }
                 }
+
+                PlayerInventory.Instance.RaiseInventoryChanged();
             }
 
-            // 3. 캐릭터 스탯, 장비, 스킬, 파티 복원
+            // 4. 캐릭터 스탯, 장비, 스킬, 파티 복원
             if (PersistentCharacterManager.Instance != null && data.Characters != null)
             {
                 foreach (var charSave in data.Characters)
@@ -407,12 +482,10 @@ public class SaveManager : MonoBehaviour
                         {
                             CharacterStats stats = unit.StatController.Stats;
 
-                            // 💡 [핵심] 불러온 세이브 데이터의 레벨, 경험치, 남은 스탯 포인트를 캐릭터에 복원!
                             stats.SetLevelAndExp(charSave.Level, charSave.Exp, charSave.AvailableStatPoints);
 
                             stats.ResetAllocatedStats();
 
-                            // 투자했던 스탯 포인트 복원
                             stats.TryUseStatPoint(StatType.MaxHP, charSave.AllocatedHp);
                             stats.TryUseStatPoint(StatType.MaxMP, charSave.AllocatedMp);
                             stats.TryUseStatPoint(StatType.SpellPower, charSave.AllocatedSpellPower);
@@ -460,7 +533,8 @@ public class SaveManager : MonoBehaviour
                     PersistentCharacterManager.Instance.SetActivePartyOrder(data.ActivePartyIds);
                 }
             }
-            // 4. 퀘스트 상태 복원
+
+            // 5. 퀘스트 상태 복원
             if (QuestManager.Instance != null && data.Quests != null)
             {
                 foreach (var questSave in data.Quests)
@@ -492,6 +566,12 @@ public class SaveManager : MonoBehaviour
         catch (Exception ex)
         {
             Debug.LogError($"[SaveManager] 로드 중 예외 발생 : {ex}");
+        }
+        finally
+        {
+            // 💡 [핵심] 모든 데이터 복원이 안전하게 끝난 뒤 세이브 요청 차단을 풀어줍니다.
+            _isLoadingData = false;
+            _isSavePending = false;
         }
     }
 }

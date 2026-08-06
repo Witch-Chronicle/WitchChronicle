@@ -73,7 +73,7 @@ public class PortalUIController : MonoBehaviour
     {
         if (_questManager == null)
         {
-            _questManager = FindFirstObjectByType<QuestManager>();
+            _questManager = QuestManager.Instance;
         }
     }
 
