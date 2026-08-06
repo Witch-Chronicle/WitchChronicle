@@ -36,6 +36,12 @@ public class NPC : MonoBehaviour, ITFInteractable
             lookAt.FaceTarget(interactor.transform);
         }
 
+        // 플레이어와 NPC를 함께 잡는 대화 카메라로 전환
+        if (interactor != null && NpcDialogueCamera.Instance != null)
+        {
+            NpcDialogueCamera.Instance.Focus(interactor.transform, transform);
+        }
+
         string dialogueID = GetDialogueID();
 
         if (DialogueManager.Instance != null)
@@ -59,7 +65,7 @@ public class NPC : MonoBehaviour, ITFInteractable
                 if (character != null && character.IsRecruited)
                 {
                     Debug.Log($"[{_npcData.NpcName}] 이미 영입된 캐릭터이므로 필드에서 비활성화합니다.");
-                    Destroy(gameObject); // 또는 Destroy(gameObject);
+                    Destroy(gameObject);
                 }
             }
         }
