@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonData
   Id: dark_2
   DungeonName: "\uC800\uC8FC\uC758 \uB358\uC804"
+  DungeonIcon: {fileID: 0}
+  Description: 
+  RequiredQuest: {fileID: 0}
+  EnemyPool: []
   FloorPrefab: {fileID: 2968830504906926872, guid: e5f9b860d4f158041830633198ce81ee, type: 3}
   WallPrefab: {fileID: 5151642384990008009, guid: 54c77c1c8d379594e93baab6ad37934c, type: 3}
   CeilingPrefab: {fileID: 2968830504906926872, guid: 738a82f1abf45734bb1692df0cdbcca5, type: 3}
@@ -69,7 +73,7 @@ MonoBehaviour:
   - Type: 4
     Weight: 18
   - Type: 3
-    Weight: 7
+    Weight: 0
   RoomContentTable: {fileID: 11400000, guid: bd44f582cb94e724d82d4b8344701650, type: 2}
   _decorationTable: {fileID: 11400000, guid: 7503744bd5222fc408494674fd01b125, type: 2}
   BGM: {fileID: 0}
