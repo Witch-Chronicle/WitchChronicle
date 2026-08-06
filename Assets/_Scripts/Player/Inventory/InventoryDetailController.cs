@@ -58,6 +58,10 @@ public class InventoryDetailController : MonoBehaviour
     [Tooltip("MainCategory.Consume + SubCategory.Book(마도서)인 소비 아이템만 표시")]
     [SerializeField] private Button _useBtn;
 
+    [Header("Skill Book Gacha")]
+    [Tooltip("마도서 사용 결과를 재생할 Overlay Controller")]
+    [SerializeField] private SkillGachaResultOverlayController _skillGachaOverlayController;
+
     [Header("Equip Stat Section")]
     [Tooltip("Equip/StatSection의 Current/Change 표시 담당")]
     [SerializeField] private EquipStatSectionController _equipStatSectionController;
@@ -468,27 +472,68 @@ public class InventoryDetailController : MonoBehaviour
     }
 
     /// <summary>
-    /// 마도서(Consume+Book) 사용. 임시로 디버그 로그만 남기고 인벤토리에서 1개 소모.
-    /// 다 써서 더 이상 보유하고 있지 않으면 패널을 닫음.
+    /// 선택된 마도서를 사용하고 결과를 가챠 Overlay로 전달한다.
+    /// 실제 인벤토리 차감은 SkillBookUseService.Use() 내부에서 한 번만 처리한다.
     /// </summary>
     private void OnClickUse()
     {
         if (_currentItemData == null) return;
         if (PlayerInventory.Instance == null) return;
 
-        Debug.Log($"[InventoryDetailController] 아이템 사용: {_currentItemData.itemName}");
+        // Category만 믿지 않고 실제 데이터 타입까지 확인한다.
+        SkillBookItemData skillBook = _currentItemData as SkillBookItemData;
 
-        bool success = PlayerInventory.Instance.TryConsumeItem(_currentItemData, 1);
+        if (skillBook == null)
+        {
+            Debug.LogWarning($"[InventoryDetailController] {_currentItemData.itemName}은 SkillBookItemData가 아닙니다.");
+            return;
+        }
 
-        if (!success) return;
+        if (_skillGachaOverlayController == null)
+        {
+            Debug.LogError("[InventoryDetailController] SkillGachaOverlayController가 연결되지 않았습니다.");
+            return;
+        }
 
-        PlayerInventory.Instance.RaiseInventoryChanged();
+        if (_skillGachaOverlayController.IsOpen || _skillGachaOverlayController.IsPlaying)
+        {
+            return;
+        }
 
-        int remaining = PlayerInventory.Instance.GetTotalQuantity(_currentItemData);
+        if (_useBtn != null)
+        {
+            _useBtn.interactable = false;
+        }
+
+        SkillBookResult result = SkillBookUseService.Use(skillBook);
+
+        if (result.Success == false)
+        {
+            if (_useBtn != null) _useBtn.interactable = true;
+            return;
+        }
+
+        int remaining = PlayerInventory.Instance.GetTotalQuantity(skillBook);
 
         if (remaining <= 0)
         {
             Hide();
+        }
+
+        bool started = _skillGachaOverlayController.Play(skillBook, result, () =>
+        {
+            if (_useBtn == null) return;
+
+            bool stillSelected = _currentItemData == skillBook;
+            bool stillOwned = PlayerInventory.Instance != null
+                && PlayerInventory.Instance.GetTotalQuantity(skillBook) > 0;
+
+            _useBtn.interactable = stillSelected && stillOwned;
+        });
+
+        if (started == false && _useBtn != null)
+        {
+            _useBtn.interactable = remaining > 0;
         }
     }
 

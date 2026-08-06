@@ -38,6 +38,13 @@ public class SkillDrawController : MonoBehaviour
 {
     public static SkillDrawController Instance { get; private set; }
 
+    /// <summary>
+    /// Play() 호출 후 실제 그리기 프로세스가 시작된 시점부터
+    /// FinalizeFinish()로 콜백이 나가기 직전까지 true.
+    /// 이 구간 동안은 BattleUIInputReader가 Esc(취소) 입력을 무시해야 함.
+    /// </summary>
+    public bool IsDrawing { get; private set; }
+
     [Header("Timer UI (DrawingCanvas 하위, 캔버스 자체가 켜지고/꺼질 때 같이 보임)")]
     [SerializeField] private TMPro.TMP_Text _timerText;
     [SerializeField] private UnityEngine.UI.Image _timerFillImage;
@@ -240,6 +247,8 @@ public class SkillDrawController : MonoBehaviour
 
         _onComplete = onComplete;
 
+        IsDrawing = true;
+
         _allPoints.Clear();
         ClearPlayerLines();
         _currentStrokeId = -1;
@@ -359,7 +368,7 @@ public class SkillDrawController : MonoBehaviour
     private void FinalizeFinish(float multiplier)
     {
         if (_skillDrawCanvasRoot != null) _skillDrawCanvasRoot.SetActive(false);
-
+        IsDrawing = false;
         var callback = _onComplete;
         _onComplete = null;
         callback?.Invoke(multiplier);
