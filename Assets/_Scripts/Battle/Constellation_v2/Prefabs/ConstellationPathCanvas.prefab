@@ -502,6 +502,7 @@ GameObject:
   - component: {fileID: 2382465829725117493}
   - component: {fileID: 4259904195566756668}
   - component: {fileID: 7026586660382306151}
+  - component: {fileID: 6328746070875941034}
   m_Layer: 5
   m_Name: ConstellationPathCanvas
   m_TagString: Untagged
@@ -593,6 +594,18 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!225 &6328746070875941034
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7475613317738316369}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &8765442858770326826
 GameObject:
   m_ObjectHideFlags: 0
