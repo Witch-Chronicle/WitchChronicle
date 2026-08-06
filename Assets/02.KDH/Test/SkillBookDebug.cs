@@ -87,18 +87,18 @@ public class SkillBookDebug : MonoBehaviour
             return;
         }
 
-        if (_isEquipOpen)
-        {
-            _equipUI.Close();
-            _isEquipOpen = false;
-            Debug.Log("[SkillBookDebug] 장착 UI 닫음");
-        }
-        else
-        {
-            _equipUI.Open();
-            _isEquipOpen = true;
-            Debug.Log("[SkillBookDebug] 장착 UI 열음");
-        }
+        // if (_isEquipOpen)
+        // {
+        //     _equipUI.Close();
+        //     _isEquipOpen = false;
+        //     Debug.Log("[SkillBookDebug] 장착 UI 닫음");
+        // }
+        // else
+        // {
+        //     _equipUI.Open();
+        //     _isEquipOpen = true;
+        //     Debug.Log("[SkillBookDebug] 장착 UI 열음");
+        // }
     }
 
     /// <summary>가챠 UI 열기/닫기.</summary>
