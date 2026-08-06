@@ -137,7 +137,7 @@ public class SaveManager : MonoBehaviour
                 _skillDatabase.Add(skill.SkillId, skill);
             }
         }
-        
+
         Debug.Log($"<color=yellow>[SaveManager] Resources에서 찾은 아이템: {_itemDatabase.Count}개, 스킬: {_skillDatabase.Count}개</color>");
     }
 
@@ -151,25 +151,44 @@ public class SaveManager : MonoBehaviour
             SaveData data = new SaveData();
             data.Version = 1;
 
+             // 농사 밭 세이브 데이터 저장
+            if (WitchChronicle.IdleFarming.PlotManager.Instance != null)
+            {
+                data.FarmPlots = WitchChronicle.IdleFarming.PlotManager.Instance.GetFarmSaveData();
+            }
+
             // 1. 재화 및 인벤토리 저장
             if (PlayerInventory.Instance != null)
             {
                 data.Gold = PlayerInventory.Instance.Gold;
 
-                // 스택 가능 아이템
+                // 💡 [핵심] 동일한 ItemId를 가진 아이템은 수량(Quantity)을 하나로 합쳐서 저장!
+                Dictionary<int, int> itemTotals = new Dictionary<int, int>();
+
                 foreach (var slot in PlayerInventory.Instance.InventorySlots)
                 {
                     if (slot != null && slot.ItemData != null)
                     {
-                        data.InventoryItems.Add(new ItemStackSaveData
+                        int id = slot.ItemData.itemId;
+                        if (!itemTotals.ContainsKey(id))
                         {
-                            ItemId = slot.ItemData.itemId,
-                            Quantity = slot.Quantity
-                        });
+                            itemTotals[id] = 0;
+                        }
+                        itemTotals[id] += slot.Quantity;
                     }
                 }
 
-                // 보유 장비 인스턴스
+                // 합쳐진 수량으로 세이브 데이터 생성
+                foreach (var kvp in itemTotals)
+                {
+                    data.InventoryItems.Add(new ItemStackSaveData
+                    {
+                        ItemId = kvp.Key,
+                        Quantity = kvp.Value
+                    });
+                }
+
+                // 보유 장비 인스턴스 (장비는 개별 강화 수치가 있으므로 기존 유지)
                 foreach (var eq in PlayerInventory.Instance.EquipmentInstances)
                 {
                     if (eq != null && eq.baseData != null)
@@ -313,6 +332,11 @@ public class SaveManager : MonoBehaviour
             SaveData data = JsonUtility.FromJson<SaveData>(json);
 
             if (data == null) return;
+
+            if (WitchChronicle.IdleFarming.PlotManager.Instance != null)
+            {
+                WitchChronicle.IdleFarming.PlotManager.Instance.LoadFarmSaveData(data.FarmPlots);
+            }
 
             // 1. 습득 스킬 복원
             if (SkillInventory.Instance != null && data.LearnedSkillIds != null)
