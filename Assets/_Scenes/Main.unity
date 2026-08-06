@@ -8464,7 +8464,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5121bb2f0fe271e428d8e94cdc40ac36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueCamera
-  _dialogueCamera: {fileID: 0}
+  _dialogueCamera: {fileID: 2027630899}
   _highPriority: 20
   _lowPriority: 0
   _backDistance: 2.6
@@ -70022,18 +70022,6 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 795099863024335098, guid: c6b7e533b67a5bc4e89c4078577ee6ad, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 795099863024335098, guid: c6b7e533b67a5bc4e89c4078577ee6ad, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 795099863024335098, guid: c6b7e533b67a5bc4e89c4078577ee6ad, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1465213611198797005, guid: c6b7e533b67a5bc4e89c4078577ee6ad, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -70162,22 +70150,18 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4475264038762336838, guid: c6b7e533b67a5bc4e89c4078577ee6ad, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4475264038762336838, guid: c6b7e533b67a5bc4e89c4078577ee6ad, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4475264038762336838, guid: c6b7e533b67a5bc4e89c4078577ee6ad, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4820253428594511145, guid: c6b7e533b67a5bc4e89c4078577ee6ad, type: 3}
       propertyPath: m_Name
       value: AlchemyUI
       objectReference: {fileID: 0}
+    - target: {fileID: 5017505947371911714, guid: c6b7e533b67a5bc4e89c4078577ee6ad, type: 3}
+      propertyPath: _potionCauldron
+      value: 
+      objectReference: {fileID: 1269345409}
+    - target: {fileID: 5017505947371911714, guid: c6b7e533b67a5bc4e89c4078577ee6ad, type: 3}
+      propertyPath: _cookingCauldron
+      value: 
+      objectReference: {fileID: 1269345410}
     - target: {fileID: 5562555887025139330, guid: c6b7e533b67a5bc4e89c4078577ee6ad, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -166012,6 +165996,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 422932049}
     m_Modifications:
+    - target: {fileID: 693410171131493594, guid: 418a8e55105e8d64e9ca9da30fd1dfd1, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1311294219238368324, guid: 418a8e55105e8d64e9ca9da30fd1dfd1, type: 3}
       propertyPath: m_LocalPosition.x
       value: -707.62
@@ -166052,6 +166040,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2912254590295209166, guid: 418a8e55105e8d64e9ca9da30fd1dfd1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.14
+      objectReference: {fileID: 0}
     - target: {fileID: 6464097675874943520, guid: 418a8e55105e8d64e9ca9da30fd1dfd1, type: 3}
       propertyPath: _alchemyPanel
       value: 
@@ -166068,6 +166060,16 @@ PrefabInstance:
 --- !u!4 &1269345408 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1311294219238368324, guid: 418a8e55105e8d64e9ca9da30fd1dfd1, type: 3}
+  m_PrefabInstance: {fileID: 1269345407}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1269345409 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 693410171131493594, guid: 418a8e55105e8d64e9ca9da30fd1dfd1, type: 3}
+  m_PrefabInstance: {fileID: 1269345407}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1269345410 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5510357389189327936, guid: 418a8e55105e8d64e9ca9da30fd1dfd1, type: 3}
   m_PrefabInstance: {fileID: 1269345407}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1270404332 stripped
@@ -178873,7 +178875,7 @@ Transform:
   m_GameObject: {fileID: 1327467526}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0.2500267, y: 0.777, z: 0.0000000037252903}
+  m_LocalPosition: {x: 0.2500267, y: 0.618, z: 0.0000000037252903}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
