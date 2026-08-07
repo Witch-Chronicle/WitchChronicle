@@ -14,19 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_fire_salamander
   _enemyName: "\uBD88\uC758 \uB3C4\uB871\uB1FD"
-  _maxHp: 80
-  _attackPower: 15
-  _magicPower: 5
-  _defensePower: 5
-  _magicDefensePower: 5
-  _speed: 15
+  _icon: {fileID: 21300000, guid: 46562094189913f428658fca0637a126, type: 3}
+  _isBoss: 0
+  _maxHp: 680
+  _attackPower: 72
+  _magicPower: 0
+  _defensePower: 0
+  _magicDefensePower: 0
+  _speed: 22
   _weakElements: 030000000500000006000000
   _resistElements: 02000000
   _nullElements: 
   _absorbElements: 
-  _skillList: []
+  _skillList:
+  - {fileID: 11400000, guid: f34ed27ee9bb1bc41a5d0abef0555b80, type: 2}
   _aiProfileData: {fileID: 11400000, guid: efa93b2032175ea4ba62702e8fea68e6, type: 2}
-  _expReward: 10
-  _goldReward: 10
+  _expReward: 110
+  _goldReward: 170
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 2398039129503895482, guid: eacabfd1810054a469d7dea30b5cbe9f, type: 3}

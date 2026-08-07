@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// BSP 기반 던전 생성기 (6x6 모듈 규격 스냅 적용)
+/// BSP 기반 던전 생성기 (6x6 모듈 규격 스냅 및 방 사이 최소 간격 보장 적용)
 /// </summary>
 public class DungeonGenerator : MonoBehaviour
 {
@@ -203,14 +203,26 @@ public class DungeonGenerator : MonoBehaviour
     }
 
     /// <summary>
-    /// Leaf 영역 안에 Room 생성 (6의 배수 단위 스냅)
+    /// Leaf 영역 안에 Room 생성 (방과 방 사이 최소 1모듈(6단위) 통로 간격 보장)
     /// </summary>
     private void CreateRoom(RectInt area, List<RoomNode> rooms)
     {
-        int padding = _dungeonData.MinPadding;
+        // 방과 방 사이에 최소 1모듈(6단위 = 통로 1칸) 이상의 여백을 강제 보장
+        int minCorridorGap = ModuleSize; 
 
-        int maxWidth = area.width - padding;
-        int maxHeight = area.height - padding;
+        int padding = Mathf.Max(minCorridorGap, _dungeonData.MinPadding);
+
+        int maxWidth = area.width - (padding * 2);
+        int maxHeight = area.height - (padding * 2);
+
+        if (maxWidth < _dungeonData.MinRoomSize ||
+            maxHeight < _dungeonData.MinRoomSize)
+        {
+            // 여백 공간이 약간 부족할 경우 1개 모듈(6단위) 패딩으로 조정
+            padding = minCorridorGap;
+            maxWidth = area.width - (padding * 2);
+            maxHeight = area.height - (padding * 2);
+        }
 
         if (maxWidth < _dungeonData.MinRoomSize ||
             maxHeight < _dungeonData.MinRoomSize)
@@ -238,26 +250,56 @@ public class DungeonGenerator : MonoBehaviour
 
         int height = Random.Range(minHeightSteps, maxHeightSteps + 1) * ModuleSize;
 
-        int maxOffsetX = Mathf.Max(0, area.width - width);
-        int maxOffsetY = Mathf.Max(0, area.height - height);
+        int maxOffsetX = Mathf.Max(0, maxWidth - width);
+        int maxOffsetY = Mathf.Max(0, maxHeight - height);
 
         int randomXSteps = Random.Range(0, (maxOffsetX / ModuleSize) + 1);
         int randomYSteps = Random.Range(0, (maxOffsetY / ModuleSize) + 1);
 
-        int x = area.x + (randomXSteps * ModuleSize);
-        int y = area.y + (randomYSteps * ModuleSize);
+        int x = area.x + padding + (randomXSteps * ModuleSize);
+        int y = area.y + padding + (randomYSteps * ModuleSize);
 
-        RoomNode room = new RoomNode(
+        RoomNode newRoom = new RoomNode(
             new RectInt(
                 x,
                 y,
                 width,
                 height));
 
-        rooms.Add(room);
+        // 기존 방들과 거리가 1모듈(6단위) 미만으로 바짝 붙어있으면 생성 취소
+        if (IsTooCloseToExistingRooms(newRoom, rooms, minCorridorGap))
+        {
+            return;
+        }
+
+        rooms.Add(newRoom);
 
         Debug.Log(
-            $"[DungeonGenerator] Room 생성 : {room.Bounds}");
+            $"[DungeonGenerator] Room 생성 (통로 공간 보장됨) : {newRoom.Bounds}");
+    }
+
+    /// <summary>
+    /// 기존 방들과의 거리 검사 (최소 minGap 미만으로 바짝 붙어있는지 확인)
+    /// </summary>
+    private bool IsTooCloseToExistingRooms(RoomNode newRoom, List<RoomNode> existingRooms, int minGap)
+    {
+        foreach (RoomNode existing in existingRooms)
+        {
+            // 기존 방의 테두리에 minGap(6단위 = 통로 1칸)만큼 확장된 가상의 영역 생성
+            RectInt expandedBounds = new RectInt(
+                existing.Bounds.x - minGap,
+                existing.Bounds.y - minGap,
+                existing.Bounds.width + (minGap * 2),
+                existing.Bounds.height + (minGap * 2)
+            );
+
+            // 새 방이 확장된 영역과 겹친다면 두 방 사이의 거리가 1칸 미만임
+            if (expandedBounds.Overlaps(newRoom.Bounds))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>
@@ -301,11 +343,14 @@ public class DungeonGenerator : MonoBehaviour
                 }
             }
 
-            bestA.ConnectedRooms.Add(bestB);
-            bestB.ConnectedRooms.Add(bestA);
+            if (bestA != null && bestB != null)
+            {
+                if (!bestA.ConnectedRooms.Contains(bestB)) bestA.ConnectedRooms.Add(bestB);
+                if (!bestB.ConnectedRooms.Contains(bestA)) bestB.ConnectedRooms.Add(bestA);
 
-            connected.Add(bestB);
-            unconnected.Remove(bestB);
+                connected.Add(bestB);
+                unconnected.Remove(bestB);
+            }
         }
 
         foreach (RoomNode a in rooms)

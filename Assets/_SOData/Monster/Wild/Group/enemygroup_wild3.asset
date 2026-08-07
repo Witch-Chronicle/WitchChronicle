@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 083dd389e16cf504e8debb485f18d999, type: 3}
   m_Name: enemygroup_wild3
   m_EditorClassIdentifier: Assembly-CSharp::EnemyGroupSO
-  _minDepth: 5
-  _maxDepth: 10
+  _minDepth: 3
+  _maxDepth: 7
   _weight: 10
   _enemyEntries:
   - enemyData: {fileID: 11400000, guid: cff0a6b71d6695142b96db5bbc1f32ae, type: 2}
@@ -27,4 +27,4 @@ MonoBehaviour:
   - enemyData: {fileID: 11400000, guid: 7407f62e16edfcb4cac5938f61d7d74b, type: 2}
     weight: 33
   _baseCount: 3
-  _depthDivisor: 2
+  _depthDivisor: 3
