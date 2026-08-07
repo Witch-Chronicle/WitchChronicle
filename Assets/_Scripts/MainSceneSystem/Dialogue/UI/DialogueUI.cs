@@ -180,6 +180,21 @@ public class DialogueUI : MonoBehaviour
         _panel.SetActive(false);
     }
 
+    /// <summary>
+    /// 대화창 패널만 다시 표시.
+    /// HidePanelOnly()로 숨긴 패널을 원래대로 복원할 때 사용합니다.
+    /// CursorLocker 상태는 건드리지 않습니다.
+    /// </summary>
+    public void ShowPanelOnly()
+    {
+        if (_panel == null || _panel.activeSelf)
+        {
+            return;
+        }
+
+        _panel.SetActive(true);
+    }
+
     private void OnDestroy()
     {
         if (_dialogueAreaButton != null)
