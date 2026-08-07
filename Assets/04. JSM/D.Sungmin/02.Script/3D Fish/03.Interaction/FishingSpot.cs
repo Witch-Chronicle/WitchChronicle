@@ -60,10 +60,10 @@ public class FishingSpot : MonoBehaviour
         lockedMovers.Clear();
     }
 
-    private void Start()
-    {
-        if (promptUI != null) promptUI.SetActive(false);
-    }
+    // private void Start()
+    // {
+    //     if (promptUI != null) promptUI.SetActive(false);
+    // }
 
     public void HandlePlayerEnter(Collider other)
     {

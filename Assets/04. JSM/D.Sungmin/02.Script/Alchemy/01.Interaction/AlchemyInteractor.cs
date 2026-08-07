@@ -31,7 +31,7 @@ namespace WitchChronicle.Alchemy
 
         private void Awake()
         {
-            if (_interactPrompt != null) _interactPrompt.SetActive(false);
+            // if (_interactPrompt != null) _interactPrompt.SetActive(false);
         }
 
         private void Update()
@@ -50,15 +50,15 @@ namespace WitchChronicle.Alchemy
             if (!other.CompareTag("Player")) return;
             _isPlayerNear = true;
             _playerRef = other.gameObject;
-            if (_interactPrompt != null && !_isUsing)
-                _interactPrompt.SetActive(true);
+            // if (_interactPrompt != null && !_isUsing)
+            //     _interactPrompt.SetActive(true);
         }
 
         private void OnTriggerExit(Collider other)
         {
             if (!other.CompareTag("Player")) return;
             _isPlayerNear = false;
-            if (_interactPrompt != null) _interactPrompt.SetActive(false);
+            // if (_interactPrompt != null) _interactPrompt.SetActive(false);
         }
 
         private void OpenAlchemy()

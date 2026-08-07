@@ -39,6 +39,8 @@ public sealed class PlayerUIInputReader : MonoBehaviour
     [SerializeField]
     private PauseController _pauseController;
 
+    private bool _dialoguePanelHiddenByPause;
+
     [Header("Player Input")]
     [Tooltip("패널이 열릴 때 캐릭터 이동 및 상호작용을 제어하기 위한 Input Action Asset")]
     [SerializeField]
@@ -549,6 +551,14 @@ public sealed class PlayerUIInputReader : MonoBehaviour
             return;
         }
 
+        // 대화창이 떠 있는 상태에서 Pause를 열면, 대화창 패널만 잠시 비활성화한다.
+        // (CursorLocker 등 다른 상태는 건드리지 않음)
+        if (DialogueUI.Instance != null && DialogueUI.Instance.IsPanelActive)
+        {
+            DialogueUI.Instance.HidePanelOnly();
+            _dialoguePanelHiddenByPause = true;
+        }
+
         /*
          * Time.timeScale을 0으로 변경하기 전에 화면을 캡처합니다.
          * 현재 방식은 Camera.Render()를 직접 호출하므로 정지 상태에서도
@@ -575,6 +585,13 @@ public sealed class PlayerUIInputReader : MonoBehaviour
          * Time.timeScale을 먼저 복구해도 정상 동작합니다.
          */
         Time.timeScale = 1f;
+
+        // Pause를 열면서 숨겼던 대화창 패널을 복원한다.
+        if (_dialoguePanelHiddenByPause)
+        {
+            _dialoguePanelHiddenByPause = false;
+            DialogueUI.Instance?.ShowPanelOnly();
+        }
     }
 
     private void HandlePausePanelClosed()
