@@ -112,11 +112,12 @@ namespace WitchChronicle.IdleFarming
         }
 
         private int GetOwnedCount(SeedData seed)
-        {
-            // TODO: HJH 인벤토리 API로 씨앗 개수 조회
-            // 지금은 테스트용으로 99 고정
-            return 99;
-        }
+{
+    if (seed == null || seed.seedItem == null)
+        return 0;
+
+    return PlayerInventory.Instance.GetTotalQuantity(seed.seedItem);
+}
 
         private void OnCardClicked(SeedData seed)
         {
@@ -155,16 +156,27 @@ namespace WitchChronicle.IdleFarming
         }
 
         private void OnPlantClicked()
-        {
-            if (_selectedSeed == null || _targetSlot == null) return;
+{
+    if (_selectedSeed == null || _targetSlot == null)
+        return;
 
-            // TODO: HJH 인벤토리에서 씨앗 1개 차감
-            // PlayerInventory.Instance.TryConsumeItem(_selectedSeed, 1);
+    if (!PlayerInventory.Instance.TryConsumeItem(_selectedSeed.seedItem, 1))
+    {
+        Debug.Log("씨앗이 부족합니다.");
+        return;
+    }
 
-            if (_targetSlot.PlantSeed(_selectedSeed))
-            {
-                Close();
-            }
-        }
+    if (_targetSlot.PlantSeed(_selectedSeed))
+    {
+        PlayerInventory.Instance.RaiseInventoryChanged();
+        Close();
+    }
+    else
+    {
+        // 심기 실패 시 씨앗 반환
+        PlayerInventory.Instance.AddItem(_selectedSeed.seedItem, 1);
+        PlayerInventory.Instance.RaiseInventoryChanged();
+    }
+}
     }
 }
