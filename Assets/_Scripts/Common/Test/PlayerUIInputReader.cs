@@ -104,6 +104,17 @@ public sealed class PlayerUIInputReader : MonoBehaviour
             return;
         }
 
+        // TeleportPanel이 열려있으면 Esc(HandleEscape에서 처리)를 제외한 나머지 단축키는 전부 무시합니다.
+        if (TeleportPanel.Instance != null && TeleportPanel.Instance.IsOpen)
+        {
+            if (Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                HandleEscape();
+            }
+
+            return;
+        }
+
         if (Keyboard.current.iKey.wasPressedThisFrame)
         {
             ToggleIntegrationPanel();
@@ -283,6 +294,12 @@ public sealed class PlayerUIInputReader : MonoBehaviour
         if (EnhanceNPC.Instance != null && EnhanceNPC.Instance.IsOpen)
         {
             EnhanceNPC.Instance.ToggleEnhanceUI();
+            return;
+        }
+
+        if (TeleportPanel.Instance != null && TeleportPanel.Instance.IsOpen)
+        {
+            TeleportPanel.Instance.ToggleTeleportPanel();
             return;
         }
 

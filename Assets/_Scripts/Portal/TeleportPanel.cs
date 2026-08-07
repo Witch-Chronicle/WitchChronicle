@@ -1,57 +1,133 @@
+using System;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
 /// 빠른 이동 목록 UI.
 ///
-/// 열릴 때 씬에 있는 TeleportDestination을 훑어 버튼을 만들고,
-/// 버튼을 누르면 파티 전원을 그 위치로 옮긴 뒤 닫힌다.
+/// 버튼은 인스펙터에 미리 배치해두고, 각 버튼에 TeleportPointId를 지정해서
+/// 씬의 TeleportDestination과 매칭한다. 해당 Id의 목적지가 씬에 없으면
+/// (미보유/미해금 등) 그 버튼은 자동으로 비활성화된다.
+///
+/// 싱글톤(.Instance)으로 등록되어 PlayerUIInputReader가 Esc 입력 시
+/// 인스펙터 연결 없이 직접 참조해서 닫을 수 있다.
 /// </summary>
 public class TeleportPanel : MonoBehaviour
 {
+    public static TeleportPanel Instance { get; private set; }
+
+    [Serializable]
+    private class TeleportButtonEntry
+    {
+        public TeleportPointId id;
+        public Button button;
+    }
+
     [Header("패널")]
     [SerializeField] private UIPanelAnimator _panelAnimator;
 
-    [Header("목록")]
-    [Tooltip("목적지 하나를 표시할 버튼 프리팹. 하위에 TMP_Text가 있어야 이름이 표시된다.")]
-    [SerializeField] private Button _entryPrefab;
-
-    [Tooltip("버튼이 생성될 부모 (Scroll View의 Content 등).")]
-    [SerializeField] private Transform _entryRoot;
+    [Header("고정 버튼 목록")]
+    [Tooltip("미리 배치해둔 버튼과 이동할 목적지의 Id를 짝지어 등록한다.")]
+    [SerializeField] private List<TeleportButtonEntry> _entries = new List<TeleportButtonEntry>();
 
     [Header("닫기")]
     [SerializeField] private Button _closeButton;
 
-    private readonly List<Button> _spawned = new List<Button>();
     private bool _isOpen;
+    private bool _isBound;
 
     public bool IsOpen => _isOpen;
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+
         if (_panelAnimator != null)
         {
             _panelAnimator.SetClosedImmediate();
+            _panelAnimator.OnClosed += HandlePanelClosed;
         }
 
         if (_closeButton != null)
         {
             _closeButton.onClick.AddListener(Close);
         }
+
+        BindButtons();
     }
 
     private void OnDestroy()
     {
+        if (_panelAnimator != null)
+        {
+            _panelAnimator.OnClosed -= HandlePanelClosed;
+        }
+
         if (_closeButton != null)
         {
             _closeButton.onClick.RemoveListener(Close);
         }
+
+        UnbindButtons();
+
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
+    private void BindButtons()
+    {
+        if (_isBound)
+        {
+            return;
+        }
+
+        _isBound = true;
+
+        for (int i = 0; i < _entries.Count; i++)
+        {
+            TeleportButtonEntry entry = _entries[i];
+
+            if (entry == null || entry.button == null)
+            {
+                continue;
+            }
+
+            TeleportPointId capturedId = entry.id; // 클로저 캡처 주의
+            entry.button.onClick.AddListener(() => Teleport(capturedId));
+        }
+    }
+
+    private void UnbindButtons()
+    {
+        if (_isBound == false)
+        {
+            return;
+        }
+
+        _isBound = false;
+
+        for (int i = 0; i < _entries.Count; i++)
+        {
+            TeleportButtonEntry entry = _entries[i];
+
+            if (entry != null && entry.button != null)
+            {
+                entry.button.onClick.RemoveAllListeners();
+            }
+        }
     }
 
     /// <summary>
-    /// 목록을 새로 만들고 패널을 연다.
+    /// 패널을 연다. 현재 씬에 존재하지 않는 목적지의 버튼은 비활성화한다.
     /// </summary>
     public void Open()
     {
@@ -60,9 +136,18 @@ public class TeleportPanel : MonoBehaviour
             return;
         }
 
-        Rebuild();
+        RefreshButtonAvailability();
 
         _isOpen = true;
+
+        QuestListUI.Instance?.Close();
+        MainHUDUIController.Instance?.Close();
+
+        /*
+         * 패널을 화면에 표시하기 전에 현재 월드 화면을 캡처해야
+         * 패널 자체가 Blur 이미지에 포함되지 않습니다.
+         */
+        UIBackgroundBlurManager.Instance?.Show();
 
         if (_panelAnimator != null)
         {
@@ -72,9 +157,6 @@ public class TeleportPanel : MonoBehaviour
         CursorLocker.Instance?.EnterUIMode();
     }
 
-    /// <summary>
-    /// 패널을 닫는다.
-    /// </summary>
     public void Close()
     {
         if (_isOpen == false)
@@ -83,6 +165,9 @@ public class TeleportPanel : MonoBehaviour
         }
 
         _isOpen = false;
+
+        QuestListUI.Instance?.Open();
+        MainHUDUIController.Instance?.Open();
 
         if (_panelAnimator != null)
         {
@@ -93,71 +178,48 @@ public class TeleportPanel : MonoBehaviour
     }
 
     /// <summary>
-    /// 현재 씬의 목적지들로 버튼 목록을 다시 만든다.
+    /// 열림/닫힘을 토글한다. ShopNPC.ToggleShop() 등과 동일한 패턴.
     /// </summary>
-    private void Rebuild()
+    public void ToggleTeleportPanel()
     {
-        ClearEntries();
-
-        if (_entryPrefab == null || _entryRoot == null)
+        if (_isOpen)
         {
-            Debug.LogWarning("[TeleportPanel] 버튼 프리팹 또는 생성 위치가 연결되지 않았습니다.");
-            return;
+            Close();
         }
-
-        IReadOnlyList<TeleportDestination> destinations = TeleportDestination.All;
-
-        for (int i = 0; i < destinations.Count; i++)
+        else
         {
-            TeleportDestination destination = destinations[i];
+            Open();
+        }
+    }
 
-            if (destination == null)
+    private void HandlePanelClosed()
+    {
+        UIBackgroundBlurManager.Instance?.Hide();
+    }
+
+    private void RefreshButtonAvailability()
+    {
+        for (int i = 0; i < _entries.Count; i++)
+        {
+            TeleportButtonEntry entry = _entries[i];
+
+            if (entry == null || entry.button == null)
             {
                 continue;
             }
 
-            Button entry = Instantiate(_entryPrefab, _entryRoot);
-            entry.gameObject.SetActive(true);
-
-            TMP_Text label = entry.GetComponentInChildren<TMP_Text>();
-
-            if (label != null)
-            {
-                label.text = destination.DisplayName;
-            }
-
-            // 루프 변수를 그대로 캡처하면 마지막 값이 잡히므로 지역 변수에 담아 전달
-            TeleportDestination captured = destination;
-            entry.onClick.AddListener(() => Teleport(captured));
-
-            _spawned.Add(entry);
+            bool exists = TeleportDestination.FindById(entry.id) != null;
+            entry.button.interactable = exists;
         }
     }
 
-    /// <summary>
-    /// 생성해둔 버튼들을 제거한다.
-    /// </summary>
-    private void ClearEntries()
+    private void Teleport(TeleportPointId id)
     {
-        for (int i = 0; i < _spawned.Count; i++)
-        {
-            if (_spawned[i] != null)
-            {
-                Destroy(_spawned[i].gameObject);
-            }
-        }
+        TeleportDestination destination = TeleportDestination.FindById(id);
 
-        _spawned.Clear();
-    }
-
-    /// <summary>
-    /// 파티 전원을 목적지로 옮기고 패널을 닫는다.
-    /// </summary>
-    /// <param name="destination">이동할 목적지</param>
-    private void Teleport(TeleportDestination destination)
-    {
         if (destination == null)
         {
+            Debug.LogWarning($"[TeleportPanel] 씬에서 목적지를 찾을 수 없습니다: {id}");
             return;
         }
 
@@ -168,7 +230,6 @@ public class TeleportPanel : MonoBehaviour
         }
 
         Party.Instance.MoveTo(destination.Position, destination.Rotation);
-
         Close();
     }
 }
