@@ -16,15 +16,15 @@ MonoBehaviour:
   _skillName: "\uD504\uB85C\uC2A4\uD2B8 \uB178\uBC14"
   _description: "\uAC70\uB300\uD55C \uC5BC\uC74C \uCC3D\uC744 \uC18C\uD658\uD574
     \uC801 \uC804\uCCB4\uB97C \uAFF0\uB6AB\uB294\uB2E4."
-  _tier: 1
-  _mpCost: 32
+  _tier: 2
+  _mpCost: 42
   _elementType: 3
   _skillType: 0
   _damageType: 1
   _power: 45
   _targetType: 1
-  _statusEffectType: 0
-  _statusChance: 0
+  _statusEffectType: 3
+  _statusChance: 0.2
   _cureStatusEffectType: 0
   _buffData: {fileID: 0}
   _presentationType: 1
@@ -43,5 +43,6 @@ MonoBehaviour:
   _projectileTravelTime: 0
   _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
+  _constellationPathAttackData: {fileID: 0}
   _drawGuideJson: {fileID: 4900000, guid: ab1502cbbe3bb3d40b5e8e2c6849941a, type: 3}
   _drawExampleSprite: {fileID: 21300000, guid: 2dab8d07c7efa7c438c181518af9d72d, type: 3}
