@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_dark_mage
   _enemyName: "\uC5B4\uB460\uC758 \uB9C8\uBC95\uC0AC"
+  _icon: {fileID: 0}
+  _isBoss: 0
   _maxHp: 60
   _attackPower: 5
   _magicPower: 25
@@ -27,6 +29,6 @@ MonoBehaviour:
   _skillList: []
   _aiProfileData: {fileID: 0}
   _expReward: 20
-  _goldReward: 10
+  _goldReward: 120
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 3972964382682025698, guid: 846685595d8846445b908523ba3ed2e8, type: 3}

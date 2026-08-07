@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_fire_knighjt
   _enemyName: "\uBD88\uC758 \uAE30\uC0AC"
+  _icon: {fileID: 0}
+  _isBoss: 0
   _maxHp: 110
   _attackPower: 10
   _magicPower: 0
@@ -27,6 +29,6 @@ MonoBehaviour:
   _skillList: []
   _aiProfileData: {fileID: 11400000, guid: ee2405d3365f1184c926b34e0c5b5d13, type: 2}
   _expReward: 20
-  _goldReward: 15
+  _goldReward: 80
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 1802286859466036053, guid: 5d9be7405bf6c36478890aef9df343ec, type: 3}

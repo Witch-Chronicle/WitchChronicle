@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_wild_orc
   _enemyName: "\uC624\uD06C"
+  _icon: {fileID: 0}
+  _isBoss: 0
   _maxHp: 110
   _attackPower: 20
   _magicPower: 0
@@ -27,6 +29,6 @@ MonoBehaviour:
   _skillList: []
   _aiProfileData: {fileID: 0}
   _expReward: 15
-  _goldReward: 8
+  _goldReward: 40
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 8511647367374691266, guid: a9c37af2c2e296546b31a069465c3e77, type: 3}

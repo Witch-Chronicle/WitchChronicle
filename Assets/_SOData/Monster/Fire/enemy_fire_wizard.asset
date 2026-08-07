@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_fire_wizard
   _enemyName: "\uBD88\uC758 \uB9C8\uBC95\uC0AC"
+  _icon: {fileID: 0}
+  _isBoss: 0
   _maxHp: 75
   _attackPower: 5
   _magicPower: 20
@@ -27,6 +29,6 @@ MonoBehaviour:
   _skillList: []
   _aiProfileData: {fileID: 11400000, guid: a279232d314dc134d82e7fdde3b90f58, type: 2}
   _expReward: 10
-  _goldReward: 10
+  _goldReward: 80
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 8493481916742154775, guid: c8bacea06cb5e0a4ab6364fc46103ef5, type: 3}
