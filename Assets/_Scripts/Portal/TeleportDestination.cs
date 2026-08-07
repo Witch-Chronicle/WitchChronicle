@@ -9,12 +9,13 @@ using UnityEngine;
 /// 캐릭터가 바라볼 방향까지 고려해서 회전을 맞춰두면 좋다.
 ///
 /// 활성화될 때 스스로 목록에 등록되므로 별도 등록 작업이 필요 없다.
+/// TeleportPanel의 고정 버튼과는 Id로 매칭된다.
 /// </summary>
 public class TeleportDestination : MonoBehaviour
 {
-    [Header("표시 이름")]
-    [Tooltip("빠른 이동 목록에 표시될 이름. 비우면 오브젝트 이름을 쓴다.")]
-    [SerializeField] private string _displayName;
+    [Header("식별자")]
+    [Tooltip("TeleportPanel의 고정 버튼과 매칭할 식별자.")]
+    [SerializeField] private TeleportPointId _id;
 
     private static readonly List<TeleportDestination> _all = new List<TeleportDestination>();
 
@@ -23,10 +24,8 @@ public class TeleportDestination : MonoBehaviour
     /// </summary>
     public static IReadOnlyList<TeleportDestination> All => _all;
 
-    public string DisplayName => string.IsNullOrEmpty(_displayName) ? name : _displayName;
-
+    public TeleportPointId Id => _id;
     public Vector3 Position => transform.position;
-
     public Quaternion Rotation => transform.rotation;
 
     private void OnEnable()
@@ -40,6 +39,22 @@ public class TeleportDestination : MonoBehaviour
     private void OnDisable()
     {
         _all.Remove(this);
+    }
+
+    /// <summary>
+    /// Id로 등록된 목적지를 찾는다. 없으면 null.
+    /// </summary>
+    public static TeleportDestination FindById(TeleportPointId id)
+    {
+        for (int i = 0; i < _all.Count; i++)
+        {
+            if (_all[i] != null && _all[i].Id == id)
+            {
+                return _all[i];
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
