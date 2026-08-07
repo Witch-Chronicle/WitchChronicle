@@ -61,6 +61,7 @@ public class StatUIController : MonoBehaviour
     [SerializeField] private Button _closeBtn;
 
     [Header("Base Info")]
+    [SerializeField] private Image _characterIconImage;
     [SerializeField] private TMP_Text _characterNameTxt;
     [SerializeField] private TMP_Text _levelTxt;
     [SerializeField] private TMP_Text _expTxt;
@@ -210,6 +211,9 @@ public class StatUIController : MonoBehaviour
         if (CharacterSelectionManager.Instance == null) return;
 
         CharacterType selected = CharacterSelectionManager.Instance.GetSelected();
+
+        UpdateCharacterIcon(selected);
+
         string characterId = selected.ToString();
 
         if (PersistentCharacterManager.Instance == null)
@@ -242,6 +246,21 @@ public class StatUIController : MonoBehaviour
 
         RefreshUI();
         RefreshDetailUI();
+    }
+
+    /// <summary>
+    /// 현재 선택된 캐릭터의 StatIcon을 _characterIconImage에 반영.
+    /// </summary>
+    private void UpdateCharacterIcon(CharacterType selected)
+    {
+        if (_characterIconImage == null) return;
+
+        Sprite icon = CharacterSelectionManager.Instance != null
+            ? CharacterSelectionManager.Instance.GetStatIcon(selected)
+            : null;
+
+        _characterIconImage.sprite = icon;
+        _characterIconImage.enabled = icon != null;
     }
 
     private void UnbindCurrent()
