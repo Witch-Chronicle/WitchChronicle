@@ -416,9 +416,8 @@ public class ResultController : MonoBehaviour
     {
         RestoreAllPartyVitals();
 
-        SceneTransitionManager.Instance.LoadScene(
+        SceneTransitionManager.Instance.LoadSceneWithLoading(
             _defeatReturnScene,
-            delayBeforeLoad: 0f,
             onBeforeLoad: null,
             onLoaded: () =>
             {
@@ -428,12 +427,12 @@ public class ResultController : MonoBehaviour
                 }
 
                 FieldPartySpawner spawner = FindAnyObjectByType<FieldPartySpawner>();
-
                 if (spawner != null)
                 {
                     spawner.SpawnAtSpawnPoint();
                 }
-            });
+            },
+            waitForReadySignal: true);
     }
 
     /// <summary>

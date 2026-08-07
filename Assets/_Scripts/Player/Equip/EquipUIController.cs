@@ -1,5 +1,6 @@
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.UI;
 
 /// <summary>
 /// IntergrationPanel/Equip 쪽 8개 슬롯을 "지금 선택된 캐릭터"의 장착 상태로 표시.
@@ -22,6 +23,9 @@ public class EquipUIController : MonoBehaviour
     [SerializeField] private float _slideDistance = 0f;
 
     private float _mainOriginalX;
+
+    [Header("Character Icon")]
+    [SerializeField] private Image _characterIconImage;
 
     [Header("EquipLeftSlots")]
     [SerializeField] private EquipSlotView _weaponSlot;
@@ -127,9 +131,14 @@ public class EquipUIController : MonoBehaviour
 
         _boundEquipment = null;
 
+        CharacterType selected = CharacterType.ariel; // 기본값, 아래에서 실제 선택값으로 갱신됨
+        bool hasSelection = false;
+
         if (CharacterSelectionManager.Instance != null && PersistentCharacterManager.Instance != null)
         {
-            CharacterType selected = CharacterSelectionManager.Instance.GetSelected();
+            selected = CharacterSelectionManager.Instance.GetSelected();
+            hasSelection = true;
+
             string characterId = selected.ToString();
 
             if (PersistentCharacterManager.Instance.TryGetCharacter(characterId, out PersistentCharacterUnit unit))
@@ -143,7 +152,23 @@ public class EquipUIController : MonoBehaviour
             _boundEquipment.OnEquipmentChanged += RefreshAllSlots;
         }
 
+        UpdateCharacterIcon(hasSelection, selected);
         RefreshAllSlots();
+    }
+
+    /// <summary>
+    /// 현재 선택된 캐릭터의 EquipIcon을 _characterIconImage에 반영.
+    /// </summary>
+    private void UpdateCharacterIcon(bool hasSelection, CharacterType selected)
+    {
+        if (_characterIconImage == null) return;
+
+        Sprite icon = hasSelection && CharacterSelectionManager.Instance != null
+            ? CharacterSelectionManager.Instance.GetEquipIcon(selected)
+            : null;
+
+        _characterIconImage.sprite = icon;
+        _characterIconImage.enabled = icon != null;
     }
 
     private void RefreshAllSlots()
