@@ -339,6 +339,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c32eace9873656740a2dbd35b054e9d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillGachaResultOverlayController
+--- !u!114 &212642184 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7939947417566065005, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+  m_PrefabInstance: {fileID: 6012070812511010239}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!1 &291248448
 GameObject:
   m_ObjectHideFlags: 0
@@ -2551,6 +2562,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 829549192176808984, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+      propertyPath: m_Name
+      value: TransitionPanel_v1
+      objectReference: {fileID: 0}
+    - target: {fileID: 829549192176808984, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
@@ -2638,6 +2653,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: AlertSystem_v1
       objectReference: {fileID: 0}
+    - target: {fileID: 4505723543586445851, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+      propertyPath: _duration
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4505723543586445851, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+      propertyPath: _transitionImage
+      value: 
+      objectReference: {fileID: 212642184}
     - target: {fileID: 8225383930443944553, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
       propertyPath: m_AnchorMax.x
       value: 1
@@ -2663,7 +2686,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8227323719048592245, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+    - {fileID: 2840514485456663550, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+    - {fileID: 5295289954611520096, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+    - {fileID: 4206521867473665869, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+    - {fileID: 9038542929472913252, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+    - {fileID: 1135042051352908091, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+    - {fileID: 8470027505141529519, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+    - {fileID: 7671148840306297402, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+    - {fileID: 5343123091595728620, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+    - {fileID: 7658432345211551101, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
+    - {fileID: 424760707528727161, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 86cc7b2fb69cc4947819f2c8779843db, type: 3}

@@ -1,63 +1,70 @@
-using System.Collections.Generic;
+using System;
 using UnityEngine;
+using UnityEngine.UI;
 using DG.Tweening;
 
 /// <summary>
-/// TransitionPanel 전담. SystemUI(DontDestroyOnLoad) 하위에 위치해서 모든 씬 전환에 공통으로 사용됨.
-/// - CoverScreen(): 화면 공개 상태 -> 전부 오른쪽에서 들어와 화면을 덮음
-/// - RevealScreen(): 덮인 상태 -> 전부 왼쪽으로 사라지며 화면 공개
+/// 전체 화면 UI Image + Timing Mask Shader를 이용한 씬 전환 컨트롤러.
+/// 기존 공개 함수명과 호출 방식은 유지합니다.
 /// </summary>
 public class TransitionController : MonoBehaviour
 {
-    [Header("Raycast 차단용 (선택)")]
+    [Header("UI")]
     [SerializeField] private CanvasGroup _canvasGroup;
-
-    [Header("Strips (위에서 아래 순서로 등록)")]
-    [SerializeField] private List<RectTransform> _strips = new List<RectTransform>();
+    [SerializeField] private Image _transitionImage;
 
     [Header("Animation")]
-    [SerializeField] private float _duration = 0.4f;
-    [SerializeField] private float _maxStaggerDelay = 0.25f;
-    [SerializeField] private Ease _ease = Ease.InOutQuad;
+    [SerializeField] private float _duration = 0.65f;
+    [SerializeField] private Ease _coverEase = Ease.InOutCubic;
+    [SerializeField] private Ease _revealEase = Ease.InOutCubic;
+    [SerializeField] private bool _ignoreTimeScale = true;
 
-    private readonly List<float> _visiblePosX = new List<float>();
-    private readonly List<float> _leftHiddenPosX = new List<float>();
-    private readonly List<float> _rightHiddenPosX = new List<float>();
+    private static readonly int ProgressId = Shader.PropertyToID("_Progress");
+    private static readonly int ModeId = Shader.PropertyToID("_Mode");
 
+    private Material _runtimeMaterial;
+    private Tween _activeTween;
     private bool _isInitialized;
-    private bool _isCovered; // 현재 화면이 덮여있는 상태인지 (중복 호출 방지용)
+    private bool _isCovered;
 
     private void EnsureInitialized()
     {
-        if (_isInitialized) return;
-
-        foreach (var strip in _strips)
+        if (_isInitialized)
         {
-            if (strip == null)
-            {
-                _visiblePosX.Add(0f);
-                _leftHiddenPosX.Add(0f);
-                _rightHiddenPosX.Add(0f);
-                continue;
-            }
-
-            float visibleX = strip.anchoredPosition.x;
-            float width = strip.rect.width;
-
-            _visiblePosX.Add(visibleX);
-            _leftHiddenPosX.Add(visibleX - width);
-            _rightHiddenPosX.Add(visibleX + width);
+            return;
         }
+
+        if (_transitionImage == null)
+        {
+            Debug.LogError("[TransitionController] Transition Image가 연결되지 않았습니다.", this);
+            return;
+        }
+
+        if (_transitionImage.material == null || _transitionImage.material.shader == null)
+        {
+            Debug.LogError("[TransitionController] Transition Image에 Mask Material을 연결하세요.", this);
+            return;
+        }
+
+        // 프로젝트 에셋 Material의 값을 직접 변경하지 않도록 런타임 복사본을 사용합니다.
+        _runtimeMaterial = new Material(_transitionImage.material);
+        _runtimeMaterial.name = _transitionImage.material.name + " (Runtime)";
+        _transitionImage.material = _runtimeMaterial;
+        _transitionImage.color = Color.white;
 
         _isInitialized = true;
     }
 
-    /// <summary>
-    /// 화면을 덮음 (씬 전환 시작 전 호출). 완료되면 onComplete 호출.
-    /// </summary>
-    public void CoverScreen(System.Action onComplete = null)
+    /// <summary>화면을 왼쪽에서 오른쪽 방향으로 덮습니다.</summary>
+    public void CoverScreen(Action onComplete = null)
     {
         EnsureInitialized();
+
+        if (_isInitialized == false)
+        {
+            onComplete?.Invoke();
+            return;
+        }
 
         if (_isCovered)
         {
@@ -65,23 +72,37 @@ public class TransitionController : MonoBehaviour
             return;
         }
 
+        KillCurrentAnimation();
         _isCovered = true;
+        SetRaycastBlock(true);
+        _transitionImage.enabled = true;
 
-        if (_canvasGroup != null)
-        {
-            _canvasGroup.interactable = true;
-            _canvasGroup.blocksRaycasts = true;
-        }
-
-        RunStripAnimation(_leftHiddenPosX, _visiblePosX, onComplete, setStartImmediate: true);
+        SetShaderState(mode: 0f, progress: 0f);
+        _activeTween = DOTween.To(
+                () => _runtimeMaterial.GetFloat(ProgressId),
+                value => _runtimeMaterial.SetFloat(ProgressId, value),
+                1f,
+                _duration)
+            .SetEase(_coverEase)
+            .SetUpdate(_ignoreTimeScale)
+            .OnComplete(() =>
+            {
+                _runtimeMaterial.SetFloat(ProgressId, 1f);
+                _activeTween = null;
+                onComplete?.Invoke();
+            });
     }
 
-    /// <summary>
-    /// 화면을 공개 (씬 로드 완료 후 호출). 완료되면 onComplete 호출.
-    /// </summary>
-    public void RevealScreen(System.Action onComplete = null)
+    /// <summary>검정 화면을 왼쪽에서 오른쪽 방향으로 걷어냅니다.</summary>
+    public void RevealScreen(Action onComplete = null)
     {
         EnsureInitialized();
+
+        if (_isInitialized == false)
+        {
+            onComplete?.Invoke();
+            return;
+        }
 
         if (_isCovered == false)
         {
@@ -89,114 +110,82 @@ public class TransitionController : MonoBehaviour
             return;
         }
 
+        KillCurrentAnimation();
         _isCovered = false;
+        SetRaycastBlock(true);
+        _transitionImage.enabled = true;
 
-        if (_canvasGroup != null)
-        {
-            _canvasGroup.interactable = false;
-            _canvasGroup.blocksRaycasts = false;
-        }
-
-        RunStripAnimation(_visiblePosX, _rightHiddenPosX, onComplete, setStartImmediate: false);
-    }
-
-    private void RunStripAnimation(
-        List<float> startPosXOverride,
-        List<float> targetPosX,
-        System.Action onComplete,
-        bool setStartImmediate)
-    {
-        if (_strips.Count == 0)
-        {
-            onComplete?.Invoke();
-            return;
-        }
-
-        int remaining = _strips.Count;
-
-        void HandleStripComplete()
-        {
-            remaining--;
-            if (remaining <= 0)
+        SetShaderState(mode: 1f, progress: 0f);
+        _activeTween = DOTween.To(
+                () => _runtimeMaterial.GetFloat(ProgressId),
+                value => _runtimeMaterial.SetFloat(ProgressId, value),
+                1f,
+                _duration)
+            .SetEase(_revealEase)
+            .SetUpdate(_ignoreTimeScale)
+            .OnComplete(() =>
             {
+                _runtimeMaterial.SetFloat(ProgressId, 1f);
+                _transitionImage.enabled = false;
+                SetRaycastBlock(false);
+                _activeTween = null;
                 onComplete?.Invoke();
-            }
-        }
-
-        for (int i = 0; i < _strips.Count; i++)
-        {
-            RectTransform strip = _strips[i];
-
-            if (strip == null)
-            {
-                HandleStripComplete();
-                continue;
-            }
-
-            strip.DOKill();
-
-            if (setStartImmediate)
-            {
-                SetStripPosXImmediate(i, startPosXOverride[i]);
-            }
-
-            strip.DOAnchorPosX(targetPosX[i], _duration)
-                .SetEase(_ease)
-                .SetDelay(Random.Range(0f, _maxStaggerDelay))
-                .OnComplete(HandleStripComplete);
-        }
+            });
     }
 
-    private void SetStripPosXImmediate(int index, float posX)
-    {
-        RectTransform strip = _strips[index];
-        if (strip == null) return;
-
-        strip.anchoredPosition = new Vector2(posX, strip.anchoredPosition.y);
-    }
-
-    /// <summary>
-    /// 애니메이션 없이 즉시 "덮인" 상태로 세팅. Boot 씬처럼 씬 로드 전에
-    /// 미리 화면을 덮어두고 싶을 때 사용 (RevealScreen()으로 자연스럽게 걷어낼 수 있게).
-    /// </summary>
+    /// <summary>애니메이션 없이 즉시 완전한 검정 상태로 설정합니다.</summary>
     public void SetCoveredImmediate()
     {
         EnsureInitialized();
+        if (_isInitialized == false) return;
 
+        KillCurrentAnimation();
         _isCovered = true;
-
-        if (_canvasGroup != null)
-        {
-            _canvasGroup.interactable = true;
-            _canvasGroup.blocksRaycasts = true;
-        }
-
-        for (int i = 0; i < _strips.Count; i++)
-        {
-            SetStripPosXImmediate(i, _visiblePosX[i]);
-        }
+        _transitionImage.enabled = true;
+        SetShaderState(mode: 0f, progress: 1f);
+        SetRaycastBlock(true);
     }
 
-    /// <summary>
-    /// 애니메이션 없이 즉시 "공개된" 상태로 세팅. Loading 씬 진입처럼
-    /// 화면을 걷는 연출 없이 곧바로 콘텐츠를 보여주고 싶을 때 사용
-    /// (이후 CoverScreen()으로 다시 자연스럽게 덮을 수 있게).
-    /// </summary>
+    /// <summary>애니메이션 없이 즉시 완전히 공개된 상태로 설정합니다.</summary>
     public void SetRevealedImmediate()
     {
         EnsureInitialized();
+        if (_isInitialized == false) return;
 
+        KillCurrentAnimation();
         _isCovered = false;
+        SetShaderState(mode: 0f, progress: 0f);
+        _transitionImage.enabled = false;
+        SetRaycastBlock(false);
+    }
 
-        if (_canvasGroup != null)
-        {
-            _canvasGroup.interactable = false;
-            _canvasGroup.blocksRaycasts = false;
-        }
+    private void SetShaderState(float mode, float progress)
+    {
+        _runtimeMaterial.SetFloat(ModeId, mode);
+        _runtimeMaterial.SetFloat(ProgressId, progress);
+    }
 
-        for (int i = 0; i < _strips.Count; i++)
+    private void SetRaycastBlock(bool value)
+    {
+        if (_canvasGroup == null) return;
+        _canvasGroup.interactable = value;
+        _canvasGroup.blocksRaycasts = value;
+    }
+
+    private void KillCurrentAnimation()
+    {
+        if (_activeTween == null) return;
+        _activeTween.Kill(false);
+        _activeTween = null;
+    }
+
+    private void OnDestroy()
+    {
+        KillCurrentAnimation();
+
+        if (_runtimeMaterial != null)
         {
-            SetStripPosXImmediate(i, _rightHiddenPosX[i]);
+            Destroy(_runtimeMaterial);
         }
     }
 }
