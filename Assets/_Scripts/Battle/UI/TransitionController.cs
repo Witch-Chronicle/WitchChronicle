@@ -176,4 +176,27 @@ public class TransitionController : MonoBehaviour
             SetStripPosXImmediate(i, _visiblePosX[i]);
         }
     }
+
+    /// <summary>
+    /// 애니메이션 없이 즉시 "공개된" 상태로 세팅. Loading 씬 진입처럼
+    /// 화면을 걷는 연출 없이 곧바로 콘텐츠를 보여주고 싶을 때 사용
+    /// (이후 CoverScreen()으로 다시 자연스럽게 덮을 수 있게).
+    /// </summary>
+    public void SetRevealedImmediate()
+    {
+        EnsureInitialized();
+
+        _isCovered = false;
+
+        if (_canvasGroup != null)
+        {
+            _canvasGroup.interactable = false;
+            _canvasGroup.blocksRaycasts = false;
+        }
+
+        for (int i = 0; i < _strips.Count; i++)
+        {
+            SetStripPosXImmediate(i, _rightHiddenPosX[i]);
+        }
+    }
 }
