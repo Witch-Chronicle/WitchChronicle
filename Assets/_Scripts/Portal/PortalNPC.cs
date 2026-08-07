@@ -58,12 +58,14 @@ public class PortalNPC : MonoBehaviour, ITFInteractable
 
                 _portalPanelAnimator.Open();
                 QuestListUI.Instance.Close();
+                MainHUDUIController.Instance.Close();
                 CursorLocker.Instance.EnterUIMode();
             }
             else
             {
                 _portalPanelAnimator.Close();
                 QuestListUI.Instance.Open();
+                MainHUDUIController.Instance.Open();
                 CursorLocker.Instance.ExitUIMode();
 
                 // Blur는 여기서 바로 끄지 않음

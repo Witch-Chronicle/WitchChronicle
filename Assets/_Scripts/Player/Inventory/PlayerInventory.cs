@@ -244,6 +244,7 @@ public class PlayerInventory : MonoBehaviour
         if (amount <= 0) return;
 
         _gold += amount;
+        AlertManager.Instance?.Enqueue(AlertType.GoldAcquired, amount);
         OnGoldChanged?.Invoke(_gold);
     }
 

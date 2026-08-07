@@ -55,12 +55,14 @@ public class EnhanceNPC : MonoBehaviour
 
                 _enhancePanelAnimator.Open();
                 QuestListUI.Instance.Close();
+                MainHUDUIController.Instance.Close();
                 CursorLocker.Instance.EnterUIMode();
             }
             else
             {
                 _enhancePanelAnimator.Close();
                 QuestListUI.Instance.Open();
+                MainHUDUIController.Instance.Open();
                 CursorLocker.Instance.ExitUIMode();
 
                 // Blur는 여기서 바로 안 끔 - Close 애니메이션이 끝난 뒤 HandleEnhancePanelClosed()에서 해제

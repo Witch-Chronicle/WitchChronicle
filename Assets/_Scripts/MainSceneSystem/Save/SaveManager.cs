@@ -222,7 +222,6 @@ public class SaveManager : MonoBehaviour
             SaveData data = new SaveData();
             data.Version = 1;
 
-            CurrentSaveData = data;
 
             // 농사 밭 세이브 데이터 저장
             if (WitchChronicle.IdleFarming.PlotManager.Instance != null)
@@ -371,8 +370,11 @@ public class SaveManager : MonoBehaviour
                 }
             }
 
+            CurrentSaveData = data;
+
             string json = JsonUtility.ToJson(data, true);
             File.WriteAllText(SaveFilePath, json);
+
             Debug.Log($"<color=cyan>[SaveManager] 저장 성공!</color> : {SaveFilePath}");
         }
         catch (Exception ex)

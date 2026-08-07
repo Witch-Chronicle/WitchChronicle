@@ -135,6 +135,9 @@ public class FishingUIManager : MonoBehaviour
             Debug.LogError("[FishingUIManager] fishingPanel이 null! 인스펙터 연결 확인");
             return;
         }
+        QuestListUI.Instance.Close();
+        MainHUDUIController.Instance.Close();
+
         fishingPanel.SetActive(true);
         _isPanelOpen = true;
 
@@ -147,6 +150,9 @@ public class FishingUIManager : MonoBehaviour
     public void ClosePanel()
     {
         if (fishingPanel == null) return;
+        QuestListUI.Instance.Open();
+        MainHUDUIController.Instance.Open();
+
         fishingPanel.SetActive(false);
         _isPanelOpen = false;
         _timerRunning = false;
