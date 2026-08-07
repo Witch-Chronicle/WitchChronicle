@@ -14,19 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_wild_rat
   _enemyName: "\uC950"
-  _maxHp: 70
-  _attackPower: 15
+  _icon: {fileID: 21300000, guid: 804b399e178a16843a7a7be27d00e15e, type: 3}
+  _isBoss: 0
+  _maxHp: 200
+  _attackPower: 32
   _magicPower: 0
   _defensePower: 0
   _magicDefensePower: 0
-  _speed: 20
+  _speed: 18
   _weakElements: 050000000200000001000000
   _resistElements: 06000000
   _nullElements: 
   _absorbElements: 
-  _skillList: []
-  _aiProfileData: {fileID: 0}
-  _expReward: 15
-  _goldReward: 8
+  _skillList:
+  - {fileID: 11400000, guid: 202b6b67dc24a6d4197768238915b8d1, type: 2}
+  _aiProfileData: {fileID: 11400000, guid: 936d543f6091ae54f86b4027dc5bf994, type: 2}
+  _expReward: 35
+  _goldReward: 50
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 7237178871622730094, guid: d239e7fead7c01c468aceb9f43c67b37, type: 3}

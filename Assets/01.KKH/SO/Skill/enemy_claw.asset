@@ -20,21 +20,27 @@ MonoBehaviour:
   _elementType: 1
   _skillType: 0
   _damageType: 0
-  _power: 20
+  _power: 15
   _targetType: 0
   _statusEffectType: 0
   _statusChance: 0
+  _cureStatusEffectType: 0
   _buffData: {fileID: 0}
   _presentationType: 1
   _skillIcon: {fileID: 0}
-  _hitVfxOffset: {x: 0, y: 1, z: 0}
   _voiceClip: {fileID: 0}
   _impactDelay: 0.25
   _castSfx: {fileID: 8300000, guid: 877c3c1c3d9ca754f94bd3365a622627, type: 3}
   _hitSfx: {fileID: 8300000, guid: 20678c46e5ef3f54e8e7819fbdab0d64, type: 3}
   _castVfxPrefab: {fileID: 0}
-  _projectileVfxPrefab: {fileID: 1007489450165806, guid: 6e1e59f2c5ce521499157f9b16215908, type: 3}
-  _hitVfxPrefab: {fileID: 0}
-  _constellationSequenceData: {fileID: 0}
+  _projectileVfxPrefab: {fileID: 69906001918393858, guid: 678b211dce5d12d41a393f346272d47e, type: 3}
+  _hitVfxPrefab: {fileID: 3305186517166574314, guid: ffc23d1b6cf540349b1269238352af90, type: 3}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
+  _hitVfxOffset: {x: 0, y: 1, z: 0}
+  _castVfxScale: 0
+  _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
+  _constellationPathSequenceData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

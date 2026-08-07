@@ -14,22 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_wild_mushroom
   _enemyName: "\uBC84\uC12F"
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 2ed1e14170f87234bb2dbb8a0b47d9c4, type: 3}
   _isBoss: 0
-  _maxHp: 500
-  _attackPower: 10
-  _magicPower: 10
-  _defensePower: 5
-  _magicDefensePower: 5
-  _speed: 15
+  _maxHp: 110
+  _attackPower: 12
+  _magicPower: 0
+  _defensePower: 0
+  _magicDefensePower: 0
+  _speed: 8
   _weakElements: 030000000200000004000000
   _resistElements: 0100000006000000
   _nullElements: 
   _absorbElements: 
   _skillList:
-  - {fileID: 11400000, guid: ad82abcd46bdbc14084e701252525f5c, type: 2}
+  - {fileID: 11400000, guid: 202b6b67dc24a6d4197768238915b8d1, type: 2}
+  - {fileID: 11400000, guid: 36332209599afb24590fe917761c23cb, type: 2}
   _aiProfileData: {fileID: 11400000, guid: ff072b74071c57e43a37d7cecfd0b36f, type: 2}
   _expReward: 15
-  _goldReward: 8
+  _goldReward: 25
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 875073071404757921, guid: 0bba14266450ed44fa33af1065efadcf, type: 3}

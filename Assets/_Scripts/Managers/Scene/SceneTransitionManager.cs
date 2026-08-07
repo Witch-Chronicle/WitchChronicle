@@ -66,6 +66,15 @@ public class SceneTransitionManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 현재 활성 씬이 Loading 씬인지 확인합니다.
+    /// </summary>
+    public bool IsInLoadingScene()
+    {
+        Scene loadingScene = SceneManager.GetSceneByName(SceneId.Loading.ToString());
+        return loadingScene.IsValid() && loadingScene.isLoaded;
+    }
+
+    /// <summary>
     /// SceneId(enum)로 씬 전환. 오타 걱정 없이 이걸 기본으로 사용하면 됨.
     /// </summary>
     public void LoadScene(SceneId sceneId, float delayBeforeLoad = 0f, Action onBeforeLoad = null, Action onLoaded = null, bool skipCover = false, bool skipReveal = false)
@@ -329,5 +338,136 @@ public class SceneTransitionManager : MonoBehaviour
         bool revealed = false;
         _transitionController.RevealScreen(() => revealed = true);
         yield return new WaitUntil(() => revealed);
+    }
+
+    private bool _targetSceneReady;
+
+    public void ReportSceneReady()
+    {
+        _targetSceneReady = true;
+    }
+
+    public void LoadSceneWithLoading(
+        SceneId targetSceneId,
+        Action onBeforeLoad = null,
+        Action onLoaded = null,
+        bool skipCover = false,
+        bool waitForReadySignal = false,
+        float readySignalTimeout = 5f)
+    {
+        if (IsLoading)
+        {
+            Debug.LogWarning($"[SceneTransitionManager] 이미 씬 전환 중입니다. 요청 무시: {targetSceneId}");
+            return;
+        }
+
+        StartCoroutine(LoadSceneWithLoadingRoutine(targetSceneId, onBeforeLoad, onLoaded, skipCover, waitForReadySignal, readySignalTimeout));
+    }
+
+    private IEnumerator LoadSceneWithLoadingRoutine(
+    SceneId targetSceneId,
+    Action onBeforeLoad,
+    Action onLoaded,
+    bool skipCover,
+    bool waitForReadySignal,
+    float readySignalTimeout)
+    {
+        IsLoading = true;
+        _targetSceneReady = false;
+
+        if (skipCover == false)
+        {
+            yield return CoverScreenRoutine();
+        }
+
+        UIBackgroundBlurManager.Instance?.Hide();
+        onBeforeLoad?.Invoke();
+
+        AsyncOperation loadingSceneOp = SceneManager.LoadSceneAsync(SceneId.Loading.ToString());
+
+        if (loadingSceneOp == null)
+        {
+            Debug.LogError("[SceneTransitionManager] Loading 씬을 찾을 수 없습니다. Build Settings 확인.");
+            IsLoading = false;
+            yield return RevealScreenRoutine();
+            yield break;
+        }
+
+        while (loadingSceneOp.isDone == false)
+        {
+            yield return null;
+        }
+
+        LoadingSceneUIController.Instance?.SetProgressImmediate(0f);
+
+        // Loading 씬은 걷히는 애니메이션 없이 즉시 노출
+        _transitionController?.SetRevealedImmediate();
+
+        // 1) 에셋 로드 단계 (0~90%). 화면은 계속 열려있는 상태.
+        AsyncOperation targetOp = SceneManager.LoadSceneAsync(targetSceneId.ToString());
+
+        if (targetOp == null)
+        {
+            Debug.LogError($"[SceneTransitionManager] 씬을 찾을 수 없습니다: {targetSceneId}");
+            IsLoading = false;
+            yield break;
+        }
+
+        targetOp.allowSceneActivation = false;
+
+        while (targetOp.progress < 0.9f)
+        {
+            float progress01 = Mathf.Clamp01(targetOp.progress / 0.9f);
+            LoadingSceneUIController.Instance?.SetProgress(progress01 * 0.9f);
+            yield return null;
+        }
+
+        // 2) 에셋 로드는 끝났으므로 100%로 채운다. 이 시점까지는 아직 화면이 열려있어서
+        //    "100%가 찍히는 순간"이 실제로 유저에게 보인다.
+        LoadingSceneUIController.Instance?.SetProgress(1f);
+
+        // 표시된 진행률이 부드러운 보간(MoveTowards)으로 실제 1.0에 도달할 때까지 대기.
+        // 그래야 화면이 열린 상태에서 100% 숫자가 눈에 보인 뒤에 CoverIn이 시작된다.
+        yield return new WaitUntil(() => LoadingSceneUIController.Instance == null || LoadingSceneUIController.Instance.IsDisplayComplete);
+
+        // 100%를 눈으로 확인할 최소한의 시간 확보
+        yield return new WaitForSeconds(0.8f);
+
+        // 3) 이제 화면을 덮고, 그 뒤에서 실제 활성화 + 무거운 초기화를 진행한다.
+        yield return CoverScreenRoutine();
+
+        targetOp.allowSceneActivation = true;
+
+        while (targetOp.isDone == false)
+        {
+            yield return null;
+        }
+
+        if (waitForReadySignal)
+        {
+            float elapsed = 0f;
+
+            // 이미 화면이 덮인 상태이므로 진행률 표시는 갱신할 필요 없이 조용히 대기만 한다.
+            while (_targetSceneReady == false && elapsed < readySignalTimeout)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            if (_targetSceneReady == false)
+            {
+                Debug.LogWarning($"[SceneTransitionManager] {targetSceneId}에서 SceneReadySignal을 받지 못해 타임아웃으로 진행합니다.");
+            }
+        }
+        else
+        {
+            yield return null;
+        }
+
+        onLoaded?.Invoke();
+
+        yield return RevealScreenRoutine();
+
+        IsLoading = false;
     }
 }

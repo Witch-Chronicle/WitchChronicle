@@ -338,11 +338,7 @@ public class PortalUIController : MonoBehaviour
     {
         if (_selectedDungeon == null)
         {
-            Debug.LogWarning(
-                "[PortalUIController] 선택된 던전이 없습니다.",
-                this
-            );
-
+            Debug.LogWarning("[PortalUIController] 선택된 던전이 없습니다.", this);
             return;
         }
 
@@ -352,34 +348,28 @@ public class PortalUIController : MonoBehaviour
         {
             string lockedReason = GetLockedReasonText(_selectedDungeon);
 
-            Debug.Log(
-                $"[PortalUIController] 입장 불가: {lockedReason}",
-                this
-            );
+            if (ShowMessageManager.Instance != null)
+            {
+                ShowMessageManager.Instance.ShowMessage(lockedReason);
+            }
 
             return;
         }
 
         if (SceneTransitionManager.Instance == null)
         {
-            Debug.LogWarning(
-                "[PortalUIController] SceneTransitionManager.Instance가 null입니다.",
-                this
-            );
-
+            Debug.LogWarning("[PortalUIController] SceneTransitionManager.Instance가 null입니다.", this);
             return;
         }
 
         DungeonSelection.CurrentDungeonData = _selectedDungeon;
 
+        if (ShowMessageManager.Instance != null)
+        {
+            ShowMessageManager.Instance.ShowMessage($"{_selectedDungeon.DungeonName}에 입장합니다.");
+        }
 
-
-        Debug.Log(
-            $"[PortalUIController] {_selectedDungeon.DungeonName} 입장",
-            this
-        );
-
-        SceneTransitionManager.Instance.LoadScene(SceneId.Dungeon);
+        SceneTransitionManager.Instance.LoadSceneWithLoading(SceneId.Dungeon, waitForReadySignal: true);
     }
 
     private void HandleCloseClicked()

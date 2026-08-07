@@ -31,7 +31,7 @@ namespace WitchChronicle.Alchemy
 
         private void Awake()
         {
-            if (_interactPrompt != null) _interactPrompt.SetActive(false);
+            // if (_interactPrompt != null) _interactPrompt.SetActive(false);
         }
 
         private void Update()
@@ -50,34 +50,36 @@ namespace WitchChronicle.Alchemy
             if (!other.CompareTag("Player")) return;
             _isPlayerNear = true;
             _playerRef = other.gameObject;
-            if (_interactPrompt != null && !_isUsing)
-                _interactPrompt.SetActive(true);
+            // if (_interactPrompt != null && !_isUsing)
+            //     _interactPrompt.SetActive(true);
         }
 
         private void OnTriggerExit(Collider other)
         {
             if (!other.CompareTag("Player")) return;
             _isPlayerNear = false;
-            if (_interactPrompt != null) _interactPrompt.SetActive(false);
+            // if (_interactPrompt != null) _interactPrompt.SetActive(false);
         }
 
         private void OpenAlchemy()
         {
             _isUsing = true;
-
             MovePlayerToStand();
             SetPlayerLocked(true);
-
             if (_interactPrompt != null) _interactPrompt.SetActive(false);
 
             if (_cameraController != null)
                 _cameraController.SwitchToAlchemyView();
-
             if (_alchemyPanel != null)
                 _alchemyPanel.Open(_defaultMode, OnPanelClosed);
 
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+
+            // LifeUIManager가 Esc 등으로 연금술을 강제 종료할 수 있도록 등록
+            QuestListUI.Instance.Close();
+            MainHUDUIController.Instance.Close();
+            LifeUIManager.Instance?.RegisterAlchemy(this);
         }
 
         private void MovePlayerToStand()
@@ -121,7 +123,6 @@ namespace WitchChronicle.Alchemy
         private void OnPanelClosed()
         {
             _isUsing = false;
-
             SetPlayerLocked(false);
 
             if (_cameraController != null)
@@ -130,8 +131,17 @@ namespace WitchChronicle.Alchemy
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
 
-            if (_isPlayerNear && _interactPrompt != null)
-                _interactPrompt.SetActive(true);
+            if (_interactPrompt != null) _interactPrompt.SetActive(true);
+
+            QuestListUI.Instance.Open();
+            MainHUDUIController.Instance.Open();
+            // 연금술 종료 시 LifeUIManager 등록 해제
+            LifeUIManager.Instance?.UnregisterAlchemy(this);
+        }
+
+        public void ClosePanel()
+        {
+            OnPanelClosed();
         }
     }
 }

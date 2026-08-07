@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
   m_Name: Fireball
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
-  _skillId: 
+  _skillId: enemy_fireball
   _skillName: fireball
   _description: 
+  _tier: 0
   _mpCost: 5
   _elementType: 2
   _skillType: 0
@@ -23,13 +24,23 @@ MonoBehaviour:
   _targetType: 0
   _statusEffectType: 6
   _statusChance: 20
+  _cureStatusEffectType: 0
+  _buffData: {fileID: 0}
   _presentationType: 0
+  _skillIcon: {fileID: 0}
+  _voiceClip: {fileID: 0}
   _impactDelay: 0.4
+  _castSfx: {fileID: 8300000, guid: da744f83e6a7071459307dfd44dda48b, type: 3}
+  _hitSfx: {fileID: 8300000, guid: f093ef7b809058d43ae33337dc232a31, type: 3}
   _castVfxPrefab: {fileID: 69906001918393858, guid: c5c607639983b8b47aedf9facf74f6ba, type: 3}
   _projectileVfxPrefab: {fileID: 1840672898717558257, guid: ee21a55def7a588449f1b13d4836da80, type: 3}
   _hitVfxPrefab: {fileID: 3305186517166574314, guid: a427771355de5cf4ca95cf881fd871f9, type: 3}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
   _hitVfxOffset: {x: 0, y: 1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
-  _castSfx: {fileID: 8300000, guid: da744f83e6a7071459307dfd44dda48b, type: 3}
-  _hitSfx: {fileID: 8300000, guid: f093ef7b809058d43ae33337dc232a31, type: 3}
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
+  _constellationPathSequenceData: {fileID: 0}
+  _drawGuideJson: {fileID: 0}
+  _drawExampleSprite: {fileID: 0}

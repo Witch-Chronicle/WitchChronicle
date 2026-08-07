@@ -12,15 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 083dd389e16cf504e8debb485f18d999, type: 3}
   m_Name: enemygroup_fire3
   m_EditorClassIdentifier: Assembly-CSharp::EnemyGroupSO
-  _minDepth: 5
-  _maxDepth: 10
+  _minDepth: 3
+  _maxDepth: 7
   _weight: 10
   _enemyEntries:
   - enemyData: {fileID: 11400000, guid: cb42fd959223ddf40ba5d44413c65713, type: 2}
+    weight: 24
+  - enemyData: {fileID: 11400000, guid: 10331ccd13d3e1c47a2e9f66c554a084, type: 2}
     weight: 11
   - enemyData: {fileID: 11400000, guid: 494b901e6ac392e458a25066a41169a2, type: 2}
-    weight: 28
-  - enemyData: {fileID: 11400000, guid: e98d47ab123a0ae47b651d3982e08798, type: 2}
-    weight: 33
+    weight: 26
   _baseCount: 3
-  _depthDivisor: 2
+  _depthDivisor: 3

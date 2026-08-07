@@ -60,10 +60,10 @@ public class FishingSpot : MonoBehaviour
         lockedMovers.Clear();
     }
 
-    private void Start()
-    {
-        if (promptUI != null) promptUI.SetActive(false);
-    }
+    // private void Start()
+    // {
+    //     if (promptUI != null) promptUI.SetActive(false);
+    // }
 
     public void HandlePlayerEnter(Collider other)
     {
@@ -105,9 +105,7 @@ public class FishingSpot : MonoBehaviour
         // CharacterController 잠깐 끄고 SitPoint로 순간이동
         var cc = player.GetComponent<CharacterController>();
         if (cc != null) cc.enabled = false;
-
         player.transform.SetPositionAndRotation(sitPoint.position, sitPoint.rotation);
-
         if (cc != null) cc.enabled = true;
 
         cameraController.SwitchToFishing();
@@ -115,23 +113,19 @@ public class FishingSpot : MonoBehaviour
         // 플레이어는 런타임에 생성되므로 애니메이터 훅도 여기서 연결한다
         FishingManager.Instance.BindAnimatorHook(
             player.GetComponentInChildren<WitchChronicle.Fishing.FishingAnimatorHook>());
-
         FishingManager.Instance.EnterFishing(this);
     }
 
     public void ExitFishing()
     {
         isFishing = false;
-
         cameraController.SwitchToMain();
 
         if (player != null)
         {
             var cc = player.GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
-
             player.transform.SetPositionAndRotation(originalPlayerPosition, originalPlayerRotation);
-
             if (cc != null) cc.enabled = true;
 
             // 이동 컨트롤러 다시 활성화

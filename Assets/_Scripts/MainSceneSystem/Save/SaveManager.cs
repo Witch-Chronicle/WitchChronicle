@@ -486,6 +486,18 @@ public class SaveManager : MonoBehaviour
 
                             stats.SetLevelAndExp(charSave.Level, charSave.Exp, charSave.AvailableStatPoints);
 
+                            // [수정] 포인트 부족 검사에 걸리지 않고 투자 스탯을 바로 복원!
+                            stats.SetAllocatedStats(
+                                charSave.AvailableStatPoints,
+                                charSave.AllocatedHp,
+                                charSave.AllocatedMp,
+                                charSave.AllocatedSpellPower,
+                                charSave.AllocatedIntelligence,
+                                charSave.AllocatedDefense,
+                                charSave.AllocatedSpeed,
+                                charSave.AllocatedLuck
+                            );
+
                             stats.ResetAllocatedStats();
 
                             stats.TryUseStatPoint(StatType.MaxHP, charSave.AllocatedHp);

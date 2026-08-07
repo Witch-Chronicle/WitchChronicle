@@ -7,5 +7,6 @@ public enum SceneId
     Title,
     Main,
     Dungeon,
-    Battle
+    Battle,
+    Loading
 }
