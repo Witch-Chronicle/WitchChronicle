@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 083dd389e16cf504e8debb485f18d999, type: 3}
-  m_Name: enemygroup_classic2 1
+  m_Name: enemygroup_classic3
   m_EditorClassIdentifier: Assembly-CSharp::EnemyGroupSO
-  _minDepth: 5
-  _maxDepth: 10
+  _minDepth: 3
+  _maxDepth: 7
   _weight: 10
   _enemyEntries:
   - enemyData: {fileID: 11400000, guid: 602ce25a775b0694d9dee1d276c43f82, type: 2}
@@ -23,6 +23,6 @@ MonoBehaviour:
   - enemyData: {fileID: 11400000, guid: d6dfe483ed6d9444bbdafaf8a054c6ea, type: 2}
     weight: 47
   - enemyData: {fileID: 11400000, guid: eb517d02fa6b8124ba9721e3bee47e25, type: 2}
-    weight: 16
+    weight: 34
   _baseCount: 3
-  _depthDivisor: 2
+  _depthDivisor: 3

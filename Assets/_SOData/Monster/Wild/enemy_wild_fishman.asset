@@ -14,19 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_wild_fishman
   _enemyName: "\uD53C\uC2DC\uB9E8"
-  _maxHp: 60
-  _attackPower: 20
-  _magicPower: 0
-  _defensePower: 2
-  _magicDefensePower: 2
-  _speed: 15
+  _icon: {fileID: 21300000, guid: 1c8552df683b5dc40b88604a08d5a906, type: 3}
+  _isBoss: 0
+  _maxHp: 280
+  _attackPower: 25
+  _magicPower: 42
+  _defensePower: 0
+  _magicDefensePower: 0
+  _speed: 14
   _weakElements: 030000000600000001000000
   _resistElements: 0200000005000000
   _nullElements: 
   _absorbElements: 
-  _skillList: []
-  _aiProfileData: {fileID: 0}
-  _expReward: 15
-  _goldReward: 8
+  _skillList:
+  - {fileID: 11400000, guid: 202b6b67dc24a6d4197768238915b8d1, type: 2}
+  _aiProfileData: {fileID: 11400000, guid: 936d543f6091ae54f86b4027dc5bf994, type: 2}
+  _expReward: 50
+  _goldReward: 75
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 4401516545361303541, guid: 2b1cf20819139bb4887dbd3f4c5c171b, type: 3}

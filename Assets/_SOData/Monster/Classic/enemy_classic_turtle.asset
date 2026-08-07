@@ -14,21 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_wild_golem
   _enemyName: "\uAC70\uBD81\uC774 \uAECD\uC9C8"
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 79baac40524517b4fbb9b1bf50ff4101, type: 3}
   _isBoss: 0
-  _maxHp: 500
-  _attackPower: 5
-  _magicPower: 5
-  _defensePower: 10
-  _magicDefensePower: 10
-  _speed: 10
+  _maxHp: 130
+  _attackPower: 10
+  _magicPower: 0
+  _defensePower: 5
+  _magicDefensePower: 5
+  _speed: 6
   _weakElements: 030000000200000004000000
   _resistElements: 0100000006000000
   _nullElements: 
   _absorbElements: 
-  _skillList: []
+  _skillList:
+  - {fileID: 11400000, guid: 202b6b67dc24a6d4197768238915b8d1, type: 2}
+  - {fileID: 11400000, guid: 99c0887a79e6e9b4093b00afab33d911, type: 2}
   _aiProfileData: {fileID: 11400000, guid: ee2405d3365f1184c926b34e0c5b5d13, type: 2}
-  _expReward: 15
-  _goldReward: 8
+  _expReward: 20
+  _goldReward: 35
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 1524411113276028, guid: f44b214fbcc8efc4eab4783c7739d530, type: 3}

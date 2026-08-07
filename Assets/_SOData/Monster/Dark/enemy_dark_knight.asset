@@ -14,19 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_dark_knight
   _enemyName: "\uC5B4\uB460\uC758 \uAE30\uC0AC"
-  _maxHp: 100
-  _attackPower: 15
+  _icon: {fileID: 21300000, guid: 242f10e56f9ff884dbe1c2155bef435d, type: 3}
+  _isBoss: 0
+  _maxHp: 1800
+  _attackPower: 135
   _magicPower: 0
-  _defensePower: 10
-  _magicDefensePower: 10
-  _speed: 10
+  _defensePower: 5
+  _magicDefensePower: 5
+  _speed: 25
   _weakElements: 0600000004000000
   _resistElements: 07000000
   _nullElements: 
   _absorbElements: 
-  _skillList: []
-  _aiProfileData: {fileID: 0}
-  _expReward: 20
-  _goldReward: 10
+  _skillList:
+  - {fileID: 11400000, guid: 1080def506701f54c857ae9a2b92b799, type: 2}
+  _aiProfileData: {fileID: 11400000, guid: ee2405d3365f1184c926b34e0c5b5d13, type: 2}
+  _expReward: 280
+  _goldReward: 450
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 3320979724154213149, guid: b25d0d8b650938242930d0262b76aff1, type: 3}
