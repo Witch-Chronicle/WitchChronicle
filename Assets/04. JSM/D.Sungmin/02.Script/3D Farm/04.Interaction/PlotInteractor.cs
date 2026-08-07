@@ -34,6 +34,14 @@ namespace WitchChronicle.IdleFarming
             if (!_isPlayerInside) return;
             if (Keyboard.current == null) return;
 
+            // 이미 Plot 관련 패널이 열려있으면(다른 슬롯 포함) F 입력을 무시.
+            // 이걸 막지 않으면 패널이 열린 채로 다시 F를 눌러 카운터가 중복으로 올라가고,
+            // Esc를 눌렀을 때 LifeUIManager가 아니라 PausePanel 쪽으로 새어나가는 문제가 생긴다.
+            if (PlotManager.Instance != null && PlotManager.Instance.IsAnyPanelOpen)
+            {
+                return;
+            }
+
             if (Keyboard.current.fKey.wasPressedThisFrame)
             {
                 HandleInteraction();

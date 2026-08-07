@@ -25,7 +25,8 @@ namespace WitchChronicle.IdleFarming
         [Tooltip("플레이어 태그 (Player Controller가 붙은 오브젝트)")]
         [SerializeField] private string _playerTag = "Player";
         [Tooltip("잠글 스크립트 이름 목록 (Ariel에 붙은 컴포넌트 이름들)")]
-        [SerializeField] private List<string> _lockScriptNames = new List<string>
+        [SerializeField]
+        private List<string> _lockScriptNames = new List<string>
         {
             "PlayerController",
             "FieldTargetingController",
@@ -52,6 +53,12 @@ namespace WitchChronicle.IdleFarming
         public PlotUnlockPanel UnlockPanel => _unlockPanel;
         public PlotSeedSelectPanel SeedSelectPanel => _seedSelectPanel;
         public PlotHarvestPanel HarvestPanel => _harvestPanel;
+
+        /// <summary>
+        /// 지금 열려있는 Plot 관련 패널이 있는지 여부.
+        /// LifeUIManager 등 외부에서 상태 확인용으로 사용.
+        /// </summary>
+        public bool IsAnyPanelOpen => _openPanelCount > 0;
 
         private void Awake()
         {
@@ -201,6 +208,8 @@ namespace WitchChronicle.IdleFarming
         public void NotifyPanelOpened()
         {
             _openPanelCount++;
+            Debug.Log($"[PlotManager] NotifyPanelOpened → count={_openPanelCount}");
+
             if (_openPanelCount == 1)
             {
                 EnsurePlayerCached();
@@ -211,6 +220,8 @@ namespace WitchChronicle.IdleFarming
         public void NotifyPanelClosed()
         {
             _openPanelCount = Mathf.Max(0, _openPanelCount - 1);
+            Debug.Log($"[PlotManager] NotifyPanelClosed → count={_openPanelCount}");
+
             if (_openPanelCount == 0)
             {
                 LockGameplayInput(false);
@@ -351,6 +362,22 @@ namespace WitchChronicle.IdleFarming
 
             Debug.Log($"[PlotManager] 농사 데이터 및 오프라인 시간 복원 완료 (총 {_slots.Count}개 밭)");
         }
-        
+
+
+        /// <summary>
+        /// Esc 등으로 모든 Plot 팝업을 강제 종료할 때 사용.
+        /// 각 패널의 Close()를 그대로 호출해서, 패널 내부의 _isOpen 플래그와
+        /// _openPanelCount가 서로 어긋나지 않도록 한다.
+        /// (SetActive(false)로 직접 끄면 패널 내부 _isOpen이 true로 남아,
+        ///  다음 Open() 호출 시 NotifyPanelOpened()가 스킵되어 카운터가 영영 0에 머무는 문제가 있었음)
+        /// </summary>
+        public void ForceCloseAllPanels()
+        {
+            if (_unlockPanel != null) _unlockPanel.Close();
+            if (_seedSelectPanel != null) _seedSelectPanel.Close();
+            if (_harvestPanel != null) _harvestPanel.Close();
+        }
     }
+
+
 }

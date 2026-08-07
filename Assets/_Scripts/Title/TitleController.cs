@@ -172,7 +172,6 @@ public class TitleController : MonoBehaviour
             return;
         }
 
-        // TitleTransition으로 이미 화면을 덮은 상태라, 전역 TransitionController의 Cover 단계는 건너뜀
-        SceneTransitionManager.Instance.LoadScene(_nextScene, skipCover: true);
+        SceneTransitionManager.Instance.LoadSceneWithLoading(_nextScene, skipCover: true, waitForReadySignal: true);
     }
 }
