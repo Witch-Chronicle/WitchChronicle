@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
-  m_Name: Test_ContstellationSkillData
+  m_Name: Test_ContstellationSkillData_Tick
   m_EditorClassIdentifier: Assembly-CSharp::SkillData
   _skillId: enemy_constellation_test_01
   _skillName: "\uC131\uC6B4\uD0C4 \uC5F0\uC0AC"
@@ -20,7 +20,7 @@ MonoBehaviour:
   _mpCost: 0
   _elementType: 7
   _skillType: 0
-  _damageType: 1
+  _damageType: 2
   _power: 20
   _targetType: 1
   _statusEffectType: 0
@@ -43,6 +43,6 @@ MonoBehaviour:
   _projectileTravelTime: 0
   _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 11400000, guid: e31d2096b01ca6e4eba06dfe4f50a374, type: 2}
-  _constellationPathAttackData: {fileID: 11400000, guid: 1bd4ed078da0dd74986f581d875c1d04, type: 2}
+  _constellationPathAttackData: {fileID: 11400000, guid: d63146c364a695d48ab168537f514bfe, type: 2}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

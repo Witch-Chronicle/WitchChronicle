@@ -501,6 +501,7 @@ GameObject:
   m_Component:
   - component: {fileID: 233467112}
   - component: {fileID: 233467113}
+  - component: {fileID: 233467114}
   m_Layer: 0
   m_Name: ConstellationPathVfxWorkbench
   m_TagString: Untagged
@@ -538,6 +539,23 @@ MonoBehaviour:
   _battleManager: {fileID: 338119914}
   _vfxPlayer: {fileID: 379774970}
   _attackData: {fileID: 11400000, guid: 1bd4ed078da0dd74986f581d875c1d04, type: 2}
+--- !u!114 &233467114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 233467111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7704e1baa033d24ba52f64ac3dbc753, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathAttackWorkbench
+  _battleManager: {fileID: 338119914}
+  _attackController: {fileID: 718302217}
+  _skillData: {fileID: 11400000, guid: ad82abcd46bdbc14084e701252525f5c, type: 2}
+  _battleCycleController: {fileID: 0}
+  _testUnitDamage: 13
 --- !u!1 &245494100
 GameObject:
   m_ObjectHideFlags: 0
@@ -746,6 +764,7 @@ MonoBehaviour:
   _battleEndDelay: 1.5
   _battleCameraDirector: {fileID: 1867479331}
   _constellationPathBattleManager: {fileID: 379774968}
+  _constellationPathAttackController: {fileID: 718302217}
   _battlePresentationBinder: {fileID: 338119916}
   _battleActionBanner: {fileID: 567879309}
   _enemyActionBannerHoldDuration: 2
@@ -890,6 +909,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: ConstellationPathSystem
       objectReference: {fileID: 0}
+    - target: {fileID: 5444873107383061425, guid: 0701b1705d801054ebcc90322e00270f, type: 3}
+      propertyPath: _vfxPlayer
+      value: 
+      objectReference: {fileID: 379774970}
+    - target: {fileID: 5444873107383061425, guid: 0701b1705d801054ebcc90322e00270f, type: 3}
+      propertyPath: _cameraDirector
+      value: 
+      objectReference: {fileID: 1867479331}
     - target: {fileID: 5444873107383061425, guid: 0701b1705d801054ebcc90322e00270f, type: 3}
       propertyPath: _timeController
       value: 
@@ -2339,6 +2366,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1867479330}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &718302217 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5444873107383061425, guid: 0701b1705d801054ebcc90322e00270f, type: 3}
+  m_PrefabInstance: {fileID: 379774965}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01de429eb4fc3514c971d4643c98ac18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathAttackController
 --- !u!1 &726890510
 GameObject:
   m_ObjectHideFlags: 0

@@ -16,6 +16,8 @@ public class ConstellationPathVfxPlayer : MonoBehaviour
     [Tooltip("남아 있는 VFX 자동 제거 시간")]
     [SerializeField, Min(0.1f)] private float _vfxLifetime = 5f;
 
+    private bool _isHoldingProjectiles;
+
     private readonly List<GameObject> _spawnedVfx = new List<GameObject>();
     private readonly List<Coroutine> _runningRoutines = new List<Coroutine>();
 
@@ -97,6 +99,12 @@ public class ConstellationPathVfxPlayer : MonoBehaviour
             if (targetTransform == null)
             {
                 break;
+            }
+
+            if (_isHoldingProjectiles)
+            {
+                yield return null;
+                continue;
             }
 
             elapsedTime += Time.deltaTime;
@@ -336,5 +344,51 @@ public class ConstellationPathVfxPlayer : MonoBehaviour
         }
 
         _spawnedVfx.Clear();
+
+        _isHoldingProjectiles = false;
+    }
+
+    /// <summary>
+    /// 진행 중인 별자리 투사체 이동 정지
+    /// </summary>
+    public void HoldProjectiles()
+    {
+        _isHoldingProjectiles = true;
+    }
+
+    /// <summary>
+    /// 정지 중인 별자리 투사체 이동 재개
+    /// </summary>
+    public void ReleaseProjectiles()
+    {
+        _isHoldingProjectiles = false;
+    }
+
+    /// <summary>
+    /// 별자리 공격 사전 VFX 재생
+    /// 이동 타입에 맞는 공격 연출 실행
+    /// </summary>
+    /// <param name="attacker">공격 유닛</param>
+    /// <param name="target">대표 공격 대상</param>
+    /// <param name="attackData">별자리 공격 데이터</param>
+    public void PlayPreAttackVfx(
+        BattleUnit attacker,
+        BattleUnit target,
+        ConstellationPathAttackData attackData)
+    {
+        if (attackData == null) return;
+
+        switch (attackData.MotionType)
+        {
+            case ConstellationPathProjectileMotionType.Straight:
+                PlayStraightProjectile(attacker, target, attackData);
+                break;
+
+            case ConstellationPathProjectileMotionType.Arc:
+            case ConstellationPathProjectileMotionType.Meteor:
+            case ConstellationPathProjectileMotionType.Shockwave:
+                Debug.Log($"[ConstellationPath] {attackData.MotionType} VFX 미구현", this);
+                break;
+        }
     }
 }

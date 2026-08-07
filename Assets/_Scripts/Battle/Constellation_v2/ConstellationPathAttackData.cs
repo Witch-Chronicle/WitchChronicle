@@ -16,6 +16,10 @@ public class ConstellationPathAttackData : ScriptableObject
     [Tooltip("광역 동시 타격, 균등 순차 타격, 단일 대상 연속 타격")]
     [SerializeField] private ConstellationPathAttackPattern _attackPattern;
 
+    [Header("Time Direction")]
+    [Tooltip("공격 사전 연출 시작 후 시간 감속이 시작되기까지의 시간")]
+    [SerializeField, Min(0f)] private float _slowDownStartDelay = 0.3f;
+
     [Header("Projectile Motion")]
     [SerializeField] private ConstellationPathProjectileMotionType _motionType;
     [Tooltip("각 투사체 또는 공격 라운드 사이의 발사 간격")]
@@ -47,6 +51,7 @@ public class ConstellationPathAttackData : ScriptableObject
 
     public string AttackId => _attackId;
     public ConstellationPathAttackPattern AttackPattern => _attackPattern;
+    public float SlowDownStartDelay => _slowDownStartDelay;
     public ConstellationPathProjectileMotionType MotionType => _motionType;
     public float LaunchInterval => _launchInterval;
     public float TravelDuration => _travelDuration;

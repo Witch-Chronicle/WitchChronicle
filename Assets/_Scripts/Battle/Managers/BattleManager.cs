@@ -653,6 +653,11 @@ public class BattleManager : MonoBehaviour
 
         ApplyPlayerBattleResultsToVitals(isVictory);
 
+        if (!isVictory)
+        {
+            RestorePersistentPartyAfterDefeat();
+        }
+
         if (isVictory)
         {
             ProcessMonsterKillQuests();
@@ -946,6 +951,25 @@ public class BattleManager : MonoBehaviour
             {
                 result.Add(actor);
             }
+        }
+    }
+
+    /// <summary>
+    /// 전투 패배 후 유지 파티 완전 회복
+    /// 던전 이탈 이후 사용할 상태 복구
+    /// </summary>
+    private void RestorePersistentPartyAfterDefeat()
+    {
+        for (int i = 0; i < _spawnedActors.Count; i++)
+        {
+            BattleActor actor = _spawnedActors[i];
+
+            if (actor == null || actor.TeamType != BattleTeamType.Player)
+            {
+                continue;
+            }
+
+            actor.PersistentCharacterUnit?.RestoreFully();
         }
     }
 }

@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e4ab7eff2cacc2949a23aeeec999f603, type: 3}
-  m_Name: Test_ConstellationPathAttack
+  m_Name: Test_ConstellationPathAttack_Tick
   m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathAttackData
   _attackId: test_constellation_attack
   _attackPattern: 0
   _slowDownStartDelay: 0.3
   _motionType: 1
-  _launchInterval: 0.12
+  _launchInterval: 0.3
   _travelDuration: 0.8
   _arcHeight: 2
   _meteorHeight: 8
@@ -25,6 +25,6 @@ MonoBehaviour:
   _spawnOffset: {x: 0, y: 1, z: 0}
   _targetOffset: {x: 0, y: 1, z: 0}
   _projectileScale: 1
-  _damageDeliveryType: 0
+  _damageDeliveryType: 1
   _tickCount: 10
-  _tickInterval: 0.05
+  _tickInterval: 0.1
