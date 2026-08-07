@@ -99,6 +99,7 @@ public class PersistentCharacterUnit : MonoBehaviour
     /// <summary>
     /// 완전 회복
     /// </summary>
+    [ContextMenu("Debug Restore Fully")]
     public void RestoreFully()
     {
         if (_characterVitals == null)
