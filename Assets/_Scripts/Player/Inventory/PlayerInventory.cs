@@ -112,6 +112,7 @@ public class PlayerInventory : MonoBehaviour
         OnInventoryChanged?.Invoke();
 
         Debug.Log($"[PlayerInventory] 판매 완료: {itemData.itemName} x{amount} (+{totalSellPrice} 골드, 현재 골드: {_gold})");
+        AlertManager.Instance?.Enqueue(AlertType.GoldAcquired, amount);
         return true;
     }
 
@@ -244,7 +245,6 @@ public class PlayerInventory : MonoBehaviour
         if (amount <= 0) return;
 
         _gold += amount;
-        AlertManager.Instance?.Enqueue(AlertType.GoldAcquired, amount);
         OnGoldChanged?.Invoke(_gold);
     }
 
