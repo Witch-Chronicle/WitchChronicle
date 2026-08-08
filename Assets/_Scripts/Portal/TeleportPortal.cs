@@ -25,5 +25,6 @@ public class TeleportPortal : MonoBehaviour, ITFInteractable
         }
 
         _teleportPanel.Open();
+
     }
 }

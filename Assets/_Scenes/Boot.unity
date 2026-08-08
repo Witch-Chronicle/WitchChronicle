@@ -238,6 +238,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4924423777344411683, guid: e8ff35c21d421594da75e43524889cf3, type: 3}
+      propertyPath: m_overflowMode
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 7287609293877254946, guid: e8ff35c21d421594da75e43524889cf3, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -409,6 +413,16 @@ MonoBehaviour:
   _minimumScale: 0.9
   _maximumScale: 1.05
   _pulseSpeed: 3
+--- !u!82 &467620750 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 1254171377732404367, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+  m_PrefabInstance: {fileID: 1302953589}
+  m_PrefabAsset: {fileID: 0}
+--- !u!82 &467620751 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 8607039659145352520, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+  m_PrefabInstance: {fileID: 1302953589}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &795088304
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1199,6 +1213,94 @@ PrefabInstance:
     - target: {fileID: 5679385941590156182, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxSource
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: bgmSourceA
+      value: 
+      objectReference: {fileID: 467620751}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: bgmSourceB
+      value: 
+      objectReference: {fileID: 467620750}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.size
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[0].loop
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[1].loop
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[2].loop
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[3].loop
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[4].loop
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[5].loop
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[0].sceneName
+      value: Boot
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[1].sceneName
+      value: Title
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[2].sceneName
+      value: Loading
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[3].sceneName
+      value: Main
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[4].sceneName
+      value: Dungeon
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[5].sceneName
+      value: Battle
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[0].volumeScale
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[1].volumeScale
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[2].volumeScale
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[3].volumeScale
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[4].volumeScale
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sceneBgmList.Array.data[5].volumeScale
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 6267072962474743221, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: m_IsActive

@@ -20,6 +20,9 @@ public class SeedData : ScriptableObject
     public ItemData harvestItem;     // 수확 시 인벤토리에 추가할 아이템
     public int harvestAmount = 5;
 
+    [Header("씨앗 아이템")]
+public ItemData seedItem;
+
     [Header("마법 나무 프리팹 (완성 상태)")]
     [Tooltip("이 씨앗이 자라면 나오는 특화 나무 (감자 나무, 체력초 나무 등)")]
     public GameObject matureTreePrefab;
