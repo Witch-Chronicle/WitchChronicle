@@ -13,7 +13,6 @@ using UnityEngine.UI;
 /// </summary>
 public sealed class EnhancementResultController : MonoBehaviour
 {
-
     public static EnhancementResultController Instance { get; private set; }
 
     [Header("Overlay")]
@@ -114,6 +113,12 @@ public sealed class EnhancementResultController : MonoBehaviour
         KillCurrentTweens();
         ResetVisuals();
         SetResultData(icon, isSuccess, beforeLevel, afterLevel, pointBefore, pointAfter);
+
+        // ★ 강화 결과 사운드 (성공/실패)
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySfx(isSuccess ? SfxType.EnhanceSuccess : SfxType.EnhanceFail);
+        }
 
         sequence = DOTween.Sequence()
             .SetUpdate(true)
@@ -293,7 +298,7 @@ public sealed class EnhancementResultController : MonoBehaviour
 
         itemRoot.anchoredPosition = Vector2.zero;
         itemRoot.localScale = Vector3.one * 0.72f;
-        itemIcon.color = Color.white; // 이전 실패 연출에서 남았을 수 있는 틴트를 항상 원래 색으로 리셋
+        itemIcon.color = Color.white;
         SetImageAlpha(itemIcon, 0f);
 
         glowRect.anchoredPosition = Vector2.zero;
@@ -320,7 +325,7 @@ public sealed class EnhancementResultController : MonoBehaviour
         DOTween.Kill(magicCircleRect);
         DOTween.Kill(magicCircleImage);
         DOTween.Kill(itemRoot);
-        DOTween.Kill(itemIcon); // DOColor, DOFade 등 itemIcon에 걸린 모든 트윈이 여기 포함됨
+        DOTween.Kill(itemIcon);
         DOTween.Kill(resultTextGroup);
         DOTween.Kill(resultTextGroup.transform);
         DOTween.Kill(overlayGroup);
