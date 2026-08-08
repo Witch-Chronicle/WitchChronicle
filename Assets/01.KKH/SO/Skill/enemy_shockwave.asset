@@ -15,7 +15,7 @@ MonoBehaviour:
   _skillId: enemy_shockwave
   _skillName: "\uCDA9\uACA9\uD30C"
   _description: "\uBAA8\uB4E0 \uC801\uC5D0\uAC8C \uB9C8\uBC95\uD53C\uD574"
-  _tier: 0
+  _tier: 2
   _mpCost: 0
   _elementType: 4
   _skillType: 0
@@ -24,10 +24,10 @@ MonoBehaviour:
   _targetType: 1
   _statusEffectType: 5
   _statusChance: 0.8
+  _cureStatusEffectType: 0
   _buffData: {fileID: 0}
   _presentationType: 1
   _skillIcon: {fileID: 0}
-  _hitVfxOffset: {x: 0, y: 0.01, z: 0}
   _voiceClip: {fileID: 0}
   _impactDelay: 0.3
   _castSfx: {fileID: 8300000, guid: 02f70ebd9370c3c43a172e912b78f79a, type: 3}
@@ -35,6 +35,13 @@ MonoBehaviour:
   _castVfxPrefab: {fileID: 69906001918393858, guid: 8a1676ee7b5f45e44a0dfcda188d7f2d, type: 3}
   _projectileVfxPrefab: {fileID: 1840672898717558257, guid: aa41ceabae442e64b95efb70f59ff4c5, type: 3}
   _hitVfxPrefab: {fileID: 3305186517166574314, guid: 68bf9a326d265124f92f0b6fdefc666e, type: 3}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
+  _hitVfxOffset: {x: 0, y: 0.01, z: 0}
+  _castVfxScale: 0
+  _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 11400000, guid: e31d2096b01ca6e4eba06dfe4f50a374, type: 2}
+  _constellationPathAttackData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

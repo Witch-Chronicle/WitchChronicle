@@ -558,6 +558,32 @@ public class EnemyBattleAI
                 continue;
             }
 
+            // 스킬 등급에 따른 발동 확률 제한
+            if (skillData.Tier == 1)
+            {
+                // 최상급 스킬: 20% 확률로 후보에 등록
+                if (Random.value > 0.2f)
+                {
+                    continue; 
+                }
+            }
+            else if (skillData.Tier == 2)
+            {
+                // 중급 스킬: 40% 확률로 후보에 등록
+                if (Random.value > 0.4f)
+                {
+                    continue; 
+                }
+            }
+            else if (skillData.Tier == 3)
+            {
+                // 하급 스킬: 100% 확률로 후보에 등록 
+                if (Random.value > 1f)
+                {
+                    continue; 
+                }
+            }
+
             AddSkillCandidatesByTargetType(actor, skillData);
         }
     }
