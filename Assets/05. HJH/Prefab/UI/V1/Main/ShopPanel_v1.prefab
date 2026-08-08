@@ -82,7 +82,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 121646138879815780}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
   m_Name: 
@@ -108,7 +108,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 121646138879815780}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
   m_Name: 
@@ -875,6 +875,7 @@ GameObject:
   - component: {fileID: 3464933699208479087}
   - component: {fileID: 7612988535902990048}
   - component: {fileID: 7945019718277301384}
+  - component: {fileID: 161530901138451847}
   m_Layer: 5
   m_Name: Scroll View
   m_TagString: Untagged
@@ -959,7 +960,7 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 4.5
+  m_ScrollSensitivity: 8
   m_Viewport: {fileID: 8783750353571786008}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 0}
@@ -970,6 +971,30 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &161530901138451847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 818274437461986703}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 768cd7b5473b9cf4ba86faf642625e3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShopScrollView
+  _scrollRect: {fileID: 7945019718277301384}
+  _content: {fileID: 2567620789850765940}
+  _cellPrefab: {fileID: 3254488527206401309, guid: 02691fa43fbcfce4ba57d8d293a515a1, type: 3}
+  _columnCount: 1
+  _cellSize: {x: 759.3, y: 150}
+  _spacing: {x: 0, y: 20}
+  _padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 30
+    m_Bottom: 0
+  _bufferRows: 1
 --- !u!1 &836023156527834280
 GameObject:
   m_ObjectHideFlags: 0
@@ -1942,10 +1967,7 @@ MonoBehaviour:
   - {fileID: 8006309540305364799}
   _allCategoryLabel: "\uC804\uCCB4"
   _subSelectedFadeDuration: 0.15
-  _itemSlotPrefab: {fileID: 3254488527206401309, guid: 02691fa43fbcfce4ba57d8d293a515a1, type: 3}
-  _itemSlotParent: {fileID: 2567620789850765940}
-  _poolDefaultCapacity: 20
-  _poolMaxSize: 200
+  _scrollView: {fileID: 161530901138451847}
   _shopDetailController: {fileID: 5667370162991289199}
   _goldText: {fileID: 3354307743542158723}
 --- !u!114 &1926702632039630574
