@@ -14,21 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_dark_ghost
   _enemyName: "\uB9DD\uB839"
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: ce9687e4308569c4ea81f55e1bb4381f, type: 3}
   _isBoss: 0
-  _maxHp: 80
-  _attackPower: 10
-  _magicPower: 10
-  _defensePower: 5
-  _magicDefensePower: 5
-  _speed: 15
+  _maxHp: 1000
+  _attackPower: 95
+  _magicPower: 100
+  _defensePower: 0
+  _magicDefensePower: 0
+  _speed: 28
   _weakElements: 0600000004000000
   _resistElements: 07000000
   _nullElements: 
   _absorbElements: 
-  _skillList: []
-  _aiProfileData: {fileID: 0}
-  _expReward: 14
-  _goldReward: 120
+  _skillList:
+  - {fileID: 11400000, guid: 69c230cb0cd714b4c83500616df7f3a5, type: 2}
+  _aiProfileData: {fileID: 11400000, guid: ff072b74071c57e43a37d7cecfd0b36f, type: 2}
+  _expReward: 190
+  _goldReward: 300
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 2958174608505672778, guid: 8ac423f7587e0654380a1b2c5665f3a6, type: 3}

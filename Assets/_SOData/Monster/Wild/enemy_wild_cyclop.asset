@@ -14,21 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_wild_cyclops
   _enemyName: "\uC0AC\uC774\uD074\uB86D\uC2A4"
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 4c79e5dba4058824e9c05e3a4742a011, type: 3}
   _isBoss: 0
-  _maxHp: 100
-  _attackPower: 12
+  _maxHp: 420
+  _attackPower: 48
   _magicPower: 0
-  _defensePower: 2
-  _magicDefensePower: 2
+  _defensePower: 0
+  _magicDefensePower: 0
   _speed: 10
   _weakElements: 020000000300000005000000
   _resistElements: 0100000006000000
   _nullElements: 
   _absorbElements: 
-  _skillList: []
-  _aiProfileData: {fileID: 0}
-  _expReward: 15
-  _goldReward: 40
+  _skillList:
+  - {fileID: 11400000, guid: 202b6b67dc24a6d4197768238915b8d1, type: 2}
+  _aiProfileData: {fileID: 11400000, guid: 936d543f6091ae54f86b4027dc5bf994, type: 2}
+  _expReward: 65
+  _goldReward: 100
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 1190697391759604679, guid: 29c63170765c1cc4982353e62d7c39b9, type: 3}

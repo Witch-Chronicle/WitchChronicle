@@ -14,21 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_wild_lizard
   _enemyName: "\uB9AC\uC790\uB4DC"
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 7fed0702053cfe6469b95dc2f316f49d, type: 3}
   _isBoss: 0
-  _maxHp: 90
-  _attackPower: 10
+  _maxHp: 300
+  _attackPower: 40
   _magicPower: 0
-  _defensePower: 10
-  _magicDefensePower: 10
-  _speed: 10
+  _defensePower: 5
+  _magicDefensePower: 5
+  _speed: 14
   _weakElements: 050000000200000004000000
   _resistElements: 0100000006000000
   _nullElements: 
   _absorbElements: 
-  _skillList: []
-  _aiProfileData: {fileID: 0}
-  _expReward: 15
-  _goldReward: 40
+  _skillList:
+  - {fileID: 11400000, guid: 202b6b67dc24a6d4197768238915b8d1, type: 2}
+  _aiProfileData: {fileID: 11400000, guid: bd2869d373a6da142b0148068c8cde96, type: 2}
+  _expReward: 50
+  _goldReward: 75
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 5863903103509005198, guid: 68576a25db65b6c478b4de793e35d0c4, type: 3}

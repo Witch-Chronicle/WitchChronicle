@@ -68,8 +68,11 @@ public class SkillData : ScriptableObject
     [SerializeField] private float _projectileLaunchDelay = 0f;
 
     [Header("Presentation - Constellation Path Attack")]
-    [Tooltip("연결 시 사전 카메라 연출 후 " + "경로형 별자리 패리 실행")]
+    [Tooltip("별 배치, 연결 순서, 입력 제한 시간")]
     [SerializeField] private ConstellationPathSequenceData _constellationPathSequenceData;
+    [Tooltip("투사체 이동, 공격 분배, 데미지 적용 방식")]
+    [SerializeField] private ConstellationPathAttackData _constellationPathAttackData;
+
 
     [Header("Presentation - Draw Guide (마법진 그리기)")]
     [Tooltip("SkillDrawController가 사용할 궤적 가이드 JSON (fire_ball.json 등). " +
@@ -116,6 +119,7 @@ public class SkillData : ScriptableObject
     public float ProjectileLaunchDelay => _projectileLaunchDelay;
 
     public ConstellationPathSequenceData ConstellationPathSequenceData => _constellationPathSequenceData;
+    public ConstellationPathAttackData ConstellationPathAttackData => _constellationPathAttackData;
     public bool IsConstellationPathAttack => _constellationPathSequenceData != null;
 
     public TextAsset DrawGuideJson => _drawGuideJson;

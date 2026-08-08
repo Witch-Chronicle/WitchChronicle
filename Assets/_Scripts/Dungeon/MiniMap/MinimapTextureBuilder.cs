@@ -147,9 +147,9 @@ public class MinimapTextureBuilder
         int centerX = (room.Center.x - minX) * PixelsPerTile;
         int centerY = (room.Center.y - minY) * PixelsPerTile;
 
-        // 방의 실제 너비와 높이에 비례하여 아이콘 크기 결정 (최소 15픽셀 보장)
-        int iconWidth = Mathf.Max(Mathf.RoundToInt(room.Bounds.width * PixelsPerTile * IconScaleFactor), 15);
-        int iconHeight = Mathf.Max(Mathf.RoundToInt(room.Bounds.height * PixelsPerTile * IconScaleFactor), 15);
+        int iconSize = 100; // 아이콘 크기 (원하시는 크기에 따라 20~28 사이로 조절 가능)
+        int iconWidth = iconSize;
+        int iconHeight = iconSize;
 
         if (iconTexture != null)
         {

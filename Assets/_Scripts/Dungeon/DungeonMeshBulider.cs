@@ -178,7 +178,9 @@ public class DungeonMeshBuilder
         // 실제 렌더링되는 중심이 targetCenter에 오도록 피벗 위치를 역산
         Vector3 worldPos = targetCenter - rotatedPivotOffset;
 
-        Matrix4x4 matrix = Matrix4x4.TRS(worldPos, rotation, localScale);
+        Vector3 adjustedScale = localScale * 1.005f;
+
+        Matrix4x4 matrix = Matrix4x4.TRS(worldPos, rotation, adjustedScale);
 
         CombineInstance ci = new CombineInstance();
         ci.mesh = sourceMesh;

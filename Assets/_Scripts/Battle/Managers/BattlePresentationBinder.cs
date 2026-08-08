@@ -501,6 +501,99 @@ public class BattlePresentationBinder : MonoBehaviour
     }
 
     /// <summary>
+    /// 별자리 공격 방어 연출 재생
+    /// </summary>
+    /// <param name="unit">방어 대상 유닛</param>
+    /// <param name="onComplete">방어 연출 완료 콜백</param>
+    public void PlayConstellationBlock(BattleUnit unit, System.Action onComplete = null)
+    {
+        UnitBinding binding = FindBinding(unit);
+
+        if (binding == null || binding.Presenter == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        binding.Presenter.PlayParry(onComplete);
+        binding.Audio?.PlayParry();
+    }
+
+    /// <summary>
+    /// 별자리 강공격 시전 연출 재생
+    /// 일반 SkillVfxPlayer를 제외하고 공격자 애니메이션과 사운드만 재생
+    /// </summary>
+    /// <param name="unit">공격 유닛</param>
+    /// <param name="onComplete">시전 연출 완료 콜백</param>
+    public void PlayConstellationCast(BattleUnit unit, System.Action onComplete = null)
+    {
+        UnitBinding binding = FindBinding(unit);
+
+        if (binding == null || binding.Presenter == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        binding.Presenter.PlaySkill(onComplete);
+        binding.Audio?.PlaySkill();
+    }
+
+    /// <summary>
+    /// 별자리 방어막 생성 연출 동시 재생
+    /// </summary>
+    /// <param name="units">방어막 생성 유닛 목록</param>
+    /// <param name="onComplete">전체 연출 완료 콜백</param>
+    public void PlayConstellationBarrier(IReadOnlyList<BattleUnit> units, System.Action onComplete = null)
+    {
+        if (units == null || units.Count == 0)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        int remainingCount = 0;
+        bool isCompleted = false;
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            BattleUnit unit = units[i];
+            UnitBinding binding = FindBinding(unit);
+
+            if (unit == null || !unit.IsAlive || binding == null || binding.Presenter == null) continue;
+
+            remainingCount++;
+        }
+
+        if (remainingCount == 0)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        void HandleUnitCompleted()
+        {
+            remainingCount--;
+
+            if (remainingCount > 0 || isCompleted) return;
+
+            isCompleted = true;
+            onComplete?.Invoke();
+        }
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            BattleUnit unit = units[i];
+            UnitBinding binding = FindBinding(unit);
+
+            if (unit == null || !unit.IsAlive || binding == null || binding.Presenter == null) continue;
+
+            binding.Presenter.PlaySkillSupport(HandleUnitCompleted);
+            binding.Audio?.PlaySkill();
+        }
+    }
+
+    /// <summary>
     /// 대상 목록의 피격 연출 진행 여부 반환
     /// </summary>
     /// <param name="units">확인 유닛 목록</param>
@@ -565,5 +658,34 @@ public class BattlePresentationBinder : MonoBehaviour
         }
 
         _bindings.Clear();
+    }
+
+    /// <summary>
+    /// 별자리 방어막 생성 연출 지점
+    /// </summary>
+    /// <param name="units">방어 대상 유닛 목록</param>
+    public void NotifyConstellationBarrierCreated(IReadOnlyList<BattleUnit> units)
+    {
+        if (units == null) return;
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            BattleUnit unit = units[i];
+
+            if (unit == null || !unit.IsAlive) continue;
+
+            Debug.Log($"[ConstellationPath] Barrier Created | {unit.UnitName}", this);
+        }
+    }
+
+    /// <summary>
+    /// 별자리 방어막 파괴 연출 지점
+    /// </summary>
+    /// <param name="unit">방어막이 소진된 유닛</param>
+    public void NotifyConstellationBarrierBroken(BattleUnit unit)
+    {
+        if (unit == null) return;
+
+        Debug.Log($"[ConstellationPath] Barrier Broken | {unit.UnitName}", this);
     }
 }

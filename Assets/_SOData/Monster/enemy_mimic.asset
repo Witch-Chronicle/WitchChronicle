@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_wild_bee
   _enemyName: "\uBBF8\uBBF9"
+  _icon: {fileID: 21300000, guid: 8e1d5a1d33e7443448f92f3ede1aa2da, type: 3}
+  _isBoss: 0
   _maxHp: 70
   _attackPower: 10
   _magicPower: 10
@@ -24,9 +26,10 @@ MonoBehaviour:
   _resistElements: 0100000006000000
   _nullElements: 
   _absorbElements: 
-  _skillList: []
+  _skillList:
+  - {fileID: 11400000, guid: 202b6b67dc24a6d4197768238915b8d1, type: 2}
   _aiProfileData: {fileID: 11400000, guid: bd2869d373a6da142b0148068c8cde96, type: 2}
-  _expReward: 15
-  _goldReward: 8
+  _expReward: 20
+  _goldReward: 20
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 2219292830553907877, guid: 804ae3f39397c094a99fda6e29200556, type: 3}

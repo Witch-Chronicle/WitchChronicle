@@ -514,4 +514,33 @@ public class CharacterStats : MonoBehaviour
 
         RecalculateStats();
     }
+
+    /// <summary>
+    /// 세이브 데이터 로드 시 투자했던 스탯 포인트와 남은 포인트를 직접 복원합니다.
+    /// </summary>
+    public void SetAllocatedStats(
+        int availablePoints,
+        int allocatedHp,
+        int allocatedMp,
+        int allocatedSpellPower,
+        int allocatedIntelligence,
+        int allocatedDefense,
+        int allocatedSpeed,
+        int allocatedLuck)
+    {
+        _availableStatPoints = Mathf.Max(0, availablePoints);
+
+        _allocatedStats = new StatBlock
+        {
+            maxHP = Mathf.Max(0, allocatedHp),
+            maxMP = Mathf.Max(0, allocatedMp),
+            magicPower = Mathf.Max(0, allocatedSpellPower),
+            intelligence = Mathf.Max(0, allocatedIntelligence),
+            defense = Mathf.Max(0, allocatedDefense),
+            speed = Mathf.Max(0, allocatedSpeed),
+            luck = Mathf.Max(0, allocatedLuck)
+        };
+
+        RecalculateStats();
+    }
 }

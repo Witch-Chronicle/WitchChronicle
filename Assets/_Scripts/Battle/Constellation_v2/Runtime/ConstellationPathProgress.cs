@@ -172,8 +172,7 @@ public class ConstellationPathProgress
             return false;
         }
 
-        return ArePrerequisitesCompleted(
-            nodeData);
+        return IsPrerequisiteConditionMet(nodeData);
     }
 
     /// <summary>
@@ -251,12 +250,9 @@ public class ConstellationPathProgress
             return false;
         }
 
-        if (!ArePrerequisitesCompleted(
-                nodeData))
+        if (!IsPrerequisiteConditionMet(nodeData))
         {
-            inputResult =
-                ConstellationPathInputResult.Locked;
-
+            inputResult = ConstellationPathInputResult.Locked;
             return false;
         }
 
@@ -343,34 +339,33 @@ public class ConstellationPathProgress
     }
 
     /// <summary>
-    /// 선행 노드 전체 완료 여부 반환
+    /// 노드 입력 조건 충족 여부 반환
+    /// 선행 노드가 없으면 시작 노드, 여러 개면 하나 이상 완료 시 허용
     /// </summary>
     /// <param name="nodeData">확인 노드 데이터</param>
-    /// <returns>전체 완료 여부</returns>
-    private bool ArePrerequisitesCompleted(
-        ConstellationPathNodeData nodeData)
+    /// <returns>입력 조건 충족 여부</returns>
+    private bool IsPrerequisiteConditionMet(ConstellationPathNodeData nodeData)
     {
         if (nodeData == null)
         {
             return false;
         }
 
-        for (int i = 0;
-             i < nodeData.PrerequisiteNodeIds.Count;
-             i++)
+        if (nodeData.PrerequisiteNodeIds.Count == 0)
         {
-            string prerequisiteNodeId =
-                nodeData.PrerequisiteNodeIds[i];
-
-            if (_completedNodeIds.Contains(
-                    prerequisiteNodeId))
-            {
-                continue;
-            }
-
-            return false;
+            return true;
         }
 
-        return true;
+        for (int i = 0; i < nodeData.PrerequisiteNodeIds.Count; i++)
+        {
+            string prerequisiteNodeId = nodeData.PrerequisiteNodeIds[i];
+
+            if (_completedNodeIds.Contains(prerequisiteNodeId))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

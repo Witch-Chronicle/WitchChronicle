@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using WitchChronicle.IdleFarming;
 
 /// <summary>
 /// 필드 및 던전 씬에서 플레이어 공통 UI 입력을 관리합니다.
@@ -79,6 +80,38 @@ public sealed class PlayerUIInputReader : MonoBehaviour
         // 전투 씬의 UI 입력은 BattleUIInputReader가 담당합니다.
         if (IsInBattleScene())
         {
+            return;
+        }
+
+        // 로딩 씬에서는 어떤 UI 입력도 처리하지 않습니다.
+        if (IsInLoadingScene())
+        {
+            return;
+        }
+
+        // 생활 콘텐츠 패널(밭/낚시/연금술 등)이 열려있으면
+        // Esc는 그 패널들을 닫는 데만 사용하고, 나머지 단축키는 전부 무시합니다.
+        if (LifeUIManager.Instance != null && LifeUIManager.Instance.IsAnyLifePanelOpen())
+        {
+            if (Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                bool plotOpen = PlotManager.Instance != null && PlotManager.Instance.IsAnyPanelOpen;
+                Debug.Log($"[Debug] PlotManager.IsAnyPanelOpen: {plotOpen}");
+                LifeUIManager.Instance.CloseAllLifePanels();
+
+            }
+
+            return;
+        }
+
+        // TeleportPanel이 열려있으면 Esc(HandleEscape에서 처리)를 제외한 나머지 단축키는 전부 무시합니다.
+        if (TeleportPanel.Instance != null && TeleportPanel.Instance.IsOpen)
+        {
+            if (Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                HandleEscape();
+            }
+
             return;
         }
 
@@ -264,6 +297,12 @@ public sealed class PlayerUIInputReader : MonoBehaviour
             return;
         }
 
+        if (TeleportPanel.Instance != null && TeleportPanel.Instance.IsOpen)
+        {
+            TeleportPanel.Instance.ToggleTeleportPanel();
+            return;
+        }
+
         if (_integrationPanelAnimator != null && _integrationPanelAnimator.IsOpen)
         {
             CloseIntegrationPanel();
@@ -290,7 +329,8 @@ public sealed class PlayerUIInputReader : MonoBehaviour
 
         if (_pausePanelAnimator != null && _pausePanelAnimator.IsOpen)
         {
-            if (_pauseController != null && _pauseController.IsSettingOpen)
+            if (_pauseController != null &&
+                (_pauseController.IsSettingOpen || _pauseController.IsConfirmOpen))
             {
                 _pauseController.ShowPauseView();
                 return;
@@ -655,9 +695,6 @@ public sealed class PlayerUIInputReader : MonoBehaviour
 
     #region Scene Check
 
-    /// <summary>
-    /// 현재 활성 씬이 전투 씬인지 확인합니다.
-    /// </summary>
     private bool IsInBattleScene()
     {
         return
@@ -665,10 +702,6 @@ public sealed class PlayerUIInputReader : MonoBehaviour
             SceneTransitionManager.Instance.IsInBattleScene();
     }
 
-    /// <summary>
-    /// 현재 활성 씬이 던전 씬인지 확인합니다.
-    /// 현재 코드는 향후 씬별 Pause 제한에 사용할 수 있도록 유지합니다.
-    /// </summary>
     private bool IsInDungeonScene()
     {
         return
@@ -676,14 +709,21 @@ public sealed class PlayerUIInputReader : MonoBehaviour
             SceneTransitionManager.Instance.IsInDungeonScene();
     }
 
-    /// <summary>
-    /// 현재 활성 씬이 타이틀 씬인지 확인합니다.
-    /// </summary>
     private bool IsInTitleScene()
     {
         return
             SceneTransitionManager.Instance != null &&
             SceneTransitionManager.Instance.IsInTitleScene();
+    }
+
+    /// <summary>
+    /// 현재 활성 씬이 로딩 씬인지 확인합니다.
+    /// </summary>
+    private bool IsInLoadingScene()
+    {
+        return
+            SceneTransitionManager.Instance != null &&
+            SceneTransitionManager.Instance.IsInLoadingScene();
     }
 
     #endregion

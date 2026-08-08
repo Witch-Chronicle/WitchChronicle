@@ -14,21 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_wild_orc
   _enemyName: "\uC624\uD06C"
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 0b98db283fb1dba4e81524dad918ee5f, type: 3}
   _isBoss: 0
-  _maxHp: 110
-  _attackPower: 20
+  _maxHp: 350
+  _attackPower: 44
   _magicPower: 0
   _defensePower: 0
   _magicDefensePower: 0
-  _speed: 5
+  _speed: 10
   _weakElements: 050000000200000004000000
   _resistElements: 0100000006000000
   _nullElements: 
   _absorbElements: 
-  _skillList: []
-  _aiProfileData: {fileID: 0}
-  _expReward: 15
-  _goldReward: 40
+  _skillList:
+  - {fileID: 11400000, guid: ebda891a8d634d94fb8eb16a314dfae8, type: 2}
+  _aiProfileData: {fileID: 11400000, guid: ee2405d3365f1184c926b34e0c5b5d13, type: 2}
+  _expReward: 65
+  _goldReward: 100
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 8511647367374691266, guid: a9c37af2c2e296546b31a069465c3e77, type: 3}

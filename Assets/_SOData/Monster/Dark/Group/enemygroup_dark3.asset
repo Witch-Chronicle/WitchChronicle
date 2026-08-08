@@ -12,17 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 083dd389e16cf504e8debb485f18d999, type: 3}
   m_Name: enemygroup_dark3
   m_EditorClassIdentifier: Assembly-CSharp::EnemyGroupSO
-  _minDepth: 5
-  _maxDepth: 10
+  _minDepth: 3
+  _maxDepth: 7
   _weight: 10
   _enemyEntries:
-  - enemyData: {fileID: 11400000, guid: e464e38c81aa81f48ad9953fdbb78188, type: 2}
-    weight: 19
   - enemyData: {fileID: 11400000, guid: 1752b055934804d4c96923653807f3b3, type: 2}
-    weight: 17
+    weight: 5
   - enemyData: {fileID: 11400000, guid: e1b4db4cd35da744bb663ea554db5ef7, type: 2}
-    weight: 29
-  - enemyData: {fileID: 11400000, guid: 4383f73a266553b41b519e36cb05ec9b, type: 2}
-    weight: 33
-  _baseCount: 3
-  _depthDivisor: 2
+    weight: 8
+  - enemyData: {fileID: 11400000, guid: 3b1981e3adb69584ca4edbb76500baff, type: 2}
+    weight: 14
+  - enemyData: {fileID: 11400000, guid: e464e38c81aa81f48ad9953fdbb78188, type: 2}
+    weight: 22
+  _baseCount: 4
+  _depthDivisor: 3
