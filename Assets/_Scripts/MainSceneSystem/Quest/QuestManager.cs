@@ -224,6 +224,7 @@ public class QuestManager : MonoBehaviour
         {
             PlayerInventory.Instance.AddGold(reward.gold);
             Debug.Log($"Reward Gold : {reward.gold}");
+            AlertManager.Instance?.Enqueue(AlertType.GoldAcquired, reward.gold);
 
             rewardMessages.Add($"골드 +{reward.gold}");
         }

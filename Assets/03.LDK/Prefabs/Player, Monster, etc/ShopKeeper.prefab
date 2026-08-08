@@ -141,13 +141,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopNPC
   _shopPanelAnimator: {fileID: 0}
-  _weaponItemsForSale: []
-  _armorItemsForSale: []
-  _accessoryItemsForSale: []
-  _consumableItemsForSale:
-  - {fileID: 11400000, guid: 20f31da4be55a7644b2289195a9f109f, type: 2}
-  - {fileID: 11400000, guid: adc72c819e792124597e12581dfbe117, type: 2}
-  - {fileID: 11400000, guid: f7ac430041f8d3f4d8aa2d71a202f906, type: 2}
-  - {fileID: 11400000, guid: 52e7440e2a72f2345a9c7978bfdc2c4f, type: 2}
-  _materialItemsForSale: []
-  _seedItemsForSale: []
+  _sellItems:
+  - {fileID: 11400000, guid: 1929871b9bcd1324498989844f5a8c8f, type: 2}
+  - {fileID: 11400000, guid: 52c8f1b446e452647b5d82e5cb2acd00, type: 2}
+  - {fileID: 11400000, guid: c0ea13a0e2091bd4c9e7d0bc2a86f36d, type: 2}
+  - {fileID: 11400000, guid: 704e5580d719ae04590082f82d3229bb, type: 2}
