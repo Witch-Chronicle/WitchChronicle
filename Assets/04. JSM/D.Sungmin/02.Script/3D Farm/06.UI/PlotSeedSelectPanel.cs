@@ -112,12 +112,12 @@ namespace WitchChronicle.IdleFarming
         }
 
         private int GetOwnedCount(SeedData seed)
-{
-    if (seed == null || seed.seedItem == null)
-        return 0;
+        {
+            if (seed == null || seed.seedItem == null)
+                return 0;
 
-    return PlayerInventory.Instance.GetTotalQuantity(seed.seedItem);
-}
+            return PlayerInventory.Instance.GetTotalQuantity(seed.seedItem);
+        }
 
         private void OnCardClicked(SeedData seed)
         {
@@ -156,27 +156,27 @@ namespace WitchChronicle.IdleFarming
         }
 
         private void OnPlantClicked()
-{
-    if (_selectedSeed == null || _targetSlot == null)
-        return;
+        {
+            if (_selectedSeed == null || _targetSlot == null)
+                return;
 
-    if (!PlayerInventory.Instance.TryConsumeItem(_selectedSeed.seedItem, 1))
-    {
-        Debug.Log("씨앗이 부족합니다.");
-        return;
-    }
+            if (!PlayerInventory.Instance.TryConsumeItem(_selectedSeed.seedItem, 1))
+            {
+                Debug.Log("씨앗이 부족합니다.");
+                return;
+            }
 
-    if (_targetSlot.PlantSeed(_selectedSeed))
-    {
-        PlayerInventory.Instance.RaiseInventoryChanged();
-        Close();
-    }
-    else
-    {
-        // 심기 실패 시 씨앗 반환
-        PlayerInventory.Instance.AddItem(_selectedSeed.seedItem, 1);
-        PlayerInventory.Instance.RaiseInventoryChanged();
-    }
-}
+            if (_targetSlot.PlantSeed(_selectedSeed))
+            {
+                PlayerInventory.Instance.RaiseInventoryChanged();
+                Close();
+            }
+            else
+            {
+                // 심기 실패 시 씨앗 반환
+                PlayerInventory.Instance.AddItem(_selectedSeed.seedItem, 1);
+                PlayerInventory.Instance.RaiseInventoryChanged();
+            }
+        }
     }
 }

@@ -10,20 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cbe15cc1f7ebf744da8f3bb2c409ab19, type: 3}
-  m_Name: Quest_Sub_001
+  m_Name: z_cook_sub_000 2
   m_EditorClassIdentifier: Assembly-CSharp::QuestData
-  id: sub_001
-  title: "\uB18D\uC0AC \uC9D3\uAE30"
-  description: "\uB18D\uC0AC\uB97C \uC9C0\uC5B4\uBCF4\uC790."
+  id: cook_002
+  title: "\uC5F0\uAE08\uC220\uC0AC\uC758 \uCCAB \uD3EC\uC158"
+  description: "\uAC00\uB9C8\uC1A5\uC744 \uC5F0\uAE08\uC220 \uBAA8\uB4DC\uB85C \uBC14\uAFB8\uC5B4
+    \uCCB4\uB825 \uD3EC\uC158\uC744 \uC81C\uC870\uD574\uBCF4\uC790."
   type: 1
   objectives:
-  - type: 0
-    targetID: enemy_wild_golem
-    requiredCount: 5
+  - type: 10
+    targetID: 11001
+    targetName: "\uCCB4\uB825 \uD3EC\uC158"
+    requiredCount: 1
   reward:
-    gold: 100
-    exp: 100
-    itemID: {fileID: 0}
+    gold: 300
+    exp: 200
+    item: {fileID: 0}
     itemCount: 0
     recruitNPC: 
     nextStory: 0

@@ -1,0 +1,260 @@
+{
+  "npcId": "npc_blacksmith",
+  "dialogues": [
+    {
+      "id": "default",
+      "speaker": "대장장이",
+      "text": "여어! 대장간의 망치 소리가 반갑지 않나? 무슨 일로 왔는가?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "equip_000_default",
+      "choices": []
+    },
+
+    {
+      "id": "equip_000_default",
+      "speaker": "대장장이",
+      "text": "강화를 하면 무기와 방어구의 성능이 훨씬 강력해지지! 한번 시도해볼 텐가?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "강화하는 법을 알려주세요.",
+          "next": "equip_000_accept",
+          "startQuest": "equip_000",
+          "completeQuest": ""
+        },
+        {
+          "text": "나중에 올게요.",
+          "next": "equip_000_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "equip_000_accept",
+      "speaker": "대장장이",
+      "text": "좋아! 강화에는 골드와 강화석 재료가 필요하다네.",
+      "startQuest": "",
+      "completeQuest": "equip_000",
+      "next": "equip_000_reward",
+      "choices": []
+    },
+    {
+      "id": "equip_000_reject",
+      "speaker": "대장장이",
+      "text": "언제든 무기를 다듬고 싶을 때 찾아오게.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "equip_000_reward",
+      "speaker": "대장장이",
+      "text": "자, 지원금 500골드와 강화석을 줄 테니 들고 있는 무기를 1회 강화해보게나!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "equip_001_default",
+      "choices": []
+    },
+
+    {
+      "id": "equip_001_default",
+      "speaker": "대장장이",
+      "text": "지원받은 재료로 무기를 1회 강화해보게나.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "지금 바로 강화할게요.",
+          "next": "equip_001_accept",
+          "startQuest": "equip_001",
+          "completeQuest": "",
+          "eventID": "OpenEnhance"   
+        },
+        {
+          "text": "나중에 할게요.",
+          "next": "equip_001_reject",
+          "startQuest": "",
+          "completeQuest": "",
+          "eventID": ""
+        }
+      ]
+    },
+    {
+      "id": "equip_001_accept",
+      "speaker": "대장장이",
+      "text": "좋아! 강화 창에서 원하는 무기를 선택하고 강화 버튼을 누르게나.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "equip_001_reject",
+      "speaker": "대장장이",
+      "text": "준비가 되면 언제든 다시 말을 걸게.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "equip_001_running",
+      "speaker": "대장장이",
+      "text": "무기를 강화하러 왔는가?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "무기를 강화할게요.",
+          "next": "equip_001_accept",
+          "startQuest": "",
+          "completeQuest": "",
+          "eventID": "OpenEnhance"  
+        },
+        {
+          "text": "나중에 올게요.",
+          "next": "equip_001_reject",
+          "startQuest": "",
+          "completeQuest": "",
+          "eventID": ""
+        }
+      ]
+    },
+    {
+      "id": "equip_001_complete",
+      "speaker": "대장장이",
+      "text": "오! 무기에 오롯이 마력이 불어넣어졌구만!",
+      "startQuest": "",
+      "completeQuest": "equip_001",
+      "next": "equip_001_reward",
+      "choices": []
+    },
+    {
+      "id": "equip_001_reward",
+      "speaker": "대장장이",
+      "text": "강화된 무기의 위력을 시험하러 던전으로 가보게!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "equip_002_default",
+      "choices": []
+    },
+
+    {
+      "id": "equip_002_default",
+      "speaker": "대장장이",
+      "text": "던전에 들어가 아무 몬스터나 3마리 처치하고 오게나!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "다녀올게요.",
+          "next": "equip_002_accept",
+          "startQuest": "equip_002",
+          "completeQuest": ""
+        },
+        {
+          "text": "아직 준비 중이에요.",
+          "next": "equip_002_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "equip_002_accept",
+      "speaker": "대장장이",
+      "text": "조심해서 다녀오게나!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "equip_002_reject",
+      "speaker": "대장장이",
+      "text": "단단히 정비하고 출발하게.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "equip_002_running",
+      "speaker": "대장장이",
+      "text": "던전 몬스터 3마리를 처치하고 오게나.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "equip_002_complete",
+      "speaker": "대장장이",
+      "text": "오! 몬스터 3마리를 훌륭하게 처치했군!",
+      "startQuest": "",
+      "completeQuest": "equip_002",
+      "next": "equip_002_reward",
+      "choices": []
+    },
+    {
+      "id": "equip_002_reward",
+      "speaker": "대장장이",
+      "text": "강화된 무기의 성능이 아주 뛰어나구만!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+
+    {
+      "id": "equip_002_finished",
+      "speaker": "대장장이",
+      "text": "무기를 더 강하게 만들고 싶은가? 내가 도와주지.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "무기를 강화하고 싶어.",
+          "next": "open_enhance",
+          "startQuest": "",
+          "completeQuest": "",
+          "eventID": "OpenEnhance"
+        },
+        {
+          "text": "다음에 올게.",
+          "next": "bye",
+          "startQuest": "",
+          "completeQuest": "",
+          "eventID": ""
+        }
+      ]
+    },
+    {
+      "id": "open_enhance",
+      "speaker": "대장장이",
+      "text": "좋아. 원하는 장비를 올려보게.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "bye",
+      "speaker": "대장장이",
+      "text": "그래. 장비가 필요해지면 언제든 찾아오게.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    }
+  ]
+}

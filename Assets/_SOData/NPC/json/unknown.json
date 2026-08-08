@@ -1,0 +1,210 @@
+{
+  "npcId": "npc_unknown",
+  "dialogues": [
+    {
+      "id": "default",
+      "speaker": "???",
+      "text": "...? 무슨 일이신가요?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "gacha_000_default",
+      "choices": []
+    },
+
+    {
+      "id": "gacha_000_default",
+      "speaker": "???",
+      "text": "어둠 속에서 은은한 마력을 내뿜는 오래된 서적이 보이시나요? 바로 고대 마도서랍니다.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "마도서에 대해 알고 싶어요.",
+          "next": "gacha_000_accept",
+          "startQuest": "gacha_000",
+          "completeQuest": ""
+        },
+        {
+          "text": "지나치겠습니다.",
+          "next": "gacha_000_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "gacha_000_accept",
+      "speaker": "???",
+      "text": "마도서의 봉인을 해제하면 그 안에 잠들어 있던 신비로운 스킬을 깨울 수 있어요.",
+      "startQuest": "",
+      "completeQuest": "gacha_000",
+      "next": "gacha_000_reward",
+      "choices": []
+    },
+    {
+      "id": "gacha_000_reject",
+      "speaker": "???",
+      "text": "인연이 없나 보네요... 때가 되면 다시 찾아오세요.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "gacha_000_reward",
+      "speaker": "???",
+      "text": "자, 제가 가진 '초급 마도서'를 한 권 드릴 테니 가방(I)에서 사용해 봉인을 풀어보세요!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "gacha_001_default",
+      "choices": []
+    },
+
+    {
+      "id": "gacha_001_default",
+      "speaker": "???",
+      "text": "가방(I)을 열어 마도서를 사용해 스킬을 뽑아보시겠어요?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "사용해 볼게요.",
+          "next": "gacha_001_accept",
+          "startQuest": "gacha_001",
+          "completeQuest": ""
+        },
+        {
+          "text": "나중에 하겠습니다.",
+          "next": "gacha_001_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "gacha_001_accept",
+      "speaker": "???",
+      "text": "과연 어떤 마력의 인연이 당신을 기다리고 있을까요...?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "gacha_001_reject",
+      "speaker": "???",
+      "text": "준비가 되시면 언제든 봉인을 해제해보세요.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "gacha_001_running",
+      "speaker": "???",
+      "text": "가방에서 마도서를 사용해 새로운 스킬을 깨워보세요.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "gacha_001_complete",
+      "speaker": "???",
+      "text": "훌륭해요... 새로운 마법의 정수를 얻으셨군요!",
+      "startQuest": "",
+      "completeQuest": "gacha_001",
+      "next": "gacha_001_reward",
+      "choices": []
+    },
+    {
+      "id": "gacha_001_reward",
+      "speaker": "???",
+      "text": "습득하신 스킬은 K키(스킬 장착 창)에서 슬롯에 등록하셔야 전투에서 사용하실 수 있답니다.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "gacha_002_default",
+      "choices": []
+    },
+
+    {
+      "id": "gacha_002_default",
+      "speaker": "???",
+      "text": "K키를 눌러 새 스킬을 장착하고, 던전에서 몬스터를 처치하여 실전을 시험해보시겠어요?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "처치하고 올게요.",
+          "next": "gacha_002_accept",
+          "startQuest": "gacha_002",
+          "completeQuest": ""
+        },
+        {
+          "text": "아직 준비가 안 됐어요.",
+          "next": "gacha_002_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "gacha_002_accept",
+      "speaker": "???",
+      "text": "새로 익힌 마법의 위력을 보여주세요. 조심해서 다녀오세요.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "gacha_002_reject",
+      "speaker": "???",
+      "text": "마음의 준비가 되시면 도전해보세요.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "gacha_002_running",
+      "speaker": "???",
+      "text": "K키에서 스킬을 장착하고, 던전 몬스터를 처치해보세요.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "gacha_002_complete",
+      "speaker": "???",
+      "text": "새로운 마법을 완벽히 다루시는군요! 정말 대단해요.",
+      "startQuest": "",
+      "completeQuest": "gacha_002",
+      "next": "gacha_002_reward",
+      "choices": []
+    },
+    {
+      "id": "gacha_002_reward",
+      "speaker": "???",
+      "text": "축하드려요! 이제 당신은 훌륭한 마법사랍니다.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+
+    {
+      "id": "gacha_002_finished",
+      "speaker": "???",
+      "text": ".....",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    }
+  ]
+}

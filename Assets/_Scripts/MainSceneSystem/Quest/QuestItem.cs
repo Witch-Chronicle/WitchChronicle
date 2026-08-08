@@ -127,6 +127,37 @@ public class QuestItem : MonoBehaviour
 
             case QuestObjectiveType.RecruitNPC:
                 return $"{objective.targetName} 합류";
+
+            // ===== 신규 사이드 퀘스트 문구 =====
+            case QuestObjectiveType.PlantSeed:
+                return $"{objective.targetName} 심기";
+
+            case QuestObjectiveType.HarvestCrop:
+                return $"{objective.targetName} 수확";
+
+
+            case QuestObjectiveType.CatchFish:
+                return $"{objective.targetName} 낚기";
+
+
+            case QuestObjectiveType.CookFood:
+                return $"{objective.targetName} 요리하기";
+
+
+            case QuestObjectiveType.BrewPotion:
+                return $"{objective.targetName} 제조하기";
+
+
+            case QuestObjectiveType.SellItem:
+                return $"{objective.targetName} 판매하기";
+
+
+            case QuestObjectiveType.SellEquipment:
+                return $"{objective.targetName} 판매하기";
+
+
+            case QuestObjectiveType.EnhanceItem:
+                return $"{objective.targetName} 강화하기";
         }
 
 

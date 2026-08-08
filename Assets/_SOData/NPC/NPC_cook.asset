@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: NPC_cook
   m_EditorClassIdentifier: Assembly-CSharp::NPCData
   _npcId: npc_cook
-  _npcName: "\uC694\uB9AC"
-  _description: "\uC694\uB9AC\uC0AC\uC785\uB2C8\uB2E4."
+  _npcName: "\uC5D0\uBC00\uB9AC"
+  _description: "\uC5D0\uBC00\uB9AC \uC785\uB2C8\uB2E4."
   _prompt: "\uB300\uD654"
   _portrait: {fileID: 21300000, guid: 4dfecc442060d0244b03c7a9038a31a1, type: 3}
   _prefab: {fileID: 0}
-  _dialogueJson: {fileID: 0}
-  _defaultDialogueId: 
-  _startDialogueId: 
-  _runningDialogueId: 
-  _completeDialogueId: 
-  _finishedDialogueId: 
-  _questId: 
+  _dialogueJson: {fileID: 4900000, guid: 2f14c84178352bc41a8e67457620923f, type: 3}
+  _defaultDialogueId: default
+  _startDialogueId: default
+  _runningDialogueId: running
+  _completeDialogueId: complete
+  _finishedDialogueId: finished
+  _questId: cook_000
   _recruitQuestId: 
   _defaultNpcState: 0

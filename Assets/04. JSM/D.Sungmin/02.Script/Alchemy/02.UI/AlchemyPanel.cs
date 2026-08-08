@@ -464,74 +464,87 @@ private int GetMaterialCountInSlots(MaterialItemData material)
         }
 
         private void ExecuteCookingRecipe(CookingRecipeData recipe)
-{
-    if (recipe == null || recipe.result == null) return;
-    if (PlayerInventory.Instance == null) return;
+        {
+            if (recipe == null || recipe.result == null) return;
+            if (PlayerInventory.Instance == null) return;
 
-    if (!HasEnoughMaterials(recipe.ingredients))
-    {
-        Debug.LogWarning("[AlchemyPanel] 재료 부족");
-        return;
-    }
+            if (!HasEnoughMaterials(recipe.ingredients))
+            {
+                Debug.LogWarning("[AlchemyPanel] 재료 부족");
+                return;
+            }
 
-    ConsumeIngredients(recipe.ingredients);
+            ConsumeIngredients(recipe.ingredients);
 
-    PlayerInventory.Instance.AddItem(recipe.result, 1);
-    PlayerInventory.Instance.RaiseInventoryChanged();
+            PlayerInventory.Instance.AddItem(recipe.result, 1);
+            PlayerInventory.Instance.RaiseInventoryChanged();
 
-    Debug.Log($"[AlchemyPanel] 요리 완성: {recipe.result.itemName}");
+            // 퀘스트 진행도 반영 (targetID: 요리 결과물 이름)
+            if (QuestManager.Instance != null)
+            {        
+                QuestManager.Instance.AddProgress(QuestObjectiveType.CookFood, recipe.result.itemId.ToString(), 1);
+            }
 
-    ClearAllIngredientSlots();
-    RefreshInventory();
+            Debug.Log($"[AlchemyPanel] 요리 완성: {recipe.result.itemName}");
 
-    // 애니메이션 재생 + 지연 후 팝업
-    StartCoroutine(Co_ShowResultAfterAnimation(recipe.result.icon, AlchemyMode.Cooking, _cookingTriggerName));
-}
+            ClearAllIngredientSlots();
+            RefreshInventory();
 
-private void ExecutePotionRecipe(PotionRecipeData recipe)
-{
-    if (recipe == null || recipe.resultPotion == null) return;
-    if (PlayerInventory.Instance == null) return;
+            // 애니메이션 재생 + 지연 후 팝업
+            StartCoroutine(Co_ShowResultAfterAnimation(recipe.result.icon, AlchemyMode.Cooking, _cookingTriggerName));
+        }
 
-    if (!HasEnoughMaterials(recipe.ingredients))
-    {
-        Debug.LogWarning("[AlchemyPanel] 재료 부족");
-        return;
-    }
+        private void ExecutePotionRecipe(PotionRecipeData recipe)
+        {
+            if (recipe == null || recipe.resultPotion == null) return;
+            if (PlayerInventory.Instance == null) return;
 
-    ConsumeIngredients(recipe.ingredients);
+            if (!HasEnoughMaterials(recipe.ingredients))
+            {
+                Debug.LogWarning("[AlchemyPanel] 재료 부족");
+                return;
+            }
 
-    PlayerInventory.Instance.AddItem(recipe.resultPotion, 1);
-    PlayerInventory.Instance.RaiseInventoryChanged();
+            ConsumeIngredients(recipe.ingredients);
 
-    Debug.Log($"[AlchemyPanel] 포션 완성: {recipe.resultPotion.itemName}");
+            PlayerInventory.Instance.AddItem(recipe.resultPotion, 1);
+            PlayerInventory.Instance.RaiseInventoryChanged();
 
-    ClearAllIngredientSlots();
-    RefreshInventory();
+            // 퀘스트 진행도 반영 (targetID: 포션 결과물 이름)
+            if (QuestManager.Instance != null)
+            {
+                QuestManager.Instance.AddProgress(QuestObjectiveType.BrewPotion, recipe.resultPotion.itemId.ToString(), 1);
+            }
 
-    // 애니메이션 재생 + 지연 후 팝업
-    StartCoroutine(Co_ShowResultAfterAnimation(recipe.resultPotion.icon, AlchemyMode.Potion, _potionTriggerName));
-}
 
-private IEnumerator Co_ShowResultAfterAnimation(Sprite resultIcon, AlchemyMode mode, string triggerName)
-{
-    // 시작 버튼 잠금 (연타 방지)
-    if (_startButton != null) _startButton.interactable = false;
+            Debug.Log($"[AlchemyPanel] 포션 완성: {recipe.resultPotion.itemName}");
 
-    // 캐릭터 애니메이션 재생
-    if (_playerAnimator != null && !string.IsNullOrEmpty(triggerName))
-    {
-        _playerAnimator.SetTrigger(triggerName);
-        Debug.Log($"[AlchemyPanel] 애니메이션 트리거: {triggerName}");
-    }
+            ClearAllIngredientSlots();
+            RefreshInventory();
 
-    // 결과 팝업 대기
-    yield return new WaitForSeconds(_resultDelay);
+            // 애니메이션 재생 + 지연 후 팝업
+            StartCoroutine(Co_ShowResultAfterAnimation(recipe.resultPotion.icon, AlchemyMode.Potion, _potionTriggerName));
+        }
 
-    // 성공 팝업 표시
-    if (_successPopup != null)
-        _successPopup.Show(resultIcon, mode, null);
-}
+        private IEnumerator Co_ShowResultAfterAnimation(Sprite resultIcon, AlchemyMode mode, string triggerName)
+        {
+            // 시작 버튼 잠금 (연타 방지)
+            if (_startButton != null) _startButton.interactable = false;
+
+            // 캐릭터 애니메이션 재생
+            if (_playerAnimator != null && !string.IsNullOrEmpty(triggerName))
+            {
+                _playerAnimator.SetTrigger(triggerName);
+                Debug.Log($"[AlchemyPanel] 애니메이션 트리거: {triggerName}");
+            }
+
+            // 결과 팝업 대기
+            yield return new WaitForSeconds(_resultDelay);
+
+            // 성공 팝업 표시
+            if (_successPopup != null)
+                _successPopup.Show(resultIcon, mode, null);
+        }
         private bool HasEnoughMaterials(List<IngredientSlot> ingredients)
         {
             if (ingredients == null) return false;

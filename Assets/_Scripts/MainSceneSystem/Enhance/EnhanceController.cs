@@ -176,6 +176,12 @@ public class EnhanceController : MonoBehaviour
             instance.enhanceAttemptCount++;
         }
 
+        // 퀘스트 진행도 반영 (시도 횟수 기준)
+        if (QuestManager.Instance != null)
+        {
+            QuestManager.Instance.AddProgress(QuestObjectiveType.EnhanceItem, instance.baseData.itemId.ToString(), 1);
+        }
+
         PlayerInventory.Instance.RaiseInventoryChanged();
 
         Debug.Log(isSuccess

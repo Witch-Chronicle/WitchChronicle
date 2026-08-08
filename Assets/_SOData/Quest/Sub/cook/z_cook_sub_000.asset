@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbe15cc1f7ebf744da8f3bb2c409ab19, type: 3}
+  m_Name: z_cook_sub_000
+  m_EditorClassIdentifier: Assembly-CSharp::QuestData
+  id: cook_000
+  title: "\uAC00\uB9C8\uC1A5\uC758 \uBE44\uBC95"
+  description: "\uC5D0\uBC00\uB9AC\uC5D0\uAC8C \uAC00\uB9C8\uC1A5 \uC694\uB9AC\uC640
+    \uC5F0\uAE08\uC220 \uC124\uBA85\uC744 \uB4E3\uC790"
+  type: 1
+  objectives:
+  - type: 1
+    targetID: npc_life
+    targetName: "\uC5D0\uBC00\uB9AC"
+    requiredCount: 1
+  reward:
+    gold: 300
+    exp: 150
+    items:
+    - {fileID: 11400000, guid: ad0c3f1ed6c0e694b94ca1bd21902bf6, type: 2}
+    itemCount: 2
+    recruitNPC: 
+    nextStory: 0
+  nextQuest: {fileID: 11400000, guid: 9e2049db7e2c1bf409f247989766e7d7, type: 2}

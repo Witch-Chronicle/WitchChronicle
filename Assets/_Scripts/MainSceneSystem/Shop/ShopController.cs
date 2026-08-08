@@ -42,6 +42,14 @@ public class ShopController : MonoBehaviour
 
         PlayerInventory.Instance.RaiseInventoryChanged();
 
+        // 상점 구매 성공 시 퀘스트 진행도 업데이트
+        if (QuestManager.Instance != null)
+        {
+            // UseShop 타입 목표 카운트 반영 (아이템 ID 및 이름 양쪽 대응)
+            QuestManager.Instance.AddProgress(QuestObjectiveType.UseShop, itemData.itemId.ToString(), amount);
+            QuestManager.Instance.AddProgress(QuestObjectiveType.UseShop, itemData.itemName, amount);
+        }
+
         Debug.Log($"[ShopController] 구매 완료: {itemData.itemName} x{amount}");
         AlertManager.Instance?.Enqueue(AlertType.BuyItems, itemData.itemName, amount);
         return true;

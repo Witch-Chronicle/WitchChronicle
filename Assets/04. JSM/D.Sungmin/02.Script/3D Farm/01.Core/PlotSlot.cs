@@ -107,6 +107,15 @@ namespace WitchChronicle.IdleFarming
             OnStateChanged?.Invoke(this);
             RefreshVisual();
 
+             if (QuestManager.Instance != null)
+            {
+                QuestManager.Instance.AddProgress(QuestObjectiveType.PlantSeed, seed.seedItem.itemId.ToString(), 1);
+            }
+            else
+            {
+                Debug.LogError("[PlotSlot] QuestManager.Instance가 null입니다!");
+            }
+
             SaveManager.RequestSave(); // 세이브 요청!
 
             return true;
