@@ -2717,7 +2717,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c0c63b09fe2b8945ae3c147b33f6838, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeleportDestination
-  _displayName: "\uB09A\uC2DC\uD130"
+  _id: 4
 --- !u!114 &35642566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6093,7 +6093,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44dbf9d8d217ca3469099312f3bab536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeleportPortal
-  _teleportPanel: {fileID: 73679913}
+  _teleportPanel: {fileID: 1235043986}
 --- !u!65 &62929783
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7276,7 +7276,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &73679912
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7312,8 +7312,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeleportPanel
   _panelAnimator: {fileID: 73679914}
-  _entryPrefab: {fileID: 2783881598769589839, guid: 5e1e787215638e64bb2328a15bc0358d, type: 3}
-  _entryRoot: {fileID: 466535244}
+  _entries: []
   _closeButton: {fileID: 1282881515}
 --- !u!114 &73679914
 MonoBehaviour:
@@ -75051,7 +75050,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44dbf9d8d217ca3469099312f3bab536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeleportPortal
-  _teleportPanel: {fileID: 73679913}
+  _teleportPanel: {fileID: 1235043986}
 --- !u!65 &718534021
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -101443,7 +101442,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44dbf9d8d217ca3469099312f3bab536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeleportPortal
-  _teleportPanel: {fileID: 73679913}
+  _teleportPanel: {fileID: 1235043986}
 --- !u!65 &968185630
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -123140,6 +123139,183 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPC
   _npcData: {fileID: 11400000, guid: 3988867d4c9c249459ee8b871269d482, type: 2}
+--- !u!1001 &1235043984
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 2126577013}
+    m_Modifications:
+    - target: {fileID: 459157600453788674, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 459157600453788674, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 459157600453788674, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 459157600453788674, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 488.47424
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -746.44257
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -532.96747
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3891212716888256933, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3891212716888256933, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3891212716888256933, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3891212716888256933, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5617321932712080946, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_Name
+      value: TeleportPanel_v1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7183168244173811112, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7183168244173811112, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7183168244173811112, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7183168244173811112, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9202909653404044479, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9202909653404044479, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9202909653404044479, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9202909653404044479, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+--- !u!224 &1235043985 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 2529104506437888513, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+  m_PrefabInstance: {fileID: 1235043984}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1235043986 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5824108265016908212, guid: 336bec28731938c4cab8fc311782bab5, type: 3}
+  m_PrefabInstance: {fileID: 1235043984}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a210133f55ed7614b9a289c0089a6794, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TeleportPanel
 --- !u!1001 &1235812861
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -143791,7 +143967,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44dbf9d8d217ca3469099312f3bab536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeleportPortal
-  _teleportPanel: {fileID: 73679913}
+  _teleportPanel: {fileID: 1235043986}
 --- !u!65 &1398912872
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -193546,7 +193722,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c0c63b09fe2b8945ae3c147b33f6838, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeleportDestination
-  _displayName: "\uBA54\uC778 \uAD11\uC7A5"
+  _id: 1
 --- !u!1001 &1777459856
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -222536,7 +222712,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c0c63b09fe2b8945ae3c147b33f6838, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeleportDestination
-  _displayName: "\uBC88\uD654\uAC00"
+  _id: 2
 --- !u!114 &2045708409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -225625,7 +225801,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c0c63b09fe2b8945ae3c147b33f6838, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeleportDestination
-  _displayName: "\uB18D\uC0AC"
+  _id: 3
 --- !u!114 &2071375819
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -230879,6 +231055,7 @@ RectTransform:
   - {fileID: 1211766526}
   - {fileID: 1524820581}
   - {fileID: 73679912}
+  - {fileID: 1235043985}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
