@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// BSP 기반 던전 생성기 (6x6 모듈 규격 스냅 및 방 사이 최소 간격 보장 적용)
+/// BSP 기반 던전 생성기 (6x6 모듈 규격 스냅 및 스택 오버플로우 방지 적용)
 /// </summary>
 public class DungeonGenerator : MonoBehaviour
 {
@@ -35,7 +35,40 @@ public class DungeonGenerator : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 던전 생성 메인 함수 (최대 20회 재시도 제한으로 StackOverflowException 방지)
+    /// </summary>
     public List<RoomNode> GenerateDungeon()
+    {
+        int maxAttempts = 20; // 최대 재시도 횟수 제한 (무한 재귀 호출 방지)
+        int attempt = 0;
+
+        while (attempt < maxAttempts)
+        {
+            attempt++;
+            List<RoomNode> rooms = TryGenerateRooms();
+
+            if (rooms != null && rooms.Count >= _dungeonData.MinRoomCount)
+            {
+                ConnectRooms(rooms);
+                AssignRoomTypes(rooms);
+                Debug.Log($"[DungeonGenerator] 던전 생성 성공 (시도 {attempt}회) : {rooms.Count}개 방");
+                return rooms;
+            }
+        }
+
+        // 최대 시도 횟수 초과 시 현재까지 생성된 방들로 진행 (에러 방지)
+        Debug.LogWarning("[DungeonGenerator] 최대 시도 횟수 초과. 현재 생성된 방들로 진행합니다.");
+        List<RoomNode> fallbackRooms = TryGenerateRooms();
+        ConnectRooms(fallbackRooms);
+        AssignRoomTypes(fallbackRooms);
+        return fallbackRooms;
+    }
+
+    /// <summary>
+    /// 실제 방 시도 생성
+    /// </summary>
+    private List<RoomNode> TryGenerateRooms()
     {
         List<RoomNode> rooms = new List<RoomNode>();
 
@@ -80,17 +113,6 @@ public class DungeonGenerator : MonoBehaviour
         {
             CreateRoom(leaf.Area, rooms);
         }
-
-        if (rooms.Count < _dungeonData.MinRoomCount)
-        {
-            Debug.Log("[DungeonGenerator] 방 개수가 부족하여 다시 생성합니다.");
-            return GenerateDungeon();
-        }
-
-        ConnectRooms(rooms);
-        AssignRoomTypes(rooms);
-
-        Debug.Log($"[DungeonGenerator] 생성 완료 : {rooms.Count}");
 
         return rooms;
     }
@@ -207,7 +229,6 @@ public class DungeonGenerator : MonoBehaviour
     /// </summary>
     private void CreateRoom(RectInt area, List<RoomNode> rooms)
     {
-        // 방과 방 사이에 최소 1모듈(6단위 = 통로 1칸) 이상의 여백을 강제 보장
         int minCorridorGap = ModuleSize; 
 
         int padding = Mathf.Max(minCorridorGap, _dungeonData.MinPadding);
@@ -218,7 +239,6 @@ public class DungeonGenerator : MonoBehaviour
         if (maxWidth < _dungeonData.MinRoomSize ||
             maxHeight < _dungeonData.MinRoomSize)
         {
-            // 여백 공간이 약간 부족할 경우 1개 모듈(6단위) 패딩으로 조정
             padding = minCorridorGap;
             maxWidth = area.width - (padding * 2);
             maxHeight = area.height - (padding * 2);
@@ -266,7 +286,6 @@ public class DungeonGenerator : MonoBehaviour
                 width,
                 height));
 
-        // 기존 방들과 거리가 1모듈(6단위) 미만으로 바짝 붙어있으면 생성 취소
         if (IsTooCloseToExistingRooms(newRoom, rooms, minCorridorGap))
         {
             return;
@@ -285,7 +304,6 @@ public class DungeonGenerator : MonoBehaviour
     {
         foreach (RoomNode existing in existingRooms)
         {
-            // 기존 방의 테두리에 minGap(6단위 = 통로 1칸)만큼 확장된 가상의 영역 생성
             RectInt expandedBounds = new RectInt(
                 existing.Bounds.x - minGap,
                 existing.Bounds.y - minGap,
@@ -293,7 +311,6 @@ public class DungeonGenerator : MonoBehaviour
                 existing.Bounds.height + (minGap * 2)
             );
 
-            // 새 방이 확장된 영역과 겹친다면 두 방 사이의 거리가 1칸 미만임
             if (expandedBounds.Overlaps(newRoom.Bounds))
             {
                 return true;
