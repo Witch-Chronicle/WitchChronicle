@@ -5452,10 +5452,7 @@ MonoBehaviour:
   _normalTextColor: {r: 0, g: 0, b: 0, a: 1}
   _selectedTextColor: {r: 1, g: 1, b: 1, a: 1}
   _closeBtn: {fileID: 6337283657715339592}
-  _itemSlotPrefab: {fileID: 8188951982393435618, guid: b54a4a2ea476a084c944f0a4c19a46bf, type: 3}
-  _itemSlotParent: {fileID: 35563138590415453}
-  _poolDefaultCapacity: 20
-  _poolMaxSize: 200
+  _scrollView: {fileID: 6394524226602554018}
   _goldText: {fileID: 7030223232009483252}
   _itemDetailController: {fileID: 6016739125808277409}
 --- !u!1 &3255954083710873597
@@ -6821,7 +6818,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3988880289309023674}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
   m_Name: 
@@ -6845,7 +6842,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3988880289309023674}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
   m_Name: 
@@ -7310,6 +7307,7 @@ GameObject:
   - component: {fileID: 7632285534064776326}
   - component: {fileID: 5943933478729667270}
   - component: {fileID: 286522676571514502}
+  - component: {fileID: 6394524226602554018}
   m_Layer: 5
   m_Name: Scroll View
   m_TagString: Untagged
@@ -7395,7 +7393,7 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
+  m_ScrollSensitivity: 8
   m_Viewport: {fileID: 3289024253870699142}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 5903393829730870162}
@@ -7406,6 +7404,30 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6394524226602554018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4135786388512055832}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdafe7540d68407479601014ba26c92a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryScrollView
+  _scrollRect: {fileID: 286522676571514502}
+  _content: {fileID: 35563138590415453}
+  _cellPrefab: {fileID: 5647286992266848578}
+  _columnCount: 5
+  _cellSize: {x: 170, y: 230}
+  _spacing: {x: 20, y: 20}
+  _padding:
+    m_Left: 0
+    m_Right: 20
+    m_Top: 0
+    m_Bottom: 0
+  _bufferRows: 1
 --- !u!1 &4161606415296072752
 GameObject:
   m_ObjectHideFlags: 0
@@ -14119,7 +14141,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7270770071080934547}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
   m_Name: 
@@ -14132,7 +14154,7 @@ MonoBehaviour:
   m_ChildAlignment: 7
   m_Spacing: 60
   m_ChildForceExpandWidth: 0
-  m_ChildForceExpandHeight: 1
+  m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
@@ -18088,6 +18110,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 8369868192721012077, guid: b54a4a2ea476a084c944f0a4c19a46bf, type: 3}
   m_PrefabInstance: {fileID: 4610052048182135968}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &5647286992266848578 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8188951982393435618, guid: b54a4a2ea476a084c944f0a4c19a46bf, type: 3}
+  m_PrefabInstance: {fileID: 4610052048182135968}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f87b1ade5596c8499bbfb862a7bf6b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryItemSlot
 --- !u!1001 &7173935148038281152
 PrefabInstance:
   m_ObjectHideFlags: 0
