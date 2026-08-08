@@ -102,6 +102,11 @@ public class PauseController : MonoBehaviour
         {
             PlayerUIInputReader.Instance.TogglePausePanel();
         }
+
+        if (PersistentCharacterManager.Instance != null)
+        {
+            PersistentCharacterManager.Instance.RestoreActivePartyVitals();
+        }
         SceneTransitionManager.Instance.LoadSceneWithLoading(_returnScene, waitForReadySignal: true);
     }
     /// <summary>
