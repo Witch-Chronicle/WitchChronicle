@@ -34,6 +34,7 @@ public class BattlePresentationBinder : MonoBehaviour
         public System.Action HpHandler;
         public bool IsReactionPlaying;
         public int ReactionVersion;
+        public ConstellationPathBarrierPresenter BarrierPresenter;
     }
 
     private readonly List<UnitBinding> _bindings = new List<UnitBinding>();
@@ -434,8 +435,9 @@ public class BattlePresentationBinder : MonoBehaviour
                 Presenter = presenter,
                 Dissolve = actor.GetComponent<DeathDissolve>(),
                 Audio = actor.GetComponent<CharacterAudio>(),
+                BarrierPresenter = actor.GetComponentInChildren<ConstellationPathBarrierPresenter>(true),
                 TeamType = actor.TeamType,
-                LastHp = actor.BattleUnit.CurrentHp
+                LastHp = actor.BattleUnit.CurrentHp,
             };
 
             binding.HpHandler = () => HandleHpChanged(binding);
@@ -525,6 +527,7 @@ public class BattlePresentationBinder : MonoBehaviour
             return;
         }
 
+        binding.BarrierPresenter?.PlayBlock();
         binding.Presenter.PlayParry(onComplete);
         binding.Audio?.PlayParry();
     }
@@ -631,8 +634,33 @@ public class BattlePresentationBinder : MonoBehaviour
 
             if (unit == null || !unit.IsAlive || binding == null || binding.Presenter == null) continue;
 
-            binding.Presenter.PlaySkillSupport(HandleUnitCompleted);
+            int unitPartCount = binding.BarrierPresenter != null ? 2 : 1;
+
+            /// <summary>
+            /// 개별 유닛 방어막 생성 파트 완료
+            /// </summary>
+            void HandleUnitPartCompleted()
+            {
+                unitPartCount--;
+
+                if (unitPartCount > 0)
+                {
+                    return;
+                }
+
+                HandleUnitCompleted();
+            }
+
+            binding.Presenter.PlaySkillSupport(
+                HandleUnitPartCompleted);
+
             binding.Audio?.PlaySkill();
+
+            if (binding.BarrierPresenter != null)
+            {
+                binding.BarrierPresenter.ShowBarrier(
+                    HandleUnitPartCompleted);
+            }
         }
     }
 
@@ -722,12 +750,17 @@ public class BattlePresentationBinder : MonoBehaviour
     }
 
     /// <summary>
-    /// 별자리 방어막 파괴 연출 지점
+    /// 별자리 방어막 파괴 연출
     /// </summary>
     /// <param name="unit">방어막이 소진된 유닛</param>
-    public void NotifyConstellationBarrierBroken(BattleUnit unit)
+    public void NotifyConstellationBarrierBroken(
+        BattleUnit unit)
     {
         if (unit == null) return;
+
+        UnitBinding binding = FindBinding(unit);
+
+        binding?.BarrierPresenter?.BreakBarrier();
 
         Debug.Log($"[ConstellationPath] Barrier Broken | {unit.UnitName}", this);
     }
@@ -745,11 +778,16 @@ public class BattlePresentationBinder : MonoBehaviour
         {
             BattleUnit unit = units[i];
 
-            if (unit == null) continue;
+            if (unit == null)
+            {
+                continue;
+            }
 
-            Debug.Log(
-                $"[ConstellationPath] Barrier Ended | {unit.UnitName}",
-                this);
+            UnitBinding binding = FindBinding(unit);
+
+            binding?.BarrierPresenter?.HideBarrier();
+
+            Debug.Log($"[ConstellationPath] Barrier Ended | {unit.UnitName}", this);
         }
     }
 }
