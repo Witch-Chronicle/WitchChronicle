@@ -11,29 +11,23 @@ namespace WitchChronicle.IdleFarming
 
         [Header("컴포넌트 참조")]
         [SerializeField] private PlotVisual _visual;
-        [SerializeField] private Transform _floatingAnchor; // UI가 따라올 3D 위치 (밭 위쪽 빈 오브젝트)
+        [SerializeField] private Transform _floatingAnchor;
 
-        // 런타임 주입
         private PlotFloatingUI _floatingUI;
 
-        // 런타임 데이터
         private PlotState _state;
         private SeedData _plantedSeed;
         private DateTime _cycleStartTime;
         private int _pendingHarvestCount;
 
-        // 이벤트
         public event Action<PlotSlot> OnStateChanged;
         public event Action<PlotSlot, SeedData, int> OnHarvested;
 
-        // 프로퍼티
         public PlotState State => _state;
         public SeedData PlantedSeed => _plantedSeed;
         public DateTime CycleStartTime => _cycleStartTime;
         public int PendingHarvestCount => _pendingHarvestCount;
         public Transform FloatingAnchor => _floatingAnchor != null ? _floatingAnchor : transform;
-
-        // ====== Unity 라이프사이클 ======
 
         private void Update()
         {
@@ -45,8 +39,6 @@ namespace WitchChronicle.IdleFarming
             }
         }
 
-        // ====== 외부 주입 ======
-
         public void SetFloatingUI(PlotFloatingUI ui)
         {
             _floatingUI = ui;
@@ -57,8 +49,6 @@ namespace WitchChronicle.IdleFarming
             }
         }
 
-        // ====== 초기화 ======
-
         public void Initialize(PlotSaveData saveData, SeedData plantedSeed)
         {
             _plotIndex = saveData.plotIndex;
@@ -66,6 +56,9 @@ namespace WitchChronicle.IdleFarming
             _plantedSeed = plantedSeed;
             _cycleStartTime = saveData.GetCycleStartTime();
             _pendingHarvestCount = saveData.pendingHarvestCount;
+
+            // ★ 오프라인 시간만큼 사이클 진행 (재접속 시 자란 만큼 반영)
+            UpdateCycle();
 
             RefreshVisual();
         }
@@ -80,8 +73,6 @@ namespace WitchChronicle.IdleFarming
             return data;
         }
 
-        // ====== 상태 전환 액션 ======
-
         public bool Unlock()
         {
             if (_state != PlotState.Locked) return false;
@@ -90,7 +81,7 @@ namespace WitchChronicle.IdleFarming
             OnStateChanged?.Invoke(this);
             RefreshVisual();
 
-            SaveManager.RequestSave(); // 밭 해제 시 세이브 요청!
+            SaveManager.RequestSave();
 
             return true;
         }
@@ -107,7 +98,10 @@ namespace WitchChronicle.IdleFarming
             OnStateChanged?.Invoke(this);
             RefreshVisual();
 
-            SaveManager.RequestSave(); // 세이브 요청!
+            SaveManager.RequestSave();
+
+            if (SoundManager.Instance != null)
+                SoundManager.Instance.PlaySfx(SfxType.FarmSow);
 
             return true;
         }
@@ -127,12 +121,13 @@ namespace WitchChronicle.IdleFarming
             OnStateChanged?.Invoke(this);
             RefreshVisual();
 
-            SaveManager.RequestSave(); // 세이브 요청!
+            SaveManager.RequestSave();
+
+            if (SoundManager.Instance != null)
+                SoundManager.Instance.PlaySfx(SfxType.FarmHarvest);
 
             return true;
         }
-
-        // ====== 사이클 업데이트 ======
 
         public void UpdateCycle()
         {
@@ -160,6 +155,8 @@ namespace WitchChronicle.IdleFarming
                     _state = PlotState.ReadyToHarvest;
                     OnStateChanged?.Invoke(this);
                     RefreshVisual();
+
+                    SaveManager.RequestSave(); // ★ 상태 전환 시 저장
                 }
                 return;
             }
@@ -170,14 +167,14 @@ namespace WitchChronicle.IdleFarming
 
             OnStateChanged?.Invoke(this);
             RefreshVisual();
+
+            SaveManager.RequestSave(); // ★ 사이클 완료 시 저장
         }
 
         public void ProcessOfflineTime(int maxCycles)
         {
             UpdateCycle();
         }
-
-        // ====== 유틸리티 ======
 
         public float GetGrowthProgress()
         {
@@ -196,8 +193,6 @@ namespace WitchChronicle.IdleFarming
             double elapsed = (DateTime.Now - _cycleStartTime).TotalSeconds;
             return Mathf.Max(0f, cycleSeconds - (float)elapsed);
         }
-
-        // ====== 시각화 ======
 
         private void RefreshVisual()
         {

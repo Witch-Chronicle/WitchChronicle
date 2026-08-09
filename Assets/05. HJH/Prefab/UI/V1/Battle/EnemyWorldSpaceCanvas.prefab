@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2626289972910841747}
   - component: {fileID: 6711992365113121181}
   - component: {fileID: 6257000758943678488}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: NameTxt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -163,7 +163,7 @@ GameObject:
   - component: {fileID: 3564447580468547647}
   - component: {fileID: 5602077922734582203}
   - component: {fileID: 8437796679746196624}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: BG_Frame
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -238,7 +238,7 @@ GameObject:
   - component: {fileID: 1302850895749416231}
   - component: {fileID: 7610365378214825863}
   - component: {fileID: 7296715292815976856}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: SliderFrame
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -313,7 +313,7 @@ GameObject:
   - component: {fileID: 5680828818226623599}
   - component: {fileID: 2494502826576674814}
   - component: {fileID: 7497024145070761427}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Particle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -391,7 +391,7 @@ GameObject:
   - component: {fileID: 6731138976939314514}
   - component: {fileID: 2418184242802061401}
   - component: {fileID: 3244250633305005808}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: EnemyWorldSpaceCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -470,7 +470,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!114 &6731138976939314514
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -539,7 +539,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7064828207407068264}
   - component: {fileID: 4914026978537451953}
-  m_Layer: 5
+  m_Layer: 15
   m_Name: StatusIcons
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -601,7 +601,7 @@ GameObject:
   - component: {fileID: 6445328590432999886}
   - component: {fileID: 9203353446413192028}
   - component: {fileID: 6348079229960555013}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: HpBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -676,7 +676,7 @@ GameObject:
   - component: {fileID: 652409475583714045}
   - component: {fileID: 8701139762539906767}
   - component: {fileID: 2988275838059663966}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: ElementAffinityIndicator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -751,6 +751,10 @@ PrefabInstance:
     - target: {fileID: 3653641312834926161, guid: cb563b81f56ab7444888c6b16f039f6b, type: 3}
       propertyPath: m_Name
       value: EnemyStatusIcon
+      objectReference: {fileID: 0}
+    - target: {fileID: 3653641312834926161, guid: cb563b81f56ab7444888c6b16f039f6b, type: 3}
+      propertyPath: m_Layer
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 3653641312834926161, guid: cb563b81f56ab7444888c6b16f039f6b, type: 3}
       propertyPath: m_IsActive
