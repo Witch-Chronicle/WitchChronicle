@@ -92,7 +92,7 @@
       "text": "고마워, 이거 받아.",
       "startQuest": "",
       "completeQuest": "",
-      "next": "",
+      "next": "main_002_default",
       "choices": []
     },
     {
@@ -159,7 +159,7 @@
       "text": "그런데... 앞으로 더 위험한 던전들을 조사하려면, 혼자서는 무리일 것 같아. 함께할 동료를 찾아보는 게 어때?",
       "startQuest": "",
       "completeQuest": "",
-      "next": "",
+      "next": "main_003_default",
       "choices": []
     },
     {
@@ -275,7 +275,7 @@
       "text": "조금만 더 안쪽으로 들어가 보자. 아직 끝난 게 아니야.",
       "startQuest": "",
       "completeQuest": "",
-      "next": "",
+      "next": "main_005_default",
       "choices": []
     },
     {
@@ -339,22 +339,22 @@
     {
       "id": "main_005_reward",
       "speaker": "카산드라",
-      "text": "이제 마을을 어지럽히는 그 우두머리를 처치할 차례야.",
+      "text": "이제 마을을 어지럽히는 마물들을 소탕할 차례야.",
       "startQuest": "",
       "completeQuest": "",
-      "next": "",
+      "next": "main_006_default",
       "choices": []
     },
     {
       "id": "main_006_default",
       "speaker": "카산드라",
-      "text": "녹색 밀림의 보스, 그게 이 모든 일의 원흉일 거야. 처치해서 던전을 잠재워줘.",
+      "text": "마물들.., 그게 이 모든 일의 원흉일 거야. 모두 소탕해서 던전을 잠재워줘.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "제가 보스를 쓰러뜨릴게요.",
+          "text": "제가 처리할게요.",
           "next": "main_006_accept",
           "startQuest": "main_006",
           "completeQuest": ""
@@ -379,7 +379,7 @@
     {
       "id": "main_006_reject",
       "speaker": "카산드라",
-      "text": "그래, 보스는 강할 테니 철저히 준비해.",
+      "text": "그래, 철저히 준비해.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -388,7 +388,7 @@
     {
       "id": "main_006_running",
       "speaker": "카산드라",
-      "text": "보스는 아직이야? 절대 무리하지 마.",
+      "text": "아직이야? 절대 무리하지 마.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -397,7 +397,7 @@
     {
       "id": "main_006_complete",
       "speaker": "카산드라",
-      "text": "보스를 처치했다고?! 녹색 밀림이 다시 잠잠해지겠어.",
+      "text": "모두 다 소탕 했다고?! 녹색 밀림이 다시 잠잠해지겠어.",
       "startQuest": "",
       "completeQuest": "main_006",
       "next": "main_006_reward",
@@ -427,7 +427,7 @@
           "completeQuest": ""
         },
         {
-          "text": "다른 동료부터 찾고 싶어요.",
+          "text": "나중에 찾아갈게요.",
           "next": "main_007_reject",
           "startQuest": "",
           "completeQuest": ""
@@ -525,7 +525,7 @@
       "text": "새끼 드래곤이 폭주하고 있다니... 더 커지기 전에 막아야 해.",
       "startQuest": "",
       "completeQuest": "",
-      "next": "",
+      "next": "main_009_default",
       "choices": []
     },
     {
@@ -592,7 +592,7 @@
       "text": "하지만 근본적인 원인은 아직이야. 던전 깊은 곳의 진짜 주인을 상대해야 할 것 같아.",
       "startQuest": "",
       "completeQuest": "",
-      "next": "",
+      "next": "main_010_default",
       "choices": []
     },
     {
@@ -712,6 +712,24 @@
       "choices": []
     },
     {
+      "id": "main_011_complete",
+      "speaker": "카산드라",
+      "text": "페이까지 합류해주다니! 이제 완벽한 파티가 되었어.",
+      "startQuest": "",
+      "completeQuest": "main_011",
+      "next": "main_011_reward",
+      "choices": []
+    },
+    {
+      "id": "main_011_reward",
+      "speaker": "카산드라",
+      "text": "마지막 지역인 저주받은 땅으로 조사를 떠날 차례야.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "main_012_default",
+      "choices": []
+    },
+    {
       "id": "main_012_default",
       "speaker": "카산드라",
       "text": "페이까지 함께해줘서 다행이야. 저주가 퍼지는 원인인 어둠의 기사들을 처치해줘.",
@@ -775,7 +793,7 @@
       "text": "하지만 진짜 원인은 던전 가장 깊은 곳에 있을 거야.",
       "startQuest": "",
       "completeQuest": "",
-      "next": "",
+      "next": "main_013_default",
       "choices": []
     },
     {
@@ -842,7 +860,7 @@
       "text": "그런데... 이 모든 일의 배후에 대한 단서를 찾았어. 믿기지가 않아.",
       "startQuest": "",
       "completeQuest": "",
-      "next": "",
+      "next": "main_014_default",
       "choices": []
     },
     {
@@ -891,7 +909,7 @@
       "text": "준비는 다 됐어? 마음의 준비도 필요할 거야.",
       "startQuest": "",
       "completeQuest": "",
-      "next": "",
+      "next": "main_014_complete",
       "choices": []
     },
     {
@@ -909,7 +927,7 @@
       "text": "함께라면... 두렵지 않아. 가자, 심판의 탑으로.",
       "startQuest": "",
       "completeQuest": "",
-      "next": "",
+      "next": "main_015_default",
       "choices": []
     },
     {
@@ -924,7 +942,8 @@
           "text": "알데릭을 쓰러뜨리러 가자.",
           "next": "main_015_accept",
           "startQuest": "main_015",
-          "completeQuest": ""
+          "completeQuest": "",
+          "eventID": "EnterFinalDungeon" 
         },
         {
           "text": "잠시만 기다려줘.",
@@ -974,6 +993,15 @@
       "id": "main_015_reward",
       "speaker": "카산드라",
       "text": "마녀라는 이름 아래 억울하게 죽어간 이들도, 이제 명예를 되찾았어. 이 모든 게 너 덕분이야. 고마워.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "main_015_finished",
+      "speaker": "카산드라",
+      "text": "안녕? 우리의 영웅.. 무슨 일 있니?",
       "startQuest": "",
       "completeQuest": "",
       "next": "",

@@ -145,8 +145,8 @@ public class RoomContentSpawner : MonoBehaviour
                 case RoomType.Boss:
                 {
                     var bossComp = roomController.gameObject.AddComponent<BossRoomInteraction>();
-                    EnemyGroupSO selectedGroup = GetRandomEnemyGroup(room.Depth);
-                    bossComp.Setup(_table.bossEncounterPrefab, _table.bossData, room);
+                    bossComp.Setup(_table.bossEncounterPrefab, _table.bossData, _table.exitPortalPrefab, room);
+
                     roomController.InjectInteraction(bossComp);
                     roomController.SpawnRoomContent();
                     break;

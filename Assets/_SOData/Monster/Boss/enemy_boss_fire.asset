@@ -12,21 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15fa27efa3f5725419aca6ec65b66bd4, type: 3}
   m_Name: enemy_boss_fire
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
-  _enemyId: enemy_boss_wild
+  _enemyId: enemy_boss_fire
   _enemyName: "\uBC1C\uB85D"
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 22dc4686f44796f48a8271e120558013, type: 3}
   _isBoss: 1
-  _maxHp: 7500
-  _attackPower: 120
-  _magicPower: 80
+  _maxHp: 3000
+  _attackPower: 70
+  _magicPower: 70
   _defensePower: 15
   _magicDefensePower: 15
-  _speed: 20
-  _weakElements: 04000000
-  _resistElements: 0700000001000000
+  _speed: 30
+  _weakElements: 040000000500000003000000
+  _resistElements: 070000000100000002000000
   _nullElements: 
   _absorbElements: 
-  _skillList: []
+  _skillList:
+  - {fileID: 11400000, guid: f34ed27ee9bb1bc41a5d0abef0555b80, type: 2}
+  - {fileID: 11400000, guid: 88fac484363ba9849a0c3d9ba34928c5, type: 2}
+  - {fileID: 11400000, guid: b452156248513cf46b84b2ed94dc3c7e, type: 2}
+  - {fileID: 11400000, guid: 674a856bc58cbe545b33599a9951eb3e, type: 2}
+  - {fileID: 11400000, guid: 3c1945410bf669346bbd76399ec781d4, type: 2}
   _aiProfileData: {fileID: 11400000, guid: 936d543f6091ae54f86b4027dc5bf994, type: 2}
   _expReward: 1800
   _goldReward: 3500

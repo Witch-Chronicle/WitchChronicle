@@ -14,29 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonData
   Id: hell_1
   DungeonName: "\uBC1C\uB85D \uC758 \uC9C0\uC625"
+  DungeonIcon: {fileID: 0}
+  Description: 
+  RequiredQuest: {fileID: 0}
+  EnemyPool: []
   FloorPrefab: {fileID: 2968830504906926872, guid: 18d5d0e4a15adbd48882b4a8eca95943, type: 3}
   WallPrefab: {fileID: 5151642384990008009, guid: 54c77c1c8d379594e93baab6ad37934c, type: 3}
   CeilingPrefab: {fileID: 2968830504906926872, guid: e5f9b860d4f158041830633198ce81ee, type: 3}
   DoorPrefab: {fileID: 3960670234233686325, guid: 5719d16d9f035fd4a8fcfaf6ae7bdfd2, type: 3}
   DoorWallPrefab: {fileID: 0}
-  DecorPrefabs:
-  - {fileID: 3156876585393967602, guid: e18cff2ebcc349842bf323f40366542a, type: 3}
-  - {fileID: 4457281828551312260, guid: dcf762f7ec1701e49bf5077af2823068, type: 3}
-  - {fileID: 3156876585393967602, guid: e18cff2ebcc349842bf323f40366542a, type: 3}
-  - {fileID: 4457281828551312260, guid: dcf762f7ec1701e49bf5077af2823068, type: 3}
-  - {fileID: 3156876585393967602, guid: e18cff2ebcc349842bf323f40366542a, type: 3}
-  - {fileID: 4457281828551312260, guid: dcf762f7ec1701e49bf5077af2823068, type: 3}
-  - {fileID: 3454579332353423851, guid: 8a35c7b924bf9d04d9960732782215e2, type: 3}
-  - {fileID: 3454579332353423851, guid: 8a35c7b924bf9d04d9960732782215e2, type: 3}
-  - {fileID: 1030992216, guid: abc00000000016882973811301943871, type: 3}
-  - {fileID: 1030992198, guid: abc00000000008076672260047248511, type: 3}
-  - {fileID: 1030992180, guid: abc00000000014745605174516167561, type: 3}
-  - {fileID: 1030992238, guid: abc00000000003778390058708688329, type: 3}
-  - {fileID: 1030992282, guid: abc00000000007320823481348160304, type: 3}
-  - {fileID: 1030992304, guid: abc00000000000166612956689332867, type: 3}
-  - {fileID: 1030992348, guid: abc00000000009366842529473335653, type: 3}
-  - {fileID: 1030992326, guid: abc00000000018341995826438526174, type: 3}
-  - {fileID: 1030992370, guid: abc00000000014921817115746232092, type: 3}
+  DecorPrefabs: []
+  WallDecorPrefabs: []
   MapSize: {x: 70, y: 70}
   MinPadding: 3
   BSPDepth: 1

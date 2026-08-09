@@ -15,18 +15,17 @@ MonoBehaviour:
   id: main_008
   title: "\uD654\uC5FC \uC9C0\uB300 \uC870\uC0AC"
   description: "\uD654\uC5FC \uC9C0\uB300\uC5D0\uC11C \uC774\uC0C1\uD55C \uB9C8\uB825\uC774
-    \uB290\uAEF4\uC9C4\uB2E4. \uC870\uC0AC\uB97C \uD1B5\uD574 \uC6D0\uC778\uC740
-    \uC54C\uC544\uBCF4\uC790"
+    \uB290\uAEF4\uC9C4\uB2E4. \uC2AC\uB77C\uC784 \uC744 3\uB9C8\uB9AC \uCC98\uCE58\uD558\uC790"
   type: 0
   objectives:
-  - type: 4
-    targetID: fire_1
-    targetName: "\uD654\uC5FC \uC9C0\uB300"
+  - type: 2
+    targetID: enemy_fire_slime
+    targetName: "\uBD88 \uC758 \uC2AC\uB77C\uC784"
     requiredCount: 1
   reward:
     gold: 800
     exp: 500
-    item: {fileID: 0}
+    items: []
     itemCount: 2
     recruitNPC: 
     nextStory: 1

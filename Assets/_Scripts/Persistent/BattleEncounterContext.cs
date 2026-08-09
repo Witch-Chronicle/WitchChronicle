@@ -1,14 +1,15 @@
+// FILE: Assets\_Scripts\Persistent\BattleEncounterContext.cs
+
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 전투 진입 정보 유지
+/// 전투 진입 정보 및 보스 처치 후 포탈 생성 관리
 /// </summary>
 public class BattleEncounterContext : MonoBehaviour
 {
     public static BattleEncounterContext Instance { get; private set; }
 
-    // 추가 승리 시 파괴 할 몬스터 게임오브젝트
     private BattleEncounter _battleEncounter;
 
     [Header("Encounter")]
@@ -33,9 +34,6 @@ public class BattleEncounterContext : MonoBehaviour
 
     public bool HasEncounter => _enemyBattleDataList.Count > 0;
 
-    /// <summary>
-    /// 싱글톤 등록
-    /// </summary>
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -45,12 +43,8 @@ public class BattleEncounterContext : MonoBehaviour
         }
 
         Instance = this;
-        // DontDestroyOnLoad(gameObject);
     }
 
-    /// <summary>
-    /// 싱글톤 해제
-    /// </summary>
     private void OnDestroy()
     {
         if (Instance == this)
@@ -59,17 +53,6 @@ public class BattleEncounterContext : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 전투 진입 정보 설정
-    /// </summary>
-    /// <param name="encounter">적</param>
-    /// <param name="enemyBattleDataList">적 데이터 목록</param>
-    /// <param name="returnSceneName">복귀 씬 이름</param>
-    /// <param name="returnPosition">복귀 위치</param>
-    /// <param name="returnRotation">복귀 회전</param>
-    /// <param name="canEscape">도망 가능 여부</param>
-    /// <param name="isPlayerAdvantage">플레이어 선공 여부</param>
-    /// <param name="isEnemyAdvantage">적 선공 여부</param>
     public void SetEncounter(BattleEncounter encounter,
         IReadOnlyList<EnemyBattleData> enemyBattleDataList,
         string returnSceneName,
@@ -79,23 +62,17 @@ public class BattleEncounterContext : MonoBehaviour
         bool isPlayerAdvantage = false,
         bool isEnemyAdvantage = false)
     {
-        // 추가
         _battleEncounter = encounter;
-
         _enemyBattleDataList.Clear();
 
         if (enemyBattleDataList != null)
         {
             for (int i = 0; i < enemyBattleDataList.Count; i++)
             {
-                EnemyBattleData enemyBattleData = enemyBattleDataList[i];
-
-                if (enemyBattleData == null)
+                if (enemyBattleDataList[i] != null)
                 {
-                    continue;
+                    _enemyBattleDataList.Add(enemyBattleDataList[i]);
                 }
-
-                _enemyBattleDataList.Add(enemyBattleData);
             }
         }
 
@@ -107,33 +84,19 @@ public class BattleEncounterContext : MonoBehaviour
         _isEnemyAdvantage = isEnemyAdvantage;
     }
 
-    /// <summary>
-    /// 적 데이터 목록 복사
-    /// </summary>
-    /// <param name="result">복사 대상 목록</param>
     public void GetEnemyBattleDataList(List<EnemyBattleData> result)
     {
-        if (result == null)
-        {
-            return;
-        }
-
+        if (result == null) return;
         result.Clear();
-
         for (int i = 0; i < _enemyBattleDataList.Count; i++)
         {
-            EnemyBattleData enemyBattleData = _enemyBattleDataList[i];
-
-            if (enemyBattleData == null)
+            if (_enemyBattleDataList[i] != null)
             {
-                continue;
+                result.Add(_enemyBattleDataList[i]);
             }
-
-            result.Add(enemyBattleData);
         }
     }
 
-    // 추가 배틀 씬 방 중심점으로 
     private Vector3 _targetBattlePosition;
     public Vector3 TargetBattlePosition => _targetBattlePosition;
 
@@ -142,9 +105,6 @@ public class BattleEncounterContext : MonoBehaviour
         _targetBattlePosition = position;
     }
 
-    /// <summary>
-    /// 전투 진입 정보 초기화
-    /// </summary>
     public void ClearEncounter()
     {
         _enemyBattleDataList.Clear();
@@ -157,17 +117,78 @@ public class BattleEncounterContext : MonoBehaviour
         _battleEncounter = null;
     }
 
-    // 추가, 몬스터 파괴
     /// <summary>
-    /// 저장된 조우 오브젝트 파괴
+    /// 저장된 조우 오브젝트 파괴 및 보스 처치 시 출구 포탈 생성
     /// </summary>
     public void DestroyEncounter()
     {
-        if (_battleEncounter == null)
-            return;
+        if (_battleEncounter == null) return;
+
+        Vector3 spawnPosition = _battleEncounter.transform.position;
+
+        bool wasBossEncounter = HasBossInEncounter();
+
+        if (wasBossEncounter)
+        {
+            SpawnExitPortal(spawnPosition);
+        }
 
         Destroy(_battleEncounter.gameObject);
-
         _battleEncounter = null;
+    }
+
+    /// <summary>
+    /// 이번 전투 조우 목록 중 보스가 포함되어 있었는지 확인
+    /// </summary>
+    private bool HasBossInEncounter()
+    {
+        for (int i = 0; i < _enemyBattleDataList.Count; i++)
+        {
+            if (_enemyBattleDataList[i] != null && _enemyBattleDataList[i].IsBoss)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 보스가 있던 위치에 출구 포탈 스폰
+    /// </summary>
+    private void SpawnExitPortal(Vector3 position)
+    {
+        // 1. 보스 오브젝트에 BossPortalSpawner가 붙어있다면 그것을 이용
+        BossPortalSpawner spawner = _battleEncounter != null ? _battleEncounter.GetComponent<BossPortalSpawner>() : null;
+        if (spawner != null)
+        {
+            spawner.SpawnPortal();
+            return;
+        }
+
+        // 2. 컴포넌트가 없더라도 DungeonManager에서 현재 던전의 출구 포탈 프리팹을 직접 찾아 생성!
+        GameObject portalPrefab = null;
+
+        if (DungeonManager.Instance != null && DungeonManager.Instance.CurrentDungeonData != null)
+        {
+            var table = DungeonManager.Instance.CurrentDungeonData.RoomContentTable;
+            if (table != null)
+            {
+                portalPrefab = table.exitPortalPrefab;
+            }
+        }
+
+        if (portalPrefab != null)
+        {
+            Vector3 spawnPosition = position;
+            spawnPosition.y = 0.5f;
+
+            Instantiate(portalPrefab, spawnPosition, Quaternion.identity);
+            Debug.Log($"<color=green>[BattleEncounterContext] 보스 처치 확인 -> 위치({spawnPosition})에 출구 포탈 직접 스폰 완료!</color>");
+        }
+        else
+        {
+            Debug.LogWarning("[BattleEncounterContext] 보스는 처치되었으나 exitPortalPrefab을 찾지 못했습니다.");
+        }
     }
 }
