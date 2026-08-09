@@ -1396,20 +1396,20 @@ public class BattleCycleController : MonoBehaviour
 
         if (_battleState == BattleState.BattleEnd) yield break;
 
-        bool isCastCompleted = false;
+        bool isThreatCompleted = false;
 
         if (_battlePresentationBinder != null && _battlePresentationBinder.isActiveAndEnabled)
         {
-            _battlePresentationBinder.PlayConstellationCast(
+            _battlePresentationBinder.PlayConstellationThreat(
                 actor,
-                () => isCastCompleted = true);
+                () => isThreatCompleted = true);
         }
         else
         {
-            isCastCompleted = true;
+            isThreatCompleted = true;
         }
 
-        while (!isCastCompleted)
+        while (!isThreatCompleted)
         {
             if (_battleState == BattleState.BattleEnd) yield break;
             yield return null;
@@ -1427,19 +1427,101 @@ public class BattleCycleController : MonoBehaviour
 
         if (cameraTarget == null) yield break;
 
+        List<BattleUnit> shieldTargets =
+            _battleUnits
+                .Where(unit =>
+                    unit != null &&
+                    unit.IsAlive &&
+                    unit.TeamType == BattleTeamType.Player)
+                .ToList();
+
         bool hasResult = false;
         ConstellationPathResult result = default;
+        bool isBarrierCastCompleted = true;
+
+        /// <summary>
+        /// 별자리 결과 확정 및 방어막 시전 시작
+        /// </summary>
+        void HandleResultReady(ConstellationPathResult resolvedResult)
+        {
+            result = resolvedResult;
+            hasResult = true;
+
+            if (resolvedResult.CompletedNodeCount <= 0)
+            {
+                return;
+            }
+
+            isBarrierCastCompleted = false;
+
+            if (_battlePresentationBinder != null &&
+                _battlePresentationBinder.isActiveAndEnabled)
+            {
+                _battlePresentationBinder.PlayConstellationBarrier(
+                    shieldTargets,
+                    () => isBarrierCastCompleted = true);
+            }
+            else
+            {
+                isBarrierCastCompleted = true;
+            }
+        }
+
+        bool canLaunchAttack = false;
+        bool isLaunchPending = false;
+        bool isLaunchTriggered = false;
+
+        /// <summary>
+        /// 별자리 공격 발사 요청 처리
+        /// </summary>
+        void HandleLaunchRequested()
+        {
+            if (!canLaunchAttack)
+            {
+                isLaunchPending = true;
+                return;
+            }
+
+            if (isLaunchTriggered)
+            {
+                return;
+            }
+
+            isLaunchTriggered = true;
+
+            Debug.Log("[Battle] Constellation Launch Triggered", this);
+        }
+
+        /// <summary>
+        /// 별자리 종료 후 공격 재개
+        /// </summary>
+        void HandleResumeStarted()
+        {
+            canLaunchAttack = true;
+
+            if (!isLaunchPending)
+            {
+                return;
+            }
+
+            isLaunchPending = false;
+            HandleLaunchRequested();
+        }
 
         bool isStarted = _constellationPathAttackController.StartAttackPhase(
             actor,
             cameraTarget,
             targets,
+            shieldTargets,
             skillData,
-            resolvedResult =>
+            onAttackStarted: () =>
             {
-                result = resolvedResult;
-                hasResult = true;
-            });
+                _battlePresentationBinder?.PlayConstellationAttack(
+                    actor,
+                    HandleLaunchRequested);
+            },
+            onResumeStarted: HandleResumeStarted,
+            onBeforeResume: HandleResultReady);
 
         if (!isStarted)
         {
@@ -1476,19 +1558,6 @@ public class BattleCycleController : MonoBehaviour
 
         if (result.CompletedNodeCount > 0)
         {
-            bool isBarrierCastCompleted = false;
-
-            if (_battlePresentationBinder != null && _battlePresentationBinder.isActiveAndEnabled)
-            {
-                _battlePresentationBinder.PlayConstellationBarrier(
-                    targets,
-                    () => isBarrierCastCompleted = true);
-            }
-            else
-            {
-                isBarrierCastCompleted = true;
-            }
-
             while (!isBarrierCastCompleted)
             {
                 if (_battleState == BattleState.BattleEnd) yield break;
@@ -1496,14 +1565,42 @@ public class BattleCycleController : MonoBehaviour
                 yield return null;
             }
 
-            _battlePresentationBinder?.NotifyConstellationBarrierCreated(targets);
+            _battlePresentationBinder?.NotifyConstellationBarrierCreated(shieldTargets);
         }
 
-        yield return ExecuteConstellationHitSchedule(actor, skillData);
+        while (!isLaunchTriggered)
+        {
+            if (_battleState == BattleState.BattleEnd) yield break;
+
+            yield return null;
+        }
+
+        yield return ExecuteConstellationHitSchedule(
+            actor,
+            skillData);
+
+        // 전체 공격 패턴 종료 후 남은 방어막 연출 정리
+        if (result.CompletedNodeCount > 0)
+        {
+            _battlePresentationBinder?.NotifyConstellationBarrierEnded(
+                shieldTargets);
+        }
+
+        // 강공격 논리 상태 및 임시 Anchor 정리
+        _constellationPathAttackController.CompleteAttack();
 
         if (_battleState != BattleState.BattleEnd)
         {
             RestoreDefaultBattleCamera();
+        }
+
+        // 강공격 종료 후 남은 방어막 상태 정리
+        if (result.CompletedNodeCount > 0)
+        {
+            _constellationPathAttackController.ClearShield();
+
+            _battlePresentationBinder?.NotifyConstellationBarrierEnded(
+                shieldTargets);
         }
     }
 
@@ -2234,71 +2331,105 @@ public class BattleCycleController : MonoBehaviour
 
     /// <summary>
     /// 별자리 순차 공격 스케줄 실행
+    /// 공격 단위 완료 여부와 무관하게 일정 간격으로 발사
     /// </summary>
     private IEnumerator ExecuteConstellationSequentialSchedule(
         BattleUnit actor,
         SkillData skillData,
         ConstellationPathAttackData attackData)
     {
-        IReadOnlyList<ConstellationPathHitEntry> schedule = _constellationPathAttackController.HitSchedule;
+        IReadOnlyList<ConstellationPathHitEntry> schedule =
+            _constellationPathAttackController.HitSchedule;
+
+        int runningCount = 0;
 
         for (int i = 0; i < schedule.Count; i++)
         {
-            yield return ExecuteConstellationAttackUnit(actor, skillData, attackData, schedule[i]);
+            ConstellationPathHitEntry hitEntry = schedule[i];
 
-            if (i < schedule.Count - 1 && attackData.LaunchInterval > 0f)
-            {
-                yield return new WaitForSeconds(attackData.LaunchInterval);
-            }
-        }
-    }
+            runningCount++;
 
-    /// <summary>
-    /// 별자리 동시 공격 스케줄 실행
-    /// </summary>
-    private IEnumerator ExecuteConstellationSimultaneousSchedule(
-        BattleUnit actor,
-        SkillData skillData,
-        ConstellationPathAttackData attackData)
-    {
-        IReadOnlyList<ConstellationPathHitEntry> schedule = _constellationPathAttackController.HitSchedule;
-        int index = 0;
-
-        while (index < schedule.Count)
-        {
-            int roundIndex = schedule[index].RoundIndex;
-            int runningCount = 0;
-
-            while (index < schedule.Count && schedule[index].RoundIndex == roundIndex)
-            {
-                ConstellationPathHitEntry hitEntry = schedule[index];
-                runningCount++;
-
-                StartCoroutine(ExecuteConstellationAttackUnit(
+            StartCoroutine(
+                ExecuteConstellationAttackUnit(
                     actor,
                     skillData,
                     attackData,
                     hitEntry,
                     () => runningCount--));
 
+            if (i < schedule.Count - 1 &&
+                attackData.LaunchInterval > 0f)
+            {
+                yield return new WaitForSeconds(
+                    attackData.LaunchInterval);
+            }
+        }
+
+        // 모든 투사체 발사 후 실제 공격 처리가 끝날 때까지 대기
+        while (runningCount > 0)
+        {
+            yield return null;
+        }
+    }
+
+    /// <summary>
+    /// 별자리 동시 공격 스케줄 실행
+    /// 같은 라운드는 동시 발사하고 다음 라운드는 일정 간격으로 발사
+    /// </summary>
+    private IEnumerator ExecuteConstellationSimultaneousSchedule(
+        BattleUnit actor,
+        SkillData skillData,
+        ConstellationPathAttackData attackData)
+    {
+        IReadOnlyList<ConstellationPathHitEntry> schedule =
+            _constellationPathAttackController.HitSchedule;
+
+        int index = 0;
+        int runningCount = 0;
+
+        while (index < schedule.Count)
+        {
+            int roundIndex = schedule[index].RoundIndex;
+
+            // 같은 RoundIndex는 같은 순간 발사
+            while (index < schedule.Count &&
+                   schedule[index].RoundIndex == roundIndex)
+            {
+                ConstellationPathHitEntry hitEntry = schedule[index];
+
+                runningCount++;
+
+                StartCoroutine(
+                    ExecuteConstellationAttackUnit(
+                        actor,
+                        skillData,
+                        attackData,
+                        hitEntry,
+                        () => runningCount--));
+
                 index++;
             }
 
-            while (runningCount > 0)
+            // 앞 라운드의 충돌/피격 완료를 기다리지 않고
+            // 발사 간격만 유지한 뒤 다음 라운드 발사
+            if (index < schedule.Count &&
+                attackData.LaunchInterval > 0f)
             {
-                yield return null;
+                yield return new WaitForSeconds(
+                    attackData.LaunchInterval);
             }
+        }
 
-            if (index < schedule.Count && attackData.LaunchInterval > 0f)
-            {
-                yield return new WaitForSeconds(attackData.LaunchInterval);
-            }
+        // 모든 발사가 끝난 뒤 남은 투사체 처리 완료 대기
+        while (runningCount > 0)
+        {
+            yield return null;
         }
     }
 
     /// <summary>
     /// 별자리 공격 단위 실행
-    /// 방어 판정 후 미방어 공격에 데미지 적용
+    /// VFX 충돌 시점에 방어 및 데미지 판정
     /// </summary>
     private IEnumerator ExecuteConstellationAttackUnit(
         BattleUnit actor,
@@ -2309,13 +2440,62 @@ public class BattleCycleController : MonoBehaviour
     {
         BattleUnit target = hitEntry.Target;
 
-        if (actor == null || target == null || !target.IsAlive)
+        if (actor == null || target == null)
         {
             onComplete?.Invoke();
             yield break;
         }
 
-        int unitDamage = CalculateConstellationUnitDamage(actor, target, skillData);
+        bool isImpactReached = false;
+        bool isVfxCompleted = false;
+
+        _constellationPathAttackController.PlayAttackUnitVfx(
+            actor,
+            target,
+            attackData,
+            () => isImpactReached = true,
+            () => isVfxCompleted = true);
+
+        while (!isImpactReached)
+        {
+            if (_battleState == BattleState.BattleEnd)
+            {
+                onComplete?.Invoke();
+                yield break;
+            }
+
+            if (target == null)
+            {
+                onComplete?.Invoke();
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        // 이미 사망한 대상은 연출만 끝까지 재생하고 판정 생략
+        if (!target.IsAlive)
+        {
+            while (!isVfxCompleted)
+            {
+                if (_battleState == BattleState.BattleEnd)
+                {
+                    onComplete?.Invoke();
+                    yield break;
+                }
+
+                yield return null;
+            }
+
+            onComplete?.Invoke();
+            yield break;
+        }
+
+        // 실제 VFX가 대상에 도달한 순간부터 판정
+        int unitDamage = CalculateConstellationUnitDamage(
+            actor,
+            target,
+            skillData);
 
         if (!_constellationPathAttackController.ResolveAttackUnit(
             hitEntry,
@@ -2329,6 +2509,10 @@ public class BattleCycleController : MonoBehaviour
 
         if (resolution.IsBlocked)
         {
+            _constellationPathAttackController.PlayBlockVfx(
+                target,
+                attackData);
+
             _battlePresentationBinder?.PlayConstellationBlock(target);
 
             if (resolution.IsShieldBroken)
@@ -2343,29 +2527,88 @@ public class BattleCycleController : MonoBehaviour
                 $"Broken: {resolution.IsShieldBroken}",
                 this);
 
+            while (!isVfxCompleted)
+            {
+                if (_battleState == BattleState.BattleEnd)
+                {
+                    onComplete?.Invoke();
+                    yield break;
+                }
+
+                yield return null;
+            }
+
             onComplete?.Invoke();
             yield break;
         }
 
-        yield return ApplyConstellationDamageSlicesRoutine(resolution, attackData);
+        yield return ApplyConstellationDamageSlicesRoutine(
+            resolution,
+            attackData);
+
+        while (!isVfxCompleted)
+        {
+            if (_battleState == BattleState.BattleEnd)
+            {
+                onComplete?.Invoke();
+                yield break;
+            }
+
+            yield return null;
+        }
 
         onComplete?.Invoke();
     }
 
     /// <summary>
     /// 별자리 공격 단위 데미지 조각 순차 적용
+    /// SingleHit은 순간 명중 VFX, Tick은 지속 VFX와 데미지 동기화
     /// </summary>
+    /// <param name="resolution">공격 단위 판정 결과</param>
+    /// <param name="attackData">별자리 공격 데이터</param>
     private IEnumerator ApplyConstellationDamageSlicesRoutine(
         ConstellationPathHitResolution resolution,
         ConstellationPathAttackData attackData)
     {
-        if (resolution.Target == null) yield break;
+        if (resolution.Target == null || attackData == null) yield break;
+
+        bool isTick =
+            attackData.DamageDeliveryType ==
+            ConstellationPathDamageDeliveryType.Tick;
+
+        float tickInterval =
+            CalculateConstellationTickInterval(
+                attackData,
+                resolution.DamageSlices.Count);
+
+        bool isTimedVfx =
+            attackData.MotionType ==
+            ConstellationPathProjectileMotionType.TimedVfx;
+
+        GameObject tickVfx = null;
+
+        if (isTick && !isTimedVfx)
+        {
+            tickVfx = _constellationPathAttackController.PlayTickVfx(
+                resolution.Target,
+                attackData);
+        }
+        else if (!isTick)
+        {
+            _constellationPathAttackController.PlayHitVfx(
+                resolution.Target,
+                attackData);
+        }
 
         for (int i = 0; i < resolution.DamageSlices.Count; i++)
         {
-            if (!resolution.Target.IsAlive) yield break;
+            if (!resolution.Target.IsAlive)
+            {
+                break;
+            }
 
-            ConstellationPathDamageSlice slice = resolution.DamageSlices[i];
+            ConstellationPathDamageSlice slice =
+                resolution.DamageSlices[i];
 
             ApplyConstellationDamageSlice(
                 resolution.Target,
@@ -2381,13 +2624,53 @@ public class BattleCycleController : MonoBehaviour
                 this);
 
             if (i < resolution.DamageSlices.Count - 1 &&
-                attackData.DamageDeliveryType == ConstellationPathDamageDeliveryType.Tick &&
-                attackData.TickInterval > 0f)
+                isTick &&
+                tickInterval > 0f)
             {
-                yield return new WaitForSeconds(attackData.TickInterval);
+                yield return new WaitForSeconds(
+                    tickInterval);
             }
         }
 
-        yield return WaitForTargetReaction(resolution.Target);
+        if (tickVfx != null)
+        {
+            _constellationPathAttackController.StopTickVfx(
+                tickVfx);
+        }
+
+        yield return WaitForTargetReaction(
+            resolution.Target);
+    }
+
+    /// <summary>
+    /// 별자리 Tick 데미지 간격 계산
+    /// TimedVfx는 실제 공격 활성 시간에 맞춰 자동 분배
+    /// </summary>
+    /// <param name="attackData">별자리 공격 데이터</param>
+    /// <param name="tickCount">Tick 개수</param>
+    /// <returns>Tick 간격</returns>
+    private float CalculateConstellationTickInterval(
+        ConstellationPathAttackData attackData,
+        int tickCount)
+    {
+        if (attackData == null || tickCount <= 1)
+        {
+            return 0f;
+        }
+
+        if (attackData.MotionType ==
+            ConstellationPathProjectileMotionType.TimedVfx)
+        {
+            float activeDuration =
+                Mathf.Max(
+                    0f,
+                    attackData.TimedVfxDuration -
+                    attackData.TimedVfxImpactDelay);
+
+            return activeDuration /
+                   (tickCount - 1);
+        }
+
+        return attackData.TickInterval;
     }
 }

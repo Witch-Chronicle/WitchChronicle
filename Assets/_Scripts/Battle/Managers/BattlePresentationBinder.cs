@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -32,6 +33,7 @@ public class BattlePresentationBinder : MonoBehaviour
         public int LastHp;
         public System.Action HpHandler;
         public bool IsReactionPlaying;
+        public int ReactionVersion;
     }
 
     private readonly List<UnitBinding> _bindings = new List<UnitBinding>();
@@ -461,9 +463,17 @@ public class BattlePresentationBinder : MonoBehaviour
         if (currentHp < binding.LastHp)
         {
             binding.IsReactionPlaying = true;
+            binding.ReactionVersion++;
+
+            int reactionVersion = binding.ReactionVersion;
 
             void HandleReactionCompleted()
             {
+                if (reactionVersion != binding.ReactionVersion)
+                {
+                    return;
+                }
+
                 binding.IsReactionPlaying = false;
             }
 
@@ -520,12 +530,11 @@ public class BattlePresentationBinder : MonoBehaviour
     }
 
     /// <summary>
-    /// 별자리 강공격 시전 연출 재생
-    /// 일반 SkillVfxPlayer를 제외하고 공격자 애니메이션과 사운드만 재생
+    /// 별자리 강공격 위협 연출 재생
     /// </summary>
     /// <param name="unit">공격 유닛</param>
-    /// <param name="onComplete">시전 연출 완료 콜백</param>
-    public void PlayConstellationCast(BattleUnit unit, System.Action onComplete = null)
+    /// <param name="onComplete">위협 연출 완료 콜백</param>
+    public void PlayConstellationThreat(BattleUnit unit, Action onComplete = null)
     {
         UnitBinding binding = FindBinding(unit);
 
@@ -535,8 +544,42 @@ public class BattlePresentationBinder : MonoBehaviour
             return;
         }
 
-        binding.Presenter.PlaySkill(onComplete);
-        binding.Audio?.PlaySkill();
+        if (binding.Presenter is IConstellationPathAttackPresenter constellationPresenter)
+        {
+            constellationPresenter.PlayConstellationThreat(onComplete);
+            return;
+        }
+
+        onComplete?.Invoke();
+    }
+
+    /// <summary>
+    /// 별자리 강공격 실제 공격 연출 재생
+    /// </summary>
+    /// <param name="unit">공격 유닛</param>
+    /// <param name="onLaunch">VFX 발사 시점 콜백</param>
+    /// <param name="onComplete">공격 연출 완료 콜백</param>
+    public void PlayConstellationAttack(
+        BattleUnit unit,
+        Action onLaunch = null,
+        Action onComplete = null)
+    {
+        UnitBinding binding = FindBinding(unit);
+
+        if (binding == null || binding.Presenter == null)
+        {
+            onLaunch?.Invoke();
+            onComplete?.Invoke();
+            return;
+        }
+
+        if (binding.Presenter is IConstellationPathAttackPresenter constellationPresenter)
+        {
+            constellationPresenter.PlayConstellationAttack(onLaunch, onComplete);
+            return;
+        }
+
+        binding.Presenter.PlayAttack(-1, onLaunch, onComplete);
     }
 
     /// <summary>
@@ -687,5 +730,26 @@ public class BattlePresentationBinder : MonoBehaviour
         if (unit == null) return;
 
         Debug.Log($"[ConstellationPath] Barrier Broken | {unit.UnitName}", this);
+    }
+
+    /// <summary>
+    /// 별자리 방어막 종료 연출
+    /// </summary>
+    /// <param name="units">방어막 종료 대상</param>
+    public void NotifyConstellationBarrierEnded(
+        IReadOnlyList<BattleUnit> units)
+    {
+        if (units == null) return;
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            BattleUnit unit = units[i];
+
+            if (unit == null) continue;
+
+            Debug.Log(
+                $"[ConstellationPath] Barrier Ended | {unit.UnitName}",
+                this);
+        }
     }
 }

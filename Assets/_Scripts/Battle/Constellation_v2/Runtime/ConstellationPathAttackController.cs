@@ -94,19 +94,27 @@ public class ConstellationPathAttackController : MonoBehaviour
 
     /// <summary>
     /// 별자리 공격 연출 단계 시작
-    /// 카메라 전환 후 사전 연출 시간을 거쳐 별자리 입력 진행
     /// </summary>
     /// <param name="attacker">공격 유닛</param>
     /// <param name="target">대표 공격 대상</param>
+    /// <param name="attackTargets">실제 공격 대상 목록</param>
+    /// <param name="shieldTargets">방어막 적용 대상 목록</param>
     /// <param name="skill">사용 스킬</param>
-    /// <param name="onComplete">별자리 입력 완료 콜백</param>
+    /// <param name="onComplete">공격 단계 완료 콜백</param>
+    /// <param name="onAttackStarted">실제 공격 모션 시작 콜백</param>
+    /// <param name="onResumeStarted">시간 복귀 시작 콜백</param>
+    /// <param name="onBeforeResume">시간 복귀 전 결과 확정 콜백</param>
     /// <returns>시작 성공 여부</returns>
     public bool StartAttackPhase(
         BattleUnit attacker,
         BattleUnit target,
-        IReadOnlyList<BattleUnit> targets,
+        IReadOnlyList<BattleUnit> attackTargets,
+        IReadOnlyList<BattleUnit> shieldTargets,
         SkillData skill,
-        Action<ConstellationPathResult> onComplete = null)
+        Action<ConstellationPathResult> onComplete = null,
+        Action onAttackStarted = null,
+        Action onResumeStarted = null,
+        Action<ConstellationPathResult> onBeforeResume = null)
     {
         if (IsRunning)
         {
@@ -122,7 +130,18 @@ public class ConstellationPathAttackController : MonoBehaviour
         _hasResult = false;
         _lastResult = default;
 
-        _attackRoutine = StartCoroutine(AttackPhaseRoutine(attacker, target, targets, skill, onComplete));
+        _attackRoutine = StartCoroutine(
+            AttackPhaseRoutine(
+                attacker,
+                target,
+                attackTargets,
+                shieldTargets,
+                skill,
+                onComplete,
+                onAttackStarted,
+                onResumeStarted,
+                onBeforeResume));
+
         return true;
     }
 
@@ -133,12 +152,14 @@ public class ConstellationPathAttackController : MonoBehaviour
     /// <param name="onComplete">입력 완료 콜백</param>
     private IEnumerator InputPhaseRoutine(
         ConstellationPathSequenceData sequenceData,
-        Action<ConstellationPathResult> onComplete)
+        Action<ConstellationPathResult> onComplete,
+        Action<ConstellationPathResult> onBeforeResume = null,
+        Action onResumeStarted = null)
     {
-        bool isPauseCompleted = false;
-        _timeController.SlowDownAndPause(() => isPauseCompleted = true);
+        bool isSlowDownCompleted = false;
+        _timeController.SlowDown(() => isSlowDownCompleted = true);
 
-        while (!isPauseCompleted)
+        while (!isSlowDownCompleted)
         {
             yield return null;
         }
@@ -173,6 +194,13 @@ public class ConstellationPathAttackController : MonoBehaviour
         _lastResult = result;
         _hasResult = true;
 
+        // 결과 확정 후 방어막 및 공격 스케줄 준비
+        onBeforeResume?.Invoke(result);
+
+        // 실제 공격 재개 허용
+        onResumeStarted?.Invoke();
+
+        // 초저속 → 기존 속도 복귀
         yield return ResumeTimeRoutine();
 
         _attackRoutine = null;
@@ -189,9 +217,13 @@ public class ConstellationPathAttackController : MonoBehaviour
     private IEnumerator AttackPhaseRoutine(
         BattleUnit attacker,
         BattleUnit target,
-        IReadOnlyList<BattleUnit> targets,
+        IReadOnlyList<BattleUnit> attackTargets,
+        IReadOnlyList<BattleUnit> shieldTargets,
         SkillData skill,
-        Action<ConstellationPathResult> onComplete)
+        Action<ConstellationPathResult> onComplete,
+        Action onAttackStarted,
+        Action onResumeStarted,
+        Action<ConstellationPathResult> onBeforeResume)
     {
         bool isCameraCompleted = false;
 
@@ -211,21 +243,32 @@ public class ConstellationPathAttackController : MonoBehaviour
 
         ConstellationPathAttackData attackData = skill.ConstellationPathAttackData;
 
-        _vfxPlayer?.PlayPreAttackVfx(attacker, target, attackData);
-
         if (attackData.SlowDownStartDelay > 0f)
         {
             yield return new WaitForSeconds(attackData.SlowDownStartDelay);
         }
 
+        // 실제 공격 모션 시작
+        onAttackStarted?.Invoke();
+
+        // 같은 프레임부터 감속 → 별자리 입력
         yield return InputPhaseRoutine(
             skill.ConstellationPathSequenceData,
-            result =>
+            onComplete,
+            onBeforeResume: result =>
             {
-                InitializeShield(targets, result);
-                BuildHitSchedule(targets, skill.ConstellationPathAttackData, result);
-                onComplete?.Invoke(result);
-            });
+                InitializeShield(
+                    shieldTargets,
+                    result);
+
+                BuildHitSchedule(
+                    attackTargets,
+                    skill.ConstellationPathAttackData,
+                    result);
+
+                onBeforeResume?.Invoke(result);
+            },
+            onResumeStarted: onResumeStarted);
     }
 
     /// <summary>
@@ -338,6 +381,16 @@ public class ConstellationPathAttackController : MonoBehaviour
     }
 
     /// <summary>
+    /// 별자리 강공격 정상 종료 정리
+    /// </summary>
+    public void CompleteAttack()
+    {
+        _shieldState.Clear();
+        _hitSchedule.Clear();
+        _vfxPlayer?.ClearTargetAnchors();
+    }
+
+    /// <summary>
     /// 별자리 결과 기준 대상별 방어막 생성
     /// </summary>
     /// <param name="targets">방어막 적용 대상</param>
@@ -357,6 +410,14 @@ public class ConstellationPathAttackController : MonoBehaviour
         }
 
         _shieldState.Initialize(targets, result.CompletedNodeCount);
+    }
+
+    /// <summary>
+    /// 별자리 방어막 상태 종료
+    /// </summary>
+    public void ClearShield()
+    {
+        _shieldState.Clear();
     }
 
     /// <summary>
@@ -448,5 +509,130 @@ public class ConstellationPathAttackController : MonoBehaviour
             damageSlices);
 
         return true;
+    }
+
+    /// <summary>
+    /// 별자리 공격 단위 VFX 재생
+    /// </summary>
+    /// <param name="attacker">공격 유닛</param>
+    /// <param name="target">공격 대상</param>
+    /// <param name="attackData">공격 연출 데이터</param>
+    /// <param name="onImpact">VFX 충돌 콜백</param>
+    /// <param name="onComplete">VFX 완료 콜백</param>
+    /// <returns>VFX 재생 여부</returns>
+    public bool PlayAttackUnitVfx(
+        BattleUnit attacker,
+        BattleUnit target,
+        ConstellationPathAttackData attackData,
+        Action onImpact,
+        Action onComplete = null)
+    {
+        if (_vfxPlayer == null || attacker == null || target == null || attackData == null)
+        {
+            onImpact?.Invoke();
+            onComplete?.Invoke();
+            return false;
+        }
+
+        switch (attackData.MotionType)
+        {
+            case ConstellationPathProjectileMotionType.Straight:
+                _vfxPlayer.PlayStraightProjectile(
+                    attacker,
+                    target,
+                    attackData,
+                    onImpact,
+                    onComplete);
+
+                return true;
+
+            case ConstellationPathProjectileMotionType.Arc:
+                _vfxPlayer.PlayArcProjectile(
+                    attacker,
+                    target,
+                    attackData,
+                    onImpact,
+                    onComplete);
+
+                return true;
+
+            case ConstellationPathProjectileMotionType.Meteor:
+                _vfxPlayer.PlayMeteorProjectile(
+                    attacker,
+                    target,
+                    attackData,
+                    onImpact,
+                    onComplete);
+
+                return true;
+
+            case ConstellationPathProjectileMotionType.TimedVfx:
+                _vfxPlayer.PlayTimedVfx(
+                    attacker,
+                    target,
+                    attackData,
+                    onImpact,
+                    onComplete);
+
+                return true;
+        }
+
+        onImpact?.Invoke();
+        onComplete?.Invoke();
+        return false;
+    }
+
+    /// <summary>
+    /// 별자리 공격 명중 VFX 재생
+    /// </summary>
+    /// <param name="target">공격 대상</param>
+    /// <param name="attackData">별자리 공격 데이터</param>
+    public void PlayHitVfx(
+        BattleUnit target,
+        ConstellationPathAttackData attackData)
+    {
+        _vfxPlayer?.PlayHitVfx(
+            target,
+            attackData);
+    }
+
+    /// <summary>
+    /// 별자리 공격 방어 VFX 재생
+    /// </summary>
+    /// <param name="target">방어 대상</param>
+    /// <param name="attackData">별자리 공격 데이터</param>
+    public void PlayBlockVfx(
+        BattleUnit target,
+        ConstellationPathAttackData attackData)
+    {
+        _vfxPlayer?.PlayBlockVfx(
+            target,
+            attackData);
+    }
+
+    /// <summary>
+    /// 별자리 Tick 지속 VFX 시작
+    /// </summary>
+    /// <param name="target">공격 대상</param>
+    /// <param name="attackData">별자리 공격 데이터</param>
+    /// <returns>생성된 Tick VFX</returns>
+    public GameObject PlayTickVfx(
+        BattleUnit target,
+        ConstellationPathAttackData attackData)
+    {
+        if (_vfxPlayer == null) return null;
+
+        return _vfxPlayer.PlayTickVfx(
+            target,
+            attackData);
+    }
+
+    /// <summary>
+    /// 별자리 Tick 지속 VFX 종료
+    /// </summary>
+    /// <param name="tickVfx">종료 대상 VFX</param>
+    public void StopTickVfx(GameObject tickVfx)
+    {
+        _vfxPlayer?.StopTickVfx(tickVfx);
     }
 }
