@@ -1,3 +1,5 @@
+// FILE: Assets\_Scripts\Dungeon\DungeonMeshBuilder.cs
+
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -9,6 +11,7 @@ public class DungeonMeshBuilder
 {
     /// <summary>
     /// 바닥 타일 메쉬들을 하나의 Chunk Mesh로 결합한다.
+    /// (90도 무작위 회전 및 UV 오프셋 변형 적용)
     /// </summary>
     public void BuildFloorMesh(GameObject floorPrefab, IEnumerable<Vector2Int> floorPositions, float tileSize, Transform parent)
     {
@@ -27,22 +30,69 @@ public class DungeonMeshBuilder
             return;
         }
 
+        Mesh originalMesh = sourceMeshFilter.sharedMesh;
+
+        // 💡 UV 오프셋이 무작위로 다르게 적용된 변형 메쉬 4개 미리 준비 (성능 최적화)
+        Mesh[] meshVariations = CreateMeshVariations(originalMesh, 4);
+
         List<CombineInstance> combines = new List<CombineInstance>();
 
         foreach (var pos in floorPositions)
         {
+            // 💡 1. 90도 단위 무작위 Y축 회전 (0°, 90°, 180°, 270°) -> 바둑판 패턴 제거
+            int randomAngle = Random.Range(0, 4) * 90;
+            Quaternion randomRotation = Quaternion.Euler(0f, randomAngle, 0f);
+
+            // 💡 2. 준비된 변형 메쉬 중 하나를 무작위 선택 -> 무늬 오프셋 차별화
+            Mesh selectedMesh = meshVariations[Random.Range(0, meshVariations.Length)];
+
             combines.Add(CreateCombineInstance(
-                sourceMeshFilter.sharedMesh,
+                selectedMesh,
                 pos, // Vector2Int -> Vector2 암시적 변환
                 tileSize,
                 0f,
-                Quaternion.identity,
+                randomRotation, // 무작위 회전 전달
                 floorPrefab.transform.localScale,
                 false
             ));
         }
 
         BuildChunkMesh("Floor_Mesh", combines, sourceRenderer.sharedMaterial, parent, true, LayerMask.NameToLayer("Default"));
+    }
+
+    /// <summary>
+    /// 💡 원본 메쉬를 기반으로 UV 오프셋이 다르게 적용된 변형 메쉬들을 미리 생성합니다.
+    /// </summary>
+    private Mesh[] CreateMeshVariations(Mesh originalMesh, int count)
+    {
+        Mesh[] variations = new Mesh[count];
+
+        for (int i = 0; i < count; i++)
+        {
+            if (i == 0)
+            {
+                variations[i] = originalMesh; // 첫 번째는 원본 그대로 사용
+                continue;
+            }
+
+            Mesh varMesh = Object.Instantiate(originalMesh);
+            Vector2[] uvs = varMesh.uv;
+
+            // 무작위 UV 오프셋 (텍스처 위치를 랜덤으로 이동)
+            float offsetX = Random.Range(0f, 1f);
+            float offsetY = Random.Range(0f, 1f);
+
+            for (int j = 0; j < uvs.Length; j++)
+            {
+                uvs[j].x += offsetX;
+                uvs[j].y += offsetY;
+            }
+
+            varMesh.uv = uvs;
+            variations[i] = varMesh;
+        }
+
+        return variations;
     }
 
     /// <summary>
@@ -67,10 +117,6 @@ public class DungeonMeshBuilder
             return;
         }
 
-        // 벽 한 조각의 실제 월드 높이를 계산한다.
-        // Transform.localScale.y 만으로는 부족하다 — 메쉬 자체가 이미 특정 높이로
-        // 모델링되어 있고 Scale은 1로 두는 경우가 흔하기 때문에,
-        // "메쉬 로컬 바운드 높이 × Scale"을 실제 단위 높이로 사용한다.
         float meshLocalHeight = sourceMeshFilter.sharedMesh.bounds.size.y;
         if (meshLocalHeight <= 0f)
         {
@@ -85,24 +131,12 @@ public class DungeonMeshBuilder
 
         const float epsilon = 0.001f;
 
-        // ===== 임시 디버그 로그 (원인 파악 후 삭제할 것) =====
-        Debug.Log(
-            $"[WALL DEBUG] mesh.bounds.center={sourceMeshFilter.sharedMesh.bounds.center}, " +
-            $"mesh.bounds.size={sourceMeshFilter.sharedMesh.bounds.size}, " +
-            $"wallPrefab.localScale={wallPrefab.transform.localScale}, " +
-            $"wallPrefab.localPosition={wallPrefab.transform.localPosition}, " +
-            $"unitHeight={unitHeight}"
-        );
-        // ===================================================
-
         List<CombineInstance> combines = new List<CombineInstance>();
 
         foreach (var wall in wallDataList)
         {
             for (float y = 0f; y < height - epsilon; y += unitHeight)
             {
-                // 피벗이 중앙인 프리팹이므로, 각 단의 "바닥" 기준 y가 아니라
-                // "중심" 기준 y로 보정해서 배치한다.
                 float centerY = y + (unitHeight * 0.5f);
 
                 combines.Add(CreateCombineInstance(
@@ -146,7 +180,7 @@ public class DungeonMeshBuilder
         {
             combines.Add(CreateCombineInstance(
                 sourceMeshFilter.sharedMesh,
-                pos, // Vector2Int -> Vector2 암시적 변환
+                pos,
                 tileSize,
                 height,
                 Quaternion.identity,
@@ -160,22 +194,14 @@ public class DungeonMeshBuilder
 
     /// <summary>
     /// 개별 메쉬 조합을 위한 CombineInstance를 생성한다.
-    /// gridPos는 소수(.5) 좌표도 허용한다 (벽이 타일 경계 중앙에 배치되어야 하는 경우 사용).
-    ///
-    /// 프리팹의 피벗이 메쉬의 시각적 중심과 정확히 일치하지 않을 수 있으므로,
-    /// sourceMesh.bounds.center를 읽어 "실제 보이는 중심"이 targetCenter(원하는 좌표)에
-    /// 오도록 배치 위치를 역산해서 보정한다. 피벗이 완벽히 중앙이면 보정량은 0이 되고,
-    /// 조금이라도 어긋나 있으면 그 오차만큼 자동으로 상쇄된다.
     /// </summary>
     private CombineInstance CreateCombineInstance(Mesh sourceMesh, Vector2 gridPos, float tileSize, float yOffset, Quaternion rotation, Vector3 localScale, bool isWall)
     {
         Vector3 targetCenter = new Vector3(gridPos.x * tileSize, yOffset, gridPos.y * tileSize);
 
-        // 메쉬 로컬 공간에서의 바운드 중심 (피벗 기준 오프셋)
         Vector3 scaledPivotOffset = Vector3.Scale(localScale, sourceMesh.bounds.center);
         Vector3 rotatedPivotOffset = rotation * scaledPivotOffset;
 
-        // 실제 렌더링되는 중심이 targetCenter에 오도록 피벗 위치를 역산
         Vector3 worldPos = targetCenter - rotatedPivotOffset;
 
         Vector3 adjustedScale = localScale * 1.005f;
@@ -189,7 +215,7 @@ public class DungeonMeshBuilder
     }
 
     /// <summary>
-    /// CombineInstance 리스트를 하나의 청크 메쉬로 병합한다. (UInt32 인덱스 형식 적용)
+    /// CombineInstance 리스트를 하나의 청크 메쉬로 병합한다.
     /// </summary>
     private void BuildChunkMesh(string meshName, List<CombineInstance> combines, Material material, Transform parent, bool generateCollider, int layer)
     {
@@ -210,11 +236,8 @@ public class DungeonMeshBuilder
         mr.sharedMaterial = material;
 
         Mesh combinedMesh = new Mesh();
-
-        // 65,535개 이상의 버텍스를 허용하도록 UInt32 인덱스 포맷 설정
         combinedMesh.indexFormat = IndexFormat.UInt32;
 
-        // List를 배열로 변환 (.ToArray() 추가)
         combinedMesh.CombineMeshes(combines.ToArray(), true, true);
         mf.sharedMesh = combinedMesh;
 
