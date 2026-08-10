@@ -188,7 +188,7 @@ public class BattleUnitPresenter : MonoBehaviour, IBattlePresenter
                 break;
             }
 
-            elapsedTime += Time.deltaTime;
+            elapsedTime += Time.unscaledDeltaTime;
             yield return null;
         }
 

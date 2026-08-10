@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a15a09c272bb7854e8cbe0d0270828e8, type: 3}
+  m_Name: StarSwarm_Sequence
+  m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathSequenceData
+  _sequenceId: star_swarm
+  _timeLimit: 3.5
+  _starRevealInterval: 0.2
+  _timerStartDelay: 0.18
+  _successTimerDrainDuration: 0.3
+  _nodes:
+  - _nodeId: A
+    _normalizedPosition: {x: 0.18, y: 0.5}
+    _revealOrder: 0
+    _prerequisiteNodeIds: []
+  - _nodeId: B
+    _normalizedPosition: {x: 0.43, y: 0.72}
+    _revealOrder: 1
+    _prerequisiteNodeIds:
+    - A
+  - _nodeId: C
+    _normalizedPosition: {x: 0.36, y: 0.34}
+    _revealOrder: 1
+    _prerequisiteNodeIds:
+    - A
+  - _nodeId: D
+    _normalizedPosition: {x: 0.42, y: 0.15}
+    _revealOrder: 2
+    _prerequisiteNodeIds:
+    - C
+  - _nodeId: E
+    _normalizedPosition: {x: 0.65, y: 0.6}
+    _revealOrder: 2
+    _prerequisiteNodeIds:
+    - B
+    - C
+  - _nodeId: F
+    _normalizedPosition: {x: 0.85, y: 0.48}
+    _revealOrder: 3
+    _prerequisiteNodeIds:
+    - E
