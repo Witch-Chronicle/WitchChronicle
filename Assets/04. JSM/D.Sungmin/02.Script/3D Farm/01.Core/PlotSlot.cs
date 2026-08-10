@@ -103,6 +103,11 @@ namespace WitchChronicle.IdleFarming
             if (SoundManager.Instance != null)
                 SoundManager.Instance.PlaySfx(SfxType.FarmSow);
 
+            if (QuestManager.Instance != null)
+            {
+                QuestManager.Instance.AddProgress(QuestObjectiveType.PlantSeed, seed.seedItem.itemId.ToString(), 1);
+            }
+
             return true;
         }
 

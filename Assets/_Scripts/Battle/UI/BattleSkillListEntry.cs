@@ -28,6 +28,7 @@ public class BattleSkillListEntry : MonoBehaviour,
     [SerializeField] private TMP_Text _damageTypeText;
     [SerializeField] private TMP_Text _elementTypeText;
     [SerializeField] private TMP_Text _costText;
+    [SerializeField] private TMP_Text _damageText;
 
     [Tooltip("스킬 속성(ElementType) 아이콘. BattleUIContext의 ElementIconDatabase에서 조회. 해당 속성 아이콘이 없으면 비활성화.")]
     [SerializeField] private Image _skillElementIconImage;
@@ -181,6 +182,10 @@ public class BattleSkillListEntry : MonoBehaviour,
         if (_costText != null)
         {
             _costText.text = string.Empty;
+        }
+        if (_damageText != null)
+        {
+            _damageText.text = string.Empty;
         }
     }
 
@@ -499,11 +504,16 @@ public class BattleSkillListEntry : MonoBehaviour,
         //-------------------------
         // MP Cost
         //-------------------------
-
         if (_costText != null)
         {
-            _costText.text =
-                $"MP : {_skillData.MpCost}";
+            _costText.text = $"MP : {_skillData.MpCost}";
+        }
+        //-------------------------
+        // Power (기본 데미지)
+        //-------------------------
+        if (_damageText != null)
+        {
+            _damageText.text = $"기본 데미지 : {_skillData.Power}";
         }
     }
 

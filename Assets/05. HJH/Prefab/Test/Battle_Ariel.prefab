@@ -2436,6 +2436,7 @@ GameObject:
   - component: {fileID: 8370468499015878152}
   - component: {fileID: 6644305102824327850}
   - component: {fileID: 1841598306361499024}
+  - component: {fileID: 328082468503954229}
   m_Layer: 0
   m_Name: Battle_Ariel
   m_TagString: Player
@@ -2978,6 +2979,7 @@ MonoBehaviour:
   _riseEffectScale: 0.5
   _effectLinger: 2
   _deactivateOnComplete: 1
+  _visualRoot: {fileID: 499443745095271460}
 --- !u!114 &8370468499015878152
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3171,6 +3173,34 @@ MonoBehaviour:
     ApplySfx: {fileID: 8300000, guid: 2e4463610d60eae4e88c3ec2d7a45b34, type: 3}
   _audioSource: {fileID: 0}
   _sfxVolume: 0.3
+--- !u!114 &328082468503954229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560493996318386368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a13deb1106cc6e40ae860c527125850, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathBarrierPresenter
+  _anchor: {fileID: 0}
+  _barrierPrefab: {fileID: 7364778227223438049, guid: 2378b4a0c3f1080439606a9c137e5220, type: 3}
+  _breakVfxPrefab: {fileID: 0}
+  _localPosition: {x: 0, y: 0.3, z: 0}
+  _barrierScale: {x: 2, y: 2, z: 2}
+  _showDelay: 0.05
+  _showDuration: 0.2
+  _showStartScaleMultiplier: 1.25
+  _blockDuration: 0.12
+  _blockScaleMultiplier: 1.1
+  _blockFlashStrength: 0.9
+  _blockFlashColor: {r: 1, g: 1, b: 1, a: 1}
+  _breakDuration: 0.18
+  _breakScaleMultiplier: 1.08
+  _breakVfxLifetime: 2
+  _hideDuration: 0.15
 --- !u!1 &1562030576368215012
 GameObject:
   m_ObjectHideFlags: 0

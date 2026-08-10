@@ -6,5 +6,5 @@ public enum ConstellationPathProjectileMotionType
     Straight,
     Arc,
     Meteor,
-    Shockwave
+    TimedVfx
 }
