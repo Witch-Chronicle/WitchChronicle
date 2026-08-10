@@ -54352,9 +54352,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7728515358363594396, guid: 78e53c7f75d298047b59bce367eafc26, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1404741311}
-    - targetCorrespondingSourceObject: {fileID: 7728515358363594396, guid: 78e53c7f75d298047b59bce367eafc26, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1404741310}
     - targetCorrespondingSourceObject: {fileID: 7728515358363594396, guid: 78e53c7f75d298047b59bce367eafc26, type: 3}
       insertIndex: -1
@@ -62138,24 +62135,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPC
   _npcData: {fileID: 11400000, guid: 30b6e297016e67b42809ce277953a9ab, type: 2}
   _worldInteractionUI: {fileID: 393829710}
---- !u!114 &581632855
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 581632852}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 733da9b90a1193945ad28b48948c34eb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NPCQuestIndicator
-  _mainExclamationPrefab: {fileID: 0}
-  _mainQuestionPrefab: {fileID: 749093556639959766, guid: 92236a8a8a076ba4cbc1499e7a422410, type: 3}
-  _subExclamationPrefab: {fileID: 0}
-  _subQuestionPrefab: {fileID: 0}
-  _headTransform: {fileID: 0}
-  _offset: {x: 0, y: 2.2, z: 0}
 --- !u!1001 &581992563
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -68710,9 +68689,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 820541513}
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6577110389550375278, guid: 8b568e21d33ec6542b7854b86b0e41cf, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2053462881}
     - targetCorrespondingSourceObject: {fileID: 6577110389550375278, guid: 8b568e21d33ec6542b7854b86b0e41cf, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2053462880}
@@ -141202,24 +141178,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPC
   _npcData: {fileID: 11400000, guid: 94cee51fb3a9d8b41a9053f72c37ff31, type: 2}
   _worldInteractionUI: {fileID: 381672014}
---- !u!114 &1404741311
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1404741308}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 733da9b90a1193945ad28b48948c34eb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NPCQuestIndicator
-  _mainExclamationPrefab: {fileID: 0}
-  _mainQuestionPrefab: {fileID: 749093556639959766, guid: 92236a8a8a076ba4cbc1499e7a422410, type: 3}
-  _subExclamationPrefab: {fileID: 0}
-  _subQuestionPrefab: {fileID: 0}
-  _headTransform: {fileID: 0}
-  _offset: {x: 0, y: 2.2, z: 0}
 --- !u!114 &1404741312
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -197541,9 +197499,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 6880863575413796159, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 581632855}
-    - targetCorrespondingSourceObject: {fileID: 6880863575413796159, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 581632854}
     - targetCorrespondingSourceObject: {fileID: 6880863575413796159, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
       insertIndex: -1
@@ -218968,24 +218923,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPC
   _npcData: {fileID: 11400000, guid: 8373f525ca843a64793c16e8128486ea, type: 2}
   _worldInteractionUI: {fileID: 820541514}
---- !u!114 &2053462881
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2053462878}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 733da9b90a1193945ad28b48948c34eb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NPCQuestIndicator
-  _mainExclamationPrefab: {fileID: 0}
-  _mainQuestionPrefab: {fileID: 749093556639959766, guid: 92236a8a8a076ba4cbc1499e7a422410, type: 3}
-  _subExclamationPrefab: {fileID: 0}
-  _subQuestionPrefab: {fileID: 0}
-  _headTransform: {fileID: 0}
-  _offset: {x: 0, y: 2.2, z: 0}
 --- !u!114 &2053462882
 MonoBehaviour:
   m_ObjectHideFlags: 0
