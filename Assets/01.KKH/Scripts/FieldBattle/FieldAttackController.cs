@@ -31,6 +31,11 @@ public class FieldAttackController : MonoBehaviour
     [Tooltip("애니메이션 이벤트 누락 시 최대 대기 시간")]
     [SerializeField] private float _animationEventTimeout = 2.5f;
 
+    [Header("Sound")]
+    [SerializeField] private AudioSource _audioSource;
+    [SerializeField] private AudioClip _attackSfx;
+    [SerializeField, Range(0f, 1f)] private float _attackSfxVolume = 1f;
+
     [Header("Timing")]
     [Tooltip("피격 이펙트 발생 후 전투 진입까지 유지 시간")]
     [SerializeField] private float _impactHoldDuration = 0.1f;
@@ -227,6 +232,8 @@ public class FieldAttackController : MonoBehaviour
                 _currentTarget);
         }
 
+        PlayAttackSfx();
+
         bool isAnimationStarted =
             PlayAttackAnimation();
 
@@ -264,7 +271,7 @@ public class FieldAttackController : MonoBehaviour
         }
 
         // 비록온 공격 애니메이션 종료 대기
-        if (_isLockedAttack == false)
+        if (_currentTarget == null)
         {
             float finishWaitTime = 0f;
 
@@ -426,17 +433,27 @@ public class FieldAttackController : MonoBehaviour
         Debug.Log(
             "[FieldAttack] Impact Event");
 
-        if (_isLockedAttack &&
-            _currentTarget != null &&
-            _currentTarget.IsAvailable)
+        if (_isLockedAttack && _currentTarget != null && _currentTarget.IsAvailable)
         {
-            PlayLightningVfx(
-                _currentTarget);
-
-            PlayHitVfx(
-                _currentTarget);
-
+            PlayLightningVfx(_currentTarget);
+            PlayHitVfx(_currentTarget);
             return;
+        }
+
+        if (TryResolveFreeAttackTarget(out FieldCombatTarget hitTarget))
+        {
+            BattleEncounter encounter = hitTarget.BattleEncounter;
+
+            if (encounter != null && encounter.PreparePlayerAdvantageBattle())
+            {
+                _currentTarget = hitTarget;
+
+                PlayLightningVfx(_currentTarget);
+                PlayHitVfx(_currentTarget);
+
+                Debug.Log($"[FieldAttack] 비록온 플레이어 선공 명중: {_currentTarget.name}");
+                return;
+            }
         }
 
         PlayFreeAttackVfx();
@@ -586,6 +603,11 @@ public class FieldAttackController : MonoBehaviour
             _encounterCameraController =
                 FindFirstObjectByType<FieldEncounterCameraController>();
         }
+
+        if (_audioSource == null)
+        {
+            _audioSource = GetComponent<AudioSource>();
+        }
     }
 
     /// <summary>
@@ -622,6 +644,93 @@ public class FieldAttackController : MonoBehaviour
         }
 
         _freeAttackDirection.Normalize();
+    }
+
+    /// <summary>
+    /// 비록온 공격 대상 탐색
+    /// </summary>
+    /// <param name="target">명중 대상</param>
+    /// <returns>적 명중 여부</returns>
+    private bool TryResolveFreeAttackTarget(out FieldCombatTarget target)
+    {
+        target = null;
+
+        Vector3 origin = _attackSocket != null ? _attackSocket.position : transform.position + Vector3.up;
+        Vector3 direction = _freeAttackDirection;
+
+        if (direction.sqrMagnitude <= 0.001f)
+        {
+            direction = transform.forward;
+        }
+
+        direction.Normalize();
+
+        float range = Mathf.Max(0.1f, _freeAttackRange);
+        int hitCount = Physics.RaycastNonAlloc(origin, direction, _freeAttackHits, range, ~0, QueryTriggerInteraction.Collide);
+
+        float nearestTargetDistance = float.MaxValue;
+        float nearestObstacleDistance = float.MaxValue;
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            RaycastHit hit = _freeAttackHits[i];
+
+            if (hit.collider == null)
+            {
+                continue;
+            }
+
+            Transform hitTransform = hit.collider.transform;
+
+            if (hitTransform == transform || hitTransform.IsChildOf(transform))
+            {
+                continue;
+            }
+
+            FieldCombatTarget combatTarget = hit.collider.GetComponentInParent<FieldCombatTarget>();
+
+            if (combatTarget == null)
+            {
+                BattleEncounter encounter = hit.collider.GetComponentInParent<BattleEncounter>();
+
+                if (encounter != null)
+                {
+                    combatTarget = encounter.GetComponentInChildren<FieldCombatTarget>();
+                }
+            }
+
+            if (combatTarget != null)
+            {
+                if (combatTarget.IsAvailable && combatTarget.BattleEncounter != null && hit.distance < nearestTargetDistance)
+                {
+                    nearestTargetDistance = hit.distance;
+                    target = combatTarget;
+                }
+
+                continue;
+            }
+
+            int hitLayerMask = 1 << hit.collider.gameObject.layer;
+
+            if ((_freeAttackObstacleMask.value & hitLayerMask) != 0 && hit.distance < nearestObstacleDistance)
+            {
+                nearestObstacleDistance = hit.distance;
+            }
+        }
+
+        if (target == null)
+        {
+            return false;
+        }
+
+        // 벽 뒤의 적 공격 방지
+        if (nearestObstacleDistance < nearestTargetDistance)
+        {
+            target = null;
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -839,5 +948,18 @@ public class FieldAttackController : MonoBehaviour
 
         _moveActionWasEnabled = false;
         _isMovementLocked = false;
+    }
+
+    /// <summary>
+    /// 필드 공격 사운드 재생
+    /// </summary>
+    private void PlayAttackSfx()
+    {
+        if (_audioSource == null || _attackSfx == null)
+        {
+            return;
+        }
+
+        _audioSource.PlayOneShot(_attackSfx, _attackSfxVolume);
     }
 }
