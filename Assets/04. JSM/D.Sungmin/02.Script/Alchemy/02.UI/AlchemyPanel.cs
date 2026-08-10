@@ -486,6 +486,12 @@ namespace WitchChronicle.Alchemy
             if (SoundManager.Instance != null)
                 SoundManager.Instance.PlaySfx(SfxType.CookingProcess);
 
+            // 퀘스트 진행도 반영 (targetID: 요리 결과물 이름)
+            if (QuestManager.Instance != null)
+            {        
+                QuestManager.Instance.AddProgress(QuestObjectiveType.CookFood, recipe.result.itemId.ToString(), 1);
+            }
+
             // 애니메이션 재생 + 지연 후 팝업
             StartCoroutine(Co_ShowResultAfterAnimation(recipe.result.icon, AlchemyMode.Cooking, _cookingTriggerName));
         }
@@ -514,6 +520,12 @@ namespace WitchChronicle.Alchemy
             // ★ 포션 제작 중 사운드
             if (SoundManager.Instance != null)
                 SoundManager.Instance.PlaySfx(SfxType.PotionProcess);
+
+            // 퀘스트 진행도 반영 (targetID: 포션 결과물 이름)
+            if (QuestManager.Instance != null)
+            {
+                QuestManager.Instance.AddProgress(QuestObjectiveType.BrewPotion, recipe.resultPotion.itemId.ToString(), 1);
+            }
 
             // 애니메이션 재생 + 지연 후 팝업
             StartCoroutine(Co_ShowResultAfterAnimation(recipe.resultPotion.icon, AlchemyMode.Potion, _potionTriggerName));

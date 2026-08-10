@@ -974,11 +974,25 @@
     {
       "id": "main_015_running",
       "speaker": "카산드라",
-      "text": "정신 바짝 차려. 알데릭은 절대 만만한 상대가 아니야.",
+      "text": "정신 바짝 차려. 알데릭은 만만한 상대가 아니야. 바로 다시 도전하겠니?",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
-      "choices": []
+      "choices": [
+        {
+          "text": "알데릭에게 다시 도전하러 가자.",
+          "next": "main_015_accept",
+          "startQuest": "",
+          "completeQuest": "",
+          "eventID": "EnterFinalDungeon"
+        },
+        {
+          "text": "아직 준비가 더 필요해.",
+          "next": "main_015_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
     },
     {
       "id": "main_015_complete",

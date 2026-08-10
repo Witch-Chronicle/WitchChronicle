@@ -204,7 +204,7 @@ public class FishingManager : MonoBehaviour
             // 퀘스트 진행도 반영 (targetID: 물고기 이름)
             if (QuestManager.Instance != null)
             {
-                QuestManager.Instance.AddProgress(QuestObjectiveType.CatchFish, fish.itemName, 1);
+                QuestManager.Instance.AddProgress(QuestObjectiveType.CatchFish, fish.itemId.ToString(), 1);
             }
 
             // 애니메이터 훅 - 성공 (물고기 들어올리기)
