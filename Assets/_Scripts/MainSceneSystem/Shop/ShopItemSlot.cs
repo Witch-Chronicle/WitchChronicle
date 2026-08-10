@@ -22,7 +22,10 @@ public class ShopItemSlot : MonoBehaviour, IRecycledScrollCell<ShopSlotEntry>
     [SerializeField] private GameObject _normalObject;
     [SerializeField] private GameObject _selectedObject;
     [SerializeField] private Button _slotButton;
+    [Header("품절 표시")]
+    [SerializeField] private string _soldOutText = "품절";
     public ItemData ItemData { get; private set; }
+    public bool IsSoldOut { get; private set; }
     private Action<ItemData> _onClickCallback;
     private void Awake()
     {
@@ -33,29 +36,32 @@ public class ShopItemSlot : MonoBehaviour, IRecycledScrollCell<ShopSlotEntry>
         _slotButton.onClick.AddListener(HandleClick);
         SetSelected(false);
     }
-    /// <summary>
-    /// RecycledScrollView가 셀을 재사용/재배치할 때마다 호출합니다.
-    /// </summary>
     public void Bind(ShopSlotEntry entry, int index)
     {
         Setup(entry.ItemData, entry.OnClicked);
         SetSelected(entry.IsSelected);
     }
-    /// <summary>
-    /// 아이템 데이터를 받아서 슬롯 UI를 채워준다.
-    /// onClick: 슬롯 클릭 시 호출할 콜백 (ShopUIController가 DetailSection 갱신용으로 넘겨줌)
-    /// </summary>
     public void Setup(ItemData itemData, Action<ItemData> onClick)
     {
         ItemData = itemData;
         _onClickCallback = onClick;
+        IsSoldOut = CheckSoldOut(itemData);
         if (_iconImage != null) _iconImage.sprite = itemData.icon;
         if (_nameText != null) _nameText.text = itemData.itemName;
-        if (_priceText != null) _priceText.text = itemData.buyPrice.ToString();
+        if (_priceText != null)
+        {
+            _priceText.text = IsSoldOut ? _soldOutText : itemData.buyPrice.ToString();
+        }
     }
     /// <summary>
-    /// 선택 상태 토글. true면 Selected만 활성, false면 Normal만 활성.
+    /// RodItemData는 하나라도 보유하고 있으면 품절 처리한다 (중복 보유 방지).
     /// </summary>
+    private bool CheckSoldOut(ItemData itemData)
+    {
+        if (itemData is not RodItemData) return false;
+        if (PlayerInventory.Instance == null) return false;
+        return PlayerInventory.Instance.GetTotalQuantity(itemData) > 0;
+    }
     public void SetSelected(bool isSelected)
     {
         if (_normalObject != null) _normalObject.SetActive(!isSelected);
