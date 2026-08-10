@@ -265,13 +265,13 @@ public class SoundManager : MonoBehaviour
 
     // ===================== 볼륨 / Mute =====================
 
-    public void SetMasterVolume(float volume) { _masterVolume = Mathf.Clamp01(volume); ApplyBgmVolume(); }
-    public void SetBgmVolume(float volume)    { _bgmVolume = Mathf.Clamp01(volume); ApplyBgmVolume(); }
-    public void SetSfxVolume(float volume)    { _sfxVolume = Mathf.Clamp01(volume); }
+    public void SetMasterVolume(float volume) { _masterVolume = Mathf.Clamp01(volume); ApplyBgmVolume(); SaveManager.RequestSave();}
+    public void SetBgmVolume(float volume)    { _bgmVolume = Mathf.Clamp01(volume); ApplyBgmVolume(); SaveManager.RequestSave();}
+    public void SetSfxVolume(float volume)    { _sfxVolume = Mathf.Clamp01(volume); SaveManager.RequestSave();}
 
-    public void SetMasterMuted(bool muted) { _isMasterMuted = muted; ApplyBgmVolume(); }
-    public void SetBgmMuted(bool muted)    { _isBgmMuted = muted; ApplyBgmVolume(); }
-    public void SetSfxMuted(bool muted)    { _isSfxMuted = muted; }
+    public void SetMasterMuted(bool muted) { _isMasterMuted = muted; ApplyBgmVolume(); SaveManager.RequestSave();}
+    public void SetBgmMuted(bool muted)    { _isBgmMuted = muted; ApplyBgmVolume(); SaveManager.RequestSave();}
+    public void SetSfxMuted(bool muted)    { _isSfxMuted = muted; SaveManager.RequestSave();}
 
     private float GetEffectiveBgmFactor()
     {
