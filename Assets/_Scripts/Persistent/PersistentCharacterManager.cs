@@ -188,6 +188,8 @@ public class PersistentCharacterManager : MonoBehaviour
         {
             TryAddToActiveParty(characterId);
         }
+
+        AlertManager.Instance.Enqueue(AlertType.RecruitCharacter, character.CharacterName);
         SaveManager.RequestSave();
         return true;
     }
