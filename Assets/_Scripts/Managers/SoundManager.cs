@@ -89,8 +89,19 @@ public class SoundManager : MonoBehaviour
         ApplyBgmVolume();
     }
 
-    private void OnEnable()  => SceneManager.sceneLoaded += OnSceneLoaded;
-    private void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;    // ★ 추가
+        SceneManager.activeSceneChanged += OnActiveSceneChanged; // ★ 추가
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;    // ★ 추가
+        SceneManager.activeSceneChanged -= OnActiveSceneChanged; // ★ 추가
+    }
 
     private void Start()
     {
@@ -100,9 +111,35 @@ public class SoundManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        TryPlaySceneBgm(scene.name);
+        // ★ Additive 로드: 활성 씬은 그대로니까, 새 씬 이름 기준으로 BGM 전환
+        //   (Battle 씬이 Additive로 뜨는 상황 대응)
+        if (mode == LoadSceneMode.Additive)
+        {
+            TryPlaySceneBgm(scene.name);
+        }
+        else
+        {
+            // Single 모드: 활성 씬이 곧 새 씬
+            TryPlaySceneBgm(scene.name);
+        }
+
         if (autoRegisterButtons) AutoRegisterAllButtons();
         StopSfxLoop();
+    }
+
+    // ★ Additive 씬이 Unload될 때 → 활성 씬(원래 씬) BGM으로 복귀
+    private void OnSceneUnloaded(Scene scene)
+    {
+        var activeScene = SceneManager.GetActiveScene();
+        Debug.Log($"[SoundManager] 씬 언로드됨: {scene.name}, 활성 씬: {activeScene.name}");
+        TryPlaySceneBgm(activeScene.name);
+    }
+
+    // ★ 활성 씬이 바뀔 때 (SetActiveScene 호출 시)
+    private void OnActiveSceneChanged(Scene prev, Scene next)
+    {
+        Debug.Log($"[SoundManager] 활성 씬 변경: {prev.name} → {next.name}");
+        TryPlaySceneBgm(next.name);
     }
 
     // ===================== BGM =====================
@@ -240,7 +277,6 @@ public class SoundManager : MonoBehaviour
     public void StopSfxLoop()
     {
         if (loopSfxSource == null) return;
-
         loopSfxSource.Stop();
         loopSfxSource.clip = null;
         _currentLoopSfx = null;
