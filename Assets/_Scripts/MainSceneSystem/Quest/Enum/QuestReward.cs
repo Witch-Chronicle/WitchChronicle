@@ -7,13 +7,13 @@ public class QuestReward
 
     public int exp;
 
-    public ItemData item;
+    public ItemData[] items;
 
     public int itemCount;
 
     // NPC 영입 보상
     public string recruitNPC;
 
-     // 메인 스토리 진행
+    // 메인 스토리 진행
     public bool nextStory;
 }

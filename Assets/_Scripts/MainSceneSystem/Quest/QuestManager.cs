@@ -121,6 +121,16 @@ public class QuestManager : MonoBehaviour
                 {
                     continue;
                 }
+                
+                 bool isAnyTarget = string.IsNullOrEmpty(objective.targetID) ||
+                               objective.targetID.Equals("ANY", System.StringComparison.OrdinalIgnoreCase) ||
+                               objective.targetID.Equals("ALL", System.StringComparison.OrdinalIgnoreCase);
+
+                // 특정 ID도 아니고, ANY(전체 허용)도 아니면 넘어감
+                if (!isAnyTarget && objective.targetID != targetID)
+                {
+                    continue;
+                }
 
                 runtime.Progress[i] += amount;
 
@@ -128,6 +138,8 @@ public class QuestManager : MonoBehaviour
                 {
                     runtime.Progress[i] = objective.requiredCount;
                 }
+
+                Debug.Log($"<color=green>★ 퀘스트 진행도 증가!</color> {runtime.Data.title} [{runtime.Progress[i]}/{objective.requiredCount}]");
             }
 
             CheckComplete(runtime);
@@ -239,12 +251,25 @@ public class QuestManager : MonoBehaviour
         }
 
         // 아이템 처리
-        if (reward.item != null && reward.itemCount > 0) // (ItemData 타입 검사로 수정)
+        if (reward.items != null && reward.itemCount > 0) // (ItemData 타입 검사로 수정)
         {
-            rewardMessages.Add($"아이템 {reward.item.name} x {reward.itemCount}");
-            PlayerInventory.Instance.AddItem(reward.item, reward.itemCount);
-            AlertManager.Instance?.Enqueue(AlertType.ItemAcquired, reward.item.itemName, reward.itemCount);
-            Debug.Log($"Reward Item : {reward.item.name} x {reward.itemCount}");
+            foreach(var item in reward.items)
+            {
+                rewardMessages.Add($"아이템 {item.name} x {reward.itemCount}");
+
+                if(item is EquipItemData equipItem)
+                {
+                    PlayerInventory.Instance.AddEquipment(equipItem, reward.itemCount);
+                }
+                else
+                {    
+                    PlayerInventory.Instance.AddItem(item, reward.itemCount);
+                }
+
+                AlertManager.Instance?.Enqueue(AlertType.ItemAcquired, item.itemName, reward.itemCount);
+                Debug.Log($"Reward Item : {item.itemName} x {reward.itemCount}");
+            }
+
         }
 
         // NPC 영입 처리

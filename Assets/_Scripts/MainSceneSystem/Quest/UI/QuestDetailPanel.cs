@@ -116,9 +116,14 @@ public class QuestDetailPanel : MonoBehaviour
         }
 
 
-        if (reward.item != null)
+        if (reward.items != null)
         {
-            text += $"{reward.item.name} x {reward.itemCount}";
+            text += "아이템\n";
+
+            for (int i = 0; i < reward.items.Length; i++)
+            {
+                text += $"{reward.items[i].name} x {reward.itemCount}";
+            }
         }
 
 

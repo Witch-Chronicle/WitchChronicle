@@ -111,6 +111,12 @@ public class PlayerInventory : MonoBehaviour
         OnGoldChanged?.Invoke(_gold);
         OnInventoryChanged?.Invoke();
 
+        // 퀘스트 진행도 반영
+        if (QuestManager.Instance != null)
+        {
+            QuestManager.Instance.AddProgress(QuestObjectiveType.SellItem, itemData.itemName, amount);
+        }
+
         Debug.Log($"[PlayerInventory] 판매 완료: {itemData.itemName} x{amount} (+{totalSellPrice} 골드, 현재 골드: {_gold})");
         AlertManager.Instance?.Enqueue(AlertType.GoldAcquired, amount);
         return true;
@@ -214,6 +220,13 @@ public class PlayerInventory : MonoBehaviour
         _gold += sellPrice;
         OnGoldChanged?.Invoke(_gold);
         OnInventoryChanged?.Invoke();
+
+        
+        // 퀘스트 진행도 반영
+        if (QuestManager.Instance != null)
+        {
+            QuestManager.Instance.AddProgress(QuestObjectiveType.SellEquipment, instance.baseData.itemName, 1);
+        }
 
         Debug.Log($"[PlayerInventory] 장비 판매 완료: {instance.baseData.itemName} (+{sellPrice} 골드, 현재 골드: {_gold})");
         return true;
