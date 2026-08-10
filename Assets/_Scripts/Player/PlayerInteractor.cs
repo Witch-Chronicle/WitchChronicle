@@ -17,12 +17,12 @@ public class PlayerInteractor : MonoBehaviour
         ITFInteractable found = FindNearest();
         if (found != _current)
         {
-            NPC prevNpc = (_current as Component)?.GetComponent<NPC>();
+            NPC prevNpc = GetNpcSafely(_current);
             if (prevNpc != null)
             {
                 prevNpc.ShowInteractPrompt(false);
             }
-            NPC nextNpc = (found as Component)?.GetComponent<NPC>();
+            NPC nextNpc = GetNpcSafely(found);
             if (nextNpc != null)
             {
                 nextNpc.ShowInteractPrompt(true);
@@ -31,6 +31,19 @@ public class PlayerInteractor : MonoBehaviour
         _current = found;
         if (_current != null && _interactAction.WasPressedThisFrame())
             _current.Interact(gameObject);
+    }
+    /// <summary>
+    /// ITFInteractable이 파괴된 오브젝트를 가리키고 있어도 안전하게 NPC를 조회한다.
+    /// (예: EventGameObject처럼 상호작용 후 스스로 Destroy되는 대상)
+    /// </summary>
+    private static NPC GetNpcSafely(ITFInteractable target)
+    {
+        Component component = target as Component;
+        if (component == null) // Unity 오버로드: 파괴된 오브젝트도 여기서 true
+        {
+            return null;
+        }
+        return component.GetComponent<NPC>();
     }
     private ITFInteractable FindNearest()
     {
@@ -50,12 +63,6 @@ public class PlayerInteractor : MonoBehaviour
         }
         return nearest;
     }
-    /// <summary>
-    /// 같은 오브젝트에 ITFInteractable이 여러 개 붙어있을 수 있다
-    /// (예: NPC + PortalNPC, NPC + TeleportPortal).
-    /// 컴포넌트 순서에 의존하지 않도록, NPC(대화)보다
-    /// 별도의 액션 스크립트(Portal, Teleport 등)를 항상 우선한다.
-    /// </summary>
     private static ITFInteractable ResolveInteractable(GameObject go)
     {
         ITFInteractable[] candidates = go.GetComponents<ITFInteractable>();

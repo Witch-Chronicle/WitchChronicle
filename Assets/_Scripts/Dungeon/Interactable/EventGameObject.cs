@@ -126,7 +126,7 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
 
         if (ShowMessageManager.Instance != null)
         {
-            ShowMessageManager.Instance.BlockByUI();
+            ShowMessageManager.Instance.VisibleMessage(false);
         }
 
         BattleEncounter battleEncounter = GetComponent<BattleEncounter>();

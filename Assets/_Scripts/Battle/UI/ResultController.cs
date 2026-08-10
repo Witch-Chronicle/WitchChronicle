@@ -300,6 +300,7 @@ public class ResultController : MonoBehaviour
             if (DungeonPartyQueueController.Instance != null)
             {
                 DungeonPartyQueueController.Instance.gameObject.SetActive(true);
+                ShowMessageManager.Instance.VisibleMessage(false);
             }
             if (BattleEncounterContext.Instance != null)
             {
