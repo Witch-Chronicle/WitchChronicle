@@ -39,6 +39,7 @@ public class ResultController : MonoBehaviour
     private int _completedRowCount;
     private bool _isXpAnimating;
     private bool _isConfirmVisible;
+
     private void Start()
     {
         if (BattleUIContext.Instance != null)
@@ -83,6 +84,18 @@ public class ResultController : MonoBehaviour
     }
     private void Update()
     {
+        if (gameObject.activeSelf)
+        {
+            // 결과창이 떠 있는 동안은 HUD의 캐릭터/턴 표시가 절대 다시 켜지지 않도록 강제
+            if (_charactersObject != null && _charactersObject.activeSelf)
+            {
+                _charactersObject.SetActive(false);
+            }
+            if (_turnObject != null && _turnObject.activeSelf)
+            {
+                _turnObject.SetActive(false);
+            }
+        }
         if (Keyboard.current == null) return;
         if (Keyboard.current.enterKey.wasPressedThisFrame == false) return;
         if (_isXpAnimating)
@@ -106,6 +119,8 @@ public class ResultController : MonoBehaviour
         HideConfirmImmediate();
         if (_charactersObject != null) _charactersObject.SetActive(false);
         if (_turnObject != null) _turnObject.SetActive(false);
+
+        DungeonPartyQueueController.Instance.HideContent();
         PlayFadeInSequence();
     }
     /// <summary>
@@ -297,9 +312,10 @@ public class ResultController : MonoBehaviour
             {
                 Party.Instance.gameObject.SetActive(true);
             }
+            // Battle 씬이 완전히 언로드되어 Dungeon 씬으로 복귀한 이 시점에만 다시 표시
             if (DungeonPartyQueueController.Instance != null)
             {
-                DungeonPartyQueueController.Instance.gameObject.SetActive(true);
+                DungeonPartyQueueController.Instance.ShowContent();
                 ShowMessageManager.Instance.VisibleMessage(false);
             }
             if (BattleEncounterContext.Instance != null)
@@ -312,11 +328,14 @@ public class ResultController : MonoBehaviour
             }
         });
     }
+
+
     /// <summary>
     /// 패배: 거점 씬으로 Single 로드 — 던전+전투 씬이 한 번에 정리됨. 기존 로직 그대로.
     /// </summary>
     private void HandleDefeatTransition()
     {
+
         if (PersistentCharacterManager.Instance != null)
         {
             PersistentCharacterManager.Instance.RestoreActivePartyVitals();
