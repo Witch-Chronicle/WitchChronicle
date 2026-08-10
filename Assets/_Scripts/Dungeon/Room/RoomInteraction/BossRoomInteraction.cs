@@ -22,7 +22,8 @@ public class BossRoomInteraction : RoomInteraction
     {
         if (_bossMonsterPrefab == null) return;
 
-        Vector3 spawnPos = roomCenter + new Vector3(0f, -1.5f, 0f);
+        Vector3 spawnPos = roomCenter; 
+        
         BattleEncounter boss = Instantiate(_bossMonsterPrefab, spawnPos, Quaternion.identity);
 
         if (_enemyDataList != null && _enemyDataList.Count > 0)

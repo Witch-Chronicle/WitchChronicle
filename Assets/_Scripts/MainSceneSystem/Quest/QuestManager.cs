@@ -116,13 +116,8 @@ public class QuestManager : MonoBehaviour
                 {
                     continue;
                 }
-
-                if (objective.targetID != targetID)
-                {
-                    continue;
-                }
                 
-                 bool isAnyTarget = string.IsNullOrEmpty(objective.targetID) ||
+                bool isAnyTarget = string.IsNullOrEmpty(objective.targetID) ||
                                objective.targetID.Equals("ANY", System.StringComparison.OrdinalIgnoreCase) ||
                                objective.targetID.Equals("ALL", System.StringComparison.OrdinalIgnoreCase);
 

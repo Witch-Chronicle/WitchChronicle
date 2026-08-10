@@ -4,7 +4,7 @@
     {
       "id": "default",
       "speaker": "카산드라",
-      "text": "안녕?. 무슨 일 있니?",
+      "text": "어서 오렴. 무슨 일로 선생님을 찾아왔니?",
       "startQuest": "",
       "completeQuest": "",
       "next": "main_000_default",
@@ -13,7 +13,7 @@
     {
       "id": "main_000_default",
       "speaker": "카산드라",
-      "text": "...이건, 내가 예전에 쓰던 일기잖아? 어떻게 이게 여기 있지.",
+      "text": "...어머, 이건 내가 예전에 쓰던 일기잖아? 어떻게 여기에 떨어져 있었을까?",
       "startQuest": "main_000",
       "completeQuest": "",
       "next": "main_000_talk",
@@ -22,7 +22,7 @@
     {
       "id": "main_000_talk",
       "speaker": "카산드라",
-      "text": "정신없이 지내다 보니 언제 흘렸는지도 몰랐네. 일단 가지고 있어야겠어.",
+      "text": "바쁘게 지내다 보니 분실한 줄도 몰랐구나. 소중한 기록이니 잘 보관해야겠어.",
       "startQuest": "",
       "completeQuest": "main_000",
       "next": "",
@@ -31,19 +31,19 @@
     {
       "id": "main_001_default",
       "speaker": "카산드라",
-      "text": "저기... 혹시 시간 괜찮다면 내 부탁 하나 들어줄 수 있을까? 근처 던전 쪽을 좀 조사해줬으면 하는데.",
+      "text": "저기... 혹시 시간 괜찮다면 내 부탁 하나만 들어줄 수 있을까? 근처 던전 쪽을 가서 한번 살펴봐 주었으면 한단다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "조사해볼게.",
+          "text": "제가 조사해 볼게요.",
           "next": "main_001_accept",
           "startQuest": "main_001",
           "completeQuest": ""
         },
         {
-          "text": "지금은 좀 바빠.",
+          "text": "지금은 좀 바빠요.",
           "next": "main_001_reject",
           "startQuest": "",
           "completeQuest": ""
@@ -53,7 +53,7 @@
     {
       "id": "main_001_accept",
       "speaker": "카산드라",
-      "text": "고마워. 조심해서 다녀와.",
+      "text": "고마워라. 다치지 않게 조심해서 다녀오렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -62,7 +62,7 @@
     {
       "id": "main_001_reject",
       "speaker": "카산드라",
-      "text": "그래, 급할 건 없지. 준비되면 다시 얘기해줘.",
+      "text": "그래, 급하게 서두를 필요는 없단다. 차분히 준비되면 다시 찾아오렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -71,7 +71,7 @@
     {
       "id": "main_001_running",
       "speaker": "카산드라",
-      "text": "던전 안쪽은 좀 살펴봤어? 발밑 조심하고.",
+      "text": "던전 안쪽 조사는 잘 진행되고 있니? 발밑이 위험하니 조심하렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -80,7 +80,7 @@
     {
       "id": "main_001_complete",
       "speaker": "카산드라",
-      "text": "무사히 돌아왔구나, 다행이야.",
+      "text": "무사히 다녀왔구나. 별일 없어서 정말 다행이란다.",
       "startQuest": "",
       "completeQuest": "main_001",
       "next": "main_001_reward",
@@ -89,7 +89,7 @@
     {
       "id": "main_001_reward",
       "speaker": "카산드라",
-      "text": "고마워, 이거 받아.",
+      "text": "애써줘서 정말 고마워. 이건 열심히 노력한 보상이란다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "main_002_default",
@@ -98,19 +98,19 @@
     {
       "id": "main_002_default",
       "speaker": "카산드라",
-      "text": "버섯 마수 세 마리 처치, 부탁해도 될까? 마을 사람들이 꽤 불안해하고 있어.",
+      "text": "버섯 마수 세 마리를 퇴치하는 일을 부탁해도 될까? 마을 주민들이 불안해하고 있단다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "내가 처리하고 올게.",
+          "text": "제가 처리하고 올게요.",
           "next": "main_002_accept",
           "startQuest": "main_002",
           "completeQuest": ""
         },
         {
-          "text": "잠시만 기다려줘.",
+          "text": "잠시만 기다려 주세요.",
           "next": "main_002_reject",
           "startQuest": "",
           "completeQuest": ""
@@ -120,7 +120,7 @@
     {
       "id": "main_002_accept",
       "speaker": "카산드라",
-      "text": "고마워. 조심해서 다녀와.",
+      "text": "참 착하구나. 안전을 최우선으로 생각하고 다녀오렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -129,7 +129,7 @@
     {
       "id": "main_002_reject",
       "speaker": "카산드라",
-      "text": "알겠어. 준비되면 말해줘.",
+      "text": "알았단다. 충분히 준비가 되면 언제든 말해주렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -138,7 +138,7 @@
     {
       "id": "main_002_running",
       "speaker": "카산드라",
-      "text": "버섯 마수는 다 처리했어? 냄새가 좀 지독할 텐데.",
+      "text": "버섯 마수들은 잘 해결하고 있니? 독한 냄새 때문에 힘들진 않고?",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -147,7 +147,7 @@
     {
       "id": "main_002_complete",
       "speaker": "카산드라",
-      "text": "세 마리 다 처리했다고? 수고했어.",
+      "text": "세 마리 모두 깔끔하게 처리했구나! 정말 훌륭해요, 수고 많았단다.",
       "startQuest": "",
       "completeQuest": "main_002",
       "next": "main_002_reward",
@@ -156,7 +156,7 @@
     {
       "id": "main_002_reward",
       "speaker": "카산드라",
-      "text": "그런데... 앞으로 더 위험한 던전들을 조사하려면, 혼자서는 무리일 것 같아. 함께할 동료를 찾아보는 게 어때?",
+      "text": "그런데... 앞으로 더 위험한 던전을 조사하려면 혼자서보다는 동료가 있는 게 좋겠구나. 함께할 동료를 찾아보는 건 어떨까?",
       "startQuest": "",
       "completeQuest": "",
       "next": "main_003_default",
@@ -165,19 +165,19 @@
     {
       "id": "main_003_default",
       "speaker": "카산드라",
-      "text": "셀레네라는 애가 있는데, 실력은 확실해. 가서 동료가 되어달라고 부탁해볼래?",
+      "text": "‘셀레네’라는 아이가 있는데 실력이 참 뛰어난 친구란다. 가서 함께해 달라고 설득해 볼 수 있겠니?",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "알겠어, 찾아가볼게.",
+          "text": "네, 찾아가 볼게요.",
           "next": "main_003_accept",
           "startQuest": "main_003",
           "completeQuest": ""
         },
         {
-          "text": "생각 좀 해볼게.",
+          "text": "생각 좀 해볼게요.",
           "next": "main_003_reject",
           "startQuest": "",
           "completeQuest": ""
@@ -187,7 +187,7 @@
     {
       "id": "main_003_accept",
       "speaker": "카산드라",
-      "text": "고마워. 분명 든든한 힘이 되어줄 거야.",
+      "text": "고마워라. 분명 너에게 아주 든든한 조력자가 되어줄 거란다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -196,7 +196,7 @@
     {
       "id": "main_003_reject",
       "speaker": "카산드라",
-      "text": "그래, 급할 건 없지.",
+      "text": "그래, 중요한 결정이니 천천히 생각해 보렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -205,7 +205,7 @@
     {
       "id": "main_003_running",
       "speaker": "카산드라",
-      "text": "셀레네는 만나봤어? 낯을 좀 가리는 편이지만 나쁜 애는 아니야.",
+      "text": "셀레네는 만나보았니? 이곳 저곳 돌아다니면 찾을수 있을꺼야.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -214,7 +214,7 @@
     {
       "id": "main_004_default",
       "speaker": "카산드라",
-      "text": "셀레네와 함께 녹색 밀림 쪽을 조사해줘. 마녀사냥단이 그 근처에 숨어있다는 소문이 있어.",
+      "text": "셀레네와 함께 녹색 밀림을 조사해 줄 수 있겠니? 그 근처에 마녀사냥단이 숨어있다는 소문이 있거든.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -236,7 +236,7 @@
     {
       "id": "main_004_accept",
       "speaker": "카산드라",
-      "text": "조심해서 다녀와. 거미 마수들이 많을 거야.",
+      "text": "거미 마수들이 많으니 방심하지 말고 조심해서 다녀오렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -245,7 +245,7 @@
     {
       "id": "main_004_reject",
       "speaker": "카산드라",
-      "text": "알겠어. 준비되면 다시 말해줘.",
+      "text": "그래, 준비가 부족하면 위험하니까. 준비되면 다시 말하렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -254,7 +254,7 @@
     {
       "id": "main_004_running",
       "speaker": "카산드라",
-      "text": "거미 마수들은 처리하고 있어? 조심해, 그 녀석들 독을 품고 있으니까.",
+      "text": "거미 마수들은 잘 퇴치하고 있니? 무서운 독을 품고 있으니 끝까지 주의해야 한단다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -263,7 +263,7 @@
     {
       "id": "main_004_complete",
       "speaker": "카산드라",
-      "text": "거미들을 다 처리했구나. 은신처에 가까워지고 있는 것 같아.",
+      "text": "거미들을 모두 퇴치했구나! 은신처에 한 걸음 더 가까워진 것 같아.",
       "startQuest": "",
       "completeQuest": "main_004",
       "next": "main_004_reward",
@@ -272,7 +272,7 @@
     {
       "id": "main_004_reward",
       "speaker": "카산드라",
-      "text": "조금만 더 안쪽으로 들어가 보자. 아직 끝난 게 아니야.",
+      "text": "조금만 더 안쪽으로 들어가 보자꾸나. 끝까지 집중력을 잃지 마렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "main_005_default",
@@ -281,19 +281,19 @@
     {
       "id": "main_005_default",
       "speaker": "카산드라",
-      "text": "이번엔 늑대인간들이 나타났대. 녹색 밀림 더 깊은 곳을 조사해줘.",
+      "text": "이번엔 늑대인간들이 나타났다고 하네. 녹색 밀림 더 깊은 곳까지 조사를 부탁해도 될까?",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "알겠어, 바로 갈게.",
+          "text": "네, 바로 다녀올게요.",
           "next": "main_005_accept",
           "startQuest": "main_005",
           "completeQuest": ""
         },
         {
-          "text": "잠시만 정비하고 갈게.",
+          "text": "잠시만 정비하고 갈게요.",
           "next": "main_005_reject",
           "startQuest": "",
           "completeQuest": ""
@@ -303,7 +303,7 @@
     {
       "id": "main_005_accept",
       "speaker": "카산드라",
-      "text": "고마워. 늑대인간들은 무리 지어 다니니 조심해.",
+      "text": "고마워라. 늑대인간들은 무리를 지어 다니니 항상 주변을 경계하렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -312,7 +312,7 @@
     {
       "id": "main_005_reject",
       "speaker": "카산드라",
-      "text": "그래, 충분히 정비하고 출발해.",
+      "text": "그래, 제대로 정비하고 출발하는 게 훌륭한 자세란다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -321,7 +321,7 @@
     {
       "id": "main_005_running",
       "speaker": "카산드라",
-      "text": "늑대인간들, 아직인가? 그 녀석들 무리 지어 다니니까 조심해.",
+      "text": "늑대인간 처치는 진행 중이니? 무리로 공격해 오니 다치지 않게 조심하렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -330,7 +330,7 @@
     {
       "id": "main_005_complete",
       "speaker": "카산드라",
-      "text": "다 처리했구나. 이 정도면 은신처 코앞일 거야.",
+      "text": "정말 멋지게 다 처리했구나! 이 정도면 이제 은신처 바로 앞이란다.",
       "startQuest": "",
       "completeQuest": "main_005",
       "next": "main_005_reward",
@@ -339,7 +339,7 @@
     {
       "id": "main_005_reward",
       "speaker": "카산드라",
-      "text": "이제 마을을 어지럽히는 마물들을 소탕할 차례야.",
+      "text": "자, 이제 마을을 위협하는 마물들을 소탕하러 가야 할 차례란다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "main_006_default",
@@ -348,7 +348,7 @@
     {
       "id": "main_006_default",
       "speaker": "카산드라",
-      "text": "마물들.., 그게 이 모든 일의 원흉일 거야. 모두 소탕해서 던전을 잠재워줘.",
+      "text": "마물들이 이 모든 혼란의 원흉일 거란다. 어서 소탕해서 던전을 평화롭게 만들어주겠니?",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -370,7 +370,7 @@
     {
       "id": "main_006_accept",
       "speaker": "카산드라",
-      "text": "믿고 있을게. 절대 무리하지는 말고.",
+      "text": "선생님은 너를 믿는단다. 절대 무리해서 다치면 안 돼.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -379,7 +379,7 @@
     {
       "id": "main_006_reject",
       "speaker": "카산드라",
-      "text": "그래, 철저히 준비해.",
+      "text": "그래, 항상 철저히 대비하는 자세가 중요하지.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -388,7 +388,7 @@
     {
       "id": "main_006_running",
       "speaker": "카산드라",
-      "text": "아직이야? 절대 무리하지 마.",
+      "text": "조금 시간이 걸리나 보구나. 조급해하지 말고 무리하지 마렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -397,7 +397,7 @@
     {
       "id": "main_006_complete",
       "speaker": "카산드라",
-      "text": "모두 다 소탕 했다고?! 녹색 밀림이 다시 잠잠해지겠어.",
+      "text": "모두 깔끔하게 소탕했단 말이니?! 훌륭하구나! 이제 녹색 밀림에 평화가 찾아오겠어.",
       "startQuest": "",
       "completeQuest": "main_006",
       "next": "main_006_reward",
@@ -406,7 +406,7 @@
     {
       "id": "main_006_reward",
       "speaker": "카산드라",
-      "text": "정말 큰 일을 해냈어. 그런데 다음 조사를 위해선 동료가 한 명 더 필요할 것 같아.",
+      "text": "정말 큰일을 해냈단다, 대견하구나! 하지만 다음 단계로 가려면 동료가 한 명 더 필요하단다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -415,13 +415,13 @@
     {
       "id": "main_007_default",
       "speaker": "카산드라",
-      "text": "라이아라는 애를 찾아가 봐. 요즘 마음 둘 곳을 못 찾고 방황한다던데, 너라면 설득할 수 있을 거야.",
+      "text": "‘라이아’라는 아이를 찾아가 보렴. 마음을 잡지 못하고 방황 중이라는데, 따뜻한 너라면 마음을 열 수 있을 거란다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "제가 가서 설득해볼게요.",
+          "text": "제가 가서 설득해 볼게요.",
           "next": "main_007_accept",
           "startQuest": "main_007",
           "completeQuest": ""
@@ -437,7 +437,7 @@
     {
       "id": "main_007_accept",
       "speaker": "카산드라",
-      "text": "고마워. 라이아도 분명 너를 보면 마음을 열 거야.",
+      "text": "고마워라. 너의 진심 어린 모습에 라이아도 마음을 열어줄 거야.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -446,7 +446,7 @@
     {
       "id": "main_007_reject",
       "speaker": "카산드라",
-      "text": "알겠어. 네 선택을 존중할게.",
+      "text": "그래, 너의 생각을 존중하마. 준비되면 말해주렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -455,7 +455,7 @@
     {
       "id": "main_007_running",
       "speaker": "카산드라",
-      "text": "라이아는 만나봤어? 쉽게 마음을 여는 애는 아니지만...",
+      "text": "라이아와 이야기는 나누어 보았니? 처음엔 마음을 열기 어렵겠지만 차분히 다가가 보렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -464,19 +464,19 @@
     {
       "id": "main_008_default",
       "speaker": "카산드라",
-      "text": "라이아까지 함께해줘서 든든하네. 이번엔 화염 지대야. 이상한 마력이 느껴진다는데, 원인을 조사해줘.",
+      "text": "라이아까지 합류해서 정말 든든하구나. 이번엔 화염 지대란다. 이상 마력이 감지되었는데, 원인을 파악해 줄 수 있겠니?",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "화염 지대로 출발하자.",
+          "text": "화염 지대로 출발해요.",
           "next": "main_008_accept",
           "startQuest": "main_008",
           "completeQuest": ""
         },
         {
-          "text": "잠시 정비가 필요해.",
+          "text": "잠시 정비가 필요해요.",
           "next": "main_008_reject",
           "startQuest": "",
           "completeQuest": ""
@@ -486,7 +486,7 @@
     {
       "id": "main_008_accept",
       "speaker": "카산드라",
-      "text": "조심해, 화염 지대는 뜨겁고 위험하니까.",
+      "text": "화염 지대는 환경이 무척 가혹하단다. 화상 입지 않게 주의하렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -495,7 +495,7 @@
     {
       "id": "main_008_reject",
       "speaker": "카산드라",
-      "text": "그래, 화상 입지 않게 단단히 준비해.",
+      "text": "그래, 위험한 지역이니 장비를 단단히 갖추고 떠나자꾸나.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -504,7 +504,7 @@
     {
       "id": "main_008_running",
       "speaker": "카산드라",
-      "text": "화염 지대 안쪽은 뜨거울 텐데, 괜찮아?",
+      "text": "화염 지대 안쪽은 무척 뜨거울 텐데, 다친 곳은 없니? 걱정되는구나.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -513,7 +513,7 @@
     {
       "id": "main_008_complete",
       "speaker": "카산드라",
-      "text": "던전을 다 돌아봤구나. 원인이 될 만한 건 좀 찾았어?",
+      "text": "던전을 잘 둘러보고 왔구나. 혹시 마력 폭주의 원인은 알아냈니?",
       "startQuest": "",
       "completeQuest": "main_008",
       "next": "main_008_reward",
@@ -522,7 +522,7 @@
     {
       "id": "main_008_reward",
       "speaker": "카산드라",
-      "text": "새끼 드래곤이 폭주하고 있다니... 더 커지기 전에 막아야 해.",
+      "text": "새끼 드래곤들이 폭주하고 있다니... 더 큰 위험으로 번지기 전에 어서 진정시켜야겠구나.",
       "startQuest": "",
       "completeQuest": "",
       "next": "main_009_default",
@@ -531,7 +531,7 @@
     {
       "id": "main_009_default",
       "speaker": "카산드라",
-      "text": "폭주하는 새끼 드래곤들을 처치해줘. 더 커지면 손 쓸 수 없게 될 거야.",
+      "text": "폭주하는 새끼 드래곤들을 퇴치해 주렴. 더 크게 자라기 전에 손을 써야 한단다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -553,7 +553,7 @@
     {
       "id": "main_009_accept",
       "speaker": "카산드라",
-      "text": "불을 뿜으니 각별히 조심해.",
+      "text": "드래곤은 불을 뿜어대니 각별히 조심해야 한단다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -562,7 +562,7 @@
     {
       "id": "main_009_reject",
       "speaker": "카산드라",
-      "text": "그래, 준비되면 바로 시작해줘.",
+      "text": "그래, 준비가 온전히 마치면 바로 시작해 주렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -571,7 +571,7 @@
     {
       "id": "main_009_running",
       "speaker": "카산드라",
-      "text": "드래곤들은 처리했어? 불 뿜는 거 조심해.",
+      "text": "드래곤들은 잘 해결되고 있니? 불길에 데이지 않게 항상 거리 조절을 하렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -580,7 +580,7 @@
     {
       "id": "main_009_complete",
       "speaker": "카산드라",
-      "text": "다 처치했구나. 폭주는 좀 가라앉은 것 같아.",
+      "text": "모두 퇴치해 주었구나! 덕분에 드래곤들의 폭주가 조금 가라앉은 것 같단다.",
       "startQuest": "",
       "completeQuest": "main_009",
       "next": "main_009_reward",
@@ -589,7 +589,7 @@
     {
       "id": "main_009_reward",
       "speaker": "카산드라",
-      "text": "하지만 근본적인 원인은 아직이야. 던전 깊은 곳의 진짜 주인을 상대해야 할 것 같아.",
+      "text": "하지만 근본적인 원인을 해결해야 해. 던전 깊은 곳에 있는 근원을 상대하러 가야 할 것 같구나.",
       "startQuest": "",
       "completeQuest": "",
       "next": "main_010_default",
@@ -598,19 +598,19 @@
     {
       "id": "main_010_default",
       "speaker": "카산드라",
-      "text": "화염 지대를 다스리는 존재를 처치해줘. 그래야 폭주가 완전히 멈출 거야.",
+      "text": "화염 지대를 다스리는 보스를 퇴치해 주겠니? 그래야 비로소 이 지역이 완전히 안정될 거란다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "불의 주인을 처치하고 올게.",
+          "text": "불의 주인을 처치하고 올게요.",
           "next": "main_010_accept",
           "startQuest": "main_010",
           "completeQuest": ""
         },
         {
-          "text": "조금 더 준비하고 갈게.",
+          "text": "조금 더 준비하고 갈게요.",
           "next": "main_010_reject",
           "startQuest": "",
           "completeQuest": ""
@@ -620,7 +620,7 @@
     {
       "id": "main_010_accept",
       "speaker": "카산드라",
-      "text": "부디 무사히 다녀와.",
+      "text": "부디 무사히, 다치지 말고 다녀오렴. 기다리고 있을게.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -629,7 +629,7 @@
     {
       "id": "main_010_reject",
       "speaker": "카산드라",
-      "text": "알겠어. 철저히 준비하자.",
+      "text": "좋은 생각이야. 위험한 상대인 만큼 철저히 준비하고 가자꾸나.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -638,7 +638,7 @@
     {
       "id": "main_010_running",
       "speaker": "카산드라",
-      "text": "불의 주인은 아직이야? 절대 방심하지 마.",
+      "text": "불의 주인과의 싸움은 진행 중이니? 강적이니까 끝까지 절대 방심하면 안 된다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -647,7 +647,7 @@
     {
       "id": "main_010_complete",
       "speaker": "카산드라",
-      "text": "정말 해냈구나! 화염 지대가 이제 잠잠해지겠어.",
+      "text": "정말 훌륭하게 해냈구나! 참으로 자랑스럽다. 이제 화염 지대도 안정을 찾겠어.",
       "startQuest": "",
       "completeQuest": "main_010",
       "next": "main_010_reward",
@@ -656,7 +656,7 @@
     {
       "id": "main_010_reward",
       "speaker": "카산드라",
-      "text": "고마워. 그런데... 이제부터는 정말 위험한 일이 될 거야. 동료를 한 명 더 데려오는 게 좋겠어.",
+      "text": "수고 많았단다. 하지만 앞으로는 더 힘든 여정이 될 거야. 동료를 한 명 더 영입하는 게 안전하겠구나.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -665,7 +665,7 @@
     {
       "id": "main_011_default",
       "speaker": "카산드라",
-      "text": "페이라는 애가 있어. 전력을 강화하려면 그 애가 꼭 필요할 거야. 가서 영입해줘.",
+      "text": "‘페이’라는 아이가 있단다. 우리 소대를 강화하려면 그 친구의 힘이 꼭 필요해요. 가서 얘기 한번 해볼래?",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -687,7 +687,7 @@
     {
       "id": "main_011_accept",
       "speaker": "카산드라",
-      "text": "고마워. 페이라면 분명 큰 힘이 되어줄 거야.",
+      "text": "고마워라. 페이는 분명 너희에게 아주 도움이 되는 동료가 되어줄 거란다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -696,7 +696,7 @@
     {
       "id": "main_011_reject",
       "speaker": "카산드라",
-      "text": "알겠어. 마음의 준비가 되면 가보자.",
+      "text": "그래, 서두르지 말고 마음의 준비가 되면 천천히 다녀오렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -705,7 +705,7 @@
     {
       "id": "main_011_running",
       "speaker": "카산드라",
-      "text": "페이는 만나봤어?",
+      "text": "페이는 만나보았니? 기운차게 잘 이야기해 보렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -714,7 +714,7 @@
     {
       "id": "main_011_complete",
       "speaker": "카산드라",
-      "text": "페이까지 합류해주다니! 이제 완벽한 파티가 되었어.",
+      "text": "페이까지 합류해 주었구나! 이제 정말 완벽하고 훌륭한 파티가 되었어.",
       "startQuest": "",
       "completeQuest": "main_011",
       "next": "main_011_reward",
@@ -723,7 +723,7 @@
     {
       "id": "main_011_reward",
       "speaker": "카산드라",
-      "text": "마지막 지역인 저주받은 땅으로 조사를 떠날 차례야.",
+      "text": "자, 그럼 이제 마지막 지역인 '저주받은 땅'을 조사하러 떠날 차례란다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "main_012_default",
@@ -732,19 +732,19 @@
     {
       "id": "main_012_default",
       "speaker": "카산드라",
-      "text": "페이까지 함께해줘서 다행이야. 저주가 퍼지는 원인인 어둠의 기사들을 처치해줘.",
+      "text": "모두가 함께해 주니 정말 마음이 든든하구나. 저주를 퍼뜨리는 '어둠의 기사'들을 처치해 주겠니?",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "어둠의 기사들을 상대할게.",
+          "text": "어둠의 기사들을 상대할게요.",
           "next": "main_012_accept",
           "startQuest": "main_012",
           "completeQuest": ""
         },
         {
-          "text": "잠시 정비 중이야.",
+          "text": "잠시 정비 중이에요.",
           "next": "main_012_reject",
           "startQuest": "",
           "completeQuest": ""
@@ -754,7 +754,7 @@
     {
       "id": "main_012_accept",
       "speaker": "카산드라",
-      "text": "원념에 잠식되지 않게 조심해.",
+      "text": "사악한 원념에 마음이 잠식되지 않도록 늘 바른 마음을 유지하렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -763,7 +763,7 @@
     {
       "id": "main_012_reject",
       "speaker": "카산드라",
-      "text": "그래, 천천히 준비해.",
+      "text": "그래, 조급해할 필요 없단다. 차분하게 정비하렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -772,7 +772,7 @@
     {
       "id": "main_012_running",
       "speaker": "카산드라",
-      "text": "어둠의 기사들은 처리하고 있어? 원념에 잠식되지 않게 조심해.",
+      "text": "어둠의 기사들과의 싸움은 어떠니? 원념에 휘둘리지 않도록 늘 조심해야 한단다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -781,7 +781,7 @@
     {
       "id": "main_012_complete",
       "speaker": "카산드라",
-      "text": "기사들을 다 처치했구나. 원념이 조금은 옅어진 것 같아.",
+      "text": "어둠의 기사들을 모두 물리쳤구나! 땅을 덮고 있던 원념이 한결 옅어진 게 느껴지는구나.",
       "startQuest": "",
       "completeQuest": "main_012",
       "next": "main_012_reward",
@@ -790,7 +790,7 @@
     {
       "id": "main_012_reward",
       "speaker": "카산드라",
-      "text": "하지만 진짜 원인은 던전 가장 깊은 곳에 있을 거야.",
+      "text": "하지만 진정한 악의 근원은 던전 가장 깊숙한 곳에 숨어 있을 거란다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "main_013_default",
@@ -799,13 +799,13 @@
     {
       "id": "main_013_default",
       "speaker": "카산드라",
-      "text": "저주받은 땅 깊은 곳의 보스를 처치해줘. 이걸로 저주의 근원을 끊어낼 수 있을 거야.",
+      "text": "저주받은 땅 깊은 곳에 있는 보스를 정벌해 주겠니? 이것으로 비극의 사슬을 끊어내는 거란다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "저주의 근원을 끊어볼게요.",
+          "text": "저주의 근원을 끊어 볼게요.",
           "next": "main_013_accept",
           "startQuest": "main_013",
           "completeQuest": ""
@@ -821,7 +821,7 @@
     {
       "id": "main_013_accept",
       "speaker": "카산드라",
-      "text": "믿고 맡길게. 조심해서 다녀와.",
+      "text": "선생님은 우리 학생을 완벽히 믿는단다. 조심해서 무사히 다녀오렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -830,7 +830,7 @@
     {
       "id": "main_013_reject",
       "speaker": "카산드라",
-      "text": "그래, 위험한 곳이니 단단히 준비하자.",
+      "text": "그래, 무척 위험한 곳이니 만반의 준비를 마치고 도전하자꾸나.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -839,7 +839,7 @@
     {
       "id": "main_013_running",
       "speaker": "카산드라",
-      "text": "저주받은 땅 보스는 아직이야? 부디 무사히 돌아와.",
+      "text": "보스를 상대하러 간 기척이 아직 없구나. 너무 긴장하지 말고 무사히 돌아와야 한단다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -848,7 +848,7 @@
     {
       "id": "main_013_complete",
       "speaker": "카산드라",
-      "text": "정말 해냈구나. 이제 저주는 완전히 끊어졌을 거야.",
+      "text": "아, 정말 해냈구나! 대단해! 이제 지독했던 저주도 완전히 사라졌을 거란다.",
       "startQuest": "",
       "completeQuest": "main_013",
       "next": "main_013_reward",
@@ -857,7 +857,7 @@
     {
       "id": "main_013_reward",
       "speaker": "카산드라",
-      "text": "그런데... 이 모든 일의 배후에 대한 단서를 찾았어. 믿기지가 않아.",
+      "text": "그런데... 이 모든 사건의 배후에 대한 충격적인 단서를 발견했단다. 정말 믿기지가 않는구나...",
       "startQuest": "",
       "completeQuest": "",
       "next": "main_014_default",
@@ -866,19 +866,19 @@
     {
       "id": "main_014_default",
       "speaker": "카산드라",
-      "text": "이제 정말 마지막 전투야. 나와 함께 마지막으로 이야기 좀 나눌까?",
+      "text": "이제 정말 마지막 결전이 다가왔구나. 떠나기 전에 나랑 잠깐 이야기 좀 나누지 않겠니?",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "좋아, 마지막 결의를 다지자.",
+          "text": "네, 마지막 결의를 다져요.",
           "next": "main_014_accept",
           "startQuest": "main_014",
           "completeQuest": ""
         },
         {
-          "text": "잠시 숨 좀 고를게.",
+          "text": "잠시 숨 좀 고를게요.",
           "next": "main_014_reject",
           "startQuest": "",
           "completeQuest": ""
@@ -888,7 +888,7 @@
     {
       "id": "main_014_accept",
       "speaker": "카산드라",
-      "text": "고마워. 네가 있어서 여기까지 올 수 있었어.",
+      "text": "고마워라. 너라는 훌륭한 학생이 있었기에 여기까지 올 수 있었단다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -897,7 +897,7 @@
     {
       "id": "main_014_reject",
       "speaker": "카산드라",
-      "text": "그래, 마지막 싸움이니 마음의 준비를 단단히 해.",
+      "text": "그래, 마지막 결전인 만큼 마음을 다잡을 시간이 필요하겠지.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -906,7 +906,7 @@
     {
       "id": "main_014_running",
       "speaker": "카산드라",
-      "text": "준비는 다 됐어? 마음의 준비도 필요할 거야.",
+      "text": "출발 준비는 모두 끝났니? 마음의 각오를 단단히 다져야 한단다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "main_014_complete",
@@ -915,7 +915,7 @@
     {
       "id": "main_014_complete",
       "speaker": "카산드라",
-      "text": "다들 각오는 되어 있어. 이제 정말 가는 거야.",
+      "text": "모두의 눈빛을 보니 각오가 대단하구나. 자, 이제 정말 출발해 볼까?",
       "startQuest": "",
       "completeQuest": "main_014",
       "next": "main_014_reward",
@@ -924,7 +924,7 @@
     {
       "id": "main_014_reward",
       "speaker": "카산드라",
-      "text": "함께라면... 두렵지 않아. 가자, 심판의 탑으로.",
+      "text": "너희와 함께라면... 그 어떤 것도 두렵지 않단다. 가자꾸나, 심판의 탑으로!",
       "startQuest": "",
       "completeQuest": "",
       "next": "main_015_default",
@@ -933,20 +933,20 @@
     {
       "id": "main_015_default",
       "speaker": "카산드라",
-      "text": "저 위에 알데릭이 있어. 이걸로 모든 걸 끝내는 거야.",
+      "text": "저 탑 위에 알데릭이 기다리고 있단다. 우리의 힘으로 이 잘못된 비극을 끝내자꾸나.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "알데릭을 쓰러뜨리러 가자.",
+          "text": "알데릭을 쓰러뜨리러 가요.",
           "next": "main_015_accept",
           "startQuest": "main_015",
           "completeQuest": "",
-          "eventID": "EnterFinalDungeon" 
+          "eventID": "EnterFinalDungeon"
         },
         {
-          "text": "잠시만 기다려줘.",
+          "text": "잠시만 기다려 주세요.",
           "next": "main_015_reject",
           "startQuest": "",
           "completeQuest": ""
@@ -956,7 +956,7 @@
     {
       "id": "main_015_accept",
       "speaker": "카산드라",
-      "text": "가자, 우리의 손으로 모든 걸 끝내자.",
+      "text": "자, 가자꾸나. 우리 손으로 올바른 정답을 써 내려가는 거야.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -965,7 +965,7 @@
     {
       "id": "main_015_reject",
       "speaker": "카산드라",
-      "text": "그래, 마지막 결전이니 완벽하게 준비해.",
+      "text": "그래, 마지막 시험과도 같으니 실수 없도록 완벽하게 정비하고 오렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -974,20 +974,20 @@
     {
       "id": "main_015_running",
       "speaker": "카산드라",
-      "text": "정신 바짝 차려. 알데릭은 만만한 상대가 아니야. 바로 다시 도전하겠니?",
+      "text": "정신을 바짝 차려야 한단다. 알데릭은 방심할 수 없는 상대야. 바로 다시 도전해 보겠니?",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "알데릭에게 다시 도전하러 가자.",
+          "text": "알데릭에게 다시 도전하러 가요.",
           "next": "main_015_accept",
           "startQuest": "",
           "completeQuest": "",
           "eventID": "EnterFinalDungeon"
         },
         {
-          "text": "아직 준비가 더 필요해.",
+          "text": "아직 준비가 더 필요해요.",
           "next": "main_015_reject",
           "startQuest": "",
           "completeQuest": ""
@@ -997,7 +997,7 @@
     {
       "id": "main_015_complete",
       "speaker": "카산드라",
-      "text": "끝났어... 정말로 끝났어.",
+      "text": "드디어 끝났구나... 정말로 길었던 싸움이 끝났어.",
       "startQuest": "",
       "completeQuest": "main_015",
       "next": "main_015_reward",
@@ -1006,7 +1006,7 @@
     {
       "id": "main_015_reward",
       "speaker": "카산드라",
-      "text": "마녀라는 이름 아래 억울하게 죽어간 이들도, 이제 명예를 되찾았어. 이 모든 게 너 덕분이야. 고마워.",
+      "text": "마녀라는 억울한 누명을 쓰고 희생되었던 이들도 이제 평안을 찾았을 거란다. 이 모든 것은 네 덕분이야. 정말 자랑스럽고 고맙구나.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -1015,7 +1015,7 @@
     {
       "id": "main_015_finished",
       "speaker": "카산드라",
-      "text": "안녕? 우리의 영웅.. 무슨 일 있니?",
+      "text": "어서 오렴, 자랑스러운 우리의 영웅! 오늘은 무슨 기쁜 일로 선생님을 찾아왔니?",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
