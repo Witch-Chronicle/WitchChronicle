@@ -64,11 +64,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 58af23383d5b6b4449d14edf05acfb83, type: 2}
   - {fileID: 11400000, guid: 3fb1f39295067ea4d922faa15c250bec, type: 2}
   ownedRods:
-  - {fileID: 11400000, guid: 4bd002b5a9eef784d86d456278e4f3c3, type: 2}
-  - {fileID: 11400000, guid: 11a8f6e0aa9a1ae48b73a623fc1a2825, type: 2}
-  - {fileID: 11400000, guid: 589ae584cbc40864480bffe0e8e5c61f, type: 2}
-  currentRod: {fileID: 11400000, guid: 4bd002b5a9eef784d86d456278e4f3c3, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  currentRod: {fileID: 0}
   castingDuration: 0.5
   minWaitTime: 3
   maxWaitTime: 8
   biteWindow: 1.5
+  animatorHook: {fileID: 0}

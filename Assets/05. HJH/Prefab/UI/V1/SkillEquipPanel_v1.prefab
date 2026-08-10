@@ -1141,7 +1141,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 966680206015987158}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
   m_Name: 
@@ -1165,7 +1165,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 966680206015987158}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
   m_Name: 
@@ -3241,8 +3241,7 @@ MonoBehaviour:
   - {fileID: 181093237590992641}
   - {fileID: 2355703133554068298}
   - {fileID: 2104446115468826851}
-  _ownedSkillContent: {fileID: 2492092573395380346}
-  _ownedSkillPrefab: {fileID: 510725080476543069, guid: 4175bdd085de8c84daa277ad0508877e, type: 3}
+  _ownedScrollView: {fileID: 7857866534243844167}
   _detailCanvasGroup: {fileID: 8659199007703936030}
   _detailSkillIcon: {fileID: 1793340393523127523}
   _detailSkillNameTxt: {fileID: 2999222848400907355}
@@ -6049,6 +6048,7 @@ GameObject:
   - component: {fileID: 5685888834792569921}
   - component: {fileID: 4350577659566796402}
   - component: {fileID: 3634547895019170230}
+  - component: {fileID: 7857866534243844167}
   m_Layer: 5
   m_Name: Scroll View
   m_TagString: Untagged
@@ -6133,7 +6133,7 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
+  m_ScrollSensitivity: 8
   m_Viewport: {fileID: 3040565190839206471}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 0}
@@ -6144,6 +6144,30 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7857866534243844167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5124351589803612946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ec454c07672ca740bda2f83f094c85b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillEquipOwnedScrollView
+  _scrollRect: {fileID: 3634547895019170230}
+  _content: {fileID: 2492092573395380346}
+  _cellPrefab: {fileID: 510725080476543069, guid: 4175bdd085de8c84daa277ad0508877e, type: 3}
+  _columnCount: 2
+  _cellSize: {x: 500, y: 100}
+  _spacing: {x: 50, y: 10}
+  _padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  _bufferRows: 1
 --- !u!1 &5144562662304958678
 GameObject:
   m_ObjectHideFlags: 0

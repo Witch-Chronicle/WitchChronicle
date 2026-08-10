@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2886644159341754623}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: InteractionRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -50,7 +50,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6592050911231902859}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: KeyRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -90,7 +90,7 @@ GameObject:
   - component: {fileID: 4688302661033855134}
   - component: {fileID: 2739920990795322187}
   - component: {fileID: 3145184398659783508}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: RoleText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -227,7 +227,7 @@ GameObject:
   - component: {fileID: 6215274597844896228}
   - component: {fileID: 4916880980062492399}
   - component: {fileID: 3909477134785990325}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: RoleOrnament
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -302,7 +302,7 @@ GameObject:
   - component: {fileID: 7214023323566578189}
   - component: {fileID: 1608944929886888505}
   - component: {fileID: 2037173658762575132}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: PromptBackground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -366,6 +366,130 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 2
+--- !u!1 &3666979021160634841
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3425364635890381051}
+  - component: {fileID: 8407583602867891173}
+  m_Layer: 15
+  m_Name: QuestPopup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &3425364635890381051
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3666979021160634841}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5988485604460795101}
+  m_Father: {fileID: 3007431345966178192}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: 200}
+  m_SizeDelta: {x: 200, y: 200}
+  m_Pivot: {x: 0.5, y: 1}
+--- !u!225 &8407583602867891173
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3666979021160634841}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
+--- !u!1 &4858558104557633919
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5988485604460795101}
+  - component: {fileID: 7434640662740785385}
+  - component: {fileID: 6790040491096550719}
+  m_Layer: 15
+  m_Name: QuestIcon
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &5988485604460795101
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4858558104557633919}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3425364635890381051}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 200, y: 200}
+  m_Pivot: {x: 0.5, y: 0}
+--- !u!222 &7434640662740785385
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4858558104557633919}
+  m_CullTransparentMesh: 1
+--- !u!114 &6790040491096550719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4858558104557633919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.46666667}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 7accfa917c62e674999adc4cb0baa76d, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &5078120532532623450
 GameObject:
   m_ObjectHideFlags: 0
@@ -377,7 +501,7 @@ GameObject:
   - component: {fileID: 2622330214470531974}
   - component: {fileID: 611271013437950607}
   - component: {fileID: 3861211224649691092}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: KeyFrame
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -450,7 +574,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4632642735261633504}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: RoleRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -489,7 +613,7 @@ GameObject:
   - component: {fileID: 3623488211559757726}
   - component: {fileID: 7557998326417567309}
   - component: {fileID: 6597264509092669307}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: TopDiamond
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -564,7 +688,7 @@ GameObject:
   - component: {fileID: 912530942807973993}
   - component: {fileID: 1384276470315103678}
   - component: {fileID: 7228630653324564993}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: RoleText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -700,7 +824,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2928231088244795258}
   - component: {fileID: 714908641461977921}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: PromptRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -751,7 +875,7 @@ GameObject:
   - component: {fileID: 5417658782322322213}
   - component: {fileID: 7449474324285693108}
   - component: {fileID: 5578279571248623409}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: ActionText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -890,7 +1014,7 @@ GameObject:
   - component: {fileID: 1110871611956505271}
   - component: {fileID: 3372002831200952137}
   - component: {fileID: 8782833028856835084}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: NPCWorldCanvas_v1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -910,6 +1034,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2928231088244795258}
+  - {fileID: 3425364635890381051}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1002,6 +1127,18 @@ MonoBehaviour:
   _useBillboard: 1
   _mainCamera: {fileID: 0}
   _lockYAxis: 0
+  _questIconImage: {fileID: 6790040491096550719}
+  _exclamationSprite: {fileID: 21300000, guid: 7accfa917c62e674999adc4cb0baa76d, type: 3}
+  _questionSprite: {fileID: 21300000, guid: e3aec776e3185494785eb6e8a453566d, type: 3}
+  _mainAlpha: 1
+  _subAlpha: 0.4
+  _bounceType: 1
+  _bounceEase: 4
+  _bounceMoveDistance: 50
+  _bounceMoveDuration: 1
+  _bouncePunchScale: 0.25
+  _bouncePunchDuration: 0.5
+  _bouncePunchInterval: 0.2
 --- !u!1 &8330279485296296210
 GameObject:
   m_ObjectHideFlags: 0
@@ -1013,7 +1150,7 @@ GameObject:
   - component: {fileID: 4697359764684670995}
   - component: {fileID: 7232152081318636933}
   - component: {fileID: 7534397257507196476}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: KeyBackground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1088,7 +1225,7 @@ GameObject:
   - component: {fileID: 7381958516800375757}
   - component: {fileID: 2211911274982221186}
   - component: {fileID: 116508216095058826}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: PromptFrame
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1163,7 +1300,7 @@ GameObject:
   - component: {fileID: 9132130623422444565}
   - component: {fileID: 4149744952365652109}
   - component: {fileID: 5871174233090560816}
-  m_Layer: 8
+  m_Layer: 15
   m_Name: BottomDiamond
   m_TagString: Untagged
   m_Icon: {fileID: 0}
