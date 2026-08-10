@@ -17,14 +17,14 @@ MonoBehaviour:
   _description: "\uC5BC\uC74C \uAD6C\uCCB4\uB97C \uB9CC\uB4E4\uC5B4 \uC801\uC5D0\uAC8C
     \uB358\uC9C0\uB294 \uAE30\uCD08 \uB0C9\uAE30 \uB9C8\uBC95."
   _tier: 4
-  _mpCost: 8
+  _mpCost: 5
   _elementType: 3
   _skillType: 0
   _damageType: 1
   _power: 15
   _targetType: 0
-  _statusEffectType: 0
-  _statusChance: 0
+  _statusEffectType: 3
+  _statusChance: 0.15
   _cureStatusEffectType: 0
   _buffData: {fileID: 0}
   _presentationType: 0
@@ -43,5 +43,6 @@ MonoBehaviour:
   _projectileTravelTime: 0
   _projectileLaunchDelay: 0
   _constellationPathSequenceData: {fileID: 0}
+  _constellationPathAttackData: {fileID: 0}
   _drawGuideJson: {fileID: 0}
   _drawExampleSprite: {fileID: 0}

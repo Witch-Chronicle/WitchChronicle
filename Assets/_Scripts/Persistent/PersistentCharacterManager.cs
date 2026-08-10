@@ -1,32 +1,25 @@
 using System.Collections.Generic;
 using UnityEngine;
-
 /// <summary>
 /// 씬 전환 유지 캐릭터 목록, 영입 상태, 현재 파티 관리
 /// </summary>
 public class PersistentCharacterManager : MonoBehaviour
 {
     public static PersistentCharacterManager Instance { get; private set; }
-
     [Header("Characters")]
     [SerializeField]
     private List<PersistentCharacterUnit> _allCharacters =
         new List<PersistentCharacterUnit>();
-
     [Header("Active Party")]
     [SerializeField]
     private List<string> _activePartyCharacterIds =
         new List<string>();
-
     [SerializeField] private int _maxActivePartyCount = 4;
-
     private readonly Dictionary<string, PersistentCharacterUnit> _characterById =
         new Dictionary<string, PersistentCharacterUnit>();
-
     public IReadOnlyList<PersistentCharacterUnit> AllCharacters => _allCharacters;
     public IReadOnlyList<string> ActivePartyCharacterIds => _activePartyCharacterIds;
     public int MaxActivePartyCount => _maxActivePartyCount;
-
     /// <summary>
     /// 싱글톤 등록 및 목록 초기화
     /// </summary>
@@ -36,13 +29,10 @@ public class PersistentCharacterManager : MonoBehaviour
         {
             return;
         }
-
         Instance = this;
-
         RefreshCharacters();
         ValidateActiveParty();
     }
-
     /// <summary>
     /// 싱글톤 해제
     /// </summary>
@@ -53,7 +43,6 @@ public class PersistentCharacterManager : MonoBehaviour
             Instance = null;
         }
     }
-
     /// <summary>
     /// 전체 캐릭터 목록 갱신
     /// </summary>
@@ -63,38 +52,29 @@ public class PersistentCharacterManager : MonoBehaviour
         {
             GetComponentsInChildren(true, _allCharacters);
         }
-
         _characterById.Clear();
-
         for (int i = 0; i < _allCharacters.Count; i++)
         {
             PersistentCharacterUnit character = _allCharacters[i];
-
             if (character == null)
             {
                 continue;
             }
-
             character.ResolveReferences();
-
             string characterId = character.CharacterId;
-
             if (string.IsNullOrEmpty(characterId))
             {
                 Debug.LogWarning($"{character.name}의 CharacterId 비어 있음");
                 continue;
             }
-
             if (_characterById.ContainsKey(characterId))
             {
                 Debug.LogWarning($"중복 CharacterId 감지: {characterId}");
                 continue;
             }
-
             _characterById.Add(characterId, character);
         }
     }
-
     /// <summary>
     /// 전체 캐릭터 목록 복사
     /// </summary>
@@ -105,22 +85,17 @@ public class PersistentCharacterManager : MonoBehaviour
         {
             return;
         }
-
         result.Clear();
-
         for (int i = 0; i < _allCharacters.Count; i++)
         {
             PersistentCharacterUnit character = _allCharacters[i];
-
             if (character == null)
             {
                 continue;
             }
-
             result.Add(character);
         }
     }
-
     /// <summary>
     /// 영입된 캐릭터 목록 복사
     /// </summary>
@@ -131,22 +106,17 @@ public class PersistentCharacterManager : MonoBehaviour
         {
             return;
         }
-
         result.Clear();
-
         for (int i = 0; i < _allCharacters.Count; i++)
         {
             PersistentCharacterUnit character = _allCharacters[i];
-
             if (character == null || character.IsRecruited == false)
             {
                 continue;
             }
-
             result.Add(character);
         }
     }
-
     /// <summary>
     /// 현재 파티 캐릭터 목록 복사
     /// </summary>
@@ -157,27 +127,21 @@ public class PersistentCharacterManager : MonoBehaviour
         {
             return;
         }
-
         result.Clear();
-
         for (int i = 0; i < _activePartyCharacterIds.Count; i++)
         {
             string characterId = _activePartyCharacterIds[i];
-
             if (TryGetCharacter(characterId, out PersistentCharacterUnit character) == false)
             {
                 continue;
             }
-
             if (character.IsRecruited == false)
             {
                 continue;
             }
-
             result.Add(character);
         }
     }
-
     /// <summary>
     /// CharacterId 기준 캐릭터 검색
     /// </summary>
@@ -187,22 +151,17 @@ public class PersistentCharacterManager : MonoBehaviour
     public bool TryGetCharacter(string characterId, out PersistentCharacterUnit character)
     {
         character = null;
-
         if (string.IsNullOrEmpty(characterId))
         {
             return false;
         }
-
         if (_characterById.TryGetValue(characterId, out character))
         {
             return true;
         }
-
         RefreshCharacters();
-
         return _characterById.TryGetValue(characterId, out character);
     }
-
     /// <summary>
     /// 캐릭터 영입
     /// </summary>
@@ -220,24 +179,18 @@ public class PersistentCharacterManager : MonoBehaviour
             Debug.LogWarning($"영입 실패. 캐릭터 없음: {characterId}");
             return false;
         }
-
         character.SetRecruited(true);
-
         if (restoreFully)
         {
             character.RestoreFully();
         }
-
         if (addToActiveParty)
         {
             TryAddToActiveParty(characterId);
         }
-
         SaveManager.RequestSave();
-
         return true;
     }
-
     /// <summary>
     /// 캐릭터 영입 해제
     /// </summary>
@@ -249,13 +202,10 @@ public class PersistentCharacterManager : MonoBehaviour
         {
             return false;
         }
-
         character.SetRecruited(false);
         RemoveFromActiveParty(characterId);
-
         return true;
     }
-
     /// <summary>
     /// 현재 파티에 캐릭터 추가
     /// </summary>
@@ -267,26 +217,21 @@ public class PersistentCharacterManager : MonoBehaviour
         {
             return true;
         }
-
         if (_activePartyCharacterIds.Count >= _maxActivePartyCount)
         {
             return false;
         }
-
         if (TryGetCharacter(characterId, out PersistentCharacterUnit character) == false)
         {
             return false;
         }
-
         if (character.IsRecruited == false)
         {
             return false;
         }
-
         _activePartyCharacterIds.Add(characterId);
         return true;
     }
-
     /// <summary>
     /// 현재 파티에서 캐릭터 제거
     /// </summary>
@@ -297,10 +242,8 @@ public class PersistentCharacterManager : MonoBehaviour
         {
             return;
         }
-
         _activePartyCharacterIds.Remove(characterId);
     }
-
     /// <summary>
     /// 현재 파티 순서 설정
     /// </summary>
@@ -308,23 +251,19 @@ public class PersistentCharacterManager : MonoBehaviour
     public void SetActivePartyOrder(IReadOnlyList<string> characterIds)
     {
         _activePartyCharacterIds.Clear();
-
         if (characterIds == null)
         {
             return;
         }
-
         for (int i = 0; i < characterIds.Count; i++)
         {
             if (_activePartyCharacterIds.Count >= _maxActivePartyCount)
             {
                 break;
             }
-
             TryAddToActiveParty(characterIds[i]);
         }
     }
-
     /// <summary>
     /// 현재 파티 유효성 보정
     /// </summary>
@@ -333,31 +272,26 @@ public class PersistentCharacterManager : MonoBehaviour
         for (int i = _activePartyCharacterIds.Count - 1; i >= 0; i--)
         {
             string characterId = _activePartyCharacterIds[i];
-
             if (TryGetCharacter(characterId, out PersistentCharacterUnit character) == false)
             {
                 _activePartyCharacterIds.RemoveAt(i);
                 continue;
             }
-
             if (character.IsRecruited == false)
             {
                 _activePartyCharacterIds.RemoveAt(i);
                 continue;
             }
-
             if (IsDuplicateActivePartyId(characterId, i))
             {
                 _activePartyCharacterIds.RemoveAt(i);
             }
         }
-
         while (_activePartyCharacterIds.Count > _maxActivePartyCount)
         {
             _activePartyCharacterIds.RemoveAt(_activePartyCharacterIds.Count - 1);
         }
     }
-
     /// <summary>
     /// 현재 파티 중복 ID 여부 확인
     /// </summary>
@@ -372,16 +306,13 @@ public class PersistentCharacterManager : MonoBehaviour
             {
                 continue;
             }
-
             if (_activePartyCharacterIds[i] == characterId)
             {
                 return true;
             }
         }
-
         return false;
     }
-
     /// <summary>
     /// 현재 파티 전원에게 경험치 지급
     /// </summary>
@@ -393,23 +324,35 @@ public class PersistentCharacterManager : MonoBehaviour
         {
             return;
         }
-
         List<PersistentCharacterUnit> activePartyMembers = new List<PersistentCharacterUnit>();
         GetActivePartyMembers(activePartyMembers);
-
         for (int i = 0; i < activePartyMembers.Count; i++)
         {
             PersistentCharacterUnit character = activePartyMembers[i];
-
             if (character == null || character.StatController == null)
             {
                 continue;
             }
-
             character.StatController.AddExp(amount);
             Debug.Log($"[PersistentCharacterManager] {character.CharacterName} 경험치 +{amount} (현재 Exp: {character.StatController.Exp})");
         }
-
         SaveManager.RequestSave();
+    }
+    /// <summary>
+    /// 현재 파티 전원의 HP/MP를 최대치로 완전 회복
+    /// </summary>
+    public void RestoreActivePartyVitals()
+    {
+        List<PersistentCharacterUnit> activePartyMembers = new List<PersistentCharacterUnit>();
+        GetActivePartyMembers(activePartyMembers);
+        for (int i = 0; i < activePartyMembers.Count; i++)
+        {
+            PersistentCharacterUnit character = activePartyMembers[i];
+            if (character == null || character.CharacterVitals == null)
+            {
+                continue;
+            }
+            character.CharacterVitals.RestoreFully();
+        }
     }
 }

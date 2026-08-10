@@ -32,25 +32,14 @@ MonoBehaviour:
   CeilingPrefab: {fileID: 2968830504906926872, guid: 4e8c03054cf184245a7f659a586305b9, type: 3}
   DoorPrefab: {fileID: 3960670234233686325, guid: 5719d16d9f035fd4a8fcfaf6ae7bdfd2, type: 3}
   DoorWallPrefab: {fileID: 0}
-  DecorPrefabs:
-  - {fileID: 7613198964696299674, guid: 2a6695511ee6fef4e97d355c2ce291ff, type: 3}
-  - {fileID: 3693926014911207686, guid: e7a10c0a9b0499548ad26fe2629dc45d, type: 3}
-  - {fileID: 574122265314155589, guid: df9e9f4113dde224ea4e91458fcd18ab, type: 3}
-  - {fileID: 1167486005058445278, guid: de97c9a596385f64d829f9c035512bb3, type: 3}
-  - {fileID: 574122265314155589, guid: 27b8d777f92a2924b948860036e76e8b, type: 3}
-  - {fileID: 1238420552904637851, guid: abbdcd804372c7f42a6cf446cc66f1d0, type: 3}
-  - {fileID: 1155720430629540053, guid: db2f3437fef47654f9c9b6060582d6cd, type: 3}
-  - {fileID: 1680796509485812583, guid: 0881f28a2418a04479ec4f5513cdc16c, type: 3}
-  - {fileID: 8952341505920055549, guid: 74d74cda192e90049ae36132dfdb95a8, type: 3}
-  - {fileID: 1155720430629540053, guid: db2f3437fef47654f9c9b6060582d6cd, type: 3}
-  - {fileID: 1680796509485812583, guid: 0881f28a2418a04479ec4f5513cdc16c, type: 3}
+  DecorPrefabs: []
   WallDecorPrefabs: []
-  MapSize: {x: 100, y: 100}
-  MinPadding: 3
+  MapSize: {x: 120, y: 120}
+  MinPadding: 2
   BSPDepth: 4
   MaxConnectionPerRoom: 1
   ExtraConnectionProbability: 0
-  MinRoomCount: 8
+  MinRoomCount: 10
   MaxRoomCount: 12
   MinRoomSize: 18
   MaxRoomSize: 24

@@ -33,31 +33,4 @@ public class ExitRoomInteraction : RoomInteraction
 
         Debug.Log("Exit Portal Created");
     }
-
-
-    /// <summary>
-    /// 플레이어가 출구에 도달했을 때 호출
-    /// </summary>
-    public void ReachExit()
-    {
-        if (_isCleared)
-        {
-            return;
-        }
-
-
-        _isCleared = true;
-
-
-        DungeonController controller = FindAnyObjectByType<DungeonController>();
-
-
-        if (controller != null)
-        {
-            controller.ClearDungeon();
-        }
-
-
-        Debug.Log("Dungeon Exit Clear");
-    }
 }

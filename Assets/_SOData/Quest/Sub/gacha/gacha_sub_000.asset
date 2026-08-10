@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbe15cc1f7ebf744da8f3bb2c409ab19, type: 3}
+  m_Name: gacha_sub_000
+  m_EditorClassIdentifier: Assembly-CSharp::QuestData
+  id: gacha_000
+  title: "\uB9C8\uB3C4\uC11C\uC758 \uBE44\uBC00"
+  description: "\uB9C8\uB3C4\uC11C \uC0AC\uC6A9\uBC95\uC744 \uC54C\uC544\uBCF4\uC790"
+  type: 1
+  objectives:
+  - type: 1
+    targetID: npc_unknown
+    targetName: ???
+    requiredCount: 1
+  reward:
+    gold: 500
+    exp: 100
+    items:
+    - {fileID: 11400000, guid: 1fecd2c7cfac18b429fea45fc993e390, type: 2}
+    itemCount: 1
+    recruitNPC: 
+    nextStory: 0
+  nextQuest: {fileID: 11400000, guid: c12462bdd2cd771499449d91b1bb3509, type: 2}

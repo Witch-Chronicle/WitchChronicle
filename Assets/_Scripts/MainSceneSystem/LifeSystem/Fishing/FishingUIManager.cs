@@ -32,16 +32,18 @@ public class FishingUIManager : MonoBehaviour
     [SerializeField] private Image actionButtonImage;
 
     [Header("액션 버튼 상태별 투명도")]
-    [Tooltip("활성 상태 알파 (0~1)")]
     [Range(0f, 1f)]
     [SerializeField] private float _activeAlpha = 1f;
-    [Tooltip("비활성 상태 알파 (0~1)")]
     [Range(0f, 1f)]
     [SerializeField] private float _inactiveAlpha = 0.4f;
 
     [Header("결과 팝업")]
     [SerializeField] private TMP_Text resultTitle;
     [SerializeField] private TMP_Text resultText;
+    [Tooltip("잡은 물고기 아이콘 표시용 이미지 (성공 시 노출, 실패 시 숨김)")]
+    [SerializeField] private Image resultFishIcon;
+    [Tooltip("resultFishIcon이 붙어있는 루트 (실패 시 통째로 숨기고 싶을 때). null이면 resultFishIcon만 토글")]
+    [SerializeField] private GameObject resultFishIconRoot;
 
     [Header("텐션 미니게임 컨트롤러")]
     [SerializeField] private FishingReelController reelController;
@@ -82,7 +84,7 @@ public class FishingUIManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("[FishingUIManager] FishingManager.Instance가 null! 씬에 FishingManager 오브젝트 있는지 확인!");
+            Debug.LogError("[FishingUIManager] FishingManager.Instance가 null!");
         }
     }
 
@@ -121,7 +123,7 @@ public class FishingUIManager : MonoBehaviour
 
     private void HandleSessionStarted()
     {
-        Debug.Log("[FishingUIManager] HandleSessionStarted 호출됨! fishingPanel is null? " + (fishingPanel == null));
+        Debug.Log("[FishingUIManager] HandleSessionStarted 호출됨");
         OpenPanel();
     }
 
@@ -129,10 +131,9 @@ public class FishingUIManager : MonoBehaviour
 
     public void OpenPanel()
     {
-        Debug.Log("[FishingUIManager] OpenPanel 호출됨");
         if (fishingPanel == null)
         {
-            Debug.LogError("[FishingUIManager] fishingPanel이 null! 인스펙터 연결 확인");
+            Debug.LogError("[FishingUIManager] fishingPanel이 null!");
             return;
         }
         QuestListUI.Instance.Close();
@@ -220,7 +221,8 @@ public class FishingUIManager : MonoBehaviour
     private void HandleFishCaught(FishItemData fish)
     {
         string name = fish != null ? fish.itemName : "물고기";
-        ShowResult("성공!", $"{name} 획득!");
+        Sprite icon = fish != null ? fish.icon : null;
+        ShowResult("성공!", $"{name} 획득!", icon);
     }
 
     private void HandleFishEscaped(FishingReelController.FailReason reason)
@@ -241,7 +243,7 @@ public class FishingUIManager : MonoBehaviour
                 message = "놓쳤어요...";
                 break;
         }
-        ShowResult(" 실패", message);
+        ShowResult(" 실패", message, null); // 실패 시 아이콘 없음
     }
 
     private void OnActionButtonClicked()
@@ -291,7 +293,6 @@ public class FishingUIManager : MonoBehaviour
 
         if (actionButtonImage != null)
         {
-            // RGB는 흰색 유지 (원본 이미지 색 그대로), 알파값만 조절
             float alpha = interactable ? _activeAlpha : _inactiveAlpha;
             actionButtonImage.color = new Color(1f, 1f, 1f, alpha);
         }
@@ -299,11 +300,33 @@ public class FishingUIManager : MonoBehaviour
         if (actionButton != null) actionButton.interactable = interactable;
     }
 
-    private void ShowResult(string title, string body)
+    /// <summary>
+    /// 결과 팝업 표시. fishIcon이 null이면 아이콘 숨김 (실패 케이스).
+    /// </summary>
+    private void ShowResult(string title, string body, Sprite fishIcon)
     {
         if (resultPopup == null) return;
         resultPopup.SetActive(true);
+
         if (resultTitle != null) resultTitle.text = title;
         if (resultText != null) resultText.text = body;
+
+        // 물고기 아이콘 표시/숨김
+        bool hasIcon = fishIcon != null;
+
+        if (resultFishIconRoot != null)
+        {
+            resultFishIconRoot.SetActive(hasIcon);
+        }
+
+        if (resultFishIcon != null)
+        {
+            resultFishIcon.gameObject.SetActive(hasIcon);
+            if (hasIcon)
+            {
+                resultFishIcon.sprite = fishIcon;
+                resultFishIcon.preserveAspect = true;
+            }
+        }
     }
 }

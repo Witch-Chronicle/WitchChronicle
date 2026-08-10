@@ -13,22 +13,33 @@ MonoBehaviour:
   m_Name: enemy_boss_last
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
   _enemyId: enemy_boss_last
-  _enemyName: "\uBC1C\uB85D"
-  _icon: {fileID: 0}
+  _enemyName: "\uC54C\uB370\uB9AD"
+  _icon: {fileID: 21300000, guid: 150cccf37dd40d94eb95955c38aad991, type: 3}
   _isBoss: 1
-  _maxHp: 35000
-  _attackPower: 250
-  _magicPower: 200
+  _maxHp: 15000
+  _attackPower: 150
+  _magicPower: 150
   _defensePower: 15
   _magicDefensePower: 15
-  _speed: 30
-  _weakElements: 04000000
-  _resistElements: 0700000001000000
+  _speed: 60
+  _weakElements: 040000000300000005000000
+  _resistElements: 070000000100000002000000
   _nullElements: 
   _absorbElements: 
-  _skillList: []
+  _skillList:
+  - {fileID: 11400000, guid: 69c230cb0cd714b4c83500616df7f3a5, type: 2}
+  - {fileID: 11400000, guid: f61165c41cb06a947a03c8ec09bb49bd, type: 2}
+  - {fileID: 11400000, guid: 1080def506701f54c857ae9a2b92b799, type: 2}
+  - {fileID: 11400000, guid: 2f847b1bc2834ef4ba0db5d9452a3c7a, type: 2}
+  - {fileID: 11400000, guid: 040f94996b100b54a8e8b843ee35cfc6, type: 2}
+  - {fileID: 11400000, guid: 6f121d15a18649043ba703a5193686de, type: 2}
+  - {fileID: 11400000, guid: f34ed27ee9bb1bc41a5d0abef0555b80, type: 2}
+  - {fileID: 11400000, guid: 88fac484363ba9849a0c3d9ba34928c5, type: 2}
+  - {fileID: 11400000, guid: b452156248513cf46b84b2ed94dc3c7e, type: 2}
+  - {fileID: 11400000, guid: 674a856bc58cbe545b33599a9951eb3e, type: 2}
+  - {fileID: 11400000, guid: 3c1945410bf669346bbd76399ec781d4, type: 2}
   _aiProfileData: {fileID: 11400000, guid: 936d543f6091ae54f86b4027dc5bf994, type: 2}
   _expReward: 10000
   _goldReward: 20000
-  _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
-  _prefab: {fileID: 3891923349452443982, guid: 3307a320d1e149641a4abbcaa495fc58, type: 3}
+  _dropTable: {fileID: 11400000, guid: 91ddf6fa641f386408df3a433aea72f4, type: 2}
+  _prefab: {fileID: 3347061273194974142, guid: 0439b13691c878840b22c475359b955d, type: 3}

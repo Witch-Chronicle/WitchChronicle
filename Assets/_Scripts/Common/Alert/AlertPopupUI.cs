@@ -78,7 +78,6 @@ public class AlertPopupUI : MonoBehaviour
         {
             Vector2 enterStartPosition =
                 startPosition + Vector2.up * enterOffset;
-
             _rectTransform.anchoredPosition = enterStartPosition;
             _rectTransform.localScale = Vector3.one;
         }
@@ -90,18 +89,30 @@ public class AlertPopupUI : MonoBehaviour
             _canvasGroup.blocksRaycasts = false;
         }
 
-        _lifeSequence = DOTween.Sequence()
-            .SetUpdate(true);
-
+        /*
+         * 위치 이동은 _moveTween 하나로 통일합니다.
+         * MoveTo()도 같은 필드를 사용하므로, 등장 애니메이션이 끝나기 전에
+         * RepositionActivePopups()로 인해 MoveTo가 호출되더라도
+         * 이전(등장) 위치 Tween이 확실히 Kill되고 새 목표로 교체됩니다.
+         * (그렇지 않으면 두 Tween이 anchoredPosition을 동시에 밀어붙여
+         * Popup이 겹쳐 보이는 문제가 발생합니다.)
+         */
         if (_rectTransform != null)
         {
-            _lifeSequence.Join(
-                _rectTransform
-                    .DOAnchorPos(targetPosition, enterDuration)
-                    .SetEase(enterEase)
-            );
+            _moveTween?.Kill();
+            _moveTween = _rectTransform
+                .DOAnchorPos(targetPosition, enterDuration)
+                .SetEase(enterEase)
+                .SetUpdate(true)
+                .OnComplete(() => _moveTween = null);
         }
 
+        /*
+         * _lifeSequence는 이제 페이드 + 수명 타이머만 담당합니다.
+         * 위치와 분리되어 있으므로 MoveTo 호출과 경합하지 않습니다.
+         */
+        _lifeSequence = DOTween.Sequence()
+            .SetUpdate(true);
         if (_canvasGroup != null)
         {
             _lifeSequence.Join(
@@ -117,7 +128,6 @@ public class AlertPopupUI : MonoBehaviour
         _lifeSequence.AppendInterval(
             Mathf.Max(0.1f, request.LifeTime)
         );
-
         _lifeSequence.OnComplete(() =>
         {
             _lifeSequence = null;
@@ -127,6 +137,8 @@ public class AlertPopupUI : MonoBehaviour
 
     /// <summary>
     /// 기존 팝업을 새로운 슬롯 위치로 이동시킵니다.
+    /// 등장 애니메이션이 아직 진행 중이더라도(같은 프레임에 연속 Enqueue된 경우)
+    /// 동일한 _moveTween 필드를 사용하므로 이전 위치 Tween이 안전하게 Kill됩니다.
     /// </summary>
     public void MoveTo(
         Vector2 targetPosition,
@@ -139,7 +151,6 @@ public class AlertPopupUI : MonoBehaviour
         }
 
         _moveTween?.Kill();
-
         _moveTween = _rectTransform
             .DOAnchorPos(targetPosition, duration)
             .SetEase(ease)
@@ -189,7 +200,6 @@ public class AlertPopupUI : MonoBehaviour
             Vector2 exitPosition =
                 _rectTransform.anchoredPosition +
                 Vector2.down * exitMoveDistance;
-
             dismissSequence.Join(
                 _rectTransform
                     .DOAnchorPos(exitPosition, fadeOutDuration)
@@ -198,7 +208,6 @@ public class AlertPopupUI : MonoBehaviour
         }
 
         _dismissTween = dismissSequence;
-
         dismissSequence.OnComplete(() =>
         {
             _dismissTween = null;

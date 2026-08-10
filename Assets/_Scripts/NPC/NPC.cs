@@ -42,6 +42,12 @@ public class NPC : MonoBehaviour, ITFInteractable
             NpcDialogueCamera.Instance.Focus(interactor.transform, transform);
         }
 
+        // 인사 애니메이션 + 인사 대사 (컴포넌트가 붙어 있는 NPC만)
+        if (TryGetComponent(out NpcGreeting greeting))
+        {
+            greeting.OnInteracted();
+        }
+
         string dialogueID = GetDialogueID();
 
         if (DialogueManager.Instance != null)

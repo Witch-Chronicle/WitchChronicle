@@ -122,6 +122,12 @@ namespace WitchChronicle.IdleFarming
             {
                 PlayerInventory.Instance.AddItem(seed.harvestItem, amount);
                 Debug.Log($"[PlotManager] 수확: {seed.harvestName} x{amount}");
+
+                // 퀘스트 연동 : 수확 성공 시 퀘스트 카운트 증가
+                if (QuestManager.Instance != null)
+                {
+                    QuestManager.Instance.AddProgress(QuestObjectiveType.HarvestCrop, seed.harvestItem.itemId.ToString(), amount);
+                }
             }
             else
             {
@@ -348,7 +354,7 @@ namespace WitchChronicle.IdleFarming
                 if (dataMap.TryGetValue(slot.PlotIndex, out var saveData))
                 {
                     SeedData seed = FindSeedByName(saveData.plantedSeedItemId);
-                    // 💡 Initialize() 안에서 UpdateCycle()이 불려 오프라인 지난 시간만큼 작물이 자랍니다!
+                    // Initialize() 안에서 UpdateCycle()이 불려 오프라인 지난 시간만큼 작물이 자랍니다!
                     slot.Initialize(saveData, seed);
                 }
                 else

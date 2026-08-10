@@ -5,52 +5,39 @@ using UnityEngine.EventSystems;
 public class FishingReelController : MonoBehaviour
 {
     [Header("텐션 게이지 참조")]
-    [Tooltip("게이지 바(GaugeGradient) 이미지의 RectTransform")]
     [SerializeField] private RectTransform gaugeBarRect;
-    [Tooltip("게이지 위를 움직이는 물고기 아이콘의 RectTransform (GaugeGradient의 자식이어야 함)")]
     [SerializeField] private RectTransform fishIndicatorRect;
 
     [Header("진행 게이지")]
-    [Tooltip("세로로 채워지는 Progress Gauge (Image, Filled/Vertical/Bottom)")]
     [SerializeField] private Image progressGaugeFill;
 
     [Header("액션 버튼")]
-    [Tooltip("줄 풀기/줄 감기 토글 버튼")]
     [SerializeField] private Button actionButton;
-    [Tooltip("버튼 홀드 감지용 EventTrigger")]
     [SerializeField] private EventTrigger actionButtonEventTrigger;
 
     [Header("인디케이터 이동 범위 여백")]
-    [Tooltip("게이지 바 폭에서 좌우 몇 %를 여백으로 남길지")]
     [Range(0f, 0.2f)]
     [SerializeField] private float edgePadding = 0.05f;
 
     [Header("구간 판정 (0~1 정규화 값 기준)")]
-    [Tooltip("중앙에서 이 거리 이내면 초록 구간 (진행 게이지 채워짐)")]
     [Range(0f, 1f)]
     [SerializeField] private float greenZoneRadius = 0.2f;
-    [Tooltip("중앙에서 이 거리 이내면 노랑 구간 (안전지대), 이 바깥은 빨강")]
     [Range(0f, 1f)]
     [SerializeField] private float yellowZoneRadius = 0.6f;
 
     [Header("실패 시간")]
-    [Tooltip("왼쪽 빨강 유지 시 줄 끊김까지 시간(초)")]
     [SerializeField] private float lineBreakTime = 2f;
-    [Tooltip("오른쪽 빨강 유지 시 물고기 도망까지 시간(초)")]
     [SerializeField] private float escapeTime = 3f;
 
     [Header("제한 시간 UI (선택)")]
-    [Tooltip("남은 시간 표시용 텍스트")]
     [SerializeField] private TMPro.TMP_Text timeLimitText;
 
-    // 런타임 값 (StartMiniGame에서 물고기 SO 값으로 덮어씀)
     private float fishPullSpeed = 0.4f;
     private float playerPullSpeed = 0.6f;
     private float progressFillSpeed = 0.15f;
     private float tensionShake = 0.3f;
     private float timeLimit = 10f;
 
-    // 상태
     private bool _isMiniGameActive = false;
     private bool _isHolding = false;
     private float _tensionNormalized = 0f;
@@ -91,7 +78,6 @@ public class FishingReelController : MonoBehaviour
 
         _currentFish = fish;
 
-        // 낚싯대 보정 없이 물고기 SO 값 그대로 사용
         fishPullSpeed = fish.tensionRange;
         tensionShake = fish.tensionShake;
         playerPullSpeed = fish.playerPullSpeed;
@@ -110,6 +96,10 @@ public class FishingReelController : MonoBehaviour
         UpdateIndicatorPosition();
         UpdateProgressGauge();
         UpdateTimeLimitText();
+
+        // ★ 낚시(릴링) 시작 사운드
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlaySfx(SfxType.FishingCast);
     }
 
     public void StopMiniGame()
@@ -227,16 +217,22 @@ public class FishingReelController : MonoBehaviour
     }
 
     private void CompleteReeling(bool success, FailReason reason)
-    {
-        if (!_isMiniGameActive) return;
-        _isMiniGameActive = false;
-        _isHolding = false;
+{
+    if (!_isMiniGameActive) return;
+    _isMiniGameActive = false;
+    _isHolding = false;
 
-        if (FishingManager.Instance != null)
-        {
-            FishingManager.Instance.CompleteReeling(success, _currentFish, reason);
-        }
+    // ★ 낚시 결과 사운드 (성공/실패)
+    if (SoundManager.Instance != null)
+    {
+        SoundManager.Instance.PlaySfx(success ? SfxType.FishingSuccess : SfxType.FishingFail);
     }
+
+    if (FishingManager.Instance != null)
+    {
+        FishingManager.Instance.CompleteReeling(success, _currentFish, reason);
+    }
+}
 
     public enum FailReason
     {

@@ -8,6 +8,8 @@ public class DialogueEventManager : MonoBehaviour
 {
     public static DialogueEventManager Instance { get; private set; }
 
+    [Tooltip("최종 보스 던전(알데릭 던전) DungeonData 에셋")]
+    [SerializeField] private DungeonData _finalDungeonData;
 
     private void Awake()
     {
@@ -54,6 +56,22 @@ public class DialogueEventManager : MonoBehaviour
                 EnhanceNPC.Instance.ToggleEnhanceUI();
                 break;
 
+            case "EnterFinalDungeon":
+                if (DialogueManager.Instance != null)
+                {
+                    DialogueManager.Instance.EndDialogue();
+                }
+
+                if (_finalDungeonData != null)
+                {
+                    DungeonSelection.CurrentDungeonData = _finalDungeonData;
+                }
+
+                if (SceneTransitionManager.Instance != null)
+                {
+                    SceneTransitionManager.Instance.LoadSceneWithLoading(SceneId.Dungeon, waitForReadySignal: true);
+                }
+                break;
             //case "RecruitNPC":
             //    RecruitService.Instance.Recruit();
             //    break;

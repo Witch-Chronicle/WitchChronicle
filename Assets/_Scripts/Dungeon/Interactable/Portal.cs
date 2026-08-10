@@ -13,7 +13,7 @@ public class Portal : MonoBehaviour, ITFInteractable
 
         _particle.Play();
 
-        SceneTransitionManager.Instance.LoadScene(SceneId.Main, 1.5f, null, null);
+        SceneTransitionManager.Instance.LoadSceneWithLoading(SceneId.Main, waitForReadySignal: true);
 
         ShowMessageManager.Instance.ShowMessage("거점으로 돌아갑니다");
     }

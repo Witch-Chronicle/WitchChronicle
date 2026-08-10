@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+
 namespace WitchChronicle.Alchemy
 {
     /// <summary>
@@ -61,16 +62,17 @@ namespace WitchChronicle.Alchemy
         [SerializeField] private TextMeshProUGUI _inventoryCountText;
 
         [Header("성공 팝업")]
-[SerializeField] private AlchemySuccessPopup _successPopup;
+        [SerializeField] private AlchemySuccessPopup _successPopup;
 
-[Header("애니메이션 & 지연")]
-[SerializeField] private Animator _playerAnimator;
-[SerializeField] private string _cookingTriggerName = "Cook";
-[SerializeField] private string _potionTriggerName = "Brew";
+        [Header("애니메이션 & 지연")]
+        [SerializeField] private Animator _playerAnimator;
+        [SerializeField] private string _cookingTriggerName = "Cook";
+        [SerializeField] private string _potionTriggerName = "Brew";
 
-[Header("나가기 버튼")]
-[SerializeField] private Button _closeButton;
-[SerializeField] private float _resultDelay = 3f;
+        [Header("나가기 버튼")]
+        [SerializeField] private Button _closeButton;
+        [SerializeField] private float _resultDelay = 3f;
+
         private Action _onClosedCallback;
         private AlchemyMode _currentMode;
         private int _currentGradeIndex = 0;
@@ -110,8 +112,8 @@ namespace WitchChronicle.Alchemy
 
             if (_startButton != null)
                 _startButton.onClick.AddListener(OnStartButtonClicked);
-                if (_closeButton != null)
-    _closeButton.onClick.AddListener(Close);
+            if (_closeButton != null)
+                _closeButton.onClick.AddListener(Close);
         }
 
         private void Update()
@@ -134,16 +136,16 @@ namespace WitchChronicle.Alchemy
         }
 
         public void Close()
-{
-    if (_panelRoot != null) _panelRoot.SetActive(false);
+        {
+            if (_panelRoot != null) _panelRoot.SetActive(false);
 
-    // 나가기 시 요리 가마솥만 기본으로 표시 (MainField의 기본 상태로)
-    if (_cookingCauldron != null) _cookingCauldron.SetActive(true);
-    if (_potionCauldron != null) _potionCauldron.SetActive(false);
+            // 나가기 시 요리 가마솥만 기본으로 표시 (MainField의 기본 상태로)
+            if (_cookingCauldron != null) _cookingCauldron.SetActive(true);
+            if (_potionCauldron != null) _potionCauldron.SetActive(false);
 
-    _onClosedCallback?.Invoke();
-    _onClosedCallback = null;
-}
+            _onClosedCallback?.Invoke();
+            _onClosedCallback = null;
+        }
 
         private void SwitchMode(AlchemyMode mode)
         {
@@ -227,81 +229,78 @@ namespace WitchChronicle.Alchemy
         }
 
         /// <summary>
-        /// 인벤 재료 클릭 시 → 같은 재료가 이미 있으면 스택, 없으면 첫 번째 빈 슬롯에 담기
+        /// 인벤 재료 클릭 시 → 인벤 개수 검사 후 슬롯에 담기
         /// </summary>
+        private void TryPlaceMaterialInSlot(MaterialItemData material)
+        {
+            if (material == null || _ingredientSlots == null) return;
+            if (PlayerInventory.Instance == null) return;
+
+            // 인벤 보유량 확인
+            int ownedInInventory = PlayerInventory.Instance.GetTotalQuantity(material);
+
+            // 이미 슬롯에 담긴 이 재료 개수 합산
+            int alreadyInSlots = GetMaterialCountInSlots(material);
+
+            // 인벤 개수 초과 시 담기 거부
+            if (alreadyInSlots >= ownedInInventory)
+            {
+                Debug.LogWarning($"[AlchemyPanel] {material.itemName} 인벤 부족 (보유:{ownedInInventory}, 슬롯:{alreadyInSlots})");
+                return;
+            }
+
+            int visibleCount = (_currentMode == AlchemyMode.Cooking) ? 5 : 6;
+
+            // 1단계: 같은 재료가 이미 있으면 그 슬롯에 개수 +1
+            for (int i = 0; i < visibleCount && i < _ingredientSlots.Length; i++)
+            {
+                var slot = _ingredientSlots[i];
+                if (slot == null) continue;
+                if (slot.IsEmpty) continue;
+
+                if (slot.CurrentMaterial == material)
+                {
+                    slot.SetMaterial(material, slot.CurrentCount + 1);
+                    Debug.Log($"[AlchemyPanel] 재료 스택: {material.itemName} → Slot {i} (총 {slot.CurrentCount}개)");
+                    return;
+                }
+            }
+
+            // 2단계: 없으면 첫 번째 빈 슬롯에 담기
+            for (int i = 0; i < visibleCount && i < _ingredientSlots.Length; i++)
+            {
+                var slot = _ingredientSlots[i];
+                if (slot == null) continue;
+
+                if (slot.IsEmpty)
+                {
+                    slot.SetMaterial(material, 1);
+                    Debug.Log($"[AlchemyPanel] 재료 담김: {material.itemName} → Slot {i}");
+                    return;
+                }
+            }
+
+            Debug.Log("[AlchemyPanel] 빈 슬롯 없음");
+        }
+
         /// <summary>
-/// 인벤 재료 클릭 시 → 인벤 개수 검사 후 슬롯에 담기
-/// </summary>
-private void TryPlaceMaterialInSlot(MaterialItemData material)
-{
-    if (material == null || _ingredientSlots == null) return;
-    if (PlayerInventory.Instance == null) return;
-
-    // 인벤 보유량 확인
-    int ownedInInventory = PlayerInventory.Instance.GetTotalQuantity(material);
-
-    // 이미 슬롯에 담긴 이 재료 개수 합산
-    int alreadyInSlots = GetMaterialCountInSlots(material);
-
-    // 인벤 개수 초과 시 담기 거부
-    if (alreadyInSlots >= ownedInInventory)
-    {
-        Debug.LogWarning($"[AlchemyPanel] {material.itemName} 인벤 부족 (보유:{ownedInInventory}, 슬롯:{alreadyInSlots})");
-        return;
-    }
-
-    int visibleCount = (_currentMode == AlchemyMode.Cooking) ? 5 : 6;
-
-    // 1단계: 같은 재료가 이미 있으면 그 슬롯에 개수 +1
-    for (int i = 0; i < visibleCount && i < _ingredientSlots.Length; i++)
-    {
-        var slot = _ingredientSlots[i];
-        if (slot == null) continue;
-        if (slot.IsEmpty) continue;
-
-        if (slot.CurrentMaterial == material)
+        /// 특정 재료가 지금 재료 슬롯들에 얼마나 담겨있는지 합산
+        /// </summary>
+        private int GetMaterialCountInSlots(MaterialItemData material)
         {
-            slot.SetMaterial(material, slot.CurrentCount + 1);
-            Debug.Log($"[AlchemyPanel] 재료 스택: {material.itemName} → Slot {i} (총 {slot.CurrentCount}개)");
-            return;
+            if (material == null || _ingredientSlots == null) return 0;
+
+            int total = 0;
+            foreach (var slot in _ingredientSlots)
+            {
+                if (slot == null || slot.IsEmpty) continue;
+                if (!slot.gameObject.activeSelf) continue;
+                if (slot.CurrentMaterial != material) continue;
+
+                total += slot.CurrentCount;
+            }
+            return total;
         }
-    }
-
-    // 2단계: 없으면 첫 번째 빈 슬롯에 담기
-    for (int i = 0; i < visibleCount && i < _ingredientSlots.Length; i++)
-    {
-        var slot = _ingredientSlots[i];
-        if (slot == null) continue;
-
-        if (slot.IsEmpty)
-        {
-            slot.SetMaterial(material, 1);
-            Debug.Log($"[AlchemyPanel] 재료 담김: {material.itemName} → Slot {i}");
-            return;
-        }
-    }
-
-    Debug.Log("[AlchemyPanel] 빈 슬롯 없음");
-}
-
-/// <summary>
-/// 특정 재료가 지금 재료 슬롯들에 얼마나 담겨있는지 합산
-/// </summary>
-private int GetMaterialCountInSlots(MaterialItemData material)
-{
-    if (material == null || _ingredientSlots == null) return 0;
-
-    int total = 0;
-    foreach (var slot in _ingredientSlots)
-    {
-        if (slot == null || slot.IsEmpty) continue;
-        if (!slot.gameObject.activeSelf) continue;
-        if (slot.CurrentMaterial != material) continue;
-
-        total += slot.CurrentCount;
-    }
-    return total;
-}
 
         private void OnIngredientSlotChanged()
         {
@@ -449,10 +448,9 @@ private int GetMaterialCountInSlots(MaterialItemData material)
         // ====== 요리 시작 버튼 ======
 
         private void OnStartButtonClicked()
-        
         {
             Debug.Log($"[AlchemyPanel] 시작 버튼 클릭! 모드={_currentMode}, 요리매칭={_matchedCookingRecipe != null}, 포션매칭={_matchedPotionRecipe != null}");
-    
+
             if (_currentMode == AlchemyMode.Cooking && _matchedCookingRecipe != null)
             {
                 ExecuteCookingRecipe(_matchedCookingRecipe);
@@ -464,74 +462,87 @@ private int GetMaterialCountInSlots(MaterialItemData material)
         }
 
         private void ExecuteCookingRecipe(CookingRecipeData recipe)
-{
-    if (recipe == null || recipe.result == null) return;
-    if (PlayerInventory.Instance == null) return;
+        {
+            if (recipe == null || recipe.result == null) return;
+            if (PlayerInventory.Instance == null) return;
 
-    if (!HasEnoughMaterials(recipe.ingredients))
-    {
-        Debug.LogWarning("[AlchemyPanel] 재료 부족");
-        return;
-    }
+            if (!HasEnoughMaterials(recipe.ingredients))
+            {
+                Debug.LogWarning("[AlchemyPanel] 재료 부족");
+                return;
+            }
 
-    ConsumeIngredients(recipe.ingredients);
+            ConsumeIngredients(recipe.ingredients);
 
-    PlayerInventory.Instance.AddItem(recipe.result, 1);
-    PlayerInventory.Instance.RaiseInventoryChanged();
+            PlayerInventory.Instance.AddItem(recipe.result, 1);
+            PlayerInventory.Instance.RaiseInventoryChanged();
 
-    Debug.Log($"[AlchemyPanel] 요리 완성: {recipe.result.itemName}");
+            Debug.Log($"[AlchemyPanel] 요리 완성: {recipe.result.itemName}");
 
-    ClearAllIngredientSlots();
-    RefreshInventory();
+            ClearAllIngredientSlots();
+            RefreshInventory();
 
-    // 애니메이션 재생 + 지연 후 팝업
-    StartCoroutine(Co_ShowResultAfterAnimation(recipe.result.icon, AlchemyMode.Cooking, _cookingTriggerName));
-}
+            // ★ 요리 제작 중 사운드
+            if (SoundManager.Instance != null)
+                SoundManager.Instance.PlaySfx(SfxType.CookingProcess);
 
-private void ExecutePotionRecipe(PotionRecipeData recipe)
-{
-    if (recipe == null || recipe.resultPotion == null) return;
-    if (PlayerInventory.Instance == null) return;
+            // 애니메이션 재생 + 지연 후 팝업
+            StartCoroutine(Co_ShowResultAfterAnimation(recipe.result.icon, AlchemyMode.Cooking, _cookingTriggerName));
+        }
 
-    if (!HasEnoughMaterials(recipe.ingredients))
-    {
-        Debug.LogWarning("[AlchemyPanel] 재료 부족");
-        return;
-    }
+        private void ExecutePotionRecipe(PotionRecipeData recipe)
+        {
+            if (recipe == null || recipe.resultPotion == null) return;
+            if (PlayerInventory.Instance == null) return;
 
-    ConsumeIngredients(recipe.ingredients);
+            if (!HasEnoughMaterials(recipe.ingredients))
+            {
+                Debug.LogWarning("[AlchemyPanel] 재료 부족");
+                return;
+            }
 
-    PlayerInventory.Instance.AddItem(recipe.resultPotion, 1);
-    PlayerInventory.Instance.RaiseInventoryChanged();
+            ConsumeIngredients(recipe.ingredients);
 
-    Debug.Log($"[AlchemyPanel] 포션 완성: {recipe.resultPotion.itemName}");
+            PlayerInventory.Instance.AddItem(recipe.resultPotion, 1);
+            PlayerInventory.Instance.RaiseInventoryChanged();
 
-    ClearAllIngredientSlots();
-    RefreshInventory();
+            Debug.Log($"[AlchemyPanel] 포션 완성: {recipe.resultPotion.itemName}");
 
-    // 애니메이션 재생 + 지연 후 팝업
-    StartCoroutine(Co_ShowResultAfterAnimation(recipe.resultPotion.icon, AlchemyMode.Potion, _potionTriggerName));
-}
+            ClearAllIngredientSlots();
+            RefreshInventory();
 
-private IEnumerator Co_ShowResultAfterAnimation(Sprite resultIcon, AlchemyMode mode, string triggerName)
-{
-    // 시작 버튼 잠금 (연타 방지)
-    if (_startButton != null) _startButton.interactable = false;
+            // ★ 포션 제작 중 사운드
+            if (SoundManager.Instance != null)
+                SoundManager.Instance.PlaySfx(SfxType.PotionProcess);
 
-    // 캐릭터 애니메이션 재생
-    if (_playerAnimator != null && !string.IsNullOrEmpty(triggerName))
-    {
-        _playerAnimator.SetTrigger(triggerName);
-        Debug.Log($"[AlchemyPanel] 애니메이션 트리거: {triggerName}");
-    }
+            // 애니메이션 재생 + 지연 후 팝업
+            StartCoroutine(Co_ShowResultAfterAnimation(recipe.resultPotion.icon, AlchemyMode.Potion, _potionTriggerName));
+        }
 
-    // 결과 팝업 대기
-    yield return new WaitForSeconds(_resultDelay);
+        private IEnumerator Co_ShowResultAfterAnimation(Sprite resultIcon, AlchemyMode mode, string triggerName)
+        {
+            // 시작 버튼 잠금 (연타 방지)
+            if (_startButton != null) _startButton.interactable = false;
 
-    // 성공 팝업 표시
-    if (_successPopup != null)
-        _successPopup.Show(resultIcon, mode, null);
-}
+            // 캐릭터 애니메이션 재생
+            if (_playerAnimator != null && !string.IsNullOrEmpty(triggerName))
+            {
+                _playerAnimator.SetTrigger(triggerName);
+                Debug.Log($"[AlchemyPanel] 애니메이션 트리거: {triggerName}");
+            }
+
+            // 결과 팝업 대기
+            yield return new WaitForSeconds(_resultDelay);
+
+            // ★ 요리/포션 성공 팡파레
+            if (SoundManager.Instance != null)
+                SoundManager.Instance.PlaySfx(SfxType.AlchemySuccess);
+
+            // 성공 팝업 표시
+            if (_successPopup != null)
+                _successPopup.Show(resultIcon, mode, null);
+        }
+
         private bool HasEnoughMaterials(List<IngredientSlot> ingredients)
         {
             if (ingredients == null) return false;
@@ -649,85 +660,86 @@ private IEnumerator Co_ShowResultAfterAnimation(Sprite resultIcon, AlchemyMode m
                 _recipeCountText.text = $"{count}종";
         }
 
-       private void OnRecipeCardClicked(object recipeData)
-{
-    if (_selectedCard != null)
-        _selectedCard.SetHighlighted(false);
-
-    // 레시피 타입에 따라 자동 담기
-    if (recipeData is CookingRecipeData cookingRecipe)
-    {
-        AutoFillIngredients(cookingRecipe.ingredients);
-        Debug.Log($"[AlchemyPanel] 레시피 자동 담기: {cookingRecipe.result?.itemName}");
-    }
-    else if (recipeData is PotionRecipeData potionRecipe)
-    {
-        AutoFillIngredients(potionRecipe.ingredients);
-        Debug.Log($"[AlchemyPanel] 포션 레시피 자동 담기: {potionRecipe.resultPotion?.itemName}");
-    }
-}
-
-/// <summary>
-/// 레시피의 재료를 재료 슬롯에 자동 배치.
-/// 슬롯 먼저 다 비운 후 필요한 재료를 순서대로 담음.
-/// 인벤 부족 시 담을 수 있는 만큼만.
-/// </summary>
-private void AutoFillIngredients(List<IngredientSlot> ingredients)
-{
-    if (ingredients == null || _ingredientSlots == null) return;
-    if (PlayerInventory.Instance == null) return;
-
-    // 기존 슬롯 다 비우기
-    ClearAllIngredientSlots();
-
-    // 재료별 필요 개수 병합 (같은 재료 여러 슬롯이면 합침)
-    var required = new Dictionary<MaterialItemData, int>();
-    foreach (var ing in ingredients)
-    {
-        if (ing == null || ing.specificItem == null) continue;
-
-        if (required.ContainsKey(ing.specificItem))
-            required[ing.specificItem] += ing.amount;
-        else
-            required[ing.specificItem] = ing.amount;
-    }
-
-    // 각 재료를 슬롯에 배치
-    int slotIndex = 0;
-    int visibleCount = (_currentMode == AlchemyMode.Cooking) ? 5 : 6;
-
-    foreach (var kvp in required)
-    {
-        if (slotIndex >= visibleCount) break; // 슬롯 부족
-
-        var material = kvp.Key;
-        int needed = kvp.Value;
-
-        // 인벤 개수와 비교해서 실제 담을 수 있는 만큼만
-        int owned = PlayerInventory.Instance.GetTotalQuantity(material);
-        int toPlace = Mathf.Min(needed, owned);
-
-        if (toPlace <= 0)
+        private void OnRecipeCardClicked(object recipeData)
         {
-            Debug.LogWarning($"[AlchemyPanel] {material.itemName} 인벤 없음 (필요:{needed})");
-            slotIndex++;
-            continue;
+            if (_selectedCard != null)
+                _selectedCard.SetHighlighted(false);
+
+            // 레시피 타입에 따라 자동 담기
+            if (recipeData is CookingRecipeData cookingRecipe)
+            {
+                AutoFillIngredients(cookingRecipe.ingredients);
+                Debug.Log($"[AlchemyPanel] 레시피 자동 담기: {cookingRecipe.result?.itemName}");
+            }
+            else if (recipeData is PotionRecipeData potionRecipe)
+            {
+                AutoFillIngredients(potionRecipe.ingredients);
+                Debug.Log($"[AlchemyPanel] 포션 레시피 자동 담기: {potionRecipe.resultPotion?.itemName}");
+            }
         }
 
-        // 슬롯에 배치
-        if (_ingredientSlots[slotIndex] != null)
+        /// <summary>
+        /// 레시피의 재료를 재료 슬롯에 자동 배치.
+        /// 슬롯 먼저 다 비운 후 필요한 재료를 순서대로 담음.
+        /// 인벤 부족 시 담을 수 있는 만큼만.
+        /// </summary>
+        private void AutoFillIngredients(List<IngredientSlot> ingredients)
         {
-            _ingredientSlots[slotIndex].SetMaterial(material, toPlace);
+            if (ingredients == null || _ingredientSlots == null) return;
+            if (PlayerInventory.Instance == null) return;
 
-            if (toPlace < needed)
-                Debug.LogWarning($"[AlchemyPanel] {material.itemName} 부족 (필요:{needed}, 담김:{toPlace})");
-            else
-                Debug.Log($"[AlchemyPanel] {material.itemName} x{toPlace} → Slot {slotIndex}");
+            // 기존 슬롯 다 비우기
+            ClearAllIngredientSlots();
+
+            // 재료별 필요 개수 병합 (같은 재료 여러 슬롯이면 합침)
+            var required = new Dictionary<MaterialItemData, int>();
+            foreach (var ing in ingredients)
+            {
+                if (ing == null || ing.specificItem == null) continue;
+
+                if (required.ContainsKey(ing.specificItem))
+                    required[ing.specificItem] += ing.amount;
+                else
+                    required[ing.specificItem] = ing.amount;
+            }
+
+            // 각 재료를 슬롯에 배치
+            int slotIndex = 0;
+            int visibleCount = (_currentMode == AlchemyMode.Cooking) ? 5 : 6;
+
+            foreach (var kvp in required)
+            {
+                if (slotIndex >= visibleCount) break; // 슬롯 부족
+
+                var material = kvp.Key;
+                int needed = kvp.Value;
+
+                // 인벤 개수와 비교해서 실제 담을 수 있는 만큼만
+                int owned = PlayerInventory.Instance.GetTotalQuantity(material);
+                int toPlace = Mathf.Min(needed, owned);
+
+                if (toPlace <= 0)
+                {
+                    Debug.LogWarning($"[AlchemyPanel] {material.itemName} 인벤 없음 (필요:{needed})");
+                    slotIndex++;
+                    continue;
+                }
+
+                // 슬롯에 배치
+                if (_ingredientSlots[slotIndex] != null)
+                {
+                    _ingredientSlots[slotIndex].SetMaterial(material, toPlace);
+
+                    if (toPlace < needed)
+                        Debug.LogWarning($"[AlchemyPanel] {material.itemName} 부족 (필요:{needed}, 담김:{toPlace})");
+                    else
+                        Debug.Log($"[AlchemyPanel] {material.itemName} x{toPlace} → Slot {slotIndex}");
+                }
+
+                slotIndex++;
+            }
         }
 
-        slotIndex++;
-    }
-}
         // ====== 재료 인벤토리 ======
 
         private void RefreshInventory()
