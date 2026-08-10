@@ -24,6 +24,10 @@ public class FishingSidebarUI : MonoBehaviour
     [Header("낚시 장비 카드 슬롯 (3개 미리 배치)")]
     [SerializeField] private RodSlotUI[] rodCardSlots = new RodSlotUI[3];
 
+    [Header("낚싯대 없음 표시")]
+    [Tooltip("낚싯대 0개일 때 rodCardSlots 대신 표시할 오브젝트 (X 이미지 등)")]
+    [SerializeField] private GameObject emptyRodDisplay;
+
     private InventoryFilter currentFilter = InventoryFilter.All;
     private float _sessionTime = 0f;
     private bool _timerRunning = false;
@@ -42,6 +46,7 @@ public class FishingSidebarUI : MonoBehaviour
         {
             FishingManager.Instance.OnFishCaught  += HandleFishCaught;
             FishingManager.Instance.OnRodEquipped += HandleRodEquipped;
+            FishingManager.Instance.OnRodInventoryChanged += RefreshEquipment; // ★ 인벤 변경 시 자동 갱신
         }
 
         SetFilter(InventoryFilter.All);
@@ -66,6 +71,7 @@ public class FishingSidebarUI : MonoBehaviour
         {
             FishingManager.Instance.OnFishCaught  -= HandleFishCaught;
             FishingManager.Instance.OnRodEquipped -= HandleRodEquipped;
+            FishingManager.Instance.OnRodInventoryChanged -= RefreshEquipment;
         }
     }
 
@@ -162,8 +168,15 @@ public class FishingSidebarUI : MonoBehaviour
         var mgr = FishingManager.Instance;
         if (mgr == null) return;
 
-        var rods = mgr.OwnedRods;
+        // ★ 인벤 기반으로 낚싯대 목록 조회
+        var rods = mgr.GetOwnedRods();
         var current = mgr.CurrentRod;
+
+        // 낚싯대 0개 → Empty 표시로 전환
+        bool hasNoRod = rods.Count == 0;
+
+        if (emptyRodDisplay != null)
+            emptyRodDisplay.SetActive(hasNoRod);
 
         for (int i = 0; i < rodCardSlots.Length; i++)
         {
