@@ -65,6 +65,12 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
     [Tooltip("체크하면 Y 높이 차이를 무시하고 평면 거리만 계산합니다.")]
     [SerializeField] private bool _useHorizontalDistance = true;
 
+    [Header("Interact Root (별도 범위, 상호작용 가능 표시)")]
+    [Tooltip("InteractRange 안에 들어오면 표시되는 CanvasGroup입니다. 상단 _canvasGroup(_visibleRange)와는 독립적으로 동작합니다.")]
+    [SerializeField] private CanvasGroup _interactRoot;
+    [Tooltip("이 거리 안에 플레이어가 들어오면 InteractRoot를 표시합니다.")]
+    [SerializeField, Min(0f)] private float _interactRange = 2f;
+
     [Header("Billboard")]
     [Tooltip("MainCamera를 바라보도록 World Canvas를 회전시킵니다.")]
     [SerializeField] private bool _useBillboard = true;
@@ -100,6 +106,7 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
     [SerializeField, Min(0f)] private float _bouncePunchInterval = 0.2f;
 
     private bool _isInRange;
+    private bool _isInInteractRange;
     private bool _suppressed;
     private float _nextPlayerSearchTime;
 
@@ -124,6 +131,7 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
         ResolveReferences();
         RefreshData();
         SetCanvasAlphaImmediate(0f);
+        SetInteractRootAlphaImmediate(0f);
         CacheQuestIconOriginalTransforms();
         ApplyQuestState(DetermineQuestState());
     }
@@ -131,15 +139,14 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
     private void OnEnable()
     {
         _isInRange = false;
+        _isInInteractRange = false;
         SetCanvasAlphaImmediate(0f);
+        SetInteractRootAlphaImmediate(0f);
         TryFindPlayer();
-
         if (_mainCamera == null)
         {
             _mainCamera = Camera.main;
         }
-
-        // 재활성화 시 즉시 최신 퀘스트 상태로 맞춥니다.
         ApplyQuestState(DetermineQuestState());
     }
 
@@ -159,10 +166,9 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
         {
             TryFindPlayer();
         }
-
         UpdateRangeState();
         UpdateCanvasAlpha();
-
+        UpdateInteractRootAlpha();
         RefreshQuestIndicator();
     }
 
@@ -226,6 +232,7 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
     {
         _suppressed = true;
         SetCanvasAlphaImmediate(0f);
+        SetInteractRootAlphaImmediate(0f);
     }
 
     private void ResolveReferences()
@@ -358,6 +365,55 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
         // 이 UI는 마우스로 클릭하지 않으므로 항상 입력을 막지 않습니다.
         _canvasGroup.interactable = false;
         _canvasGroup.blocksRaycasts = false;
+    }
+
+    private void UpdateInteractRangeState()
+    {
+        if (_player == null || _npc == null)
+        {
+            _isInInteractRange = false;
+            return;
+        }
+        Vector3 delta = _player.position - _npc.transform.position;
+        if (_useHorizontalDistance)
+        {
+            delta.y = 0f;
+        }
+        float sqrDistance = delta.sqrMagnitude;
+        _isInInteractRange = sqrDistance <= _interactRange * _interactRange;
+    }
+    private void UpdateInteractRootAlpha()
+    {
+        if (_interactRoot == null)
+        {
+            return;
+        }
+        float targetAlpha = _isInInteractRange && _suppressed == false ? 1f : 0f;
+        if (_fadeDuration <= 0f)
+        {
+            _interactRoot.alpha = targetAlpha;
+        }
+        else
+        {
+            float speed = 1f / _fadeDuration;
+            _interactRoot.alpha = Mathf.MoveTowards(
+                _interactRoot.alpha,
+                targetAlpha,
+                speed * Time.unscaledDeltaTime);
+        }
+        // 이 UI는 마우스로 클릭하지 않으므로 항상 입력을 막지 않습니다.
+        _interactRoot.interactable = false;
+        _interactRoot.blocksRaycasts = false;
+    }
+    private void SetInteractRootAlphaImmediate(float alpha)
+    {
+        if (_interactRoot == null)
+        {
+            return;
+        }
+        _interactRoot.alpha = alpha;
+        _interactRoot.interactable = false;
+        _interactRoot.blocksRaycasts = false;
     }
 
     private void UpdateBillboard()
@@ -650,6 +706,7 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
         _hideRangePadding = Mathf.Max(0f, _hideRangePadding);
         _fadeDuration = Mathf.Max(0f, _fadeDuration);
         _playerSearchInterval = Mathf.Max(0.1f, _playerSearchInterval);
+        _interactRange = Mathf.Max(0f, _interactRange);
 
         if (_canvasGroup == null)
         {
@@ -667,6 +724,11 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
         {
             RefreshData();
         }
+    }
+
+    public void SetInteractRootVisible(bool visible)
+    {
+        _isInInteractRange = visible;
     }
 
     private void OnDrawGizmosSelected()

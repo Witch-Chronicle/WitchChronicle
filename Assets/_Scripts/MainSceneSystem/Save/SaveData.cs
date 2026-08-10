@@ -27,6 +27,14 @@ public class SaveData
 
     // 퀘스트 진행 상태
     public List<QuestProgressSaveData> Quests = new();
+
+    public float MasterVolume = 1f;
+    public float BgmVolume = 1f;
+    public float SfxVolume = 1f;
+
+    public bool IsMasterMuted = false;
+    public bool IsBgmMuted = false;
+    public bool IsSfxMuted = false;
 }
 
 /// <summary>

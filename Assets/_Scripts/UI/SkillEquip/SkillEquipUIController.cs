@@ -323,7 +323,7 @@ public class SkillEquipUIController : MonoBehaviour
         int targetSlot = SkillEquipService.GetFirstEmptySlot(current);
         if (targetSlot < 0)
         {
-            // TODO: 슬롯이 가득 찼습니다 AlertPopup
+            AlertManager.Instance.Enqueue(AlertType.SkillSlotFull);
             return;
         }
         SkillEquipService.EquipWithTransfer(_party, current, targetSlot, skill);

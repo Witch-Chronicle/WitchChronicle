@@ -332,6 +332,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPC
   _npcData: {fileID: 11400000, guid: 563bf6f8f0dcb1c47973acc21adf6942, type: 2}
+  _worldInteractionUI: {fileID: 8922077155906141406}
 --- !u!1 &4118405473724930489
 GameObject:
   m_ObjectHideFlags: 0
@@ -731,6 +732,17 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7993042684122615207, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
   m_PrefabInstance: {fileID: 158595746667286738}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8922077155906141406 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8782833028856835084, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+  m_PrefabInstance: {fileID: 158595746667286738}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7845143029598133621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d22c7e1aad16a14c91bf3bb387adb47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCWorldInteractionUI
 --- !u!1001 &1560496468025386247
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -220,4 +220,9 @@ public class ShowMessageManager : MonoBehaviour
         }
         _fadeTween?.Kill();
     }
+
+    public void VisibleMessage(bool show)
+    {
+        _messageRoot.SetActive(show);
+    }
 }
