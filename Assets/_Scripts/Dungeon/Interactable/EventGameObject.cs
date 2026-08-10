@@ -1,3 +1,5 @@
+// FILE: Assets\_Scripts\Dungeon\Interactable\EventGameObject.cs
+
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,7 +11,24 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
     [SerializeField] private EventDataSO _eventData;
     private bool _isInteracted = false;
 
-    public string Prompt => _isInteracted ? "이미 조사했다..." : "[F] 조사하기";
+    public string Prompt
+    {
+        get
+        {
+            if (_isInteracted)
+            {
+                // 함정(미믹)이었던 경우 전투로 넘어가므로 상호작용 문구를 아예 비움
+                if (_eventData != null && _eventData.Type == Event_Type.Trap)
+                {
+                    return string.Empty;
+                }
+
+                return "이미 조사했다...";
+            }
+
+            return "[F] 조사하기";
+        }
+    }
 
     /// <summary>
     /// 플레이어가 상호작용을 수행할 때 호출됩니다.
@@ -22,6 +41,17 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
         }
 
         _isInteracted = true;
+
+        // 함정(미믹) 상호작용 시 더 이상 플레이어 센서에 안 잡히도록 콜라이더 비활성화
+        if (_eventData != null && _eventData.Type == Event_Type.Trap)
+        {
+            Collider col = GetComponent<Collider>();
+            if (col != null)
+            {
+                col.enabled = false;
+            }
+        }
+
         ExecuteEventEffect();
 
         Debug.Log("[EventGameObject] 이벤트 상호작용이 완료되어 더 이상 활성화되지 않습니다.");
@@ -32,7 +62,7 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
     /// </summary>
     public void Setup(EventDataSO eventData)
     {
-        if(eventData != null)
+        if (eventData != null)
         {
             _eventData = eventData;
         }
@@ -75,39 +105,62 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
         }
     }
 
+    // 💡 [수정] 보상 이벤트 발생 시 AlertManager 팝업 띄우기
     private void ApplyReward()
     {
-        if (ShowMessageManager.Instance != null)
+        string message = !string.IsNullOrEmpty(_eventData.Description) ? _eventData.Description : "이벤트 보상을 획득했습니다!";
+
+        if (AlertManager.Instance != null)
         {
-            ShowMessageManager.Instance.ShowMessage(_eventData.Description);
+            // AlertType.ApplyRewardEvent로 알림 팝업 전송
+            AlertManager.Instance.Enqueue(AlertType.ApplyRewardEvent, message);
+        }
+        else if (ShowMessageManager.Instance != null)
+        {
+            ShowMessageManager.Instance.ShowMessage(message);
         }
 
         ApplyPartyEffect();
 
-        Debug.Log($"[EventGameObject] 보상 이벤트 실행: {_eventData.Description}");
+        Debug.Log($"[EventGameObject] 보상 이벤트 실행: {message}");
     }
 
+    // 💡 [수정] 함정 이벤트 발생 시 AlertManager 팝업 띄우기 및 미믹 전투 처리
     private void ApplyTrap()
     {
+        if (AlertManager.Instance != null)
+        {
+            AlertManager.Instance.Enqueue(AlertType.ApplyTrapEvent, "함정에 걸렸다!");
+        }
+
         if (ShowMessageManager.Instance != null)
         {
-            ShowMessageManager.Instance.ShowMessage($"함정이다..");
+            ShowMessageManager.Instance.BlockByUI();
         }
 
         BattleEncounter battleEncounter = GetComponent<BattleEncounter>();
 
-        battleEncounter.Initialize(_eventData.mimic);
-
-        battleEncounter.HandleCombatStarted();
+        if (battleEncounter != null)
+        {
+            battleEncounter.Initialize(_eventData.mimic);
+            battleEncounter.HandleCombatStarted();
+        }
 
         Debug.Log($"[EventGameObject] 함정 이벤트 실행: {_eventData.Value}");
     }
 
+    // 💡 [수정] 디버프 이벤트 발생 시 AlertManager 팝업 띄우기
     private void ApplyDebuff()
     {
-        if (ShowMessageManager.Instance != null)
+        string message = !string.IsNullOrEmpty(_eventData.Description) ? _eventData.Description : "몸이 이상하다... 디버프가 적용되었습니다.";
+
+        if (AlertManager.Instance != null)
         {
-            ShowMessageManager.Instance.ShowMessage($"몸이 이상하다... 디버프 됨");
+            AlertManager.Instance.Enqueue(AlertType.ApplyDebuffEvent, message);
+        }
+        else if (ShowMessageManager.Instance != null)
+        {
+            ShowMessageManager.Instance.ShowMessage(message);
         }
 
         ApplyPartyEffect();

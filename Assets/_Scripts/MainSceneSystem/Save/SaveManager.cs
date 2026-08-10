@@ -370,6 +370,17 @@ public class SaveManager : MonoBehaviour
                 }
             }
 
+            if (SoundManager.Instance != null)
+            {
+                data.MasterVolume = SoundManager.Instance.MasterVolume;
+                data.BgmVolume = SoundManager.Instance.BgmVolume;
+                data.SfxVolume = SoundManager.Instance.SfxVolume;
+
+                data.IsMasterMuted = SoundManager.Instance.IsMasterMuted;
+                data.IsBgmMuted = SoundManager.Instance.IsBgmMuted;
+                data.IsSfxMuted = SoundManager.Instance.IsSfxMuted;
+            }
+
             CurrentSaveData = data;
 
             string json = JsonUtility.ToJson(data, true);
@@ -573,6 +584,17 @@ public class SaveManager : MonoBehaviour
                         }
                     }
                 }
+            }
+
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.SetMasterVolume(data.MasterVolume);
+                SoundManager.Instance.SetBgmVolume(data.BgmVolume);
+                SoundManager.Instance.SetSfxVolume(data.SfxVolume);
+
+                SoundManager.Instance.SetMasterMuted(data.IsMasterMuted);
+                SoundManager.Instance.SetBgmMuted(data.IsBgmMuted);
+                SoundManager.Instance.SetSfxMuted(data.IsSfxMuted);
             }
 
             Debug.Log("<color=green>[SaveManager] 로드 완료!</color>");

@@ -57,17 +57,6 @@ public class MinimapPlayerIcon : MonoBehaviour
             return;
         }
 
-        // 전체 맵 보기 상태(uvRect width가 1에 가까운 경우)일 때는 플레이어 아이콘 비활성화
-        bool isFullMap = uvRect.width >= 0.99f;
-        if (isFullMap)
-        {
-            if (gameObject.activeSelf)
-            {
-                gameObject.SetActive(false);
-            }
-            return;
-        }
-
         if (!gameObject.activeSelf)
         {
             gameObject.SetActive(true);
