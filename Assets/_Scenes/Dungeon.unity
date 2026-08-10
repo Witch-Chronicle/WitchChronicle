@@ -1814,10 +1814,7 @@ MonoBehaviour:
   _subButtonSlots: []
   _allCategoryLabel: "\uC804\uCCB4"
   _subSelectedFadeDuration: 0.15
-  _itemSlotPrefab: {fileID: 4367171900393196124, guid: d996cd3e5ace3234d83c2d14e04e50b5, type: 3}
-  _itemSlotParent: {fileID: 2073852809}
-  _poolDefaultCapacity: 20
-  _poolMaxSize: 200
+  _scrollView: {fileID: 0}
   _shopDetailController: {fileID: 615293117}
   _goldText: {fileID: 1803890710}
 --- !u!114 &495314075
@@ -5754,7 +5751,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33627680803f7ce408b14f6224d81b88, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonController
-  _dungeonData: {fileID: 11400000, guid: cb27984daadb5fe44a934f4079990fcc, type: 2}
+  _dungeonData: {fileID: 0}
 --- !u!1001 &1293634630
 PrefabInstance:
   m_ObjectHideFlags: 0
