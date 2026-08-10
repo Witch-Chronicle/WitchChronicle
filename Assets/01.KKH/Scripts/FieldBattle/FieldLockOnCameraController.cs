@@ -19,13 +19,10 @@ public class FieldLockOnCameraController : MonoBehaviour
     [Header("Camera Position")]
     [Tooltip("플레이어 뒤 카메라 거리")]
     [SerializeField] private float _backDistance = 4.5f;
-
     [Tooltip("플레이어 기준 카메라 높이")]
     [SerializeField] private float _cameraHeight = 0.7f;
-
     [Tooltip("플레이어 기준 시선 높이")]
     [SerializeField] private float _playerFocusHeight = 1.2f;
-
     [Tooltip("숄더뷰 좌우 위치. 양수는 오른쪽")]
     [SerializeField] private float _shoulderOffset = 0.65f;
 
@@ -33,7 +30,6 @@ public class FieldLockOnCameraController : MonoBehaviour
     [Tooltip("플레이어와 적 사이 시선 비율")]
     [Range(0f, 1f)]
     [SerializeField] private float _targetFocusWeight = 0.65f;
-
     [Tooltip("최종 시선 높이 보정")]
     [SerializeField] private float _lookHeightOffset = 0.15f;
 
@@ -41,8 +37,25 @@ public class FieldLockOnCameraController : MonoBehaviour
     [SerializeField] private float _positionSmoothTime = 0.08f;
     [SerializeField] private float _rotationSharpness = 14f;
 
+    [Header("Camera Collision")]
+    [Tooltip("카메라와 충돌할 벽 및 지형 레이어")]
+    [SerializeField] private LayerMask _collisionMask;
+    [Tooltip("카메라 충돌 반경")]
+    [SerializeField] private float _collisionRadius = 0.25f;
+    [Tooltip("벽과 카메라 사이 최소 여유 거리")]
+    [SerializeField] private float _collisionPadding = 0.08f;
+    [Tooltip("플레이어 어깨와 카메라 사이 최소 거리")]
+    [SerializeField] private float _minimumBackDistance = 0.45f;
+    [Tooltip("벽에서 벗어난 뒤 원래 거리로 돌아가는 시간")]
+    [SerializeField] private float _collisionRestoreSmoothTime = 0.2f;
+    [Tooltip("벽 판정이 잠깐 끊겼을 때 즉시 복귀하지 않도록 하는 시간")]
+    [SerializeField] private float _collisionReleaseDelay = 0.08f;
+
     private FieldCombatTarget _currentTarget;
     private Vector3 _positionVelocity;
+    private float _currentBackDistance;
+    private float _backDistanceVelocity;
+    private float _collisionClearElapsed;
 
     private bool _isLockedOn;
     private bool _isSubscribed;
@@ -58,6 +71,8 @@ public class FieldLockOnCameraController : MonoBehaviour
             _lockOnCamera =
                 GetComponent<CinemachineCamera>();
         }
+
+        _currentBackDistance = _backDistance;
 
         SetLockOnCameraActive(false);
     }
@@ -181,6 +196,9 @@ public class FieldLockOnCameraController : MonoBehaviour
         _currentTarget = target;
         _isLockedOn = true;
         _positionVelocity = Vector3.zero;
+        _backDistanceVelocity = 0f;
+        _currentBackDistance = _backDistance;
+        _collisionClearElapsed = 0f;
 
         Transform followTarget =
             _freeLookCamera != null &&
@@ -202,6 +220,45 @@ public class FieldLockOnCameraController : MonoBehaviour
 
         UpdateLockOnCameraPose(true);
         SetLockOnCameraActive(true);
+    }
+
+    /// <summary>
+    /// 어깨 기준 카메라 충돌 거리 계산
+    /// </summary>
+    /// <param name="shoulderPosition">어깨 기준 위치</param>
+    /// <param name="cameraDirection">카메라 방향</param>
+    /// <param name="isColliding">충돌 여부</param>
+    /// <returns>적용 카메라 거리</returns>
+    private float CalculateCollisionDistance(
+        Vector3 shoulderPosition,
+        Vector3 cameraDirection,
+        out bool isColliding)
+    {
+        isColliding = false;
+
+        if (_collisionMask.value == 0)
+        {
+            return _backDistance;
+        }
+
+        if (Physics.SphereCast(
+                shoulderPosition,
+                _collisionRadius,
+                cameraDirection,
+                out RaycastHit hit,
+                _backDistance,
+                _collisionMask,
+                QueryTriggerInteraction.Ignore))
+        {
+            isColliding = true;
+
+            return Mathf.Clamp(
+                hit.distance - _collisionPadding,
+                _minimumBackDistance,
+                _backDistance);
+        }
+
+        return _backDistance;
     }
 
     /// <summary>
@@ -251,14 +308,72 @@ public class FieldLockOnCameraController : MonoBehaviour
             Vector3.up *
             _playerFocusHeight;
 
-        Vector3 desiredCameraPosition =
-            playerFocusPosition -
-            forward *
-            _backDistance +
+        Vector3 shoulderPosition =
+            playerFocusPosition +
             right *
             _shoulderOffset +
             Vector3.up *
             _cameraHeight;
+
+        Vector3 cameraDirection =
+            -forward;
+
+        float collisionDistance =
+            CalculateCollisionDistance(
+                shoulderPosition,
+                cameraDirection,
+                out bool isColliding);
+
+        if (immediate)
+        {
+            _currentBackDistance =
+                collisionDistance;
+
+            _backDistanceVelocity = 0f;
+            _collisionClearElapsed = 0f;
+        }
+        else if (isColliding)
+        {
+            // 벽에 닿았을 때는 즉시 안쪽으로 이동해 벽 관통 방지
+            if (collisionDistance <
+                _currentBackDistance)
+            {
+                _currentBackDistance =
+                    collisionDistance;
+
+                _backDistanceVelocity = 0f;
+            }
+            else
+            {
+                _currentBackDistance =
+                    Mathf.Min(
+                        collisionDistance,
+                        _currentBackDistance);
+            }
+
+            _collisionClearElapsed = 0f;
+        }
+        else
+        {
+            _collisionClearElapsed +=
+                Time.deltaTime;
+
+            if (_collisionClearElapsed >=
+                _collisionReleaseDelay)
+            {
+                _currentBackDistance =
+                    Mathf.SmoothDamp(
+                        _currentBackDistance,
+                        _backDistance,
+                        ref _backDistanceVelocity,
+                        _collisionRestoreSmoothTime);
+            }
+        }
+
+        Vector3 desiredCameraPosition =
+            shoulderPosition +
+            cameraDirection *
+            _currentBackDistance;
 
         Vector3 lookPosition =
             Vector3.Lerp(
@@ -271,10 +386,13 @@ public class FieldLockOnCameraController : MonoBehaviour
         Transform cameraTransform =
             _lockOnCamera.transform;
 
-        if (immediate)
+        if (immediate || isColliding)
         {
             cameraTransform.position =
                 desiredCameraPosition;
+
+            _positionVelocity =
+                Vector3.zero;
         }
         else
         {
@@ -321,6 +439,7 @@ public class FieldLockOnCameraController : MonoBehaviour
                 rotationRatio);
     }
 
+
     /// <summary>
     /// 록온 카메라 활성화 설정
     /// </summary>
@@ -346,6 +465,9 @@ public class FieldLockOnCameraController : MonoBehaviour
     {
         _currentTarget = null;
         _positionVelocity = Vector3.zero;
+        _backDistanceVelocity = 0f;
+        _currentBackDistance = _backDistance;
+        _collisionClearElapsed = 0f;
 
         if (_isLockedOn == false)
         {
