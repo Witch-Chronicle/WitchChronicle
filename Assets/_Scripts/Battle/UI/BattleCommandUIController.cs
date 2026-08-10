@@ -24,6 +24,7 @@ public class BattleCommandUIController : MonoBehaviour
 
     // 커맨드 순서: Attack0 / Skill1 / Item2 / Retreat3
     private const int SkillCommandIndex = 1;
+    private const int ItemCommandIndex = 2;
 
     private int _currentIndex = -1;
     private bool _isInputActive;
@@ -35,6 +36,7 @@ public class BattleCommandUIController : MonoBehaviour
     {
         _isInputActive = true;
         RefreshSkillLock();
+        RefreshItemLock();
         ResetToDefault();
     }
 
@@ -60,6 +62,38 @@ public class BattleCommandUIController : MonoBehaviour
         }
 
         skillButton.interactable = canUseSkill;
+    }
+
+    /// <summary>
+    /// 사용 가능한 포션 아이템이 하나도 없으면 Item 커맨드 버튼을 비활성화(입력 차단)한다.
+    /// interactable=false면 MoveSelection/SubmitCurrent가 IsSelectable로 자동 제외한다.
+    /// </summary>
+    private void RefreshItemLock()
+    {
+        if (_commands == null || _commands.Length <= ItemCommandIndex)
+            return;
+        Button itemButton = _commands[ItemCommandIndex].Button;
+        if (itemButton == null)
+            return;
+        itemButton.interactable = HasUsablePotionItem();
+    }
+    /// <summary>
+    /// PlayerInventory에 수량이 1개 이상인 PotionItemData가 존재하는지 확인한다.
+    /// </summary>
+    private bool HasUsablePotionItem()
+    {
+        if (PlayerInventory.Instance == null)
+            return false;
+        foreach (var inventorySlot in PlayerInventory.Instance.InventorySlots)
+        {
+            if (inventorySlot == null)
+                continue;
+            if (inventorySlot.ItemData is not PotionItemData)
+                continue;
+            if (inventorySlot.Quantity > 0)
+                return true;
+        }
+        return false;
     }
 
     public void DeactivateInput()
