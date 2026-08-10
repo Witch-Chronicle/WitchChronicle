@@ -68,17 +68,33 @@ namespace WitchChronicle.IdleFarming
                 return;
             }
             Instance = this;
+
+            CollectAllSeedAssets();
+        }
+
+        private void CollectAllSeedAssets()
+        {
+            SeedData[] loadedSeeds = Resources.LoadAll<SeedData>("");
+            foreach (var seed in loadedSeeds)
+            {
+                if (seed != null && !_allSeeds.Contains(seed))
+                {
+                    _allSeeds.Add(seed);
+                }
+            }
         }
 
         private void Start()
         {
             AutoRegisterPlots();
 
+            // SaveManager에 복원된 데이터가 있다면 밭 슬롯들에 적용
             if (SaveManager.Instance != null && SaveManager.Instance.CurrentSaveData != null)
             {
                 LoadFarmSaveData(SaveManager.Instance.CurrentSaveData.FarmPlots);
             }
         }
+
 
         // ====== 슬롯 등록 ======
 
@@ -334,7 +350,6 @@ namespace WitchChronicle.IdleFarming
 
         public void LoadFarmSaveData(List<PlotSaveData> savedPlots)
         {
-            // 저장된 데이터가 없으면 신규 시작 (기본 밭 해제)
             if (savedPlots == null || savedPlots.Count == 0)
             {
                 InitializeFresh();
@@ -354,7 +369,6 @@ namespace WitchChronicle.IdleFarming
                 if (dataMap.TryGetValue(slot.PlotIndex, out var saveData))
                 {
                     SeedData seed = FindSeedByName(saveData.plantedSeedItemId);
-                    // Initialize() 안에서 UpdateCycle()이 불려 오프라인 지난 시간만큼 작물이 자랍니다!
                     slot.Initialize(saveData, seed);
                 }
                 else
@@ -366,7 +380,7 @@ namespace WitchChronicle.IdleFarming
                 }
             }
 
-            Debug.Log($"[PlotManager] 농사 데이터 및 오프라인 시간 복원 완료 (총 {_slots.Count}개 밭)");
+            Debug.Log($"<color=green>[PlotManager] 농사 데이터 {savedPlots.Count}개 복원 완료!</color>");
         }
 
 

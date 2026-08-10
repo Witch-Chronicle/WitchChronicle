@@ -20,6 +20,8 @@ namespace WitchChronicle.IdleFarming
         private DateTime _cycleStartTime;
         private int _pendingHarvestCount;
 
+        private bool _isInitializing = false;
+
         public event Action<PlotSlot> OnStateChanged;
         public event Action<PlotSlot, SeedData, int> OnHarvested;
 
@@ -61,6 +63,8 @@ namespace WitchChronicle.IdleFarming
             UpdateCycle();
 
             RefreshVisual();
+
+            _isInitializing = false;
         }
 
         public PlotSaveData ToSaveData()
@@ -173,7 +177,17 @@ namespace WitchChronicle.IdleFarming
             OnStateChanged?.Invoke(this);
             RefreshVisual();
 
-            SaveManager.RequestSave(); // ★ 사이클 완료 시 저장
+            RequestSaveIfNotInitializing();
+        }
+
+        
+        private void RequestSaveIfNotInitializing()
+        {
+            // 로드 중이 아닐 때만 세이브 파일에 저장 요청
+            if (!_isInitializing)
+            {
+                SaveManager.RequestSave();
+            }
         }
 
         public void ProcessOfflineTime(int maxCycles)

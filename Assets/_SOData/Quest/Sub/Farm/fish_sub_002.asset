@@ -14,17 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::QuestData
   id: fish_002
   title: "\uC190\uB9DB\uC744 \uB290\uB07C\uB2E4"
-  description: "\uB09A\uC2DC\uD130\uC5D0\uC11C \uBD95\uC5B4 2\uB9C8\uB9AC\uB97C \uB09A\uC544\uBCF4\uC790."
+  description: "\uB09A\uC2DC\uD130\uC5D0\uC11C \uC544\uBB34 \uBB3C\uACE0 2\uB9C8\uB9AC\uB97C
+    \uB09A\uC544\uBCF4\uC790."
   type: 1
   objectives:
   - type: 8
-    targetID: 7001
-    targetName: "\uBD95\uC5B4"
+    targetID: ANY
+    targetName: "\uBB3C\uACE0\uAE30"
     requiredCount: 2
   reward:
     gold: 300
     exp: 200
-    item: {fileID: 0}
+    items: []
     itemCount: 0
     recruitNPC: 
     nextStory: 0

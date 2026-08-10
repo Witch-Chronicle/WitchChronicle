@@ -213,10 +213,16 @@ public class MinimapUIController : MonoBehaviour, IDragHandler
         {
             return;
         }
+
         if (!Input.GetKeyDown(_toggleKey))
         {
             return;
         }
+        else if (Input.GetKeyDown(KeyCode.Escape) && _isMinimapActive)
+        {
+            CloseMinimap();
+        }
+
         if (_minimapRootObject == null)
         {
             return;
@@ -229,6 +235,12 @@ public class MinimapUIController : MonoBehaviour, IDragHandler
         _minimapRootObject.SetActive(_isMinimapActive);
         Debug.Log($"[MinimapUIController] 미니맵 표시 상태 변경: {(_isMinimapActive ? "켜짐" : "꺼짐")}");
     }
+
+    public void CloseMinimap()
+    {
+        _minimapRootObject.SetActive(false);
+    }
+
     /// <summary>
     /// Battle 씬이 로드되어 있으면 미니맵을 강제로 닫음 (열려있던 상태였어도 즉시 비활성화).
     /// </summary>
