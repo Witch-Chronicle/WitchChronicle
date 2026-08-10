@@ -30,7 +30,6 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioSource bgmSourceA;
     [SerializeField] private AudioSource bgmSourceB;
     [SerializeField] private AudioSource sfxSource;
-    [Tooltip("루프 재생용 SFX (낚시 캐스트 같은 지속음)")]
     [SerializeField] private AudioSource loopSfxSource;
 
     [Header("씬별 BGM 매핑")]
@@ -71,7 +70,6 @@ public class SoundManager : MonoBehaviour
     private Dictionary<string, SceneBgmEntry> _sceneBgmMap;
     private Dictionary<SfxType, SfxEntry> _sfxMap;
 
-    // 현재 루프 재생 중인 SFX
     private SfxType? _currentLoopSfx;
     private float _currentLoopScale = 1f;
 
@@ -104,8 +102,6 @@ public class SoundManager : MonoBehaviour
     {
         TryPlaySceneBgm(scene.name);
         if (autoRegisterButtons) AutoRegisterAllButtons();
-
-        // 씬 전환 시 루프 SFX 자동 정지 (다른 씬으로 넘어가는데 낚시 소리 계속 나면 이상함)
         StopSfxLoop();
     }
 
@@ -190,9 +186,6 @@ public class SoundManager : MonoBehaviour
 
     // ===================== SFX =====================
 
-    /// <summary>
-    /// enum SFX를 1회 재생 (PlayOneShot).
-    /// </summary>
     public void PlaySfx(SfxType type, float extraVolumeScale = 1f)
     {
         if (_sfxMap == null) BuildSfxMap();
@@ -214,12 +207,8 @@ public class SoundManager : MonoBehaviour
         sfxSource.PlayOneShot(sfxClip, finalVolume);
     }
 
-    // ===================== 루프 SFX (지속음) =====================
+    // ===================== 루프 SFX =====================
 
-    /// <summary>
-    /// SFX를 루프 재생 시작. StopSfxLoop() 부를 때까지 계속 재생.
-    /// 이미 다른 루프 SFX 재생 중이면 교체됨.
-    /// </summary>
     public void PlaySfxLoop(SfxType type, float extraVolumeScale = 1f)
     {
         if (_sfxMap == null) BuildSfxMap();
@@ -236,7 +225,6 @@ public class SoundManager : MonoBehaviour
             return;
         }
 
-        // 이미 같은 SFX 재생 중이면 무시
         if (_currentLoopSfx == type && loopSfxSource.isPlaying)
             return;
 
@@ -249,9 +237,6 @@ public class SoundManager : MonoBehaviour
         _currentLoopSfx = type;
     }
 
-    /// <summary>
-    /// 루프 재생 중인 SFX 정지.
-    /// </summary>
     public void StopSfxLoop()
     {
         if (loopSfxSource == null) return;
@@ -261,9 +246,6 @@ public class SoundManager : MonoBehaviour
         _currentLoopSfx = null;
     }
 
-    /// <summary>
-    /// 지정한 SFX 타입이 루프 재생 중인지 확인.
-    /// </summary>
     public bool IsLoopSfxPlaying(SfxType type)
     {
         return _currentLoopSfx == type && loopSfxSource != null && loopSfxSource.isPlaying;
@@ -316,13 +298,49 @@ public class SoundManager : MonoBehaviour
 
     // ===================== 볼륨 / Mute =====================
 
-    public void SetMasterVolume(float volume) { _masterVolume = Mathf.Clamp01(volume); ApplyBgmVolume(); ApplyLoopSfxVolume(); }
-    public void SetBgmVolume(float volume)    { _bgmVolume = Mathf.Clamp01(volume); ApplyBgmVolume(); }
-    public void SetSfxVolume(float volume)    { _sfxVolume = Mathf.Clamp01(volume); ApplyLoopSfxVolume(); }
+    public void SetMasterVolume(float volume)
+    {
+        _masterVolume = Mathf.Clamp01(volume);
+        ApplyBgmVolume();
+        ApplyLoopSfxVolume();
+        SaveManager.RequestSave();
+    }
 
-    public void SetMasterMuted(bool muted) { _isMasterMuted = muted; ApplyBgmVolume(); ApplyLoopSfxVolume(); }
-    public void SetBgmMuted(bool muted)    { _isBgmMuted = muted; ApplyBgmVolume(); }
-    public void SetSfxMuted(bool muted)    { _isSfxMuted = muted; ApplyLoopSfxVolume(); }
+    public void SetBgmVolume(float volume)
+    {
+        _bgmVolume = Mathf.Clamp01(volume);
+        ApplyBgmVolume();
+        SaveManager.RequestSave();
+    }
+
+    public void SetSfxVolume(float volume)
+    {
+        _sfxVolume = Mathf.Clamp01(volume);
+        ApplyLoopSfxVolume();
+        SaveManager.RequestSave();
+    }
+
+    public void SetMasterMuted(bool muted)
+    {
+        _isMasterMuted = muted;
+        ApplyBgmVolume();
+        ApplyLoopSfxVolume();
+        SaveManager.RequestSave();
+    }
+
+    public void SetBgmMuted(bool muted)
+    {
+        _isBgmMuted = muted;
+        ApplyBgmVolume();
+        SaveManager.RequestSave();
+    }
+
+    public void SetSfxMuted(bool muted)
+    {
+        _isSfxMuted = muted;
+        ApplyLoopSfxVolume();
+        SaveManager.RequestSave();
+    }
 
     private float GetEffectiveBgmFactor()
     {
@@ -345,9 +363,6 @@ public class SoundManager : MonoBehaviour
         _currentBgmSource.volume = _currentBgmScale * GetEffectiveBgmFactor();
     }
 
-    /// <summary>
-    /// 루프 재생 중인 SFX 볼륨을 최신 SFX/Master 볼륨으로 갱신.
-    /// </summary>
     private void ApplyLoopSfxVolume()
     {
         if (loopSfxSource == null || !loopSfxSource.isPlaying) return;
