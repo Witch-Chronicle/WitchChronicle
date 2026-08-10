@@ -21,6 +21,12 @@ public class BattleEntryTransitionController : MonoBehaviour
     [SerializeField] private Image _blackoutImage;
     [SerializeField] private Volume _entryVolume;
 
+    [Header("Sound")]
+    [SerializeField] private AudioSource _audioSource;
+    [SerializeField] private AudioClip _suctionSfx;
+    [SerializeField, Range(0f, 1f)] private float _suctionSfxVolume = 1f;
+    [SerializeField, Range(0.5f, 2f)] private float _suctionSfxPitch = 1f;
+
     [Header("Hit Stop")]
     [Tooltip("전투 진입 직후 화면이 정지된 채 유지되는 시간")]
     [SerializeField] private float _hitStopDuration = 0.1f;
@@ -86,6 +92,11 @@ public class BattleEntryTransitionController : MonoBehaviour
         }
 
         Instance = this;
+
+        if (_audioSource == null)
+        {
+            _audioSource = GetComponent<AudioSource>();
+        }
 
         HideImmediate();
     }
@@ -263,8 +274,9 @@ public class BattleEntryTransitionController : MonoBehaviour
     /// </summary>
     private void AppendSuctionAnimation()
     {
-        float suctionStartTime =
-            _transitionSequence.Duration();
+        float suctionStartTime = _transitionSequence.Duration();
+
+        _transitionSequence.AppendCallback(PlaySuctionSfx);
 
         if (_cameraTransform != null)
         {
@@ -535,5 +547,19 @@ public class BattleEntryTransitionController : MonoBehaviour
 
         _entryVolume.weight =
             Mathf.Clamp01(weight);
+    }
+
+    /// <summary>
+    /// 화면 흡입 사운드 재생
+    /// </summary>
+    private void PlaySuctionSfx()
+    {
+        if (_audioSource == null || _suctionSfx == null)
+        {
+            return;
+        }
+
+        _audioSource.pitch = _suctionSfxPitch;
+        _audioSource.PlayOneShot(_suctionSfx, _suctionSfxVolume);
     }
 }

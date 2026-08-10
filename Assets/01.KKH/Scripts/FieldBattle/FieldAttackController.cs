@@ -35,6 +35,7 @@ public class FieldAttackController : MonoBehaviour
     [SerializeField] private AudioSource _audioSource;
     [SerializeField] private AudioClip _attackSfx;
     [SerializeField, Range(0f, 1f)] private float _attackSfxVolume = 1f;
+    [SerializeField, Range(0.5f, 2f)] private float _attackSfxPitch = 1f;
 
     [Header("Timing")]
     [Tooltip("피격 이펙트 발생 후 전투 진입까지 유지 시간")]
@@ -232,8 +233,6 @@ public class FieldAttackController : MonoBehaviour
                 _currentTarget);
         }
 
-        PlayAttackSfx();
-
         bool isAnimationStarted =
             PlayAttackAnimation();
 
@@ -429,6 +428,8 @@ public class FieldAttackController : MonoBehaviour
         }
 
         _isImpactNotified = true;
+
+        PlayAttackSfx();
 
         Debug.Log(
             "[FieldAttack] Impact Event");
@@ -960,6 +961,7 @@ public class FieldAttackController : MonoBehaviour
             return;
         }
 
+        _audioSource.pitch = _attackSfxPitch;
         _audioSource.PlayOneShot(_attackSfx, _attackSfxVolume);
     }
 }

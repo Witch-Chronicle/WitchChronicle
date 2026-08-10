@@ -16,6 +16,12 @@ public class BattleEncounter : MonoBehaviour
     [SerializeField] private bool _isPlayerAdvantage;
     [SerializeField] private bool _isEnemyAdvantage;
 
+    [Header("Sound")]
+    [SerializeField] private AudioSource _audioSource;
+    [SerializeField] private AudioClip _playerAdvantageImpactSfx;
+    [SerializeField] private AudioClip _enemyAdvantageImpactSfx;
+    [SerializeField, Range(0f, 1f)] private float _impactSfxVolume = 1f;
+
     private readonly List<DungeonMonster> _dungeonMonsters = new List<DungeonMonster>();
     private bool _isBattleStarted;
     private bool _isBattleTransitionStarted;
@@ -190,6 +196,8 @@ public class BattleEncounter : MonoBehaviour
         _isPlayerAdvantage = false;
         _isEnemyAdvantage = true;
 
+        PlayAdvantageImpactSfx(false);
+
         StartBattleTransition();
 
         Debug.Log("[BattleEncounter] 적 선공 전투 시작");
@@ -210,8 +218,9 @@ public class BattleEncounter : MonoBehaviour
         _isPlayerAdvantage = true;
         _isEnemyAdvantage = false;
 
-        Debug.Log(
-            "[BattleEncounter] 플레이어 선공 예약");
+        PlayAdvantageImpactSfx(true);
+
+        Debug.Log("[BattleEncounter] 플레이어 선공 예약");
 
         return true;
     }
@@ -406,5 +415,26 @@ public class BattleEncounter : MonoBehaviour
 
         BattleEntryTransitionController.Instance
             .RevealFromBlack();
+    }
+
+    /// <summary>
+    /// 선공 충돌 사운드 재생
+    /// </summary>
+    /// <param name="isPlayerAdvantage">플레이어 선공 여부</param>
+    private void PlayAdvantageImpactSfx(bool isPlayerAdvantage)
+    {
+        if (_audioSource == null)
+        {
+            return;
+        }
+
+        AudioClip clip = isPlayerAdvantage ? _playerAdvantageImpactSfx : _enemyAdvantageImpactSfx;
+
+        if (clip == null)
+        {
+            return;
+        }
+
+        _audioSource.PlayOneShot(clip, _impactSfxVolume);
     }
 }
