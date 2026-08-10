@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -278,14 +279,17 @@ public class QuestManager : MonoBehaviour
                 PersistentCharacterManager.Instance.RecruitCharacter(reward.recruitNPC, addToActiveParty: true);
             }
 
-            // 필드에 서 있던 해당 NPC 오브젝트 즉시 제거/비활성화
+            // 필드에 서 있던 해당 NPC 오브젝트 제거.
+            // 보상 지급은 대화 도중에 일어나므로 여기서 바로 지우면
+            // 플레이어가 말을 거는 중에 캐릭터가 사라져 보인다.
+            // 대화·상점 등 모든 창이 닫힌 뒤에 지운다.
             if (NPCManager.Instance != null)
             {
                 NPC fieldNpc = NPCManager.Instance.GetNPC(reward.recruitNPC);
 
                 if (fieldNpc != null)
                 {
-                    Destroy(fieldNpc.gameObject); // 또는 Destroy(fieldNpc.gameObject);
+                    StartCoroutine(RemoveFieldNpcAfterDialogue(fieldNpc));
                 }
             }
 
@@ -316,4 +320,46 @@ public class QuestManager : MonoBehaviour
         return _database.GetAllQuest();
     }
 
+    /// <summary>
+    /// 대화·상점 등 모든 UI가 닫힌 뒤 필드의 NPC 오브젝트를 제거한다.
+    /// 영입 보상은 대화 도중 지급되므로, 바로 지우면 말하는 중에 캐릭터가 사라진다.
+    /// </summary>
+    /// <param name="fieldNpc">제거할 필드 NPC</param>
+    private IEnumerator RemoveFieldNpcAfterDialogue(NPC fieldNpc)
+    {
+        // DialogueManager.MoveNode()는 퀘스트 보상을 먼저 처리하고 그다음 DialogueUI.Show()를 부른다.
+        // 즉 이 시점에는 아직 UI 모드가 켜지기 전이라, 바로 닫힘 판정을 하면 즉시 지워진다.
+        // 먼저 창이 열리는 것을 확인한 뒤에 닫힘을 기다린다.
+        float openWait = 0f;
+
+        while (fieldNpc != null && IsInteractionOpen() == false && openWait < 1f)
+        {
+            openWait += Time.deltaTime;
+            yield return null;
+        }
+
+        // 창이 닫힐 때까지 대기 (대화 → 상점 → 강화 등을 모두 거친 뒤)
+        while (fieldNpc != null && IsInteractionOpen())
+        {
+            yield return null;
+        }
+
+        if (fieldNpc != null)
+        {
+            Destroy(fieldNpc.gameObject);
+        }
+    }
+
+    /// <summary>
+    /// 대화·상점 등 UI가 하나라도 열려 있는지 판단.
+    /// </summary>
+    private static bool IsInteractionOpen()
+    {
+        if (CursorLocker.Instance != null)
+        {
+            return CursorLocker.Instance.IsUIMode;
+        }
+
+        return DialogueUI.Instance != null && DialogueUI.Instance.IsPanelActive;
+    }
 }
