@@ -645,9 +645,26 @@ public class BattleCycleController : MonoBehaviour
             return 0;
         }
 
+        float attackValue;
+        float defenseValue;
+
+        // 플레이어만 물리/마법 중 높은 스탯 사용
+        if (attacker.TeamType == BattleTeamType.Player)
+        {
+            bool isMagical = attacker.MagicPower > attacker.AttackPower;
+            attackValue = isMagical ? attacker.MagicPower : attacker.AttackPower;
+            defenseValue = isMagical ? target.MagicDefensePower : target.DefensePower;
+        }
+        else
+        {
+            // 적군은 EnemyBattleData에 설정된 AttackPower / DefensePower 그대로 사용
+            attackValue = attacker.AttackPower;
+            defenseValue = target.DefensePower;
+        }
+
         float rawDamage =
-            attacker.AttackPower -
-            target.DefensePower * 0.5f;
+            attackValue -
+            defenseValue * 0.5f;
 
         return Mathf.Max(
             1,

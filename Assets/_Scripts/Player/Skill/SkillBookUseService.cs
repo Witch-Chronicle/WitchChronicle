@@ -90,6 +90,11 @@ public static class SkillBookUseService
             Debug.Log($"[SkillBook] {book.itemName} → {tier}티어 {rolledSkill.SkillName} 습득");
         }
 
+        if (QuestManager.Instance != null && book != null)
+        {
+            QuestManager.Instance.AddProgress(QuestObjectiveType.gatcha, book.itemId.ToString(), 1);
+        }
+
         PlayerInventory.Instance.RaiseInventoryChanged();
         return result;
     }

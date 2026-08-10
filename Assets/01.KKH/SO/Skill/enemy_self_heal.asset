@@ -15,6 +15,7 @@ MonoBehaviour:
   _skillId: enemy_self_heal
   _skillName: "\uC7AC\uC0DD"
   _description: "\uC790\uC2E0\uC758 HP \uD68C\uBCF5"
+  _tier: 2
   _mpCost: 0
   _elementType: 0
   _skillType: 1
@@ -23,13 +24,24 @@ MonoBehaviour:
   _targetType: 4
   _statusEffectType: 0
   _statusChance: 0
+  _cureStatusEffectType: 0
+  _buffData: {fileID: 0}
   _presentationType: 2
+  _skillIcon: {fileID: 0}
+  _voiceClip: {fileID: 0}
   _impactDelay: 0.3
+  _castSfx: {fileID: 8300000, guid: b1d88b3a5958805478d658120626f0d2, type: 3}
+  _hitSfx: {fileID: 8300000, guid: 065b5bd15beb8c44d8e39624333e932d, type: 3}
   _castVfxPrefab: {fileID: 0}
   _projectileVfxPrefab: {fileID: 2457285412779223385, guid: 8095cf0db38100248a5bd353def4dcaf, type: 3}
   _hitVfxPrefab: {fileID: 0}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
   _hitVfxOffset: {x: 0, y: 0.01, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
-  _castSfx: {fileID: 8300000, guid: b1d88b3a5958805478d658120626f0d2, type: 3}
-  _hitSfx: {fileID: 8300000, guid: 065b5bd15beb8c44d8e39624333e932d, type: 3}
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
+  _constellationPathSequenceData: {fileID: 0}
+  _constellationPathAttackData: {fileID: 0}
+  _drawGuideJson: {fileID: 0}
+  _drawExampleSprite: {fileID: 0}

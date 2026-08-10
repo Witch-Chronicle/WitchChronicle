@@ -99,7 +99,7 @@ public class NPCQuestIndicator : MonoBehaviour
             return;
         }
 
-        // 💡 1. 진행 중인 퀘스트의 대화/영입 대상(TalkNPC / RecruitNPC)인 경우 -> 물음표(?) 켜기
+        // 1. 진행 중인 퀘스트의 대화/영입 대상인 경우 -> 물음표(?)
         List<QuestRuntime> runningList = QuestManager.Instance.GetRunningQuests();
         foreach (QuestRuntime running in runningList)
         {
@@ -117,22 +117,38 @@ public class NPCQuestIndicator : MonoBehaviour
             }
         }
 
-        // 2. 자신이 부여하는 퀘스트가 없는 일반 NPC는 끔
         if (string.IsNullOrEmpty(_npc.Data.QuestId))
         {
             SetState(IndicatorState.None);
             return;
         }
 
-        // 3. 자신이 부여하는 퀘스트 상태 확인 (NextQuest 체인 포함)
+        // 2. 퀘스트 상태 추적 (무한 루프 방어막 적용)
         string currentQuestId = _npc.Data.QuestId;
         QuestRuntime questRuntime = QuestManager.Instance.GetQuest(currentQuestId);
 
+        int safetyGuard = 0; // 💡 무한 루프 방지용 안전장치
+
         while (questRuntime != null && questRuntime.State == QuestState.Rewarded)
         {
+            safetyGuard++;
+            if (safetyGuard > 20) // 20번 이상 순환되면 무한 루프로 판단하고 탈출!
+            {
+                Debug.LogError($"[NPCQuestIndicator] 무한 순환 감지! {_npc.Data.NpcName}의 퀘스트 NextQuest 설정을 확인하세요.");
+                break;
+            }
+
             if (questRuntime.Data != null && questRuntime.Data.nextQuest != null)
             {
                 string nextId = questRuntime.Data.nextQuest.id;
+
+                // 자기 자신을 NextQuest로 연결한 경우 즉시 무한 루프 차단
+                if (nextId == currentQuestId)
+                {
+                    Debug.LogError($"[NPCQuestIndicator] {currentQuestId} 퀘스트의 NextQuest가 자기 자신으로 설정되어 있습니다!");
+                    break;
+                }
+
                 QuestRuntime nextRuntime = QuestManager.Instance.GetQuest(nextId);
 
                 if (nextRuntime != null)
@@ -163,21 +179,18 @@ public class NPCQuestIndicator : MonoBehaviour
 
         bool isMain = questData.type == QuestType.Main;
 
-        // A. 수락 가능 상태 -> 느낌표(!)
         if (questRuntime == null)
         {
             SetState(isMain ? IndicatorState.MainExclamation : IndicatorState.SubExclamation);
             return;
         }
 
-        // B. 완료 가능 상태 -> 물음표(?)
         if (questRuntime.State == QuestState.Completed)
         {
             SetState(isMain ? IndicatorState.MainQuestion : IndicatorState.SubQuestion);
             return;
         }
 
-        // C. 기타 (진행 중 / 보상 완료) -> 끔
         SetState(IndicatorState.None);
     }
 
