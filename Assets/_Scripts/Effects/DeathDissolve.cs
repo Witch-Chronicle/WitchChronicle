@@ -39,6 +39,10 @@ public class DeathDissolve : MonoBehaviour
     [Header("완료 후")]
     [SerializeField] private bool _deactivateOnComplete = true;
 
+    [Header("References")]
+    [Tooltip("디졸브 후 비활성화할 캐릭터 모델 루트")]
+    [SerializeField] private GameObject _visualRoot;
+
     private static readonly int DissolveAmountId = Shader.PropertyToID("_DissolveAmount");
     private static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
 
@@ -71,9 +75,9 @@ public class DeathDissolve : MonoBehaviour
         {
             CleanupRiseEffect(riseEffect);
 
-            if (_deactivateOnComplete)
+            if (_deactivateOnComplete && _visualRoot != null)
             {
-                gameObject.SetActive(false);
+                _visualRoot.SetActive(false);
             }
 
             yield break;
@@ -101,9 +105,9 @@ public class DeathDissolve : MonoBehaviour
 
         CleanupRiseEffect(riseEffect);
 
-        if (_deactivateOnComplete)
+        if (_deactivateOnComplete && _visualRoot != null)
         {
-            gameObject.SetActive(false);
+            _visualRoot.SetActive(false);
         }
     }
 
@@ -152,7 +156,10 @@ public class DeathDissolve : MonoBehaviour
             return instances;
         }
 
-        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        Renderer[] renderers =
+            _visualRoot != null
+                ? _visualRoot.GetComponentsInChildren<Renderer>()
+                : GetComponentsInChildren<Renderer>();
 
         for (int r = 0; r < renderers.Length; r++)
         {

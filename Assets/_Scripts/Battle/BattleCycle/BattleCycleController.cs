@@ -34,6 +34,10 @@ public class BattleCycleController : MonoBehaviour
     [Tooltip("적 행동 배너 표시 후 대상 카메라로 넘어가기 전 유지 시간")]
     [SerializeField] private float _enemyActionBannerHoldDuration = 0.2f;
 
+    [Header("Reaction Timing")]
+    [Tooltip("피격 및 사망 연출 최대 대기 시간")]
+    [SerializeField] private float _reactionTimeout = 3f;
+
     private readonly List<BattleUnit> _battleUnits = new List<BattleUnit>();
 
     private readonly List<BattleUnit> _turnOrder = new List<BattleUnit>();
@@ -1142,18 +1146,36 @@ public class BattleCycleController : MonoBehaviour
 
     /// <summary>
     /// 단일 대상 피격 연출 완료 대기
-    /// 승패 확정 시 전투 종료 처리를 위해 즉시 대기 종료
+    /// 사망 대상은 사망 연출과 무관하게 턴 진행
     /// </summary>
     /// <param name="target">대상 유닛</param>
-    private IEnumerator WaitForTargetReaction(BattleUnit target)
+    private IEnumerator WaitForTargetReaction(
+        BattleUnit target)
     {
-        if (_battlePresentationBinder == null || target == null) yield break;
-
-        while (_battlePresentationBinder.IsReactionPlaying(target))
+        if (_battlePresentationBinder == null ||
+            target == null)
         {
-            if (_battleState == BattleState.BattleEnd) yield break;
+            yield break;
+        }
 
-            if (TryGetWinner(out _)) yield break;
+        if (target.IsAlive == false)
+        {
+            yield break;
+        }
+
+        while (_battlePresentationBinder
+            .IsReactionPlaying(target))
+        {
+            if (_battleState ==
+                BattleState.BattleEnd)
+            {
+                yield break;
+            }
+
+            if (TryGetWinner(out _))
+            {
+                yield break;
+            }
 
             yield return null;
         }
@@ -1161,18 +1183,45 @@ public class BattleCycleController : MonoBehaviour
 
     /// <summary>
     /// 다중 대상 피격 연출 완료 대기
-    /// 승패 확정 시 전투 종료 처리를 위해 즉시 대기 종료
+    /// 승패 확정 또는 제한 시간 초과 시 대기 종료
     /// </summary>
     /// <param name="targets">대상 유닛 목록</param>
-    private IEnumerator WaitForTargetReactions(IReadOnlyList<BattleUnit> targets)
+    private IEnumerator WaitForTargetReactions(
+        IReadOnlyList<BattleUnit> targets)
     {
-        if (_battlePresentationBinder == null || targets == null) yield break;
-
-        while (_battlePresentationBinder.IsAnyReactionPlaying(targets))
+        if (_battlePresentationBinder == null ||
+            targets == null)
         {
-            if (_battleState == BattleState.BattleEnd) yield break;
+            yield break;
+        }
 
-            if (TryGetWinner(out _)) yield break;
+        float elapsedTime = 0f;
+
+        while (_battlePresentationBinder
+            .IsAnyReactionPlaying(targets))
+        {
+            if (_battleState ==
+                BattleState.BattleEnd)
+            {
+                yield break;
+            }
+
+            if (TryGetWinner(out _))
+            {
+                yield break;
+            }
+
+            elapsedTime +=
+                Time.unscaledDeltaTime;
+
+            if (_reactionTimeout > 0f &&
+                elapsedTime >= _reactionTimeout)
+            {
+                Debug.LogWarning(
+                    "[Battle] Multi Reaction Timeout");
+
+                yield break;
+            }
 
             yield return null;
         }

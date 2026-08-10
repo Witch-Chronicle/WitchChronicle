@@ -679,7 +679,15 @@ public class BattlePresentationBinder : MonoBehaviour
 
         for (int i = 0; i < units.Count; i++)
         {
-            if (IsReactionPlaying(units[i]))
+            BattleUnit unit = units[i];
+
+            if (unit == null ||
+                unit.IsAlive == false)
+            {
+                continue;
+            }
+
+            if (IsReactionPlaying(unit))
             {
                 return true;
             }
