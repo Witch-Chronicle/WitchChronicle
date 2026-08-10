@@ -2417,6 +2417,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLookAtPlayer
   _turnSpeed: 6
+  _restoreOriginalRotation: 1
   _restoreDelay: 0.4
 --- !u!136 &34061748
 CapsuleCollider:
@@ -2455,9 +2456,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcGreeting
   _animator: {fileID: 0}
   _greetTrigger: Greet
-  _greetVoice: {fileID: 8300000, guid: 1450603eab82faf408add98084ef38db, type: 3}
-  _farewellVoice: {fileID: 0}
-  _volume: 0.3
+  _greetVoice: {fileID: 8300000, guid: 0b44fc079d4d5054ca7e2e31d083f2ef, type: 3}
+  _farewellVoice: {fileID: 8300000, guid: 8d0433f17a2cde5419bd0e255f79d27e, type: 3}
+  _volume: 0.5
 --- !u!1001 &34631178
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -42009,9 +42010,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1722276133}
-  - {fileID: 662576046}
-  - {fileID: 536350607}
-  - {fileID: 1833757198}
   - {fileID: 1269345408}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -49975,6 +49973,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLookAtPlayer
   _turnSpeed: 6
+  _restoreOriginalRotation: 1
   _restoreDelay: 0.4
 --- !u!114 &490817283
 MonoBehaviour:
@@ -49990,9 +49989,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcGreeting
   _animator: {fileID: 0}
   _greetTrigger: Greet
-  _greetVoice: {fileID: 8300000, guid: 14df6f8f9dc46e0478b7709fb1635edd, type: 3}
-  _farewellVoice: {fileID: 8300000, guid: 82ec8c07436885845b5773e863308bbc, type: 3}
-  _volume: 0.3
+  _greetVoice: {fileID: 8300000, guid: 60905c13eafe631499e9ad2837ef6848, type: 3}
+  _farewellVoice: {fileID: 8300000, guid: b5dcbf6b3c1e7d74894cac621ccca2de, type: 3}
+  _volume: 0.5
 --- !u!1001 &491622285
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -54060,7 +54059,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 422932049}
+    m_TransformParent: {fileID: 1722276133}
     m_Modifications:
     - target: {fileID: 4949827410599399, guid: 78e53c7f75d298047b59bce367eafc26, type: 3}
       propertyPath: m_Layer
@@ -54244,15 +54243,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3340402376178311870, guid: 78e53c7f75d298047b59bce367eafc26, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -696.432
+      value: 258.6446
       objectReference: {fileID: 0}
     - target: {fileID: 3340402376178311870, guid: 78e53c7f75d298047b59bce367eafc26, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -530.516
+      value: 9.484009
       objectReference: {fileID: 0}
     - target: {fileID: 3340402376178311870, guid: 78e53c7f75d298047b59bce367eafc26, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 311.948
+      value: 313.80807
       objectReference: {fileID: 0}
     - target: {fileID: 3340402376178311870, guid: 78e53c7f75d298047b59bce367eafc26, type: 3}
       propertyPath: m_LocalRotation.w
@@ -54638,6 +54637,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 8715157164914787118, guid: 78e53c7f75d298047b59bce367eafc26, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 12f9e8c3fb5d0de409fd8004855a27ea, type: 2}
     - target: {fileID: 8789374904845170197, guid: 78e53c7f75d298047b59bce367eafc26, type: 3}
       propertyPath: m_Layer
       value: 8
@@ -62457,8 +62460,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.4037683, y: 1.3988814, z: 0.26689142}
+  m_Center: {x: -0.014951727, y: 0.19944072, z: -0.012980133}
 --- !u!114 &581632854
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -68235,7 +68238,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 422932049}
+    m_TransformParent: {fileID: 1722276133}
     m_Modifications:
     - target: {fileID: 156071031362144571, guid: 8b568e21d33ec6542b7854b86b0e41cf, type: 3}
       propertyPath: m_Layer
@@ -68537,6 +68540,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 3369504792341647087, guid: 8b568e21d33ec6542b7854b86b0e41cf, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 24aee8d1985004f48b8db0d731c27033, type: 2}
     - target: {fileID: 3410264731302211424, guid: 8b568e21d33ec6542b7854b86b0e41cf, type: 3}
       propertyPath: m_Layer
       value: 8
@@ -68755,15 +68762,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5926452675712253332, guid: 8b568e21d33ec6542b7854b86b0e41cf, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -805.9
+      value: 149.17657
       objectReference: {fileID: 0}
     - target: {fileID: 5926452675712253332, guid: 8b568e21d33ec6542b7854b86b0e41cf, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -513.479
+      value: 26.520996
       objectReference: {fileID: 0}
     - target: {fileID: 5926452675712253332, guid: 8b568e21d33ec6542b7854b86b0e41cf, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 330.28
+      value: 332.14008
       objectReference: {fileID: 0}
     - target: {fileID: 5926452675712253332, guid: 8b568e21d33ec6542b7854b86b0e41cf, type: 3}
       propertyPath: m_LocalRotation.w
@@ -88390,6 +88397,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLookAtPlayer
   _turnSpeed: 6
+  _restoreOriginalRotation: 1
   _restoreDelay: 0.4
 --- !u!114 &829719157
 MonoBehaviour:
@@ -88405,9 +88413,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcGreeting
   _animator: {fileID: 0}
   _greetTrigger: Greet
-  _greetVoice: {fileID: 8300000, guid: c186d79bdc173a34bb9db4be029b2189, type: 3}
-  _farewellVoice: {fileID: 8300000, guid: b39cacf69b173d147bd09f937fb4822c, type: 3}
-  _volume: 0.3
+  _greetVoice: {fileID: 8300000, guid: 4bc0958c5ab0e8c4a9521981a642e174, type: 3}
+  _farewellVoice: {fileID: 8300000, guid: 4d8a5d7fb79c8d247a3838b548979d24, type: 3}
+  _volume: 0.5
 --- !u!4 &832138624 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1030986210, guid: 17ee56a4c4830b448bc2a3e53527d636, type: 3}
@@ -89457,6 +89465,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLookAtPlayer
   _turnSpeed: 6
+  _restoreOriginalRotation: 1
   _restoreDelay: 0.4
 --- !u!136 &844623145
 CapsuleCollider:
@@ -89495,9 +89504,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcGreeting
   _animator: {fileID: 0}
   _greetTrigger: Greet
-  _greetVoice: {fileID: 0}
-  _farewellVoice: {fileID: 0}
-  _volume: 1
+  _greetVoice: {fileID: 8300000, guid: dae5b0aad20ed5c429ef7c7e73b22874, type: 3}
+  _farewellVoice: {fileID: 8300000, guid: 3b36e01e94fde3b4593b0a1c709d6bfe, type: 3}
+  _volume: 0.5
 --- !u!1001 &845213963
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -112191,6 +112200,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLookAtPlayer
   _turnSpeed: 6
+  _restoreOriginalRotation: 1
   _restoreDelay: 0.4
 --- !u!136 &1121314259
 CapsuleCollider:
@@ -112229,9 +112239,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcGreeting
   _animator: {fileID: 0}
   _greetTrigger: Greet
-  _greetVoice: {fileID: 0}
-  _farewellVoice: {fileID: 0}
-  _volume: 1
+  _greetVoice: {fileID: 8300000, guid: e446367eb4d198b489607cf2a7115704, type: 3}
+  _farewellVoice: {fileID: 8300000, guid: 84187fbd50098e64883ead9938df0a45, type: 3}
+  _volume: 0.5
 --- !u!4 &1122975955 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1317220275936433143, guid: fe92e407cc135064184e4631b8a73ab5, type: 3}
@@ -136006,7 +136016,7 @@ PrefabInstance:
     - target: {fileID: 5866666021909216657, guid: 1ff5c4179f0c0d14d85c35371748d925, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 9252ca27463bd014e835ad5d6af13a1d, type: 2}
+      objectReference: {fileID: 9100000, guid: d2fde5c3b85f20a45879deea53db78e0, type: 2}
     - target: {fileID: 5866666021909216657, guid: 1ff5c4179f0c0d14d85c35371748d925, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
@@ -142028,9 +142038,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcGreeting
   _animator: {fileID: 0}
   _greetTrigger: Greet
-  _greetVoice: {fileID: 0}
-  _farewellVoice: {fileID: 0}
-  _volume: 1
+  _greetVoice: {fileID: 8300000, guid: 33627bd8f9119de46ab1d1e61b349548, type: 3}
+  _farewellVoice: {fileID: 8300000, guid: dc65a963bf18b9449a56633c0e8bc30e, type: 3}
+  _volume: 0.5
 --- !u!114 &1404741313
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -142044,6 +142054,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLookAtPlayer
   _turnSpeed: 6
+  _restoreOriginalRotation: 1
   _restoreDelay: 0.4
 --- !u!1 &1405775030
 GameObject:
@@ -182909,6 +182920,9 @@ Transform:
   - {fileID: 1121314255}
   - {fileID: 844623141}
   - {fileID: 1280912296}
+  - {fileID: 662576046}
+  - {fileID: 536350607}
+  - {fileID: 1833757198}
   m_Father: {fileID: 422932049}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1723217046
@@ -198139,7 +198153,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 422932049}
+    m_TransformParent: {fileID: 1722276133}
     m_Modifications:
     - target: {fileID: 130861614748104292, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
       propertyPath: m_Layer
@@ -198599,15 +198613,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7947565354979270830, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -806.8
+      value: 148.27661
       objectReference: {fileID: 0}
     - target: {fileID: 7947565354979270830, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -521.31
+      value: 18.690002
       objectReference: {fileID: 0}
     - target: {fileID: 7947565354979270830, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 300.47
+      value: 302.33008
       objectReference: {fileID: 0}
     - target: {fileID: 7947565354979270830, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
       propertyPath: m_LocalRotation.w
@@ -198615,7 +198629,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7947565354979270830, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7947565354979270830, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
       propertyPath: m_LocalRotation.y
@@ -198623,7 +198637,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7947565354979270830, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7947565354979270830, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -198673,6 +198687,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 8696704532500193063, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 5fca75a488bd97e489446be7d35ca25e, type: 2}
     - target: {fileID: 8716499756339787544, guid: d4dca3a5c969bd743846f78098e59bb6, type: 3}
       propertyPath: m_Layer
       value: 8
@@ -198759,9 +198777,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcGreeting
   _animator: {fileID: 0}
   _greetTrigger: Greet
-  _greetVoice: {fileID: 0}
-  _farewellVoice: {fileID: 0}
-  _volume: 1
+  _greetVoice: {fileID: 8300000, guid: be7d7e29e78e93942ac97ec309cfaae6, type: 3}
+  _farewellVoice: {fileID: 8300000, guid: 30d6174a77cf27f4399990f6663be854, type: 3}
+  _volume: 0.5
 --- !u!114 &1833757200
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -198775,6 +198793,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLookAtPlayer
   _turnSpeed: 6
+  _restoreOriginalRotation: 1
   _restoreDelay: 0.4
 --- !u!1001 &1834849247
 PrefabInstance:
@@ -201700,6 +201719,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLookAtPlayer
   _turnSpeed: 6
+  _restoreOriginalRotation: 1
   _restoreDelay: 0.4
 --- !u!114 &1861972846
 MonoBehaviour:
@@ -201715,9 +201735,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcGreeting
   _animator: {fileID: 0}
   _greetTrigger: Greet
-  _greetVoice: {fileID: 8300000, guid: 4f92ac093c20a714c8d29468ca91091c, type: 3}
-  _farewellVoice: {fileID: 0}
-  _volume: 0.3
+  _greetVoice: {fileID: 8300000, guid: 86ccbfc94f224554f91c36c8ae59f652, type: 3}
+  _farewellVoice: {fileID: 8300000, guid: 01abe371738dd0948a482e4fe14e5732, type: 3}
+  _volume: 0.5
 --- !u!1001 &1862760548
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -207068,7 +207088,7 @@ PrefabInstance:
     - target: {fileID: 5866666021909216657, guid: 255d96b100e29ea4fbaacf45d4f8af44, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 9252ca27463bd014e835ad5d6af13a1d, type: 2}
+      objectReference: {fileID: 9100000, guid: 800a13f871d49a342ab817c4b9acfa76, type: 2}
     - target: {fileID: 5866666021909216657, guid: 255d96b100e29ea4fbaacf45d4f8af44, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
@@ -220197,8 +220217,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.39283833, y: 1.3895097, z: 0.29171848}
+  m_Center: {x: 0.009746909, y: 0.19475484, z: -0.02239793}
 --- !u!114 &2053462880
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -220244,9 +220264,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NpcGreeting
   _animator: {fileID: 0}
   _greetTrigger: Greet
-  _greetVoice: {fileID: 0}
-  _farewellVoice: {fileID: 0}
-  _volume: 1
+  _greetVoice: {fileID: 8300000, guid: 1674819fb1066b9499ced4940e48e90f, type: 3}
+  _farewellVoice: {fileID: 8300000, guid: 6788466d65789de4482e3d91bbb23fbd, type: 3}
+  _volume: 0.5
 --- !u!114 &2053462883
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -220260,6 +220280,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcLookAtPlayer
   _turnSpeed: 6
+  _restoreOriginalRotation: 1
   _restoreDelay: 0.4
 --- !u!1001 &2053841374
 PrefabInstance:

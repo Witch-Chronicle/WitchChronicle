@@ -2586,6 +2586,7 @@ GameObject:
   - component: {fileID: -2764434808695427520}
   - component: {fileID: 1674790948735769706}
   - component: {fileID: 3963717224038693021}
+  - component: {fileID: 5397985464303053441}
   m_Layer: 0
   m_Name: Ariel
   m_TagString: Player
@@ -2828,6 +2829,21 @@ MonoBehaviour:
   _rodRank3: {fileID: 5725292268845610451}
   _animator: {fileID: 1225852485558496439}
   _isFishingParam: IsFishing
+--- !u!114 &5397985464303053441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560493996318386368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e2e5bd311430fb47bb30a616dac2842, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LookAtOnInteract
+  _turnSpeed: 6
+  _restoreOriginalRotation: 0
+  _restoreDelay: 0.4
 --- !u!1 &1562030576368215012
 GameObject:
   m_ObjectHideFlags: 0

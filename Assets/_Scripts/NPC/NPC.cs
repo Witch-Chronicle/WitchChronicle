@@ -31,9 +31,15 @@ public class NPC : MonoBehaviour, ITFInteractable
         }
 
         // 상호작용한 방향을 바라보게 함 (컴포넌트가 붙어 있는 NPC만)
-        if (interactor != null && TryGetComponent(out NpcLookAtPlayer lookAt))
+        if (interactor != null && TryGetComponent(out LookAtOnInteract lookAt))
         {
             lookAt.FaceTarget(interactor.transform);
+        }
+
+        // 플레이어도 NPC 쪽으로 돌아보게 함 (컴포넌트가 붙어 있는 경우만)
+        if (interactor != null && interactor.TryGetComponent(out LookAtOnInteract playerLookAt))
+        {
+            playerLookAt.FaceTarget(transform);
         }
 
         // 플레이어와 NPC를 함께 잡는 대화 카메라로 전환

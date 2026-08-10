@@ -32,6 +32,12 @@ public static class NpcAnimatorBuilder
         "EnhanceNPC",
         "Cassandra",
         "FarmNPC",
+
+        // 영입 대상 캐릭터들. 파티에 들어오기 전까지는 마을 NPC와 동일하게 동작한다.
+        // (영입 후 필드에 나오는 파티원은 FieldActorPrefab 쪽이라 이 컨트롤러와 무관하다.)
+        "Fay",
+        "Laia",
+        "Selene",
     };
 
     [MenuItem("Tools/Witch Chronicle/NPC 애니메이터 생성")]
