@@ -262,29 +262,13 @@ public class ResultController : MonoBehaviour
         _fadeSequence.Append(_resultWrapCanvasGroup.DOFade(1f, _fadeDuration));
     }
     /// <summary>
-    /// Confirm이 보이는 상태에서 Enter 입력 시: Result 페이드아웃 -> 씬 전환.
+    /// Confirm이 보이는 상태에서 Enter 입력 시: 페이드아웃 없이 UI는 그대로 둔 채 바로 씬 전환.
     /// </summary>
     private void HandleConfirmClicked()
     {
         if (_isConfirmVisible == false) return;
         _isConfirmVisible = false; // 중복 트리거 방지
-        PlayFadeOutSequence();
-    }
-    private void PlayFadeOutSequence()
-    {
-        if (_resultWrapCanvasGroup == null)
-        {
-            HandlePanelFadeOutComplete();
-            return;
-        }
         _fadeSequence?.Kill();
-        _fadeSequence = DOTween.Sequence();
-        _fadeSequence.Append(_resultWrapCanvasGroup.DOFade(0f, _fadeDuration));
-        _fadeSequence.OnComplete(HandlePanelFadeOutComplete);
-    }
-    private void HandlePanelFadeOutComplete()
-    {
-        gameObject.SetActive(false);
         if (_isPlayerWin)
         {
             HandleVictoryTransition();
@@ -294,6 +278,8 @@ public class ResultController : MonoBehaviour
             HandleDefeatTransition();
         }
     }
+
+
     /// <summary>
     /// 승리: 전투 씬만 Unload. 던전은 파괴된 적 없으니 파티만 재활성화하면 끝.
     /// </summary>
