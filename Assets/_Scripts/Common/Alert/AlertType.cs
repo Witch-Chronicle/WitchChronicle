@@ -7,18 +7,14 @@ public enum AlertType
 
     ItemAcquired,
     GoldAcquired,
-    InventoryFull,
 
     NotEnoughGold,
     NotEnoughMaterial,
 
     BuyItems,
 
-    ReturnToMain,
-    ApplyRewardEvent,
-    ApplyTrapEvent,
-    ApplyDebuffEvent,
-
     ExpAcquired,
+    SkillSlotFull,
+    TeleportUsed,
 
 }

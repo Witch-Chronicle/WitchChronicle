@@ -66,7 +66,7 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
         {
             _eventData = eventData;
         }
-        
+
         _isInteracted = false;
 
         if (_eventData != null && _eventData.Prefab != null)
@@ -110,12 +110,7 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
     {
         string message = !string.IsNullOrEmpty(_eventData.Description) ? _eventData.Description : "이벤트 보상을 획득했습니다!";
 
-        if (AlertManager.Instance != null)
-        {
-            // AlertType.ApplyRewardEvent로 알림 팝업 전송
-            AlertManager.Instance.Enqueue(AlertType.ApplyRewardEvent, message);
-        }
-        else if (ShowMessageManager.Instance != null)
+        if (ShowMessageManager.Instance != null)
         {
             ShowMessageManager.Instance.ShowMessage(message);
         }
@@ -128,10 +123,6 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
     // 💡 [수정] 함정 이벤트 발생 시 AlertManager 팝업 띄우기 및 미믹 전투 처리
     private void ApplyTrap()
     {
-        if (AlertManager.Instance != null)
-        {
-            AlertManager.Instance.Enqueue(AlertType.ApplyTrapEvent, "함정에 걸렸다!");
-        }
 
         if (ShowMessageManager.Instance != null)
         {
@@ -154,11 +145,7 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
     {
         string message = !string.IsNullOrEmpty(_eventData.Description) ? _eventData.Description : "몸이 이상하다... 디버프가 적용되었습니다.";
 
-        if (AlertManager.Instance != null)
-        {
-            AlertManager.Instance.Enqueue(AlertType.ApplyDebuffEvent, message);
-        }
-        else if (ShowMessageManager.Instance != null)
+        if (ShowMessageManager.Instance != null)
         {
             ShowMessageManager.Instance.ShowMessage(message);
         }

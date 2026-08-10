@@ -229,6 +229,7 @@ public class TeleportPanel : MonoBehaviour
             return;
         }
 
+        AlertManager.Instance.Enqueue(AlertType.TeleportUsed);
         Party.Instance.MoveTo(destination.Position, destination.Rotation);
         Close();
     }
