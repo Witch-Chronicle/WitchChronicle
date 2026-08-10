@@ -168,7 +168,6 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
         }
         UpdateRangeState();
         UpdateCanvasAlpha();
-        UpdateInteractRangeState();
         UpdateInteractRootAlpha();
         RefreshQuestIndicator();
     }
@@ -725,6 +724,11 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
         {
             RefreshData();
         }
+    }
+
+    public void SetInteractRootVisible(bool visible)
+    {
+        _isInInteractRange = visible;
     }
 
     private void OnDrawGizmosSelected()

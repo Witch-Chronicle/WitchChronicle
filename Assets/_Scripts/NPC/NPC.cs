@@ -4,6 +4,8 @@ public class NPC : MonoBehaviour, ITFInteractable
 {
     [SerializeField]
     private NPCData _npcData;
+    [SerializeField]
+    private NPCWorldInteractionUI _worldInteractionUI;
 
     private void Start()
     {
@@ -18,8 +20,8 @@ public class NPC : MonoBehaviour, ITFInteractable
     public NPCData Data => _npcData;
 
     // NPCData의 NpcName 프로퍼티 활용
-    public string Prompt => _npcData != null 
-        ? $"[F] {_npcData.NpcName} (과)와 대화하기" 
+    public string Prompt => _npcData != null
+        ? $"[F] {_npcData.NpcName} (과)와 대화하기"
         : string.Empty;
 
     public void Interact(GameObject interactor)
@@ -182,5 +184,17 @@ public class NPC : MonoBehaviour, ITFInteractable
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// PlayerInteractor가 이 NPC를 Current로 잡거나 놓을 때 호출된다.
+    /// 실제 표시는 NPCWorldInteractionUI의 InteractRoot가 담당한다.
+    /// </summary>
+    public void ShowInteractPrompt(bool show)
+    {
+        if (_worldInteractionUI != null)
+        {
+            _worldInteractionUI.SetInteractRootVisible(show);
+        }
     }
 }

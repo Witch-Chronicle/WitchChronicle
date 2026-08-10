@@ -84,7 +84,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 921141833394456586}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dbe43d662878a7c43bcd44d43c9e2094, type: 3}
   m_Name: 
@@ -142,6 +142,14 @@ MonoBehaviour:
   _lookHeightOffset: 0.15
   _positionSmoothTime: 0.08
   _rotationSharpness: 14
+  _collisionMask:
+    serializedVersion: 2
+    m_Bits: 1
+  _collisionRadius: 0.25
+  _collisionPadding: 0.08
+  _minimumBackDistance: 0.45
+  _collisionRestoreSmoothTime: 0.2
+  _collisionReleaseDelay: 0.08
 --- !u!1 &1545796782654985411
 GameObject:
   m_ObjectHideFlags: 0
@@ -821,7 +829,7 @@ MonoBehaviour:
     SplineCurvature: 0.5
   RecenteringTarget: 2
   HorizontalAxis:
-    Value: -144.04662
+    Value: 78.23901
     Center: 0
     Range: {x: -180, y: 180}
     Wrap: 1
@@ -831,7 +839,7 @@ MonoBehaviour:
       Time: 2
     Restrictions: 0
   VerticalAxis:
-    Value: 11.739692
+    Value: 26.694052
     Center: 17.5
     Range: {x: -10, y: 45}
     Wrap: 0

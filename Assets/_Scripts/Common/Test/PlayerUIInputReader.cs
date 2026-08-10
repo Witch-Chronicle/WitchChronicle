@@ -281,7 +281,7 @@ public sealed class PlayerUIInputReader : MonoBehaviour
         if (_pausePanelAnimator != null && _pausePanelAnimator.IsOpen)
         {
             if (_pauseController != null &&
-                (_pauseController.IsSettingOpen || _pauseController.IsConfirmOpen))
+                (_pauseController.IsSettingOpen || _pauseController.IsExitConfirmOpen || _pauseController.IsEscapeConfirmOpen))
             {
                 _pauseController.ShowPauseView();
                 return;

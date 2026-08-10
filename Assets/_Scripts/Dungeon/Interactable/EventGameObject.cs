@@ -69,11 +69,6 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
 
         _isInteracted = false;
 
-        if (_eventData != null && _eventData.Prefab != null)
-        {
-            Instantiate(_eventData.Prefab, transform);
-        }
-
         Debug.Log($"[EventGameObject] 이벤트 설정 완료: {_eventData?.EventName} (타입: {_eventData?.Type})");
     }
 
@@ -126,7 +121,7 @@ public class EventGameObject : MonoBehaviour, ITFInteractable
 
         if (ShowMessageManager.Instance != null)
         {
-            ShowMessageManager.Instance.BlockByUI();
+            ShowMessageManager.Instance.VisibleMessage(false);
         }
 
         BattleEncounter battleEncounter = GetComponent<BattleEncounter>();

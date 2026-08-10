@@ -30,6 +30,7 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioSource bgmSourceA;
     [SerializeField] private AudioSource bgmSourceB;
     [SerializeField] private AudioSource sfxSource;
+    [SerializeField] private AudioSource loopSfxSource;
 
     [Header("씬별 BGM 매핑")]
     [SerializeField] private List<SceneBgmEntry> sceneBgmList = new();
@@ -38,7 +39,6 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private List<SfxEntry> sfxList = new();
 
     [Header("자동 버튼 클릭 사운드")]
-    [Tooltip("씬 로드 시 모든 Button에 ButtonClick 자동 등록")]
     [SerializeField] private bool autoRegisterButtons = true;
 
     [Header("크로스페이드 설정")]
@@ -70,6 +70,9 @@ public class SoundManager : MonoBehaviour
     private Dictionary<string, SceneBgmEntry> _sceneBgmMap;
     private Dictionary<SfxType, SfxEntry> _sfxMap;
 
+    private SfxType? _currentLoopSfx;
+    private float _currentLoopScale = 1f;
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -99,6 +102,7 @@ public class SoundManager : MonoBehaviour
     {
         TryPlaySceneBgm(scene.name);
         if (autoRegisterButtons) AutoRegisterAllButtons();
+        StopSfxLoop();
     }
 
     // ===================== BGM =====================
@@ -203,12 +207,52 @@ public class SoundManager : MonoBehaviour
         sfxSource.PlayOneShot(sfxClip, finalVolume);
     }
 
+    // ===================== 루프 SFX =====================
+
+    public void PlaySfxLoop(SfxType type, float extraVolumeScale = 1f)
+    {
+        if (_sfxMap == null) BuildSfxMap();
+
+        if (!_sfxMap.TryGetValue(type, out var entry) || entry.clip == null)
+        {
+            Debug.LogWarning($"[SoundManager] 루프 SFX 미등록/클립 없음: {type}");
+            return;
+        }
+
+        if (loopSfxSource == null)
+        {
+            Debug.LogWarning("[SoundManager] loopSfxSource가 없음");
+            return;
+        }
+
+        if (_currentLoopSfx == type && loopSfxSource.isPlaying)
+            return;
+
+        loopSfxSource.clip = entry.clip;
+        loopSfxSource.loop = true;
+        _currentLoopScale = entry.volumeScale * extraVolumeScale;
+        loopSfxSource.volume = Mathf.Clamp01(_currentLoopScale) * GetEffectiveSfxFactor();
+        loopSfxSource.Play();
+
+        _currentLoopSfx = type;
+    }
+
+    public void StopSfxLoop()
+    {
+        if (loopSfxSource == null) return;
+
+        loopSfxSource.Stop();
+        loopSfxSource.clip = null;
+        _currentLoopSfx = null;
+    }
+
+    public bool IsLoopSfxPlaying(SfxType type)
+    {
+        return _currentLoopSfx == type && loopSfxSource != null && loopSfxSource.isPlaying;
+    }
+
     // ===================== 자동 버튼 등록 =====================
 
-    /// <summary>
-    /// 씬 안의 모든 활성/비활성 Button을 찾아 클릭 사운드 자동 등록.
-    /// 이미 등록된 버튼(UIButtonSfxTag 또는 UIButtonSfx 있음)은 스킵.
-    /// </summary>
     public void AutoRegisterAllButtons()
     {
         var buttons = FindObjectsOfType<Button>(true);
@@ -221,10 +265,6 @@ public class SoundManager : MonoBehaviour
             Debug.Log($"[SoundManager] 자동 등록된 버튼: {registered}개");
     }
 
-    /// <summary>
-    /// 동적 생성한 UI(팝업/패널)의 하위 모든 Button을 일괄 등록.
-    /// Instantiate 직후 호출.
-    /// </summary>
     public void RegisterButtonsInHierarchy(GameObject root)
     {
         if (root == null) return;
@@ -235,43 +275,72 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 개별 Button에 ButtonClick 사운드 등록. 중복 방지.
-    /// </summary>
-    /// <returns>새로 등록되었으면 true, 이미 등록되어 있었으면 false</returns>
     public bool RegisterButton(Button btn)
-{
-    if (btn == null) return false;
-
-    // 이미 UIButtonSfx로 개별 사운드 지정된 경우 클릭은 스킵, hover만 등록
-    bool alreadyCustomClick = btn.GetComponent<UIButtonSfx>() != null;
-    bool alreadyAutoClick = btn.GetComponent<UIButtonSfxTag>() != null;
-
-    // 클릭 자동 등록
-    if (!alreadyCustomClick && !alreadyAutoClick)
     {
-        btn.gameObject.AddComponent<UIButtonSfxTag>();
-        btn.onClick.AddListener(() => PlaySfx(SfxType.ButtonClick));
-    }
+        if (btn == null) return false;
 
-    // Hover 자동 등록 (없을 때만)
-    if (btn.GetComponent<UIButtonHoverSfx>() == null)
-    {
-        btn.gameObject.AddComponent<UIButtonHoverSfx>();
-    }
+        bool alreadyCustomClick = btn.GetComponent<UIButtonSfx>() != null;
+        bool alreadyAutoClick = btn.GetComponent<UIButtonSfxTag>() != null;
 
-    return !alreadyCustomClick && !alreadyAutoClick;
-}
+        if (!alreadyCustomClick && !alreadyAutoClick)
+        {
+            btn.gameObject.AddComponent<UIButtonSfxTag>();
+            btn.onClick.AddListener(() => PlaySfx(SfxType.ButtonClick));
+        }
+
+        if (btn.GetComponent<UIButtonHoverSfx>() == null)
+        {
+            btn.gameObject.AddComponent<UIButtonHoverSfx>();
+        }
+
+        return !alreadyCustomClick && !alreadyAutoClick;
+    }
 
     // ===================== 볼륨 / Mute =====================
 
-    public void SetMasterVolume(float volume) { _masterVolume = Mathf.Clamp01(volume); ApplyBgmVolume(); SaveManager.RequestSave();}
-    public void SetBgmVolume(float volume)    { _bgmVolume = Mathf.Clamp01(volume); ApplyBgmVolume(); SaveManager.RequestSave();}
-    public void SetSfxVolume(float volume)    { _sfxVolume = Mathf.Clamp01(volume); SaveManager.RequestSave();}
+    public void SetMasterVolume(float volume)
+    {
+        _masterVolume = Mathf.Clamp01(volume);
+        ApplyBgmVolume();
+        ApplyLoopSfxVolume();
+        SaveManager.RequestSave();
+    }
 
-    public void SetMasterMuted(bool muted) { _isMasterMuted = muted; ApplyBgmVolume(); SaveManager.RequestSave();}
-    public void SetBgmMuted(bool muted)    { _isBgmMuted = muted; ApplyBgmVolume(); SaveManager.RequestSave();}
-    public void SetSfxMuted(bool muted)    { _isSfxMuted = muted; SaveManager.RequestSave();}
+    public void SetBgmVolume(float volume)
+    {
+        _bgmVolume = Mathf.Clamp01(volume);
+        ApplyBgmVolume();
+        SaveManager.RequestSave();
+    }
+
+    public void SetSfxVolume(float volume)
+    {
+        _sfxVolume = Mathf.Clamp01(volume);
+        ApplyLoopSfxVolume();
+        SaveManager.RequestSave();
+    }
+
+    public void SetMasterMuted(bool muted)
+    {
+        _isMasterMuted = muted;
+        ApplyBgmVolume();
+        ApplyLoopSfxVolume();
+        SaveManager.RequestSave();
+    }
+
+    public void SetBgmMuted(bool muted)
+    {
+        _isBgmMuted = muted;
+        ApplyBgmVolume();
+        SaveManager.RequestSave();
+    }
+
+    public void SetSfxMuted(bool muted)
+    {
+        _isSfxMuted = muted;
+        ApplyLoopSfxVolume();
+        SaveManager.RequestSave();
+    }
 
     private float GetEffectiveBgmFactor()
     {
@@ -294,11 +363,18 @@ public class SoundManager : MonoBehaviour
         _currentBgmSource.volume = _currentBgmScale * GetEffectiveBgmFactor();
     }
 
+    private void ApplyLoopSfxVolume()
+    {
+        if (loopSfxSource == null || !loopSfxSource.isPlaying) return;
+        loopSfxSource.volume = Mathf.Clamp01(_currentLoopScale) * GetEffectiveSfxFactor();
+    }
+
     private void EnsureAudioSources()
     {
         if (bgmSourceA == null) bgmSourceA = gameObject.AddComponent<AudioSource>();
         if (bgmSourceB == null) bgmSourceB = gameObject.AddComponent<AudioSource>();
         if (sfxSource == null) sfxSource = gameObject.AddComponent<AudioSource>();
+        if (loopSfxSource == null) loopSfxSource = gameObject.AddComponent<AudioSource>();
 
         foreach (var src in new[] { bgmSourceA, bgmSourceB })
         {
@@ -309,6 +385,10 @@ public class SoundManager : MonoBehaviour
 
         sfxSource.playOnAwake = false;
         sfxSource.loop = false;
+
+        loopSfxSource.playOnAwake = false;
+        loopSfxSource.loop = true;
+        loopSfxSource.volume = 0f;
     }
 
     private void BuildSceneBgmMap()
