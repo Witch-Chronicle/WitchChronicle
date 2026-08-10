@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4ab7eff2cacc2949a23aeeec999f603, type: 3}
+  m_Name: NebulaBombardment_Attack
+  m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathAttackData
+  _attackId: nebula_bombardment
+  _attackPattern: 0
+  _slowDownStartDelay: 0.25
+  _motionType: 1
+  _launchInterval: 0.7
+  _travelDuration: 0.8
+  _arcLaunchAngle: 140
+  _arcControlDistanceMin: 3
+  _arcControlDistanceMax: 8
+  _arcSpread: 4
+  _meteorHeight: 8
+  _projectileVfxPrefab: {fileID: 6754771895784527841, guid: b50adb427cd580841975f9b1c44fc068, type: 3}
+  _hitVfxPrefab: {fileID: 3017430761128806937, guid: 05291abd74f038047ba79a71d081a7f2, type: 3}
+  _blockVfxPrefab: {fileID: 0}
+  _tickVfxPrefab: {fileID: 0}
+  _spawnOffset: {x: 0, y: 1, z: 0}
+  _targetOffset: {x: 0, y: 1, z: 0}
+  _projectileScale: 1.01
+  _timedVfxPrefab: {fileID: 0}
+  _timedVfxSpawnType: 1
+  _timedVfxOffset: {x: 0, y: 0, z: 0}
+  _timedVfxHeight: 8
+  _timedVfxImpactDelay: 0.3
+  _timedVfxDuration: 1
+  _timedVfxScale: 1
+  _timedVfxFaceTarget: 0
+  _timedVfxFollowTarget: 0
+  _damageDeliveryType: 0
+  _tickCount: 1
+  _tickInterval: 0

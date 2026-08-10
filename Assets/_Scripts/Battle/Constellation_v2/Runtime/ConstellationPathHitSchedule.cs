@@ -126,6 +126,7 @@ public static class ConstellationPathHitSchedule
 
     /// <summary>
     /// 균등 랜덤 순차 타격 목록 생성
+    /// 각 대상의 공격 횟수는 동일하게 유지하고 전체 공격 순서를 무작위화
     /// </summary>
     /// <param name="targets">공격 대상 목록</param>
     /// <param name="hitCountPerTarget">대상별 타격 횟수</param>
@@ -135,25 +136,30 @@ public static class ConstellationPathHitSchedule
         int hitCountPerTarget,
         List<ConstellationPathHitEntry> result)
     {
-        int sequenceIndex = 0;
-        List<BattleUnit> shuffledTargets = new List<BattleUnit>(targets.Count);
+        List<BattleUnit> attackPool =
+            new List<BattleUnit>(
+                targets.Count * hitCountPerTarget);
 
-        for (int roundIndex = 0; roundIndex < hitCountPerTarget; roundIndex++)
+        // 각 대상을 정확히 동일 횟수만큼 공격 풀에 추가
+        for (int targetIndex = 0; targetIndex < targets.Count; targetIndex++)
         {
-            shuffledTargets.Clear();
-
-            for (int i = 0; i < targets.Count; i++)
+            for (int hitIndex = 0; hitIndex < hitCountPerTarget; hitIndex++)
             {
-                shuffledTargets.Add(targets[i]);
+                attackPool.Add(
+                    targets[targetIndex]);
             }
+        }
 
-            Shuffle(shuffledTargets);
+        // 전체 공격 순서를 한 번에 무작위화
+        Shuffle(attackPool);
 
-            for (int targetIndex = 0; targetIndex < shuffledTargets.Count; targetIndex++)
-            {
-                result.Add(new ConstellationPathHitEntry(shuffledTargets[targetIndex], roundIndex, sequenceIndex));
-                sequenceIndex++;
-            }
+        for (int sequenceIndex = 0; sequenceIndex < attackPool.Count; sequenceIndex++)
+        {
+            result.Add(
+                new ConstellationPathHitEntry(
+                    attackPool[sequenceIndex],
+                    sequenceIndex,
+                    sequenceIndex));
         }
     }
 
