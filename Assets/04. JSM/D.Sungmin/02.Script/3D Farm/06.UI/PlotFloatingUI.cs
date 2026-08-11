@@ -16,13 +16,13 @@ namespace WitchChronicle.IdleFarming
 
         [Header("Growing 표시")]
         [SerializeField] private Image _growingSeedIcon;
-        [SerializeField] private TextMeshProUGUI _growingSeedName;   // "감자"
-        [SerializeField] private TextMeshProUGUI _timerText;         // "02:34" 만
+        [SerializeField] private TextMeshProUGUI _growingSeedName;
+        [SerializeField] private TextMeshProUGUI _timerText;
 
         [Header("ReadyToHarvest 표시")]
         [SerializeField] private Image _readySeedIcon;
-        [SerializeField] private TextMeshProUGUI _readySeedName;     // "감자"
-        [SerializeField] private TextMeshProUGUI _readyCountText;    // "×3" 만
+        [SerializeField] private TextMeshProUGUI _readySeedName;
+        [SerializeField] private TextMeshProUGUI _readyCountText;
 
         [Header("표시 제어")]
         [SerializeField] private CanvasGroup _canvasGroup;
@@ -31,6 +31,10 @@ namespace WitchChronicle.IdleFarming
         private Camera _mainCamera;
         private RectTransform _rect;
         private bool _isPlayerNear;
+
+        // 일시정지 패널 캐시 (씬 로드 시 1회 탐색)
+        private PauseController _pauseController;
+        private bool _pauseControllerSearched;
 
         private void Awake()
         {
@@ -48,6 +52,13 @@ namespace WitchChronicle.IdleFarming
             {
                 _mainCamera = Camera.main;
                 if (_mainCamera == null) return;
+            }
+
+            // 일시정지 패널이 켜져 있으면 무조건 숨김
+            if (IsPausePanelOpen())
+            {
+                ApplyVisibility(false);
+                return;
             }
 
             if (!_isPlayerNear)
@@ -73,6 +84,30 @@ namespace WitchChronicle.IdleFarming
 
             ApplyVisibility(true);
             _rect.position = screenPos;
+        }
+
+        private bool IsPausePanelOpen()
+        {
+            // 처음 한 번만 씬에서 찾아서 캐시 (비활성 오브젝트 포함해서 검색)
+            if (!_pauseControllerSearched)
+            {
+                _pauseController = FindAnyPauseController();
+                _pauseControllerSearched = true;
+            }
+
+            if (_pauseController == null) return false;
+            return _pauseController.gameObject.activeInHierarchy;
+        }
+
+        private PauseController FindAnyPauseController()
+        {
+            // 비활성 오브젝트에 붙어있어도 찾을 수 있게 Resources 방식 사용
+            var all = Resources.FindObjectsOfTypeAll<PauseController>();
+            foreach (var pc in all)
+            {
+                if (pc.gameObject.scene.IsValid()) return pc;
+            }
+            return null;
         }
 
         private void ApplyVisibility(bool visible)
@@ -121,12 +156,10 @@ namespace WitchChronicle.IdleFarming
                 if (_growingSeedIcon != null && seed.seedSprite != null)
                     _growingSeedIcon.sprite = seed.seedSprite;
 
-                // 씨앗 이름 — "감자"
                 if (_growingSeedName != null)
                     _growingSeedName.text = seed.harvestName;
             }
 
-            // 타이머만 표시 — "02:34"
             if (_timerText != null)
             {
                 int total = Mathf.CeilToInt(remainingSeconds);
@@ -146,14 +179,12 @@ namespace WitchChronicle.IdleFarming
                 if (_readySeedIcon != null && seed.harvestSprite != null)
                     _readySeedIcon.sprite = seed.harvestSprite;
 
-                // 씨앗 이름 — "감자"
                 if (_readySeedName != null)
                     _readySeedName.text = seed.harvestName;
             }
 
-            // 개수만 표시 — "×3"
             if (_readyCountText != null)
-                _readyCountText.text = $"×{pendingCount}";
+    _readyCountText.text = $"{pendingCount}개"; 
         }
 
         private void HideAll()
