@@ -223,10 +223,15 @@ public class SaveManager : MonoBehaviour
             data.Version = 1;
 
 
-            // 농사 밭 세이브 데이터 저장
-            if (WitchChronicle.IdleFarming.PlotManager.Instance != null)
+             if (WitchChronicle.IdleFarming.PlotManager.Instance != null)
             {
+                // 마을 씬에 PlotManager가 있을 때: 현재 밭 상태를 최신으로 저장
                 data.FarmPlots = WitchChronicle.IdleFarming.PlotManager.Instance.GetFarmSaveData();
+            }
+            else if (CurrentSaveData != null && CurrentSaveData.FarmPlots != null && CurrentSaveData.FarmPlots.Count > 0)
+            {
+                // 던전/전투 씬이라 PlotManager가 없을 때: 마을에서 저장했던 밭 데이터를 삭제하지 않고 그대로 유지!
+                data.FarmPlots = new List<WitchChronicle.IdleFarming.PlotSaveData>(CurrentSaveData.FarmPlots);
             }
 
             // 1. 재화 및 인벤토리 저장
