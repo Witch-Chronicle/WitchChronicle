@@ -16,21 +16,23 @@ MonoBehaviour:
   _enemyName: "\uC0AC\uC774\uD074\uB86D\uC2A4"
   _icon: {fileID: 21300000, guid: 4c79e5dba4058824e9c05e3a4742a011, type: 3}
   _isBoss: 0
-  _maxHp: 400
-  _attackPower: 25
-  _magicPower: 0
-  _defensePower: 0
-  _magicDefensePower: 0
-  _speed: 10
-  _weakElements: 020000000300000005000000
-  _resistElements: 0100000006000000
+  _maxHp: 180
+  _attackPower: 29
+  _magicPower: 16
+  _defensePower: 22
+  _magicDefensePower: 15
+  _speed: 9
+  _weakElements: 05000000
+  _resistElements: 0200000004000000
   _nullElements: 
   _absorbElements: 
   _skillList:
-  - {fileID: 11400000, guid: 202b6b67dc24a6d4197768238915b8d1, type: 2}
-  - {fileID: 11400000, guid: ebda891a8d634d94fb8eb16a314dfae8, type: 2}
-  _aiProfileData: {fileID: 11400000, guid: 936d543f6091ae54f86b4027dc5bf994, type: 2}
-  _expReward: 65
-  _goldReward: 100
+  - {fileID: 11400000, guid: d0f3efb799b66b94f8cf240aef2ef5de, type: 2}
+  - {fileID: 11400000, guid: 3525487005de7d04c877e3c5042c9e6f, type: 2}
+  - {fileID: 11400000, guid: 8c592508026d4c042920907e87381423, type: 2}
+  - {fileID: 11400000, guid: 92514332660fe024099cea164cbdb0aa, type: 2}
+  _aiProfileData: {fileID: 11400000, guid: ee2405d3365f1184c926b34e0c5b5d13, type: 2}
+  _expReward: 55
+  _goldReward: 80
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 1190697391759604679, guid: 29c63170765c1cc4982353e62d7c39b9, type: 3}

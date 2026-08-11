@@ -16,20 +16,22 @@ MonoBehaviour:
   _enemyName: "\uBC15\uC950"
   _icon: {fileID: 21300000, guid: c60c42a22d3dad842b0d52d9f082b65a, type: 3}
   _isBoss: 0
-  _maxHp: 900
-  _attackPower: 50
-  _magicPower: 50
-  _defensePower: 0
-  _magicDefensePower: 0
-  _speed: 25
-  _weakElements: 0600000004000000
-  _resistElements: 07000000
+  _maxHp: 130
+  _attackPower: 24
+  _magicPower: 31
+  _defensePower: 10
+  _magicDefensePower: 16
+  _speed: 38
+  _weakElements: 0200000004000000
+  _resistElements: 0700000003000000
   _nullElements: 
   _absorbElements: 
   _skillList:
   - {fileID: 11400000, guid: 69c230cb0cd714b4c83500616df7f3a5, type: 2}
+  - {fileID: 11400000, guid: f61165c41cb06a947a03c8ec09bb49bd, type: 2}
+  - {fileID: 11400000, guid: 040f94996b100b54a8e8b843ee35cfc6, type: 2}
   _aiProfileData: {fileID: 11400000, guid: 936d543f6091ae54f86b4027dc5bf994, type: 2}
-  _expReward: 150
-  _goldReward: 250
+  _expReward: 90
+  _goldReward: 100
   _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
   _prefab: {fileID: 5122791751604650877, guid: 1fc5e6d4ed4f18d44b387d6a26f2d507, type: 3}
