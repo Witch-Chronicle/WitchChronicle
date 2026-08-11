@@ -49,6 +49,10 @@ public class BattleEntryTransitionController : MonoBehaviour
 
     [Header("Screen Effect")]
     [SerializeField] private float _blackoutDuration = 0.18f;
+
+    [Tooltip("완전히 검은 화면이 된 뒤 Battle Scene 로드를 시작하기 전 유지 시간")]
+    [SerializeField] private float _blackHoldDuration = 0.15f;
+
     [SerializeField] private float _revealDuration = 0.3f;
 
     [Header("Post Processing")]
@@ -213,6 +217,14 @@ public class BattleEntryTransitionController : MonoBehaviour
 
         AppendSlowPushInAnimation();
         AppendSuctionAnimation();
+
+        // 화면이 완전히 검어진 상태를 잠깐 유지한다.
+        // 이 시간 동안 적어도 몇 프레임은 순수 검은 화면이 렌더링된다.
+        if (_blackHoldDuration > 0f)
+        {
+            _transitionSequence.AppendInterval(
+                _blackHoldDuration);
+        }
 
         _transitionSequence.OnComplete(
             HandleBlackoutReached);
