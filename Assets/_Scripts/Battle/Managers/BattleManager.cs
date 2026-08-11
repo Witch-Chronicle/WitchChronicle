@@ -658,10 +658,7 @@ public class BattleManager : MonoBehaviour
             RestorePersistentPartyAfterDefeat();
         }
 
-        if (isVictory)
-        {
-            ProcessMonsterKillQuests();
-        }
+        ProcessMonsterKillQuests();
 
         Debug.Log($"[BattleManager] Battle End / Winner: {winner}");
 
