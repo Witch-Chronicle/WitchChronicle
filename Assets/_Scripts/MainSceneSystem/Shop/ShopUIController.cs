@@ -87,6 +87,7 @@ public class ShopUIController : MonoBehaviour
         if (PlayerInventory.Instance != null)
         {
             PlayerInventory.Instance.OnGoldChanged += UpdateGoldText;
+            PlayerInventory.Instance.OnInventoryChanged += HandleInventoryChanged;
             UpdateGoldText(PlayerInventory.Instance.Gold);
         }
     }
@@ -107,8 +108,18 @@ public class ShopUIController : MonoBehaviour
         if (PlayerInventory.Instance != null)
         {
             PlayerInventory.Instance.OnGoldChanged -= UpdateGoldText;
+            PlayerInventory.Instance.OnInventoryChanged -= HandleInventoryChanged;
         }
     }
+
+    /// <summary>
+    /// 구매/판매 등으로 인벤토리가 바뀌면(예: 낚싯대 구매로 품절 처리 필요) 현재 목록을 다시 그린다.
+    /// </summary>
+    private void HandleInventoryChanged()
+    {
+        ShowItems();
+    }
+
     private void OnClickClose()
     {
         _closeBtn.onClick.RemoveListener(OnClickClose);

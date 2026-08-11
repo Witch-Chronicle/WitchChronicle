@@ -70,6 +70,8 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
     [SerializeField] private CanvasGroup _interactRoot;
     [Tooltip("이 거리 안에 플레이어가 들어오면 InteractRoot를 표시합니다.")]
     [SerializeField, Min(0f)] private float _interactRange = 2f;
+    [Tooltip("true면 PlayerInteractor.Current와 무관하게, VisibleRange 안에 들어오기만 하면 InteractRoot도 함께 표시합니다.")]
+    [SerializeField] private bool _syncInteractRootWithVisibleRange = false;
 
     [Header("Billboard")]
     [Tooltip("MainCamera를 바라보도록 World Canvas를 회전시킵니다.")]
@@ -168,6 +170,13 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
         }
         UpdateRangeState();
         UpdateCanvasAlpha();
+        if (_syncInteractRootWithVisibleRange)
+        {
+            // VisibleRange 안에 들어오기만 하면 InteractRoot도 같이 노출 (PlayerInteractor.Current와 무관)
+            _isInInteractRange = _isInRange;
+        }
+        // false일 때는 SetInteractRootVisible(외부 NPC.ShowInteractPrompt)이
+        // _isInInteractRange를 갱신해주므로 여기서 별도 계산하지 않는다.
         UpdateInteractRootAlpha();
         RefreshQuestIndicator();
     }
@@ -699,6 +708,11 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
         }
     }
 
+    public void SetInteractRootVisible(bool visible)
+    {
+        _isInInteractRange = visible;
+    }
+
 #if UNITY_EDITOR
     private void OnValidate()
     {
@@ -724,11 +738,6 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
         {
             RefreshData();
         }
-    }
-
-    public void SetInteractRootVisible(bool visible)
-    {
-        _isInInteractRange = visible;
     }
 
     private void OnDrawGizmosSelected()

@@ -405,32 +405,45 @@ public class SceneTransitionManager : MonoBehaviour
 
         // 1) 에셋 로드 단계 (0~90%). 화면은 계속 열려있는 상태.
         AsyncOperation targetOp = SceneManager.LoadSceneAsync(targetSceneId.ToString());
-
         if (targetOp == null)
         {
             Debug.LogError($"[SceneTransitionManager] 씬을 찾을 수 없습니다: {targetSceneId}");
             IsLoading = false;
             yield break;
         }
-
         targetOp.allowSceneActivation = false;
 
-        while (targetOp.progress < 0.9f)
+        // 실제 로딩이 아무리 빨리 끝나도 최소 이 시간 동안은 0~90% 구간이 자연스럽게 차오르도록 함
+        const float minLoadDuration = 1.2f;
+        float loadElapsed = 0f;
+
+        // 실제 로딩(targetOp.progress)이 0.9에 도달했더라도,
+        // 최소 연출 시간(minLoadDuration)이 지나지 않았으면 루프를 계속 돈다.
+        while (targetOp.progress < 0.9f || loadElapsed < minLoadDuration)
         {
-            float progress01 = Mathf.Clamp01(targetOp.progress / 0.9f);
+            loadElapsed += Time.unscaledDeltaTime;
+
+            float realProgress01 = Mathf.Clamp01(targetOp.progress / 0.9f);
+            float simulatedProgress01 = Mathf.Clamp01(loadElapsed / minLoadDuration);
+            float progress01 = Mathf.Min(realProgress01, simulatedProgress01);
+
             LoadingSceneUIController.Instance?.SetProgress(progress01 * 0.9f);
             yield return null;
         }
 
-        // 2) 에셋 로드는 끝났으므로 100%로 채운다. 이 시점까지는 아직 화면이 열려있어서
-        //    "100%가 찍히는 순간"이 실제로 유저에게 보인다.
+        // 2) 에셋 로드는 끝났으므로 90~100%를 별도 구간으로 부드럽게 채운다.
+        const float finishFillDuration = 0.4f;
+        float finishElapsed = 0f;
+        while (finishElapsed < finishFillDuration)
+        {
+            finishElapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(finishElapsed / finishFillDuration);
+            LoadingSceneUIController.Instance?.SetProgress(0.9f + t * 0.1f);
+            yield return null;
+        }
         LoadingSceneUIController.Instance?.SetProgress(1f);
 
-        // 표시된 진행률이 부드러운 보간(MoveTowards)으로 실제 1.0에 도달할 때까지 대기.
-        // 그래야 화면이 열린 상태에서 100% 숫자가 눈에 보인 뒤에 CoverIn이 시작된다.
         yield return new WaitUntil(() => LoadingSceneUIController.Instance == null || LoadingSceneUIController.Instance.IsDisplayComplete);
-
-        // 100%를 눈으로 확인할 최소한의 시간 확보
         yield return new WaitForSeconds(0.8f);
 
         // 3) 이제 화면을 덮고, 그 뒤에서 실제 활성화 + 무거운 초기화를 진행한다.

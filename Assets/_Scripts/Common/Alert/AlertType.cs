@@ -16,5 +16,7 @@ public enum AlertType
     ExpAcquired,
     SkillSlotFull,
     TeleportUsed,
+    RecruitCharacter,
+    ShopSoldOut
 
 }

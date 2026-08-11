@@ -216,21 +216,30 @@ public class TeleportPanel : MonoBehaviour
     private void Teleport(TeleportPointId id)
     {
         TeleportDestination destination = TeleportDestination.FindById(id);
-
         if (destination == null)
         {
             Debug.LogWarning($"[TeleportPanel] 씬에서 목적지를 찾을 수 없습니다: {id}");
             return;
         }
-
         if (Party.Instance == null)
         {
             Debug.LogWarning("[TeleportPanel] Party가 없어 이동할 수 없습니다.");
             return;
         }
-
-        AlertManager.Instance.Enqueue(AlertType.TeleportUsed);
-        Party.Instance.MoveTo(destination.Position, destination.Rotation);
+        string destinationName = id.ToDisplayName();
         Close();
+        if (TransitionController.Instance == null)
+        {
+            Debug.LogWarning("[TeleportPanel] TransitionController.Instance가 없어 연출 없이 이동합니다.");
+            Party.Instance.MoveTo(destination.Position, destination.Rotation);
+            AlertManager.Instance.Enqueue(AlertType.TeleportUsed, destinationName);
+            return;
+        }
+        TransitionController.Instance.CoverScreen(() =>
+        {
+            Party.Instance.MoveTo(destination.Position, destination.Rotation);
+            TransitionController.Instance.RevealScreen();
+            AlertManager.Instance.Enqueue(AlertType.TeleportUsed, destinationName);
+        });
     }
 }
