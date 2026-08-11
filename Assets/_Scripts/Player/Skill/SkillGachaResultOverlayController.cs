@@ -412,20 +412,24 @@ public sealed class SkillGachaResultOverlayController : MonoBehaviour
     }
 
     private void ApplyFinalResult(SkillBookResult result, Color effectColor)
+{
+    SetSpinIcon(result.RolledSkill.SkillIcon);
+
+    if (_spinIcon != null)
     {
-        SetSpinIcon(result.RolledSkill.SkillIcon);
-
-        if (_spinIcon != null)
-        {
-            // 스킬 아이콘 자체는 티어색을 곱하지 않고 원본 색상을 유지한다.
-            _spinIcon.color = Color.white;
-        }
-
-        if (_frameImage != null)
-        {
-            _frameImage.color = effectColor;
-        }
+        // 스킬 아이콘 자체는 티어색을 곱하지 않고 원본 색상을 유지한다.
+        _spinIcon.color = Color.white;
     }
+
+    if (_frameImage != null)
+    {
+        _frameImage.color = effectColor;
+    }
+
+    // ★ 결과 확정 사운드
+    if (SoundManager.Instance != null)
+        SoundManager.Instance.PlaySfx(SfxType.GachaResult);
+}
 
     private void SetResultData(SkillBookResult result)
     {

@@ -1263,7 +1263,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sfxList.Array.size
-      value: 12
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sceneBgmList.Array.size
@@ -1366,6 +1366,14 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[12].clip
+      value: 
+      objectReference: {fileID: 8300000, guid: 3273124c467656f44955ff15442a2b74, type: 3}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[12].type
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sceneBgmList.Array.data[0].loop
       value: 1
       objectReference: {fileID: 0}
@@ -1456,6 +1464,10 @@ PrefabInstance:
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sfxList.Array.data[11].volumeScale
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[12].volumeScale
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sceneBgmList.Array.data[0].sceneName
