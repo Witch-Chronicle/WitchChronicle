@@ -677,9 +677,13 @@ MonoBehaviour:
   _fadeEase: 6
   _timeLimit: 3
   _interStrokeTimeout: 0.7
-  _scoreThreshold: 80
+  _scoreThreshold: 70
+  _maxAcceptableDist: 0.28
+  _weightFalloff: 0.4
   _minDamageMultiplier: 0.01
   _maxDamageMultiplier: 2
+  _lowSegmentPower: 2
+  _highSegmentPower: 2
 --- !u!1 &245877444
 GameObject:
   m_ObjectHideFlags: 0
