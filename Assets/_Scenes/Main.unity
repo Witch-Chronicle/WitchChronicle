@@ -6294,7 +6294,6 @@ Transform:
   - {fileID: 219237272}
   - {fileID: 46301479}
   - {fileID: 1593724925}
-  - {fileID: 1709084580}
   - {fileID: 715280904}
   - {fileID: 2141185137}
   - {fileID: 141805335}
@@ -65063,95 +65062,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3bb5e93703cbde43aaec4606a3e81b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DialogueManager
---- !u!1001 &623943839
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 66229961}
-    m_Modifications:
-    - target: {fileID: 1030975110, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_Name
-      value: PF_DistantMountain_02 (3)
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975110, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 2147483647
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_RootOrder
-      value: 177
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 16.55831
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 16.55829
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 16.558308
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 2617.658
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -31.62258
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 1936.4524
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.9997035
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0.0023540307
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0.023651961
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0.005288874
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: -0.255
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: -2.712
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0.612
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975114, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 2147483647
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975118, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 2147483647
-      objectReference: {fileID: 0}
-    - target: {fileID: 1030975122, guid: abc00000000007387135349448011318, type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 2147483647
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: abc00000000007387135349448011318, type: 3}
 --- !u!1 &624489491
 GameObject:
   m_ObjectHideFlags: 0
@@ -180574,11 +180484,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb00711ee60ab914c9da5293d806ffcb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WitchChronicle.IdleFarming.PlotSlot
---- !u!4 &1709084580 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1030975111, guid: abc00000000007387135349448011318, type: 3}
-  m_PrefabInstance: {fileID: 623943839}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1710078937
 PrefabInstance:
   m_ObjectHideFlags: 0
