@@ -6,6 +6,7 @@ using UnityEngine;
 /// </summary>
 public class EnemyBattleAI
 {
+    private const float ConstellationSkillChance = 0.3f;
     private const float HealHpRatioThreshold = 0.4f;
     private const bool IsDebugLogEnabled = true;
 
@@ -558,39 +559,7 @@ public class EnemyBattleAI
                 continue;
             }
 
-            // 스킬 등급에 따른 발동 확률 제한
-            if (skillData.Tier == 1)
-            {
-                // 최상급 스킬: 20% 확률로 후보에 등록
-                if (Random.value > 0.1f)
-                {
-                    continue; 
-                }
-            }
-            else if (skillData.Tier == 2)
-            {
-                // 중급 스킬: 40% 확률로 후보에 등록
-                if (Random.value > 0.25f)
-                {
-                    continue; 
-                }
-            }
-            else if (skillData.Tier == 3)
-            {
-                // 하급 스킬: 100% 확률로 후보에 등록 
-                if (Random.value > 0.5f)
-                {
-                    continue; 
-                }
-            }
-            else if (skillData.Tier == 4)
-            {
-                // 하급 스킬: 100% 확률로 후보에 등록 
-                if (Random.value > 1f)
-                {
-                    continue; 
-                }
-            }
+            if (ShouldAddSkillCandidate(skillData) == false) continue;
 
             AddSkillCandidatesByTargetType(actor, skillData);
         }
@@ -973,7 +942,7 @@ public class EnemyBattleAI
 
         if (candidate.IsBasicAttack)
         {
-            return 5f;
+            return 10f * aiProfile.BasicAttackWeight;
         }
 
         if (candidate.SkillData == null)
@@ -1493,5 +1462,17 @@ public class EnemyBattleAI
             : "All";
 
         return $"{actionName} -> {targetName}";
+    }
+
+    /// <summary>
+    /// 스킬 행동 후보 등록 판정
+    /// 일반 스킬은 항상 후보 등록, 별자리 스킬만 별도 발동 확률 적용
+    /// </summary>
+    private bool ShouldAddSkillCandidate(SkillData skillData)
+    {
+        if (skillData == null) return false;
+        if (skillData.IsConstellationPathAttack) return Random.value <= ConstellationSkillChance;
+
+        return true;
     }
 }

@@ -12,15 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61688d0fcbeb9ed4b9f3a1abe775d674, type: 3}
   m_Name: Fay_BaseStats
   m_EditorClassIdentifier: Assembly-CSharp::CharacterBaseStats
-  characterId: fay
-  characterName: "\uD398\uC774"
-  startLevel: 12
-  baseStats:
-    maxHP: 100
-    maxMP: 100
-    magicPower: 30
-    intelligence: 5
-    defense: 10
-    speed: 10
-    luck: 10
-  statPointPerLevel: 3
+  _characterId: fay
+  _characterName: "\uD398\uC774"
+  _startLevel: 1
+  _baseStats:
+    maxHP: 90
+    maxMP: 55
+    magicPower: 21
+    intelligence: 9
+    defense: 6
+    speed: 14
+    luck: 11
+  _icon: {fileID: 0}
+  _statPointPerLevel: 3

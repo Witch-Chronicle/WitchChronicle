@@ -1394,8 +1394,8 @@ public class BattleCycleController : MonoBehaviour
             yield break;
         }
 
-        if (actor.UseMp(
-                skillData.MpCost) == false)
+        if (actor.TeamType == BattleTeamType.Player &&
+            actor.UseMp(skillData.MpCost) == false)
         {
             Debug.LogWarning(
                 $"[Battle] {actor.UnitName} MP 부족");
@@ -2068,12 +2068,13 @@ public class BattleCycleController : MonoBehaviour
         SkillData skillData,
         float damageMultiplier)
     {
-        int damage =
-            CalculateSkillDamage(
-                actor,
-                target,
-                skillData,
-                damageMultiplier);
+        int damage = CalculateSkillDamage(actor, target, skillData, damageMultiplier);
+
+        if (damage <= 0)
+        {
+            Debug.Log($"[Battle] {skillData.SkillName} nullified by {target.UnitName}");
+            return;
+        }
 
         target.TakeDamage(damage);
 
@@ -2158,36 +2159,31 @@ public class BattleCycleController : MonoBehaviour
     {
         float rawDamage;
 
-        if (skillData.DamageType ==
-            DamageType.Fixed)
+        if (skillData.DamageType == DamageType.Fixed)
         {
             rawDamage = skillData.Power;
         }
         else
         {
-            float attackValue =
-                skillData.DamageType ==
-                DamageType.Magical
-                    ? actor.MagicPower
-                    : actor.AttackPower;
+            float attackValue = skillData.DamageType == DamageType.Magical ? actor.MagicPower : actor.AttackPower;
+            float defenseValue = skillData.DamageType == DamageType.Magical ? target.MagicDefensePower : target.DefensePower;
 
-            float defenseValue =
-                skillData.DamageType ==
-                DamageType.Magical
-                    ? target.MagicDefensePower
-                    : target.DefensePower;
+            rawDamage = attackValue + skillData.Power - defenseValue * 0.5f;
+        }
 
-            rawDamage =
-                attackValue +
-                skillData.Power -
-                defenseValue * 0.5f;
+        if (skillData.ElementType != ElementType.None)
+        {
+            if (target.IsNullTo(skillData.ElementType)) return 0;
+
+            if (target.IsWeakTo(skillData.ElementType))
+                rawDamage *= 1.5f;
+            else if (target.IsResistTo(skillData.ElementType))
+                rawDamage *= 0.5f;
         }
 
         rawDamage *= damageMultiplier;
 
-        return Mathf.Max(
-            1,
-            Mathf.RoundToInt(rawDamage));
+        return Mathf.Max(1, Mathf.RoundToInt(rawDamage));
     }
 
     /// <summary>

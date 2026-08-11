@@ -11,6 +11,24 @@ public class GrowthConfig : ScriptableObject
     public float BaseMonsterExp = 20f;      // 몬스터 기본 경험치
     public float MonsterExpGrowth = 0.1f;   // 몬스터 경험치 증가율/레벨
 
+    [Header("레벨 자동 성장")]
+    public int HpPerLevel = 10;
+    public int MpPerLevel = 3;
+    public int SpellPowerPerLevel = 2;
+    public int IntelligencePerLevel = 0;
+    public int DefensePerLevel = 1;
+    public int SpeedPerLevel = 1;
+    public int LuckPerLevel = 0;
+
+    [Header("스탯 포인트 효율")]
+    public int HpPerPoint = 10;
+    public int MpPerPoint = 5;
+    public int SpellPowerPerPoint = 2;
+    public int IntelligencePerPoint = 2;
+    public int DefensePerPoint = 2;
+    public int SpeedPerPoint = 1;
+    public int LuckPerPoint = 1;
+
     /// level → level+1 에 필요한 경험치. 시트 수식과 동일: ROUND(전투수 × 몬스터경험치, -1)
     public int ExpToNext(int level)
     {
