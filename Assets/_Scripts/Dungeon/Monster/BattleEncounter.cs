@@ -334,7 +334,7 @@ public class BattleEncounter : MonoBehaviour
         if (DungeonPartyQueueController.Instance != null)
         {
             DungeonPartyQueueController.Instance
-                .gameObject.SetActive(false);
+                .HideContent();
         }
 
         if (Party.Instance != null)

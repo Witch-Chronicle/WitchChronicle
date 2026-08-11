@@ -35,6 +35,8 @@ public class SkillEquipUIController : MonoBehaviour
     [SerializeField] private TMP_Text _targetTypeValueTxt;
     [SerializeField] private TMP_Text _damageTypeValueTxt;
     [SerializeField] private TMP_Text _powerValueTxt;
+    [Tooltip("스킬 데이터의 DrawGuideJson이 존재할 때만 활성화되는 오브젝트 (그리기 필요 안내용)")]
+    [SerializeField] private GameObject _drawingTxtObj;
     [Header("Detail 버튼")]
     [SerializeField] private Button _equipButton;
     [SerializeField] private Button _unequipButton;
@@ -223,7 +225,12 @@ public class SkillEquipUIController : MonoBehaviour
         {
             SetButtonActive(_equipButton, false);
             SetButtonActive(_unequipButton, false);
+            if (_drawingTxtObj != null) _drawingTxtObj.SetActive(false);
             return;
+        }
+        if (_drawingTxtObj != null)
+        {
+            _drawingTxtObj.SetActive(displaySkill.DrawGuideJson != null);
         }
         if (_detailSkillIcon != null)
         {
@@ -323,6 +330,7 @@ public class SkillEquipUIController : MonoBehaviour
         int targetSlot = SkillEquipService.GetFirstEmptySlot(current);
         if (targetSlot < 0)
         {
+            // TODO: 슬롯이 가득 찼습니다 AlertPopup
             AlertManager.Instance.Enqueue(AlertType.SkillSlotFull);
             return;
         }

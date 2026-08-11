@@ -6,6 +6,7 @@ public class DungeonPartyQueueController : MonoBehaviour
     [Header("Dynamic Spawn")]
     [SerializeField] private DungeonCharacterStatusView _statusViewPrefab;
     [SerializeField] private Transform _contentParent; // HorizontalLayoutGroup이 붙어있는 오브젝트
+    [SerializeField] private GameObject _tipsPanel;
     private readonly List<DungeonCharacterStatusView> _spawnedViews = new List<DungeonCharacterStatusView>();
     private void Awake()
     {
@@ -100,6 +101,7 @@ public class DungeonPartyQueueController : MonoBehaviour
     public void HideContent()
     {
         _contentParent.gameObject.SetActive(false);
+        _tipsPanel.SetActive(false);
     }
     public void ShowContent()
     {
@@ -110,6 +112,7 @@ public class DungeonPartyQueueController : MonoBehaviour
         if (_contentParent.gameObject.activeSelf == false)
         {
             _contentParent.gameObject.SetActive(true);
+            _tipsPanel.SetActive(true);
         }
     }
 }
