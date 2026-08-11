@@ -129,7 +129,7 @@ public class RoomContentSpawner : MonoBehaviour
                 case RoomType.Treasure:
                 {
                     var treasureComp = roomController.gameObject.AddComponent<TreasureRoomInteraction>();
-                    treasureComp.Setup(_table.chestPrefabs, _yOffsetDeco);
+                    treasureComp.Setup(_table.chestPrefabs, 0);
                     roomController.InjectInteraction(treasureComp);
                     roomController.SpawnRoomContent();
                     break;
