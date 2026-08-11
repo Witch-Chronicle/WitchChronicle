@@ -228,20 +228,30 @@ public sealed class NPCWorldInteractionUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 대화·상점 UI가 열렸을 때 World Canvas를 임시로 숨길 수 있습니다.
-    /// 닫힌 후 false를 전달하면 거리 조건에 따라 다시 표시됩니다.
+    /// 대화·상점·강화 등 NPC 상호작용 UI가 열려 있는 동안
+    /// World Interaction UI를 임시로 숨깁니다.
+    ///
+    /// GameObject 자체는 비활성화하지 않기 때문에
+    /// 기존 _isInRange / _isInInteractRange 상태가 유지됩니다.
     /// </summary>
     public void SetSuppressed(bool suppressed)
     {
         _suppressed = suppressed;
+
+        if (suppressed)
+        {
+            SetCanvasAlphaImmediate(0f);
+            SetInteractRootAlphaImmediate(0f);
+        }
     }
 
-    /// <summary>거리와 관계없이 즉시 숨깁니다. (상호작용 안내 UI 한정, 퀘스트 표시는 영향받지 않습니다)</summary>
+    /// <summary>
+    /// 거리 상태는 유지하면서 World UI를 즉시 숨긴다.
+    /// SetSuppressed(false)를 호출하면 다시 표시 가능.
+    /// </summary>
     public void HideImmediate()
     {
-        _suppressed = true;
-        SetCanvasAlphaImmediate(0f);
-        SetInteractRootAlphaImmediate(0f);
+        SetSuppressed(true);
     }
 
     private void ResolveReferences()

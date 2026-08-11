@@ -86,7 +86,7 @@ public class ShopDetailController : MonoBehaviour
         if (_equipStatContainer != null) _equipStatContainer.SetActive(false);
         ClearStatRows();
         if (_amountInput != null) _amountInput.SetTextWithoutNotify("0");
-        if (_priceText != null) _priceText.text = "0";
+        if (_priceText != null) _priceText.text = "0G";
     }
 
     /// <summary>
@@ -221,7 +221,7 @@ public class ShopDetailController : MonoBehaviour
             else
             {
                 int totalPrice = _currentItemData.buyPrice * _currentAmount;
-                _priceText.text = totalPrice.ToString();
+                _priceText.text = totalPrice.ToString() + "G";
             }
         }
     }

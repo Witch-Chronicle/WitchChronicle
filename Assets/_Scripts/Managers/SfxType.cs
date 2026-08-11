@@ -2,7 +2,7 @@ public enum SfxType
 {
     // 범용 UI
     ButtonClick,
-    ButtonHover,           // ★ 추가
+    ButtonHover,
 
     // 강화
     EnhanceSuccess,
@@ -21,4 +21,7 @@ public enum SfxType
     CookingProcess,
     PotionProcess,
     AlchemySuccess,
+
+    // 가챠
+    GachaResult,           // ★ 스킬 뽑기 결과 확정
 }

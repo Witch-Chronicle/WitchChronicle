@@ -727,7 +727,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2622915247643201803, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: _equippedSkills.Array.size
-      value: 5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2622915247643201803, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: '_equippedSkills.Array.data[0]'
@@ -1143,7 +1143,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3948643204487428067, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: _equippedSkills.Array.size
-      value: 6
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3948643204487428067, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: '_equippedSkills.Array.data[0]'
@@ -1168,7 +1168,7 @@ PrefabInstance:
     - target: {fileID: 3948643204487428067, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: '_equippedSkills.Array.data[5]'
       value: 
-      objectReference: {fileID: 11400000, guid: b6dce862f81f79946a237eac92e2530b, type: 2}
+      objectReference: {fileID: 0}
     - target: {fileID: 4325860273440113098, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -1199,7 +1199,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5589339413991364104, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: _equippedSkills.Array.size
-      value: 6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5589339413991364104, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: '_equippedSkills.Array.data[0]'
@@ -1263,7 +1263,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sfxList.Array.size
-      value: 12
+      value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sceneBgmList.Array.size
@@ -1366,6 +1366,14 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[12].clip
+      value: 
+      objectReference: {fileID: 8300000, guid: 3273124c467656f44955ff15442a2b74, type: 3}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[12].type
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sceneBgmList.Array.data[0].loop
       value: 1
       objectReference: {fileID: 0}
@@ -1458,6 +1466,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[12].volumeScale
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sceneBgmList.Array.data[0].sceneName
       value: Boot
       objectReference: {fileID: 0}
@@ -1531,7 +1543,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7744405818305512235, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: _equippedSkills.Array.size
-      value: 4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7744405818305512235, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: '_equippedSkills.Array.data[0]'
