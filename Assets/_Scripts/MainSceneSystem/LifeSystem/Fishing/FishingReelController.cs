@@ -54,7 +54,12 @@ public class FishingReelController : MonoBehaviour
     {
         RegisterButtonHoldEvents();
 
-        if (timeLimitText != null) timeLimitText.text = "";
+        // 초기 상태에선 타이머 오브젝트 숨김
+        if (timeLimitText != null)
+        {
+            timeLimitText.text = "";
+            timeLimitText.gameObject.SetActive(false);
+        }
     }
 
     private void RegisterButtonHoldEvents()
@@ -95,20 +100,33 @@ public class FishingReelController : MonoBehaviour
         _isHolding = false;
         _isMiniGameActive = true;
 
+        // ★ 타이머 오브젝트 활성화
+        if (timeLimitText != null)
+            timeLimitText.gameObject.SetActive(true);
+
         UpdateIndicatorPosition();
         UpdateProgressGauge();
         UpdateTimeLimitText();
 
-        // ★ 낚시(릴링) 시작 사운드
+        // ★ 낚시(릴링) 지속음 시작 (루프)
         if (SoundManager.Instance != null)
-            SoundManager.Instance.PlaySfx(SfxType.FishingCast);
+            SoundManager.Instance.PlaySfxLoop(SfxType.FishingCast);
     }
 
     public void StopMiniGame()
     {
         _isMiniGameActive = false;
         _isHolding = false;
-        if (timeLimitText != null) timeLimitText.text = "";
+
+        if (timeLimitText != null)
+        {
+            timeLimitText.text = "";
+            timeLimitText.gameObject.SetActive(false);
+        }
+
+        // ★ 지속음 정지
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.StopSfxLoop();
     }
 
     private void Update()
@@ -217,40 +235,47 @@ public class FishingReelController : MonoBehaviour
         timeLimitText.text = $"{remaining:F1}s";
         timeLimitText.color = remaining <= 3f ? new Color(1f, 0.3f, 0.3f) : Color.white;
     }
-public void ClearTimeLimitText()
-{
-    if (timeLimitText != null) timeLimitText.text = "";
-}
- private void CompleteReeling(bool success, FailReason reason)
-{
-    if (!_isMiniGameActive) return;
-    _isMiniGameActive = false;
-    _isHolding = false;
 
-    // ★ 디버그 로그
-    Debug.Log($"[FishingReel] CompleteReeling 호출됨 - success:{success}, timeLimitText null?:{timeLimitText == null}");
-
-    // 타이머 텍스트 비우기
-    if (timeLimitText != null)
+    /// <summary>
+    /// 외부에서 타이머 텍스트를 강제로 지울 때 사용.
+    /// </summary>
+    public void ClearTimeLimitText()
     {
-        timeLimitText.text = "";
-        Debug.Log("[FishingReel] timeLimitText 지워짐");
+        if (timeLimitText != null)
+        {
+            timeLimitText.text = "";
+            timeLimitText.gameObject.SetActive(false);
+        }
     }
 
-    // 지속음 정지
-    if (SoundManager.Instance != null)
-        SoundManager.Instance.StopSfxLoop();
-
-    if (SoundManager.Instance != null)
+    private void CompleteReeling(bool success, FailReason reason)
     {
-        SoundManager.Instance.PlaySfx(success ? SfxType.FishingSuccess : SfxType.FishingFail);
-    }
+        if (!_isMiniGameActive) return;
+        _isMiniGameActive = false;
+        _isHolding = false;
 
-    if (FishingManager.Instance != null)
-    {
-        FishingManager.Instance.CompleteReeling(success, _currentFish, reason);
+        // ★ 타이머 텍스트 비우고 오브젝트 자체 숨기기
+        if (timeLimitText != null)
+        {
+            timeLimitText.text = "";
+            timeLimitText.gameObject.SetActive(false);
+        }
+
+        // ★ 지속음 정지
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.StopSfxLoop();
+
+        // 결과 사운드 (성공/실패)
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySfx(success ? SfxType.FishingSuccess : SfxType.FishingFail);
+        }
+
+        if (FishingManager.Instance != null)
+        {
+            FishingManager.Instance.CompleteReeling(success, _currentFish, reason);
+        }
     }
-}
 
     public enum FailReason
     {
