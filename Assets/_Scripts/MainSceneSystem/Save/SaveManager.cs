@@ -490,6 +490,8 @@ public class SaveManager : MonoBehaviour
             // 4. 캐릭터 스탯, 장비, 스킬, 파티 복원
             if (PersistentCharacterManager.Instance != null && data.Characters != null)
             {
+                EnhanceController enhanceCtrl = FindFirstObjectByType<EnhanceController>();
+
                 foreach (var charSave in data.Characters)
                 {
                     if (PersistentCharacterManager.Instance.TryGetCharacter(charSave.CharacterId, out PersistentCharacterUnit unit))
@@ -550,11 +552,41 @@ public class SaveManager : MonoBehaviour
                                     _itemDatabase.TryGetValue(eqSlotSave.ItemId, out ItemData itemData) &&
                                     itemData is EquipItemData equipItemData)
                                 {
-                                    EquipmentInstance eqInstance = new EquipmentInstance(equipItemData, eqSlotSave.EnhanceLevel, null);
-                                    unit.CharacterEquipment.Equip(eqInstance);
+                                    EquipmentInstance targetInstance = null;
+
+                                    // 인벤토리에 이미 생성되어 있는 장비 객체 중 동일한 장비를 탐색하여 연결
+                                    if (PlayerInventory.Instance != null)
+                                    {
+                                        foreach (var owned in PlayerInventory.Instance.EquipmentInstances)
+                                        {
+                                            if (owned != null &&
+                                                owned.baseData != null &&
+                                                owned.baseData.itemId == eqSlotSave.ItemId &&
+                                                owned.enhanceLevel == eqSlotSave.EnhanceLevel &&
+                                                !CharacterEquipment.IsEquippedByAnyone(owned)) // 아직 다른 사람이 안 낀 장비
+                                            {
+                                                targetInstance = owned;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // 기존 장비의 시도 횟수 복원 및 스탯 리프레시
+                                        targetInstance.enhanceAttemptCount = eqSlotSave.EnhanceAttemptCount;
+                                        if (enhanceCtrl != null)
+                                        {
+                                            EnhanceTableData table = enhanceCtrl.GetTable(equipItemData.itemGrade);
+                                            targetInstance.RefreshStats(table);
+                                        }
+                                    }
+
+                                    // 캐릭터에게 실제 장착! (동일 메모리 객체이므로 장착이 해제되지 않음)
+                                    unit.CharacterEquipment.Equip(targetInstance);
                                 }
                             }
                         }
+                
                     }
                 }
 

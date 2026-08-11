@@ -23,23 +23,19 @@ public class EnemyAIProfileData : ScriptableObject
 
     [Header("Action Preference")]
     [Range(0f, 5f)]
+    [SerializeField] private float _basicAttackWeight = 1f;
+    [Range(0f, 5f)]
     [SerializeField] private float _damageWeight = 1f;
-
     [Range(0f, 5f)]
     [SerializeField] private float _killWeight = 2f;
-
     [Range(0f, 5f)]
     [SerializeField] private float _weaknessWeight = 1.5f;
-
     [Range(0f, 5f)]
     [SerializeField] private float _healWeight = 1f;
-
     [Range(0f, 5f)]
     [SerializeField] private float _buffWeight = 1f;
-
     [Range(0f, 5f)]
     [SerializeField] private float _debuffWeight = 1f;
-
     [Range(0f, 5f)]
     [SerializeField] private float _statusEffectWeight = 1f;
 
@@ -62,6 +58,7 @@ public class EnemyAIProfileData : ScriptableObject
     public float HighThreatTargetWeight => _highThreatTargetWeight;
     public float RandomTargetWeight => _randomTargetWeight;
 
+    public float BasicAttackWeight => _basicAttackWeight;
     public float DamageWeight => _damageWeight;
     public float KillWeight => _killWeight;
     public float WeaknessWeight => _weaknessWeight;

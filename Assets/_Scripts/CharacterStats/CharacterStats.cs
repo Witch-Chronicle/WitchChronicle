@@ -314,32 +314,45 @@ public class CharacterStats : MonoBehaviour
     }
 
     /// <summary>
-    /// 레벨에 따른 자동 성장치를 최종 스탯에 합산
-    /// 임시
+    /// 레벨에 따른 자동 성장치 적용
     /// </summary>
     private void ApplyLevelGrowth()
     {
-        int levelBonus = _level - 1;
+        if (_growthConfig == null)
+        {
+            Debug.LogWarning("[CharacterStats] GrowthConfig가 연결되지 않아 레벨 성장치를 적용할 수 없습니다.");
+            return;
+        }
 
-        _finalStats.maxHP += levelBonus * 10;
-        _finalStats.maxMP += levelBonus * 3;
-        _finalStats.magicPower += levelBonus * 2;
-        _finalStats.defense += levelBonus * 1;
-        _finalStats.speed += levelBonus * 1;
+        int levelBonus = Mathf.Max(0, _level - 1);
+
+        _finalStats.maxHP += levelBonus * _growthConfig.HpPerLevel;
+        _finalStats.maxMP += levelBonus * _growthConfig.MpPerLevel;
+        _finalStats.magicPower += levelBonus * _growthConfig.SpellPowerPerLevel;
+        _finalStats.intelligence += levelBonus * _growthConfig.IntelligencePerLevel;
+        _finalStats.defense += levelBonus * _growthConfig.DefensePerLevel;
+        _finalStats.speed += levelBonus * _growthConfig.SpeedPerLevel;
+        _finalStats.luck += levelBonus * _growthConfig.LuckPerLevel;
     }
 
     /// <summary>
-    /// 직접 투자한 스탯포인트를 실제 스탯 증가량으로 변환
+    /// 투자한 스탯 포인트를 실제 스탯 증가량으로 변환
     /// </summary>
     private void ApplyAllocatedStats()
     {
-        _finalStats.maxHP += _allocatedStats.maxHP * 10;
-        _finalStats.maxMP += _allocatedStats.maxMP * 5;
-        _finalStats.magicPower += _allocatedStats.magicPower * 2;
-        _finalStats.intelligence += _allocatedStats.intelligence * 2;
-        _finalStats.defense += _allocatedStats.defense * 2;
-        _finalStats.speed += _allocatedStats.speed * 1;
-        _finalStats.luck += _allocatedStats.luck * 1;
+        if (_growthConfig == null)
+        {
+            Debug.LogWarning("[CharacterStats] GrowthConfig가 연결되지 않아 투자 스탯을 적용할 수 없습니다.");
+            return;
+        }
+
+        _finalStats.maxHP += _allocatedStats.maxHP * _growthConfig.HpPerPoint;
+        _finalStats.maxMP += _allocatedStats.maxMP * _growthConfig.MpPerPoint;
+        _finalStats.magicPower += _allocatedStats.magicPower * _growthConfig.SpellPowerPerPoint;
+        _finalStats.intelligence += _allocatedStats.intelligence * _growthConfig.IntelligencePerPoint;
+        _finalStats.defense += _allocatedStats.defense * _growthConfig.DefensePerPoint;
+        _finalStats.speed += _allocatedStats.speed * _growthConfig.SpeedPerPoint;
+        _finalStats.luck += _allocatedStats.luck * _growthConfig.LuckPerPoint;
     }
 
     /// <summary>
@@ -376,7 +389,7 @@ public class CharacterStats : MonoBehaviour
         int maxHp = _finalStats.maxHP;
         int maxMp = _finalStats.maxMP;
 
-        float attackPower = _finalStats.magicPower * 0.5f;
+        float attackPower = _finalStats.magicPower * 0.7f;
         float magicPower = _finalStats.magicPower;
 
         float defense = _finalStats.defense;
