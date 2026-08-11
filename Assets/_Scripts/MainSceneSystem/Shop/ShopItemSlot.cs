@@ -50,7 +50,7 @@ public class ShopItemSlot : MonoBehaviour, IRecycledScrollCell<ShopSlotEntry>
         if (_nameText != null) _nameText.text = itemData.itemName;
         if (_priceText != null)
         {
-            _priceText.text = IsSoldOut ? _soldOutText : itemData.buyPrice.ToString();
+            _priceText.text = IsSoldOut ? _soldOutText : itemData.buyPrice.ToString() + "G";
         }
     }
     /// <summary>
