@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,6 +21,9 @@ public class StatController : MonoBehaviour
 
     private readonly Dictionary<EquipSlotType, EquipmentInstance> _equipped = new();
 
+    // ★ 레벨업 사운드 초기 로드 무시용
+    private bool _initialized = false;
+
     // ── 외부 공개 창구 (UI·전투 담당은 아래 프로퍼티/함수만 쓰면 됨) ──
 
     /// 내부 CharacterStats 직접 접근용. 가급적 아래 창구를 쓰고, 특별한 경우에만 사용.
@@ -31,7 +35,7 @@ public class StatController : MonoBehaviour
     /// 현재 레벨에서 쌓은 경험치 (UI 경험치 바용)
     public int Exp => _stats.Exp;
 
-    /// 다음 레벨까지 필요한 경험치. 만렙이거나 GrowthConfig 미연결이면 0. (UI 경험치 바: Exp/ExpToNextLevel)
+    /// 다음 레벨까지 필요한 경험치. 만렙이거나 GrowthConfig 미연결이면 0.
     public int ExpToNextLevel => _growthConfig != null ? _growthConfig.ExpToNext(Level) : 0;
 
     /// 잔여 스탯 포인트 (UI 표시용)
@@ -58,10 +62,34 @@ public class StatController : MonoBehaviour
         if (_stats == null) _stats = GetComponent<CharacterStats>();
     }
 
+    private void Start()
+    {
+        // 로드/초기 세팅이 다 끝난 후에 레벨업 사운드 허용
+        StartCoroutine(MarkInitialized());
+    }
+
+    private IEnumerator MarkInitialized()
+    {
+        yield return null;
+        yield return null;
+        _initialized = true;
+    }
+
     // ── 경험치 ──
 
     /// 전투 승리 시 호출. 레벨업 시 포인트 지급은 CharacterStats가 처리.
-    public void AddExp(int amount) => _stats.AddExp(amount);
+    public void AddExp(int amount)
+    {
+        int levelBefore = _stats.Level;
+        _stats.AddExp(amount);
+        int levelAfter = _stats.Level;
+
+        // ★ 초기화 완료 후 실제 레벨업 시에만 사운드 재생
+        if (_initialized && levelAfter > levelBefore && SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySfx(SfxType.LevelUp);
+        }
+    }
 
     // ── 스탯 포인트 분배 ──
 
