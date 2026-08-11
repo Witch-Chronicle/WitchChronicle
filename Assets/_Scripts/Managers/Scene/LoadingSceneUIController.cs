@@ -14,12 +14,12 @@ public class LoadingSceneUIController : MonoBehaviour
     [SerializeField] private TMP_Text _tipText;
 
     [TextArea(2, 4)]
-    [SerializeField] private string[] _tips = new string[]
+    [SerializeField]
+    private string[] _tips = new string[]
     {
         "포션을 미리 준비하면 전투를 한결 수월하게 진행할 수 있습니다.",
         "몬스터마다 약점 속성이 존재합니다. 상성을 활용해보세요.",
         "마법진을 정확하게 그릴수록 스킬의 피해량이 대폭 증가합니다.",
-        "의뢰 게시판에서 반복 퀘스트를 수락하여 골드와 경험치를 버세요.",
         "농사로 얻은 재료는 요리나 연금술 포션 제작에 유용하게 쓰입니다.",
         "낚시로 잡은 물고기는 상점에 팔거나 요리 재료로 활용할 수 있습니다."
     };
