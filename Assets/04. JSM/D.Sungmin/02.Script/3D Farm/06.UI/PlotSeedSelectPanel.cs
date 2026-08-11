@@ -150,7 +150,7 @@ namespace WitchChronicle.IdleFarming
 
             int minutes = Mathf.RoundToInt(_selectedSeed.growthTime / 60f);
             if (_detailCycleInfo != null)
-                _detailCycleInfo.text = $"{minutes}분마다 {_selectedSeed.harvestAmount}개";
+                _detailCycleInfo.text = $"{minutes}분마다 {_selectedSeed.harvestAmount}개 최대 5개";
 
             _plantButton.interactable = GetOwnedCount(_selectedSeed) > 0;
         }
