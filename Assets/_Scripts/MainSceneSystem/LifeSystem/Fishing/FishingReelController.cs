@@ -53,6 +53,8 @@ public class FishingReelController : MonoBehaviour
     private void Awake()
     {
         RegisterButtonHoldEvents();
+
+        if (timeLimitText != null) timeLimitText.text = "";
     }
 
     private void RegisterButtonHoldEvents()
@@ -215,14 +217,30 @@ public class FishingReelController : MonoBehaviour
         timeLimitText.text = $"{remaining:F1}s";
         timeLimitText.color = remaining <= 3f ? new Color(1f, 0.3f, 0.3f) : Color.white;
     }
-
-    private void CompleteReeling(bool success, FailReason reason)
+public void ClearTimeLimitText()
+{
+    if (timeLimitText != null) timeLimitText.text = "";
+}
+ private void CompleteReeling(bool success, FailReason reason)
 {
     if (!_isMiniGameActive) return;
     _isMiniGameActive = false;
     _isHolding = false;
 
-    // ★ 낚시 결과 사운드 (성공/실패)
+    // ★ 디버그 로그
+    Debug.Log($"[FishingReel] CompleteReeling 호출됨 - success:{success}, timeLimitText null?:{timeLimitText == null}");
+
+    // 타이머 텍스트 비우기
+    if (timeLimitText != null)
+    {
+        timeLimitText.text = "";
+        Debug.Log("[FishingReel] timeLimitText 지워짐");
+    }
+
+    // 지속음 정지
+    if (SoundManager.Instance != null)
+        SoundManager.Instance.StopSfxLoop();
+
     if (SoundManager.Instance != null)
     {
         SoundManager.Instance.PlaySfx(success ? SfxType.FishingSuccess : SfxType.FishingFail);
