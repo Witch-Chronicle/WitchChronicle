@@ -14,4 +14,7 @@ public enum SfxType
     AlchemySuccess,
     GachaResult,
     LevelUp,        // ★ 추가
+    FieldAttack,
+    Encounter,
+    Suction
 }

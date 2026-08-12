@@ -31,12 +31,6 @@ public class FieldAttackController : MonoBehaviour
     [Tooltip("애니메이션 이벤트 누락 시 최대 대기 시간")]
     [SerializeField] private float _animationEventTimeout = 2.5f;
 
-    [Header("Sound")]
-    [SerializeField] private AudioSource _audioSource;
-    [SerializeField] private AudioClip _attackSfx;
-    [SerializeField, Range(0f, 1f)] private float _attackSfxVolume = 1f;
-    [SerializeField, Range(0.5f, 2f)] private float _attackSfxPitch = 1f;
-
     [Header("Timing")]
     [Tooltip("피격 이펙트 발생 후 전투 진입까지 유지 시간")]
     [SerializeField] private float _impactHoldDuration = 0.1f;
@@ -604,11 +598,6 @@ public class FieldAttackController : MonoBehaviour
             _encounterCameraController =
                 FindFirstObjectByType<FieldEncounterCameraController>();
         }
-
-        if (_audioSource == null)
-        {
-            _audioSource = GetComponent<AudioSource>();
-        }
     }
 
     /// <summary>
@@ -956,12 +945,11 @@ public class FieldAttackController : MonoBehaviour
     /// </summary>
     private void PlayAttackSfx()
     {
-        if (_audioSource == null || _attackSfx == null)
+        if (SoundManager.Instance == null)
         {
             return;
         }
 
-        _audioSource.pitch = _attackSfxPitch;
-        _audioSource.PlayOneShot(_attackSfx, _attackSfxVolume);
+        SoundManager.Instance.PlaySfx(SfxType.FieldAttack);
     }
 }
