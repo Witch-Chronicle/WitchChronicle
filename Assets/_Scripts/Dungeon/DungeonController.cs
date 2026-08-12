@@ -25,6 +25,11 @@ public class DungeonController : MonoBehaviour
             return;
         }
 
+        if (PersistentCharacterManager.Instance != null)
+        {
+            PersistentCharacterManager.Instance.RestoreActivePartyVitals();
+        }
+
         // 혹시 Start 시점에 못 가져왔을 경우 대비
         if (_dungeonData == null && DungeonManager.Instance != null)
         {

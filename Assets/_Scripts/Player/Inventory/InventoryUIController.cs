@@ -356,8 +356,12 @@ public class InventoryUIController : MonoBehaviour
         var equipmentList = PlayerInventory.Instance.EquipmentInstances
             .Where(instance => instance.baseData != null)
             .Where(instance => instance.baseData.mainCategory == MainCategory.Equip)
-            .Where(instance => _currentSubCategory == null || instance.baseData.subCategory == _currentSubCategory.Value)
-            .Where(instance => !CharacterEquipment.IsEquippedByAnyone(instance));
+            .Where(instance => _currentSubCategory == null
+                || instance.baseData.subCategory == _currentSubCategory.Value)
+            .Where(instance => !CharacterEquipment.IsEquippedByAnyone(instance))
+            .OrderByDescending(instance => instance.baseData.itemGrade)
+            .ThenBy(instance => instance.baseData.itemId);
+
         foreach (var instance in equipmentList)
         {
             _entryBuffer.Add(new InventorySlotEntry(
@@ -370,7 +374,11 @@ public class InventoryUIController : MonoBehaviour
     {
         var filtered = PlayerInventory.Instance.InventorySlots
             .Where(slot => slot.ItemData.mainCategory == _currentMainCategory)
-            .Where(slot => _currentSubCategory == null || slot.ItemData.subCategory == _currentSubCategory.Value);
+            .Where(slot => _currentSubCategory == null
+                || slot.ItemData.subCategory == _currentSubCategory.Value)
+            .OrderByDescending(slot => slot.ItemData.itemGrade)
+            .ThenBy(slot => slot.ItemData.itemId);
+
         foreach (var slot in filtered)
         {
             _entryBuffer.Add(new InventorySlotEntry(
