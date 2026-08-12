@@ -21,8 +21,10 @@ MonoBehaviour:
   reward:
     gold: 100
     exp: 30
-    items: []
-    itemCount: 0
+    items:
+    - {fileID: 11400000, guid: 1929871b9bcd1324498989844f5a8c8f, type: 2}
+    - {fileID: 11400000, guid: 52c8f1b446e452647b5d82e5cb2acd00, type: 2}
+    itemCount: 3
     recruitNPC: 
     nextStory: 1
   nextQuest: {fileID: 11400000, guid: e7dd8d3c7d865ac4081440d8afeb4bb8, type: 2}

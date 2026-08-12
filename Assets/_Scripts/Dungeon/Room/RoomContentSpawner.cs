@@ -154,7 +154,7 @@ public class RoomContentSpawner : MonoBehaviour
                 case RoomType.Event:
                 {
                     var eventComp = roomController.gameObject.AddComponent<EventRoomInteraction>();
-                    eventComp.Setup(_table.eventRoomTableSO, _yOffsetDeco);
+                    eventComp.Setup(_table.eventRoomTableSO, _yOffsetDeco + 0.3f);
                     roomController.InjectInteraction(eventComp);
                     roomController.SpawnRoomContent();
                     break;
