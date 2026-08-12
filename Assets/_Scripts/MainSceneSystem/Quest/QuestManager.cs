@@ -54,6 +54,8 @@ public class QuestManager : MonoBehaviour
 
         Debug.Log($"Quest Start : {quest.title}");
 
+        CheckExistingInventoryForQuest(runtime);
+
         QuestListUI.Instance.Refresh();
     }
 
@@ -314,6 +316,31 @@ public class QuestManager : MonoBehaviour
             QuestListUI.Instance.Refresh();
         }
     }
+
+    private void CheckExistingInventoryForQuest(QuestRuntime runtime)
+    {
+        if (PlayerInventory.Instance == null) return;
+
+        for (int i = 0; i < runtime.Data.objectives.Count; i++)
+        {
+            QuestObjective objective = runtime.Data.objectives[i];
+
+            // 수집/구매(CollectItem 등) 목표인 경우
+            if (objective.type == QuestObjectiveType.UseShop || objective.type == QuestObjectiveType.CollectItem )
+            {
+                // 인벤토리에 해당 targetID 아이템이 몇 개 있는지 확인
+                if (PlayerInventory.Instance.HasItemById(objective.targetID))
+                {
+                    // 인벤토리에 이미 있음 -> 퀘스트 OK (완료 처리)
+                    AddProgress(objective.type, objective.targetID, 1);
+                }
+            }
+        }
+
+        // 완료 조건 만족 여부 검사
+        CheckComplete(runtime);
+    }
+
     public List<QuestData> GetAvailableQuests()
     {
         // 데이터베이스의 모든 퀘스트 반환

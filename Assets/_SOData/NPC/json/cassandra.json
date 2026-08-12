@@ -25,25 +25,25 @@
       "text": "바쁘게 지내다 보니 분실한 줄도 몰랐구나. 소중한 기록이니 잘 보관해야겠어.",
       "startQuest": "",
       "completeQuest": "main_000",
-      "next": "",
+      "next": "main_001_default",
       "choices": []
     },
     {
       "id": "main_001_default",
       "speaker": "카산드라",
-      "text": "저기... 혹시 시간 괜찮다면 내 부탁 하나만 들어줄 수 있을까? 근처 던전 쪽을 가서 한번 살펴봐 주었으면 한단다.",
+      "text": "버섯 마수 세 마리를 퇴치하는 일을 부탁해도 될까? 마을 주민들이 불안해하고 있단다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "제가 조사해 볼게요.",
+          "text": "제가 처리하고 올게요.",
           "next": "main_001_accept",
           "startQuest": "main_001",
           "completeQuest": ""
         },
         {
-          "text": "지금은 좀 바빠요.",
+          "text": "잠시만 기다려 주세요.",
           "next": "main_001_reject",
           "startQuest": "",
           "completeQuest": ""
@@ -53,7 +53,7 @@
     {
       "id": "main_001_accept",
       "speaker": "카산드라",
-      "text": "고마워라. 다치지 않게 조심해서 다녀오렴.",
+      "text": "참 착하구나. 안전을 최우선으로 생각하고 다녀오렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -62,7 +62,7 @@
     {
       "id": "main_001_reject",
       "speaker": "카산드라",
-      "text": "그래, 급하게 서두를 필요는 없단다. 차분히 준비되면 다시 찾아오렴.",
+      "text": "알았단다. 충분히 준비가 되면 언제든 말해주렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -71,7 +71,7 @@
     {
       "id": "main_001_running",
       "speaker": "카산드라",
-      "text": "던전 안쪽 조사는 잘 진행되고 있니? 발밑이 위험하니 조심하렴.",
+      "text": "버섯 마수들은 잘 해결하고 있니? 독한 냄새 때문에 힘들진 않고?",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -80,7 +80,7 @@
     {
       "id": "main_001_complete",
       "speaker": "카산드라",
-      "text": "무사히 다녀왔구나. 별일 없어서 정말 다행이란다.",
+      "text": "세 마리 모두 깔끔하게 처리했구나! 정말 훌륭해요, 수고 많았단다.",
       "startQuest": "",
       "completeQuest": "main_001",
       "next": "main_001_reward",
@@ -98,19 +98,19 @@
     {
       "id": "main_002_default",
       "speaker": "카산드라",
-      "text": "버섯 마수 세 마리를 퇴치하는 일을 부탁해도 될까? 마을 주민들이 불안해하고 있단다.",
+      "text": "저기... 혹시 시간 괜찮다면 내 부탁 하나만 들어줄 수 있을까? 근처 던전 쪽을 가서 한번 살펴봐 주었으면 한단다.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
       "choices": [
         {
-          "text": "제가 처리하고 올게요.",
+          "text": "제가 조사해 볼게요.",
           "next": "main_002_accept",
           "startQuest": "main_002",
           "completeQuest": ""
         },
         {
-          "text": "잠시만 기다려 주세요.",
+          "text": "지금은 좀 바빠요.",
           "next": "main_002_reject",
           "startQuest": "",
           "completeQuest": ""
@@ -120,7 +120,7 @@
     {
       "id": "main_002_accept",
       "speaker": "카산드라",
-      "text": "참 착하구나. 안전을 최우선으로 생각하고 다녀오렴.",
+      "text": "고마워라. 다치지 않게 조심해서 다녀오렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -129,7 +129,7 @@
     {
       "id": "main_002_reject",
       "speaker": "카산드라",
-      "text": "알았단다. 충분히 준비가 되면 언제든 말해주렴.",
+      "text": "그래, 급하게 서두를 필요는 없단다. 차분히 준비되면 다시 찾아오렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -138,7 +138,7 @@
     {
       "id": "main_002_running",
       "speaker": "카산드라",
-      "text": "버섯 마수들은 잘 해결하고 있니? 독한 냄새 때문에 힘들진 않고?",
+      "text": "던전 안쪽 조사는 잘 진행되고 있니? 발밑이 위험하니 조심하렴.",
       "startQuest": "",
       "completeQuest": "",
       "next": "",
@@ -147,7 +147,7 @@
     {
       "id": "main_002_complete",
       "speaker": "카산드라",
-      "text": "세 마리 모두 깔끔하게 처리했구나! 정말 훌륭해요, 수고 많았단다.",
+      "text": "무사히 다녀왔구나. 별일 없어서 정말 다행이란다.",
       "startQuest": "",
       "completeQuest": "main_002",
       "next": "main_002_reward",
@@ -409,7 +409,7 @@
       "text": "정말 큰일을 해냈단다, 대견하구나! 하지만 다음 단계로 가려면 동료가 한 명 더 필요하단다.",
       "startQuest": "",
       "completeQuest": "",
-      "next": "",
+      "next": "main_007_default",
       "choices": []
     },
     {
@@ -659,7 +659,7 @@
       "text": "수고 많았단다. 하지만 앞으로는 더 힘든 여정이 될 거야. 동료를 한 명 더 영입하는 게 안전하겠구나.",
       "startQuest": "",
       "completeQuest": "",
-      "next": "",
+      "next": "main_011_default",
       "choices": []
     },
     {

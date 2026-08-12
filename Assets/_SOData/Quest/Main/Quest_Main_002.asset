@@ -13,20 +13,20 @@ MonoBehaviour:
   m_Name: Quest_Main_002
   m_EditorClassIdentifier: Assembly-CSharp::QuestData
   id: main_002
-  title: "\uBC84\uC12F \uC0D8\uD50C \uCC44\uCDE8"
-  description: "\uCE74\uC0B0\uB4DC\uB77C \uAC00 \uBC84\uC12F\uB97C \uC138\uB9C8\uB9AC
-    \uCC98\uCE58 \uD574\uB2EC\uB77C\uACE0 \uD55C\uB2E4."
+  title: "\uCE74\uC0B0\uB4DC\uB77C\uC758 \uBD80\uD0C1"
+  description: "\uCE74\uC0B0\uB4DC\uB77C \uAC00 \uC9C0\uD558 \uB358\uC804\uC744 \uD0D0\uC0C9\uD574\uB2EC\uB77C\uACE0
+    \uD55C\uB2E4,"
   type: 0
   objectives:
-  - type: 2
-    targetID: enemy_wild_mushroom
-    targetName: "\uBC84\uC12F"
-    requiredCount: 3
+  - type: 4
+    targetID: classic_1
+    targetName: "\uC9C0\uD558 \uB358\uC804"
+    requiredCount: 1
   reward:
-    gold: 350
-    exp: 70
+    gold: 200
+    exp: 60
     items: []
-    itemCount: 2
+    itemCount: 0
     recruitNPC: 
     nextStory: 1
   nextQuest: {fileID: 11400000, guid: cb986d42d642f3c41a53c539b41c28b4, type: 2}
