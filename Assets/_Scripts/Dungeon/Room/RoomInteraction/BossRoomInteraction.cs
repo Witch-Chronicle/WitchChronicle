@@ -22,7 +22,7 @@ public class BossRoomInteraction : RoomInteraction
     {
         if (_bossMonsterPrefab == null) return;
 
-        Vector3 spawnPos = roomCenter; 
+        Vector3 spawnPos = new Vector3(roomCenter.x, - 1f, roomCenter.z); // 스폰 위치를 방 중심으로 설정
         
         BattleEncounter boss = Instantiate(_bossMonsterPrefab, spawnPos, Quaternion.identity);
 

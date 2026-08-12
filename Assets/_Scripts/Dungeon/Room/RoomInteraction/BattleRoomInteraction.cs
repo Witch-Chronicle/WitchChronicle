@@ -22,9 +22,11 @@ public class BattleRoomInteraction : RoomInteraction
             return;
         }
 
+        Vector3 spawnPos = new Vector3(roomCenter.x, -1f, roomCenter.z); // 스폰 위치를 방 중심으로 설정
+
         BattleEncounter monster = Instantiate(
             _monsterPrefab,
-            roomCenter,
+            spawnPos,
             Quaternion.identity);
 
         monster.Initialize(_enemyDataList);
