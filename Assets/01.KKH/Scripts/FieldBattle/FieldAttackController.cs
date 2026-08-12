@@ -326,11 +326,14 @@ public class FieldAttackController : MonoBehaviour
                 _encounterViewHoldDuration);
         }
 
-        // Encounter 구도 기준 전투 진입
+        // 현재 Encounter 구도를 기준으로 Push In 시작
         BattleEncounter encounter =
             _currentTarget != null
                 ? _currentTarget.BattleEncounter
                 : null;
+
+        // 전투 진입 전 필드 록온 상태 해제
+        _targetingController?.ClearTarget();
 
         if (encounter != null)
         {
