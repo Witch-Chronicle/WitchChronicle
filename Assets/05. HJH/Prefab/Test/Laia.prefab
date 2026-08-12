@@ -10582,6 +10582,7 @@ GameObject:
   - component: {fileID: 5029553302394645327}
   - component: {fileID: 6156047879333683618}
   - component: {fileID: 5930378584937415106}
+  - component: {fileID: 1436770477881381326}
   m_Layer: 0
   m_Name: Laia
   m_TagString: Untagged
@@ -10724,6 +10725,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FieldWeaponVisibility
   _weaponRoot: {fileID: 4772536606603791296}
   _armedScene: 2
+--- !u!136 &1436770477881381326
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8707267798254405823}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Radius: 0.3
+  m_Height: 1.9
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8808971628188212840
 GameObject:
   m_ObjectHideFlags: 0

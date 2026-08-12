@@ -41,27 +41,71 @@ public class BattleCommandUIController : MonoBehaviour
     }
 
     /// <summary>
-    /// 침묵 상태면 스킬 커맨드 버튼을 비활성화(입력 차단)한다.
-    /// interactable=false면 MoveSelection/SubmitCurrent가 IsSelectable로 자동 제외한다.
+    /// 스킬 커맨드 활성화 여부 갱신.
+    /// - 침묵 등의 상태로 스킬 사용 불가 시 비활성화
+    /// - 현재 유닛의 장착 스킬이 하나도 없으면 비활성화
     /// </summary>
     private void RefreshSkillLock()
     {
-        if (_commands == null || _commands.Length <= SkillCommandIndex)
+        if (_commands == null ||
+            _commands.Length <= SkillCommandIndex)
+        {
             return;
+        }
 
-        Button skillButton = _commands[SkillCommandIndex].Button;
+        Button skillButton =
+            _commands[SkillCommandIndex].Button;
+
         if (skillButton == null)
+        {
             return;
+        }
 
-        bool canUseSkill = true;
+        bool canUseSkill = false;
 
         if (BattleUIContext.Instance != null)
         {
-            BattleUnit unit = BattleUIContext.Instance.CurrentUnit;
-            canUseSkill = unit == null || BattleUIContext.Instance.CanUseSkill(unit);
+            BattleUnit unit =
+                BattleUIContext.Instance.CurrentUnit;
+
+            if (unit != null)
+            {
+                bool hasEquippedSkill =
+                    HasEquippedSkill(unit);
+
+                bool isSkillAvailable =
+                    BattleUIContext.Instance.CanUseSkill(unit);
+
+                canUseSkill =
+                    hasEquippedSkill &&
+                    isSkillAvailable;
+            }
         }
 
         skillButton.interactable = canUseSkill;
+    }
+
+    /// <summary>
+    /// 현재 전투 유닛에게 장착된 스킬이 하나라도 있는지 확인.
+    /// null 스킬은 장착된 것으로 취급하지 않는다.
+    /// </summary>
+    private bool HasEquippedSkill(BattleUnit unit)
+    {
+        if (unit == null ||
+            unit.SkillList == null)
+        {
+            return false;
+        }
+
+        foreach (SkillData skill in unit.SkillList)
+        {
+            if (skill != null)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
