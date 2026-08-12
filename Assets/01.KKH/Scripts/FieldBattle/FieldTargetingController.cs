@@ -84,10 +84,12 @@ public class FieldTargetingController : MonoBehaviour
     }
 
     /// <summary>
-    /// 록온 입력 해제
+    /// 록온 입력 해제 및 대상 초기화
     /// </summary>
     private void OnDisable()
     {
+        ClearTarget();
+
         if (_lockOnAction == null)
         {
             return;

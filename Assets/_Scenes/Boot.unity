@@ -1563,7 +1563,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sfxList.Array.size
-      value: 14
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sceneBgmList.Array.size
@@ -1682,6 +1682,30 @@ PrefabInstance:
       value: 13
       objectReference: {fileID: 0}
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[14].clip
+      value: 
+      objectReference: {fileID: 8300000, guid: c91fcf414acc0344cb03b13996f1bf3b, type: 3}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[14].type
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[15].clip
+      value: 
+      objectReference: {fileID: 8300000, guid: 21c4a490b24ba2045bc815f7626a40ef, type: 3}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[15].type
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[16].clip
+      value: 
+      objectReference: {fileID: 8300000, guid: ec2c58780556a484cafe4e1ad5ebc27b, type: 3}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[16].type
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sceneBgmList.Array.data[0].loop
       value: 1
       objectReference: {fileID: 0}
@@ -1780,6 +1804,18 @@ PrefabInstance:
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sfxList.Array.data[13].volumeScale
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[14].volumeScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[15].volumeScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
+      propertyPath: sfxList.Array.data[16].volumeScale
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5730266884368981474, guid: cb378e395f58bc143ae4fa23b0990ecd, type: 3}
       propertyPath: sceneBgmList.Array.data[0].sceneName

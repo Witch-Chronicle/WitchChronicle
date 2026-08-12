@@ -114,11 +114,7 @@ public sealed class EnhancementResultController : MonoBehaviour
         ResetVisuals();
         SetResultData(icon, isSuccess, beforeLevel, afterLevel, pointBefore, pointAfter);
 
-        // ★ 강화 결과 사운드 (성공/실패)
-        if (SoundManager.Instance != null)
-        {
-            SoundManager.Instance.PlaySfx(isSuccess ? SfxType.EnhanceSuccess : SfxType.EnhanceFail);
-        }
+
 
         sequence = DOTween.Sequence()
             .SetUpdate(true)
@@ -148,6 +144,22 @@ public sealed class EnhancementResultController : MonoBehaviour
             AppendSuccessAnimation(sequence);
         else
             AppendFailureAnimation(sequence);
+
+
+        // 성공/실패 결과 애니메이션이 끝난 직후 사운드 재생
+        sequence.AppendCallback(() =>
+        {
+            if (SoundManager.Instance == null)
+            {
+                return;
+            }
+
+            SoundManager.Instance.PlaySfx(
+                isSuccess
+                    ? SfxType.EnhanceSuccess
+                    : SfxType.EnhanceFail
+            );
+        });
 
         // 5. 결과 텍스트 표시
         sequence.Append(resultTextGroup.DOFade(1f, textFadeTime));
