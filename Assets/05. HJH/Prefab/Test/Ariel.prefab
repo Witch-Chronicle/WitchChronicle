@@ -2588,6 +2588,7 @@ GameObject:
   - component: {fileID: 3963717224038693021}
   - component: {fileID: 5397985464303053441}
   - component: {fileID: 6715922386536353881}
+  - component: {fileID: 7619353865782446859}
   m_Layer: 0
   m_Name: Ariel
   m_TagString: Player
@@ -2946,6 +2947,29 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!136 &7619353865782446859
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560493996318386368}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Radius: 0.3
+  m_Height: 1.9
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1562030576368215012
 GameObject:
   m_ObjectHideFlags: 0
