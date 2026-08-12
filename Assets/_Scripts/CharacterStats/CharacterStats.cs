@@ -407,7 +407,7 @@ public class CharacterStats : MonoBehaviour
             magicDefense,
             speed,
             luck);
-            
+
         SaveManager.RequestSave();
     }
 
@@ -505,15 +505,28 @@ public class CharacterStats : MonoBehaviour
     /// </summary>
     private int CalculateSpellSlotCount()
     {
-        int intelligence = GetStat(StatType.Intelligence);
+        int finalIntelligence = GetStat(StatType.Intelligence);
+
+        int baseIntelligence = _baseStats != null
+            ? _baseStats.BaseStats.Get(StatType.Intelligence)
+            : 0;
+
+        int bonusIntelligence =
+            Mathf.Max(0, finalIntelligence - baseIntelligence);
 
         if (_intelligencePerAdditionalSlot <= 0)
         {
             return _baseSpellSlotCount;
         }
 
-        int slotCount = _baseSpellSlotCount + intelligence / _intelligencePerAdditionalSlot;
-        return Mathf.Min(_maxSpellSlotCount, slotCount);
+        int slotCount =
+            _baseSpellSlotCount +
+            bonusIntelligence / _intelligencePerAdditionalSlot;
+
+        return Mathf.Min(
+            _maxSpellSlotCount,
+            slotCount
+        );
     }
 
     /// <summary>
