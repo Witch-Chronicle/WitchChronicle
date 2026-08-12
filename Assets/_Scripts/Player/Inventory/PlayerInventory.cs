@@ -290,4 +290,21 @@ public class PlayerInventory : MonoBehaviour
     {
         OnInventoryChanged?.Invoke();
     }
+
+    // PlayerInventory.cs에 추가
+    public bool HasItemById(string itemId)
+    {
+        foreach (var slot in InventorySlots)
+        {
+            if (slot != null && slot.ItemData != null && slot.Quantity > 0)
+            {
+                // 아이템 ID 비교
+                if (slot.ItemData.itemId.ToString() == itemId)
+                {
+                    return true; // 인벤토리에 존재함!
+                }
+            }
+        }
+        return false; // 없음
+    }
 }

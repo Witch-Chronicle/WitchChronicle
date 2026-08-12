@@ -50,6 +50,25 @@ public class EnemyAIProfileData : ScriptableObject
     [Range(0f, 5f)]
     [SerializeField] private float _randomActionWeight = 0.5f;
 
+    [Header("Decision Control")]
+    [Range(0f, 1f)]
+    [SerializeField] private float _skillUseChance = 0.6f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float _healHpRatioThreshold = 0.6f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float _emergencyHealHpRatio = 0.3f;
+
+    [Range(0f, 50f)]
+    [SerializeField] private float _selectionScoreRange = 15f;
+
+    [Range(0f, 50f)]
+    [SerializeField] private float _repeatActionPenalty = 12f;
+
+    [Range(0f, 50f)]
+    [SerializeField] private float _repeatTargetPenalty = 8f;
+
     public string ProfileId => _profileId;
     public string ProfileName => _profileName;
     public EnemyAIArchetype Archetype => _archetype;
@@ -71,4 +90,11 @@ public class EnemyAIProfileData : ScriptableObject
     public float SelfSurvivalWeight => _selfSurvivalWeight;
 
     public float RandomActionWeight => _randomActionWeight;
+
+    public float SkillUseChance => _skillUseChance;
+    public float HealHpRatioThreshold => _healHpRatioThreshold;
+    public float EmergencyHealHpRatio => _emergencyHealHpRatio;
+    public float SelectionScoreRange => _selectionScoreRange;
+    public float RepeatActionPenalty => _repeatActionPenalty;
+    public float RepeatTargetPenalty => _repeatTargetPenalty;
 }
