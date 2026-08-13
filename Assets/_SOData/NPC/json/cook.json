@@ -1,0 +1,209 @@
+{
+  "npcId": "npc_life_female",
+  "dialogues": [
+    {
+      "id": "default",
+      "speaker": "에밀리",
+      "text": "안녕하세요! 요리나 포션 제조에 대해 도움이 필요하신가요?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "cook_000_default",
+      "choices": []
+    },
+
+    {
+      "id": "cook_000_default",
+      "speaker": "에밀리",
+      "text": "당신이 새로 온 마을 사람이군요! 수확한 작물과 물고기로 맛있는 요리를 만들어볼까요?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "가르쳐주세요!",
+          "next": "cook_000_accept",
+          "startQuest": "cook_000",
+          "completeQuest": ""
+        },
+        {
+          "text": "나중에 배울게요.",
+          "next": "cook_000_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "cook_000_accept",
+      "speaker": "에밀리",
+      "text": "옆에 있는 가마솥으로 가시면 수확한 재료로 맛있는 요리를 만드실 수 있답니다.",
+      "startQuest": "",
+      "completeQuest": "cook_000",
+      "next": "cook_001_default",
+      "choices": []
+    },
+    {
+      "id": "cook_000_reject",
+      "speaker": "에밀리",
+      "text": "출출해지시면 언제든 찾아오세요.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "cook_000_reward",
+      "speaker": "에밀리",
+      "text": "제가 준 밀로 첫 요리를 시도해보세요!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+
+    {
+      "id": "cook_001_default",
+      "speaker": "에밀리",
+      "text": "가마솥에서 통밀빵 1개 를 요리해보실래요?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "요리해 볼게요.",
+          "next": "cook_001_accept",
+          "startQuest": "cook_001",
+          "completeQuest": ""
+        },
+        {
+          "text": "나중에 할래요",
+          "next": "cook_001_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "cook_001_accept",
+      "speaker": "에밀리",
+      "text": "가마솥 재료 슬롯에 밀 2 개를 넣고 요리 시작을 누르시면 됩니다!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "cook_001_reject",
+      "speaker": "에밀리",
+      "text": "밀이 없으시면 밭에서 더 수확해오세요.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "cook_001_running",
+      "speaker": "에밀리",
+      "text": "가마솥에서 통밀빵을 만들어보세요.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "cook_001_complete",
+      "speaker": "에밀리",
+      "text": "따뜻하고 맛있는 통밀빵이 완성되었네요!",
+      "startQuest": "",
+      "completeQuest": "cook_001",
+      "next": "cook_001_reward",
+      "choices": []
+    },
+    {
+      "id": "cook_001_reward",
+      "speaker": "에밀리",
+      "text": "정말 훌륭해요! 완성된 요리는 상점에 고가로 팔 수도 있답니다.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "cook_002_default",
+      "choices": []
+    },
+
+    {
+      "id": "cook_002_default",
+      "speaker": "에밀리",
+      "text": "마지막으로 가마솥을 연금술 모드로 바꿔서 체력 포션을 제조해볼까요?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "제조해볼게요.",
+          "next": "cook_002_accept",
+          "startQuest": "cook_002",
+          "completeQuest": ""
+        },
+        {
+          "text": "나중에 할게요.",
+          "next": "cook_002_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "cook_002_accept",
+      "speaker": "에밀리",
+      "text": "연금술 모드에서 약초를 넣어 체력 포션을 만드실 수 있어요.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "cook_002_reject",
+      "speaker": "에밀리",
+      "text": "네, 준비되면 언제든 도전해보세요.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "cook_002_running",
+      "speaker": "에밀리",
+      "text": "가마솥 연금술 모드에서 체력 포션을 제조해보세요.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "cook_002_complete",
+      "speaker": "에밀리",
+      "text": "체력 포션 제조에 성공하셨군요!",
+      "startQuest": "",
+      "completeQuest": "cook_002",
+      "next": "cook_002_reward",
+      "choices": []
+    },
+    {
+      "id": "cook_002_reward",
+      "speaker": "에밀리",
+      "text": "이제 요리, 연금술 기술을 마스터하셨어요! \n 앞으로 다양한 요리와 포션을 만들어보세요!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "cook_002_finished",
+      "speaker": "에밀리",
+      "text": "안녕하세요! 옆에 있는 가마솥으로 오시면 요리와 포션을 만들 수 있습니다!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    }
+  ]
+}

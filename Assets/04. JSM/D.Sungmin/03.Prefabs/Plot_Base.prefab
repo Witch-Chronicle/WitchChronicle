@@ -221,6 +221,7 @@ GameObject:
   - component: {fileID: 1393206018813715338}
   - component: {fileID: 2670049616218940140}
   - component: {fileID: 6912572355368821842}
+  - component: {fileID: 2687398771160370535}
   m_Layer: 0
   m_Name: Plot_Base
   m_TagString: Untagged
@@ -244,6 +245,7 @@ Transform:
   - {fileID: 7282190107179155766}
   - {fileID: 5338797345845927626}
   - {fileID: 1077655001810931880}
+  - {fileID: 3139003570499456834}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 45, z: 0}
 --- !u!65 &339857739988110300
@@ -265,7 +267,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3, y: 2, z: 3}
+  m_Size: {x: 7, y: 7, z: 7}
   m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &1393206018813715338
 MonoBehaviour:
@@ -295,7 +297,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WitchChronicle.IdleFarming.PlotInteractor
   _plotSlot: {fileID: 1393206018813715338}
-  _promptUI: {fileID: 0}
+  _promptUI: {fileID: 7845143029598133621}
 --- !u!65 &6912572355368821842
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -317,6 +319,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &2687398771160370535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3472902195278835898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77f5abd5b57073d42a1c55131f346ff6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPC
+  _npcData: {fileID: 11400000, guid: 563bf6f8f0dcb1c47973acc21adf6942, type: 2}
+  _worldInteractionUI: {fileID: 8922077155906141406}
 --- !u!1 &4118405473724930489
 GameObject:
   m_ObjectHideFlags: 0
@@ -432,7 +448,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 7, y: 5, z: 7}
+  m_Size: {x: 7, y: 7, z: 7}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &6895320472135331102
 MonoBehaviour:
@@ -446,6 +462,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88af70ab7199b5b4293aa3efd530b6ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WitchChronicle.IdleFarming.FarmZoneTrigger
+  _targetSlot: {fileID: 0}
 --- !u!1 &8005411110688021754
 GameObject:
   m_ObjectHideFlags: 0
@@ -600,6 +617,136 @@ Transform:
   - {fileID: 8731227417880005951}
   m_Father: {fileID: 5338797345845927626}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!1001 &158595746667286738
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 3737791402750615369}
+    m_Modifications:
+    - target: {fileID: 1110871611956505271, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 480
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 220
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 1.49
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0.82
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7993042684122615207, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: m_Name
+      value: NPCWorldCanvas_v1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8782833028856835084, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: _npc
+      value: 
+      objectReference: {fileID: 2687398771160370535}
+    - target: {fileID: 8782833028856835084, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+      propertyPath: _visibleRange
+      value: 4
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+--- !u!224 &3139003570499456834 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 3007431345966178192, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+  m_PrefabInstance: {fileID: 158595746667286738}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &7845143029598133621 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7993042684122615207, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+  m_PrefabInstance: {fileID: 158595746667286738}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8922077155906141406 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8782833028856835084, guid: c7127fbea513fa44ab15b1970d6ef9f4, type: 3}
+  m_PrefabInstance: {fileID: 158595746667286738}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7845143029598133621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d22c7e1aad16a14c91bf3bb387adb47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCWorldInteractionUI
 --- !u!1001 &1560496468025386247
 PrefabInstance:
   m_ObjectHideFlags: 0

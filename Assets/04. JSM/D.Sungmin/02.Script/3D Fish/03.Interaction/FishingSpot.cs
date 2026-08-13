@@ -17,13 +17,53 @@ public class FishingSpot : MonoBehaviour
     private bool isPlayerInRange;
     private bool isFishing;
 
-    private MonoBehaviour thirdPersonController;
-    private MonoBehaviour starterAssetsInputs;
+    // 낚시 중 잠글 이동 스크립트들.
+    // StarterAssets(ThirdPersonController)와 우리 PlayerController를 모두 지원한다.
+    private readonly System.Collections.Generic.List<MonoBehaviour> lockedMovers =
+        new System.Collections.Generic.List<MonoBehaviour>();
 
-    private void Start()
+    private static readonly string[] MoverTypeNames =
     {
-        if (promptUI != null) promptUI.SetActive(false);
+        "PlayerController",        // 우리 캐릭터
+        "ThirdPersonController",   // StarterAssets
+        "StarterAssetsInputs",
+    };
+
+    /// <summary>플레이어의 이동 스크립트를 찾아 끄고, 나중에 되살릴 수 있게 기억한다.</summary>
+    private void LockPlayerMovement()
+    {
+        lockedMovers.Clear();
+
+        for (int i = 0; i < MoverTypeNames.Length; i++)
+        {
+            MonoBehaviour mb = player.GetComponent(MoverTypeNames[i]) as MonoBehaviour;
+
+            if (mb != null && mb.enabled)
+            {
+                mb.enabled = false;
+                lockedMovers.Add(mb);
+            }
+        }
     }
+
+    /// <summary>LockPlayerMovement로 껐던 것들만 다시 켠다.</summary>
+    private void UnlockPlayerMovement()
+    {
+        for (int i = 0; i < lockedMovers.Count; i++)
+        {
+            if (lockedMovers[i] != null)
+            {
+                lockedMovers[i].enabled = true;
+            }
+        }
+
+        lockedMovers.Clear();
+    }
+
+    // private void Start()
+    // {
+    //     if (promptUI != null) promptUI.SetActive(false);
+    // }
 
     public void HandlePlayerEnter(Collider other)
     {
@@ -60,41 +100,36 @@ public class FishingSpot : MonoBehaviour
         originalPlayerRotation = player.transform.rotation;
 
         // 이동 컨트롤러 스크립트 찾아서 비활성화
-        thirdPersonController = player.GetComponent("ThirdPersonController") as MonoBehaviour;
-        starterAssetsInputs = player.GetComponent("StarterAssetsInputs") as MonoBehaviour;
-        if (thirdPersonController != null) thirdPersonController.enabled = false;
-        if (starterAssetsInputs != null) starterAssetsInputs.enabled = false;
+        LockPlayerMovement();
 
         // CharacterController 잠깐 끄고 SitPoint로 순간이동
         var cc = player.GetComponent<CharacterController>();
         if (cc != null) cc.enabled = false;
-
         player.transform.SetPositionAndRotation(sitPoint.position, sitPoint.rotation);
-
         if (cc != null) cc.enabled = true;
 
         cameraController.SwitchToFishing();
+
+        // 플레이어는 런타임에 생성되므로 애니메이터 훅도 여기서 연결한다
+        FishingManager.Instance.BindAnimatorHook(
+            player.GetComponentInChildren<WitchChronicle.Fishing.FishingAnimatorHook>());
         FishingManager.Instance.EnterFishing(this);
     }
 
     public void ExitFishing()
     {
         isFishing = false;
-
         cameraController.SwitchToMain();
 
         if (player != null)
         {
             var cc = player.GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
-
             player.transform.SetPositionAndRotation(originalPlayerPosition, originalPlayerRotation);
-
             if (cc != null) cc.enabled = true;
 
             // 이동 컨트롤러 다시 활성화
-            if (thirdPersonController != null) thirdPersonController.enabled = true;
-            if (starterAssetsInputs != null) starterAssetsInputs.enabled = true;
+            UnlockPlayerMovement();
         }
 
         if (isPlayerInRange) promptUI.SetActive(true);

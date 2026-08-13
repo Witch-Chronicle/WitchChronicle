@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
+  m_Name: 04.FrostNova_Skill
+  m_EditorClassIdentifier: Assembly-CSharp::SkillData
+  _skillId: skill_ice_004
+  _skillName: "\uD504\uB85C\uC2A4\uD2B8 \uB178\uBC14"
+  _description: "\uAC70\uB300\uD55C \uC5BC\uC74C \uCC3D\uC744 \uC18C\uD658\uD574
+    \uC801 \uC804\uCCB4\uB97C \uAFF0\uB6AB\uB294\uB2E4."
+  _tier: 1
+  _mpCost: 40
+  _elementType: 3
+  _skillType: 0
+  _damageType: 1
+  _power: 55
+  _targetType: 1
+  _statusEffectType: 3
+  _statusChance: 0.3
+  _cureStatusEffectType: 0
+  _buffData: {fileID: 0}
+  _presentationType: 1
+  _skillIcon: {fileID: 21300000, guid: bb976e5693614f94690243af6b37b56e, type: 3}
+  _voiceClip: {fileID: 0}
+  _impactDelay: 0.1
+  _castSfx: {fileID: 8300000, guid: baea6728992fc3b42ad8b7d867e4c8be, type: 3}
+  _hitSfx: {fileID: 8300000, guid: 80f8ffecb8058eb40945e33690a98b3b, type: 3}
+  _castVfxPrefab: {fileID: 0}
+  _projectileVfxPrefab: {fileID: 1502253778071064, guid: 4c0568434d8a3434d8e1a1140b6710fd, type: 3}
+  _hitVfxPrefab: {fileID: 0}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
+  _hitVfxOffset: {x: 0, y: -1, z: 0}
+  _castVfxScale: 0
+  _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
+  _constellationPathSequenceData: {fileID: 0}
+  _constellationPathAttackData: {fileID: 0}
+  _drawGuideJson: {fileID: 4900000, guid: ab1502cbbe3bb3d40b5e8e2c6849941a, type: 3}
+  _drawExampleSprite: {fileID: 21300000, guid: 2dab8d07c7efa7c438c181518af9d72d, type: 3}

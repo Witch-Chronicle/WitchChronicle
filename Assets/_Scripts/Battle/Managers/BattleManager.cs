@@ -8,6 +8,7 @@ public class BattleManager : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private BattleCycleController _battleCycleController;
+    [SerializeField] private BattleIntroDirector _battleIntroDirector;
 
     [Header("Persistent Party")]
     [SerializeField] private bool _usePersistentParty = true;
@@ -61,6 +62,11 @@ public class BattleManager : MonoBehaviour
         if (_battleCycleController == null)
         {
             _battleCycleController = GetComponent<BattleCycleController>();
+        }
+
+        if (_battleIntroDirector == null)
+        {
+            _battleIntroDirector = FindFirstObjectByType<BattleIntroDirector>();
         }
     }
 
@@ -152,7 +158,18 @@ public class BattleManager : MonoBehaviour
 
         LogBattleUnits();
 
-        _battleCycleController.StartBattle(_activeBattleUnits);
+        if (_battleIntroDirector != null &&
+            _battleIntroDirector.isActiveAndEnabled)
+        {
+            _battleIntroDirector.PlayIntro(
+                () => _battleCycleController.StartBattle(
+                    _activeBattleUnits));
+
+            return;
+        }
+
+        _battleCycleController.StartBattle(
+            _activeBattleUnits);
     }
 
     /// <summary>
@@ -636,6 +653,13 @@ public class BattleManager : MonoBehaviour
 
         ApplyPlayerBattleResultsToVitals(isVictory);
 
+        if (!isVictory)
+        {
+            RestorePersistentPartyAfterDefeat();
+        }
+
+        ProcessMonsterKillQuests();
+
         Debug.Log($"[BattleManager] Battle End / Winner: {winner}");
 
         if (_clearActorsOnBattleEnd)
@@ -643,6 +667,37 @@ public class BattleManager : MonoBehaviour
             ClearSpawnedActors();
             _spawnedActors.Clear();
             _actorByBattleUnit.Clear();
+        }
+    }
+
+    /// <summary>
+    /// 전투 승리 시 스폰되었던 적들의 퀘스트 처치 수 증가
+    /// </summary>
+    private void ProcessMonsterKillQuests()
+    {
+        if (QuestManager.Instance == null)
+        {
+            return;
+        }
+
+        // 스폰된 모든 전투 참가자 중 '적(Enemy)' 팀의 EnemyId를 전달
+        for (int i = 0; i < _spawnedActors.Count; i++)
+        {
+            BattleActor actor = _spawnedActors[i];
+
+            if (actor != null && actor.TeamType == BattleTeamType.Enemy)
+            {
+                if (actor.EnemyBattleData != null && string.IsNullOrEmpty(actor.EnemyBattleData.EnemyId) == false)
+                {
+                    QuestManager.Instance.AddProgress(
+                        QuestObjectiveType.KillMonster,
+                        actor.EnemyBattleData.EnemyId,
+                        1
+                    );
+
+                    Debug.Log($"[BattleManager] 퀘스트 처치 반영 : {actor.EnemyBattleData.EnemyName} ({actor.EnemyBattleData.EnemyId})");
+                }
+            }
         }
     }
 
@@ -893,6 +948,25 @@ public class BattleManager : MonoBehaviour
             {
                 result.Add(actor);
             }
+        }
+    }
+
+    /// <summary>
+    /// 전투 패배 후 유지 파티 완전 회복
+    /// 던전 이탈 이후 사용할 상태 복구
+    /// </summary>
+    private void RestorePersistentPartyAfterDefeat()
+    {
+        for (int i = 0; i < _spawnedActors.Count; i++)
+        {
+            BattleActor actor = _spawnedActors[i];
+
+            if (actor == null || actor.TeamType != BattleTeamType.Player)
+            {
+                continue;
+            }
+
+            actor.PersistentCharacterUnit?.RestoreFully();
         }
     }
 }

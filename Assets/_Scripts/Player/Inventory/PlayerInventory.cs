@@ -111,7 +111,14 @@ public class PlayerInventory : MonoBehaviour
         OnGoldChanged?.Invoke(_gold);
         OnInventoryChanged?.Invoke();
 
+        // 퀘스트 진행도 반영
+        if (QuestManager.Instance != null)
+        {
+            QuestManager.Instance.AddProgress(QuestObjectiveType.SellItem, itemData.itemName, amount);
+        }
+
         Debug.Log($"[PlayerInventory] 판매 완료: {itemData.itemName} x{amount} (+{totalSellPrice} 골드, 현재 골드: {_gold})");
+        AlertManager.Instance?.Enqueue(AlertType.GoldAcquired, totalSellPrice);
         return true;
     }
 
@@ -214,6 +221,13 @@ public class PlayerInventory : MonoBehaviour
         OnGoldChanged?.Invoke(_gold);
         OnInventoryChanged?.Invoke();
 
+
+        // 퀘스트 진행도 반영
+        if (QuestManager.Instance != null)
+        {
+            QuestManager.Instance.AddProgress(QuestObjectiveType.SellEquipment, instance.baseData.itemName, 1);
+        }
+
         Debug.Log($"[PlayerInventory] 장비 판매 완료: {instance.baseData.itemName} (+{sellPrice} 골드, 현재 골드: {_gold})");
         return true;
     }
@@ -275,5 +289,22 @@ public class PlayerInventory : MonoBehaviour
     public void RaiseInventoryChanged()
     {
         OnInventoryChanged?.Invoke();
+    }
+
+    // PlayerInventory.cs에 추가
+    public bool HasItemById(string itemId)
+    {
+        foreach (var slot in InventorySlots)
+        {
+            if (slot != null && slot.ItemData != null && slot.Quantity > 0)
+            {
+                // 아이템 ID 비교
+                if (slot.ItemData.itemId.ToString() == itemId)
+                {
+                    return true; // 인벤토리에 존재함!
+                }
+            }
+        }
+        return false; // 없음
     }
 }

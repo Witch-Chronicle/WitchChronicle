@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,6 +15,11 @@ public class BattlePresentationBinder : MonoBehaviour
     [SerializeField] private BattleCycleController _battleCycleController;
     [SerializeField] private SkillVfxPlayer _skillVfxPlayer;
 
+    [Header("Basic Attack")]
+    [Tooltip("기본 공격은 SkillData를 싣지 않아 VFX·사운드가 나오지 않는다. " +
+             "여기에 01.BasicAttack SO를 넣으면 그 연출 설정을 기본 공격에 사용한다")]
+    [SerializeField] private SkillData _basicAttackPresentation;
+
     /// <summary>
     /// 유닛별 연출 바인딩 정보
     /// </summary>
@@ -27,6 +33,8 @@ public class BattlePresentationBinder : MonoBehaviour
         public int LastHp;
         public System.Action HpHandler;
         public bool IsReactionPlaying;
+        public int ReactionVersion;
+        public ConstellationPathBarrierPresenter BarrierPresenter;
     }
 
     private readonly List<UnitBinding> _bindings = new List<UnitBinding>();
@@ -137,8 +145,11 @@ public class BattlePresentationBinder : MonoBehaviour
             return;
         }
 
+        // 스킬은 자기 SkillData를, 기본 공격은 인스펙터에 지정한 연출용 SO를 쓴다
+        SkillData vfxSource = ResolveVfxSource(actionRequest);
+
         bool hasVfx =
-            actionRequest.HasSkill &&
+            vfxSource != null &&
             _skillVfxPlayer != null;
 
         int remainingCount =
@@ -176,7 +187,7 @@ public class BattlePresentationBinder : MonoBehaviour
                 GatherTargetTransforms(actionRequest);
 
             _skillVfxPlayer.Play(
-                actionRequest.SkillData,
+                vfxSource,
                 casterTransform,
                 targets,
                 onImpact,
@@ -186,6 +197,27 @@ public class BattlePresentationBinder : MonoBehaviour
         {
             onImpact?.Invoke();
         }
+    }
+
+    /// <summary>
+    /// 이 행동의 VFX·사운드 설정을 담은 SkillData를 고른다.
+    /// 스킬이면 그 스킬 자신, 기본 공격이면 인스펙터에 지정한 연출용 SO.
+    /// </summary>
+    /// <param name="actionRequest">실행 행동 요청</param>
+    /// <returns>연출 기준 SkillData. 없으면 null</returns>
+    private SkillData ResolveVfxSource(BattleActionRequest actionRequest)
+    {
+        if (actionRequest.HasSkill)
+        {
+            return actionRequest.SkillData;
+        }
+
+        if (actionRequest.CommandType == CommandType.Attack)
+        {
+            return _basicAttackPresentation;
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -403,8 +435,9 @@ public class BattlePresentationBinder : MonoBehaviour
                 Presenter = presenter,
                 Dissolve = actor.GetComponent<DeathDissolve>(),
                 Audio = actor.GetComponent<CharacterAudio>(),
+                BarrierPresenter = actor.GetComponentInChildren<ConstellationPathBarrierPresenter>(true),
                 TeamType = actor.TeamType,
-                LastHp = actor.BattleUnit.CurrentHp
+                LastHp = actor.BattleUnit.CurrentHp,
             };
 
             binding.HpHandler = () => HandleHpChanged(binding);
@@ -432,9 +465,17 @@ public class BattlePresentationBinder : MonoBehaviour
         if (currentHp < binding.LastHp)
         {
             binding.IsReactionPlaying = true;
+            binding.ReactionVersion++;
+
+            int reactionVersion = binding.ReactionVersion;
 
             void HandleReactionCompleted()
             {
+                if (reactionVersion != binding.ReactionVersion)
+                {
+                    return;
+                }
+
                 binding.IsReactionPlaying = false;
             }
 
@@ -472,6 +513,158 @@ public class BattlePresentationBinder : MonoBehaviour
     }
 
     /// <summary>
+    /// 별자리 공격 방어 연출 재생
+    /// </summary>
+    /// <param name="unit">방어 대상 유닛</param>
+    /// <param name="onComplete">방어 연출 완료 콜백</param>
+    public void PlayConstellationBlock(BattleUnit unit, System.Action onComplete = null)
+    {
+        UnitBinding binding = FindBinding(unit);
+
+        if (binding == null || binding.Presenter == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        binding.BarrierPresenter?.PlayBlock();
+        binding.Presenter.PlayParry(onComplete);
+        binding.Audio?.PlayParry();
+    }
+
+    /// <summary>
+    /// 별자리 강공격 위협 연출 재생
+    /// </summary>
+    /// <param name="unit">공격 유닛</param>
+    /// <param name="onComplete">위협 연출 완료 콜백</param>
+    public void PlayConstellationThreat(BattleUnit unit, Action onComplete = null)
+    {
+        UnitBinding binding = FindBinding(unit);
+
+        if (binding == null || binding.Presenter == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        if (binding.Presenter is IConstellationPathAttackPresenter constellationPresenter)
+        {
+            constellationPresenter.PlayConstellationThreat(onComplete);
+            return;
+        }
+
+        onComplete?.Invoke();
+    }
+
+    /// <summary>
+    /// 별자리 강공격 실제 공격 연출 재생
+    /// </summary>
+    /// <param name="unit">공격 유닛</param>
+    /// <param name="onLaunch">VFX 발사 시점 콜백</param>
+    /// <param name="onComplete">공격 연출 완료 콜백</param>
+    public void PlayConstellationAttack(
+        BattleUnit unit,
+        Action onLaunch = null,
+        Action onComplete = null)
+    {
+        UnitBinding binding = FindBinding(unit);
+
+        if (binding == null || binding.Presenter == null)
+        {
+            onLaunch?.Invoke();
+            onComplete?.Invoke();
+            return;
+        }
+
+        if (binding.Presenter is IConstellationPathAttackPresenter constellationPresenter)
+        {
+            constellationPresenter.PlayConstellationAttack(onLaunch, onComplete);
+            return;
+        }
+
+        binding.Presenter.PlayAttack(-1, onLaunch, onComplete);
+    }
+
+    /// <summary>
+    /// 별자리 방어막 생성 연출 동시 재생
+    /// </summary>
+    /// <param name="units">방어막 생성 유닛 목록</param>
+    /// <param name="onComplete">전체 연출 완료 콜백</param>
+    public void PlayConstellationBarrier(IReadOnlyList<BattleUnit> units, System.Action onComplete = null)
+    {
+        if (units == null || units.Count == 0)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        int remainingCount = 0;
+        bool isCompleted = false;
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            BattleUnit unit = units[i];
+            UnitBinding binding = FindBinding(unit);
+
+            if (unit == null || !unit.IsAlive || binding == null || binding.Presenter == null) continue;
+
+            remainingCount++;
+        }
+
+        if (remainingCount == 0)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        void HandleUnitCompleted()
+        {
+            remainingCount--;
+
+            if (remainingCount > 0 || isCompleted) return;
+
+            isCompleted = true;
+            onComplete?.Invoke();
+        }
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            BattleUnit unit = units[i];
+            UnitBinding binding = FindBinding(unit);
+
+            if (unit == null || !unit.IsAlive || binding == null || binding.Presenter == null) continue;
+
+            int unitPartCount = binding.BarrierPresenter != null ? 2 : 1;
+
+            /// <summary>
+            /// 개별 유닛 방어막 생성 파트 완료
+            /// </summary>
+            void HandleUnitPartCompleted()
+            {
+                unitPartCount--;
+
+                if (unitPartCount > 0)
+                {
+                    return;
+                }
+
+                HandleUnitCompleted();
+            }
+
+            binding.Presenter.PlaySkillSupport(
+                HandleUnitPartCompleted);
+
+            binding.Audio?.PlaySkill();
+
+            if (binding.BarrierPresenter != null)
+            {
+                binding.BarrierPresenter.ShowBarrier(
+                    HandleUnitPartCompleted);
+            }
+        }
+    }
+
+    /// <summary>
     /// 대상 목록의 피격 연출 진행 여부 반환
     /// </summary>
     /// <param name="units">확인 유닛 목록</param>
@@ -486,7 +679,15 @@ public class BattlePresentationBinder : MonoBehaviour
 
         for (int i = 0; i < units.Count; i++)
         {
-            if (IsReactionPlaying(units[i]))
+            BattleUnit unit = units[i];
+
+            if (unit == null ||
+                unit.IsAlive == false)
+            {
+                continue;
+            }
+
+            if (IsReactionPlaying(unit))
             {
                 return true;
             }
@@ -536,5 +737,65 @@ public class BattlePresentationBinder : MonoBehaviour
         }
 
         _bindings.Clear();
+    }
+
+    /// <summary>
+    /// 별자리 방어막 생성 연출 지점
+    /// </summary>
+    /// <param name="units">방어 대상 유닛 목록</param>
+    public void NotifyConstellationBarrierCreated(IReadOnlyList<BattleUnit> units)
+    {
+        if (units == null) return;
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            BattleUnit unit = units[i];
+
+            if (unit == null || !unit.IsAlive) continue;
+
+            Debug.Log($"[ConstellationPath] Barrier Created | {unit.UnitName}", this);
+        }
+    }
+
+    /// <summary>
+    /// 별자리 방어막 파괴 연출
+    /// </summary>
+    /// <param name="unit">방어막이 소진된 유닛</param>
+    public void NotifyConstellationBarrierBroken(
+        BattleUnit unit)
+    {
+        if (unit == null) return;
+
+        UnitBinding binding = FindBinding(unit);
+
+        binding?.BarrierPresenter?.BreakBarrier();
+
+        Debug.Log($"[ConstellationPath] Barrier Broken | {unit.UnitName}", this);
+    }
+
+    /// <summary>
+    /// 별자리 방어막 종료 연출
+    /// </summary>
+    /// <param name="units">방어막 종료 대상</param>
+    public void NotifyConstellationBarrierEnded(
+        IReadOnlyList<BattleUnit> units)
+    {
+        if (units == null) return;
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            BattleUnit unit = units[i];
+
+            if (unit == null)
+            {
+                continue;
+            }
+
+            UnitBinding binding = FindBinding(unit);
+
+            binding?.BarrierPresenter?.HideBarrier();
+
+            Debug.Log($"[ConstellationPath] Barrier Ended | {unit.UnitName}", this);
+        }
     }
 }

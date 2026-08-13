@@ -10,6 +10,7 @@ using UnityEngine;
 /// F7 : 현재 보유 스킬 목록 출력
 /// F8 : 후보 스킬 상태 출력 (티어 범위 / 미습득 수)
 /// F9 : 가챠 UI 열기/닫기
+/// F10: 스킬 장착 UI 열기/닫기
 /// </summary>
 public class SkillBookDebug : MonoBehaviour
 {
@@ -20,18 +21,24 @@ public class SkillBookDebug : MonoBehaviour
     [Tooltip("F9로 열 가챠 창. 비우면 씬에서 자동으로 찾는다")]
     [SerializeField] private SkillGachaController _gachaUI;
 
+    [Header("스킬 장착 UI")]
+    [Tooltip("F10으로 열 장착 창. 비우면 씬에서 자동으로 찾는다")]
+    [SerializeField] private SkillEquipUIController _equipUI;
+
     [Header("키 설정")]
     [SerializeField] private KeyCode _giveKey = KeyCode.F5;
     [SerializeField] private KeyCode _useKey = KeyCode.F6;
     [SerializeField] private KeyCode _listKey = KeyCode.F7;
     [SerializeField] private KeyCode _statusKey = KeyCode.F8;
     [SerializeField] private KeyCode _gachaKey = KeyCode.F9;
+    [SerializeField] private KeyCode _equipKey = KeyCode.F10;
 
     [Header("지급 개수")]
     [SerializeField] private int _giveAmount = 5;
 
     private readonly List<SkillData> _buffer = new List<SkillData>();
     private bool _isGachaOpen;
+    private bool _isEquipOpen;
 
     private void Update()
     {
@@ -59,6 +66,39 @@ public class SkillBookDebug : MonoBehaviour
         {
             ToggleGachaUI();
         }
+
+        if (Input.GetKeyDown(_equipKey))
+        {
+            ToggleEquipUI();
+        }
+    }
+
+    /// <summary>스킬 장착 UI 열기/닫기.</summary>
+    private void ToggleEquipUI()
+    {
+        if (_equipUI == null)
+        {
+            _equipUI = FindFirstObjectByType<SkillEquipUIController>(FindObjectsInactive.Include);
+        }
+
+        if (_equipUI == null)
+        {
+            Debug.LogError("[SkillBookDebug] 씬에 SkillEquipUIController가 없습니다");
+            return;
+        }
+
+        // if (_isEquipOpen)
+        // {
+        //     _equipUI.Close();
+        //     _isEquipOpen = false;
+        //     Debug.Log("[SkillBookDebug] 장착 UI 닫음");
+        // }
+        // else
+        // {
+        //     _equipUI.Open();
+        //     _isEquipOpen = true;
+        //     Debug.Log("[SkillBookDebug] 장착 UI 열음");
+        // }
     }
 
     /// <summary>가챠 UI 열기/닫기.</summary>

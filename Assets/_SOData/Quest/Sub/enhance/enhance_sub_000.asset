@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbe15cc1f7ebf744da8f3bb2c409ab19, type: 3}
+  m_Name: enhance_sub_000
+  m_EditorClassIdentifier: Assembly-CSharp::QuestData
+  id: equip_000
+  title: "\uB300\uC7A5\uAC04\uC758 \uB9DD\uCE58 \uC18C\uB9AC"
+  description: "\uB300\uC7A5\uC7A5\uC774\uC640 \uB300\uD654\uD558\uC5EC \uC7A5\uBE44
+    \uAC15\uD654\uC5D0 \uB300\uD574 \uC54C\uC544\uBCF4\uC790."
+  type: 1
+  objectives:
+  - type: 1
+    targetID: npc_enhanced
+    targetName: "\uB300\uC7A5\uC7A5\uC774"
+    requiredCount: 1
+  reward:
+    gold: 150
+    exp: 50
+    items:
+    - {fileID: 11400000, guid: a53cf2fabf9d78e45b7cb38ec2e2c3bf, type: 2}
+    - {fileID: 11400000, guid: a5b018aa7f603cb45b90450e35eca442, type: 2}
+    itemCount: 2
+    recruitNPC: 
+    nextStory: 0
+  nextQuest: {fileID: 11400000, guid: 03bc4fb8c616efb428301d98c3e899b1, type: 2}

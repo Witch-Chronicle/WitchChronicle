@@ -31,7 +31,7 @@ namespace WitchChronicle.Alchemy
 
         private void Awake()
         {
-            if (_interactPrompt != null) _interactPrompt.SetActive(false);
+            // if (_interactPrompt != null) _interactPrompt.SetActive(false);
         }
 
         private void Update()
@@ -50,34 +50,36 @@ namespace WitchChronicle.Alchemy
             if (!other.CompareTag("Player")) return;
             _isPlayerNear = true;
             _playerRef = other.gameObject;
-            if (_interactPrompt != null && !_isUsing)
-                _interactPrompt.SetActive(true);
+            // if (_interactPrompt != null && !_isUsing)
+            //     _interactPrompt.SetActive(true);
         }
 
         private void OnTriggerExit(Collider other)
         {
             if (!other.CompareTag("Player")) return;
             _isPlayerNear = false;
-            if (_interactPrompt != null) _interactPrompt.SetActive(false);
+            // if (_interactPrompt != null) _interactPrompt.SetActive(false);
         }
 
         private void OpenAlchemy()
         {
             _isUsing = true;
-
             MovePlayerToStand();
-            SetCharacterControllerEnabled(false);
-
+            SetPlayerLocked(true);
             if (_interactPrompt != null) _interactPrompt.SetActive(false);
 
             if (_cameraController != null)
                 _cameraController.SwitchToAlchemyView();
-
             if (_alchemyPanel != null)
                 _alchemyPanel.Open(_defaultMode, OnPanelClosed);
 
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+
+            // LifeUIManager가 Esc 등으로 연금술을 강제 종료할 수 있도록 등록
+            QuestListUI.Instance.Close();
+            MainHUDUIController.Instance.Close();
+            LifeUIManager.Instance?.RegisterAlchemy(this);
         }
 
         private void MovePlayerToStand()
@@ -95,18 +97,33 @@ namespace WitchChronicle.Alchemy
             if (cc != null) cc.enabled = true;
         }
 
-        private void SetCharacterControllerEnabled(bool enable)
+        private void SetPlayerLocked(bool locked)
         {
             if (_playerRef == null) return;
+
+            // 이동 스크립트 잠금 (Move 호출 자체를 막음)
+            // 우리 캐릭터(PlayerController)와 StarterAssets 양쪽 모두 대응
+            string[] moverTypeNames = { "PlayerController", "ThirdPersonController", "StarterAssetsInputs" };
+
+            for (int i = 0; i < moverTypeNames.Length; i++)
+            {
+                var mover = _playerRef.GetComponent(moverTypeNames[i]) as MonoBehaviour;
+                if (mover != null) mover.enabled = !locked;
+            }
+
+            // CharacterController도 잠금 (물리 이동 봉인)
             var cc = _playerRef.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = enable;
+            if (cc != null) cc.enabled = !locked;
+
+            // 애니메이션 잠금 (걷기 애니 재생 방지)
+            var animator = _playerRef.GetComponentInChildren<Animator>();
+            if (animator != null) animator.enabled = !locked;
         }
 
         private void OnPanelClosed()
         {
             _isUsing = false;
-
-            SetCharacterControllerEnabled(true);
+            SetPlayerLocked(false);
 
             if (_cameraController != null)
                 _cameraController.SwitchToPlayerView();
@@ -114,8 +131,17 @@ namespace WitchChronicle.Alchemy
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
 
-            if (_isPlayerNear && _interactPrompt != null)
-                _interactPrompt.SetActive(true);
+            if (_interactPrompt != null) _interactPrompt.SetActive(true);
+
+            QuestListUI.Instance.Open();
+            MainHUDUIController.Instance.Open();
+            // 연금술 종료 시 LifeUIManager 등록 해제
+            LifeUIManager.Instance?.UnregisterAlchemy(this);
+        }
+
+        public void ClosePanel()
+        {
+            OnPanelClosed();
         }
     }
 }

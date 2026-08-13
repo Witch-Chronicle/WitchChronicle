@@ -1,0 +1,395 @@
+{
+  "npcId": "npc_life_male",
+  "dialogues": [
+    {
+      "id": "default",
+      "speaker": "베른",
+      "text": "여어! 오늘도 마을을 위해 고생이 많구만. 무슨 일인가?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "farm_000_default",
+      "choices": []
+    },
+
+    {
+      "id": "farm_000_default",
+      "speaker": "베른",
+      "text": "안녕하신가! 마침 일손이 부족했는데 잘 왔어. 농사짓는 법 좀 배워보겠나?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "가르쳐주세요.",
+          "next": "farm_000_accept",
+          "startQuest": "farm_000",
+          "completeQuest": ""
+        },
+        {
+          "text": "나중에요.",
+          "next": "farm_000_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "farm_000_accept",
+      "speaker": "베른",
+      "text": "좋아! 별거 없어. 비어있는 밭에 씨앗을 심고 기다리면 알아서 무럭무럭 자란다네.",
+      "startQuest": "",
+      "completeQuest": "farm_000",
+      "next": "farm_001_default",
+      "choices": []
+    },
+    {
+      "id": "farm_000_reject",
+      "speaker": "베른",
+      "text": "그래, 바쁘면 어쩔 수 없지. 생각나면 언제든 찾아오게.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "farm_000_reward",
+      "speaker": "베른",
+      "text": "자, 백문이 불여일견이니 이 '감자 씨앗'을 가져가서 밭에 한번 심어보게나!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "farm_001_default",
+      "choices": []
+    },
+
+    {
+      "id": "farm_001_default",
+      "speaker": "베른",
+      "text": "방금 준 감자 씨앗을 밭에 한번 심어보겠나?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "심고 올게요.",
+          "next": "farm_001_accept",
+          "startQuest": "farm_001",
+          "completeQuest": ""
+        },
+        {
+          "text": "나중에요.",
+          "next": "farm_001_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "farm_001_accept",
+      "speaker": "베른",
+      "text": "내 뒤에 있는 밭으로 가서 [F] 키를 누르면 씨앗을 심을 수 있어!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "farm_001_reject",
+      "speaker": "베른",
+      "text": "천천히 해. 밭은 어디 안 가니까.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "farm_001_running",
+      "speaker": "베른",
+      "text": "비어있는 밭으로 가서 감자 씨앗을 심고 오게나. 참고 로 밭은 골드로 해금할 수 있단다.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "farm_001_complete",
+      "speaker": "베른",
+      "text": "오, 아주 깔끔하게 잘 심었구만!",
+      "startQuest": "",
+      "completeQuest": "farm_001",
+      "next": "farm_001_reward",
+      "choices": []
+    },
+    {
+      "id": "farm_001_reward",
+      "speaker": "베른",
+      "text": "이제 정성스럽게 자라길 기다려보자고.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+
+    {
+      "id": "farm_002_default",
+      "speaker": "베른",
+      "text": "밭을 보니 감자가 아주 잘 익었더군! 가서 수확해오게나.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "수확해 올게요.",
+          "next": "farm_002_accept",
+          "startQuest": "farm_002",
+          "completeQuest": ""
+        },
+        {
+          "text": "나중에 할게요.",
+          "next": "farm_002_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "farm_002_accept",
+      "speaker": "베른",
+      "text": "잘 자란 녀석으로 뽑아 오게!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "farm_002_reject",
+      "speaker": "베른",
+      "text": "너무 오래 방치하면 상하니까 조심하고.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "farm_002_running",
+      "speaker": "베른",
+      "text": "밭에 자란 감자를 수확해서 가져오게나.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "farm_002_complete",
+      "speaker": "베른",
+      "text": "허허! 씨알이 아주 굵고 좋은 감자구만!",
+      "startQuest": "",
+      "completeQuest": "farm_002",
+      "next": "farm_002_reward",
+      "choices": []
+    },
+    {
+      "id": "farm_002_reward",
+      "speaker": "베른",
+      "text": "농사의 기초는 다 마스터했어! 수고했네.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+
+    {
+      "id": "fish_000_default",
+      "speaker": "베른",
+      "text": "농사도 잘 지으니, 이번엔 낚시를 가르쳐줄까 하는데 어때?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "배워볼래요!",
+          "next": "fish_000_accept",
+          "startQuest": "fish_000",
+          "completeQuest": ""
+        },
+        {
+          "text": "괜찮아요.",
+          "next": "fish_000_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "fish_000_accept",
+      "speaker": "베른",
+      "text": "좋아! 우선 상점에 가서 낚싯대부터 하나 구해오게나.",
+      "startQuest": "",
+      "completeQuest": "fish_000",
+      "next": "fish_000_reward",
+      "choices": []
+    },
+    {
+      "id": "fish_000_reject",
+      "speaker": "베른",
+      "text": "손맛을 알게 되면 생각이 달라질 텐데 말이지....",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "fish_000_reward",
+      "speaker": "베른",
+      "text": "자, 여기 지원금 넉넉하게 300골드 줄테니 상점에 가서 '초보자 낚싯대'를 하나 사 오게!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "fish_001_default",
+      "choices": []
+    },
+
+    {
+      "id": "fish_001_default",
+      "speaker": "베른",
+      "text": "상점에 가거든 준 돈으로 초보자 낚싯대를 사 오게나.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "사 올게요.",
+          "next": "fish_001_accept",
+          "startQuest": "fish_001",
+          "completeQuest": ""
+        },
+        {
+          "text": "나중에 살게요.",
+          "next": "fish_001_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "fish_001_accept",
+      "speaker": "베른",
+      "text": "상점에서 사 오면 어떻게 던지는지 알려주지.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "fish_001_reject",
+      "speaker": "베른",
+      "text": "그 돈 딴 데 쓰면 안 된다!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "fish_001_running",
+      "speaker": "베른",
+      "text": "상점에 가서 초보자 낚싯대를 사 오게나. 혹시 이미 구매했니?",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "fish_001_complete",
+      "speaker": "베른",
+      "text": "오! 꽤 튼튼한 낚싯대군!",
+      "startQuest": "",
+      "completeQuest": "fish_001",
+      "next": "fish_001_reward",
+      "choices": []
+    },
+    {
+      "id": "fish_001_reward",
+      "speaker": "베른",
+      "text": "이제 진짜 낚시꾼이 될 준비가 된 거야.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "fish_002_default",
+      "choices": []
+    },
+
+    {
+      "id": "fish_002_default",
+      "speaker": "베른",
+      "text": "장비도 갖췄으니, 낚시터로 가 아무 물고기 2마리를 낚아보게!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": [
+        {
+          "text": "낚아 올게요!",
+          "next": "fish_002_accept",
+          "startQuest": "fish_002",
+          "completeQuest": ""
+        },
+        {
+          "text": "나중에 할게요.",
+          "next": "fish_002_reject",
+          "startQuest": "",
+          "completeQuest": ""
+        }
+      ]
+    },
+    {
+      "id": "fish_002_accept",
+      "speaker": "베른",
+      "text": "찌가 움직일 때 타이밍을 딱 잡고 줄을 계속 당겨야 해!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "fish_002_reject",
+      "speaker": "베른",
+      "text": "물고기들이 기다리고 있으니 너무 늦지 말게.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "fish_002_running",
+      "speaker": "베른",
+      "text": "낚시터에서 물고기 2마리를 낚아 오게나.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "fish_002_complete",
+      "speaker": "베른",
+      "text": "오오! 싱싱한 물고기를 2마리나 잡았군!",
+      "startQuest": "",
+      "completeQuest": "fish_002",
+      "next": "fish_002_reward",
+      "choices": []
+    },
+    {
+      "id": "fish_002_reward",
+      "speaker": "베른",
+      "text": "내가 가르쳐줄 건 여기까지네! 이제 편하게 농사도 짓고, 낚시도 하게나!",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    },
+    {
+      "id": "fish_002_finished",
+      "speaker": "베른",
+      "text": "여어! 오늘도 마을을 위해 고생이 많구만. 수고하게나.",
+      "startQuest": "",
+      "completeQuest": "",
+      "next": "",
+      "choices": []
+    }
+  ]
+}

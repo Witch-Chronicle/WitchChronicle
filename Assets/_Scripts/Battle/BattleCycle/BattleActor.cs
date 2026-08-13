@@ -331,7 +331,7 @@ public class BattleActor : MonoBehaviour
         if (_enemyBattleData.IsBoss)
         {
             visualInstance.transform.localPosition = new Vector3(0f, -1f, -1.5f);
-            visualInstance.transform.localScale = new Vector3(2f, 2f, 2f);
+            visualInstance.transform.localScale = new Vector3(1.8f, 1.8f, 1.8f);
         }
 
         SetupOutlineForVisual(visualInstance);

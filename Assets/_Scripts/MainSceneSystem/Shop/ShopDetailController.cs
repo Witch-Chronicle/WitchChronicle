@@ -54,6 +54,8 @@ public class ShopDetailController : MonoBehaviour
 
     private ItemData _currentItemData;
     private int _currentAmount;
+    private int _currentMaxAmount;
+    private bool _isCurrentItemSoldOut;
 
     private void Awake()
     {
@@ -74,19 +76,17 @@ public class ShopDetailController : MonoBehaviour
     public void HideDetail()
     {
         _currentItemData = null;
-
+        _currentMaxAmount = _tempMaxPurchaseAmount;
+        _isCurrentItemSoldOut = false;
         if (_infoSection != null)
         {
             _infoSection.SetActive(false);
         }
-
         SetPurchaseInteractable(false);
-
         if (_equipStatContainer != null) _equipStatContainer.SetActive(false);
         ClearStatRows();
-
         if (_amountInput != null) _amountInput.SetTextWithoutNotify("0");
-        if (_priceText != null) _priceText.text = "0";
+        if (_priceText != null) _priceText.text = "0G";
     }
 
     /// <summary>
@@ -95,27 +95,22 @@ public class ShopDetailController : MonoBehaviour
     public void ShowItemDetail(ItemData itemData)
     {
         _currentItemData = itemData;
+        _isCurrentItemSoldOut = CheckSoldOut(itemData);
+        _currentMaxAmount = GetMaxPurchaseAmount(itemData);
         _currentAmount = _minPurchaseAmount;
-
         if (_infoSection != null)
         {
             _infoSection.SetActive(true);
         }
-
         if (_iconImage != null) _iconImage.sprite = itemData.icon;
         if (_nameText != null) _nameText.text = itemData.itemName;
         if (_itemTypeText != null) _itemTypeText.text = itemData.itemType.ToDisplayString();
         if (_itemGradeText != null) _itemGradeText.text = itemData.itemGrade.ToDisplayString();
-
-        // Description은 아이템 종류 상관없이 항상 표시
         if (_descriptionObject != null) _descriptionObject.SetActive(true);
         if (_descriptionText != null) _descriptionText.text = itemData.description;
-
         if (itemData is EquipItemData equipItemData)
         {
-            // 장비 아이템일 때만 EquipStat 추가로 표시
             if (_equipStatContainer != null) _equipStatContainer.SetActive(true);
-
             BuildStatRows(equipItemData);
         }
         else
@@ -123,81 +118,90 @@ public class ShopDetailController : MonoBehaviour
             if (_equipStatContainer != null) _equipStatContainer.SetActive(false);
             ClearStatRows();
         }
-
         if (_requiredLevelText != null)
         {
-            // 장비가 아니면 착용 레벨이 없으므로 표시하지 않음
             if (itemData is EquipItemData equipItemForLevel)
             {
                 _requiredLevelText.gameObject.SetActive(true);
-                _requiredLevelText.text = $"Lv.{equipItemForLevel.requiredLevel}";
+                _requiredLevelText.text = $"착용 레벨 : {equipItemForLevel.requiredLevel}";
             }
             else
             {
                 _requiredLevelText.gameObject.SetActive(false);
             }
         }
-
         SetPurchaseInteractable(true);
+        // RodItemData는 최대 1개만 구매 가능하므로 수량 조절 UI 자체를 막는다.
+        bool canAdjustAmount = _currentMaxAmount > _minPurchaseAmount;
+        _minusBtn.interactable = canAdjustAmount;
+        _plusBtn.interactable = canAdjustAmount;
+        _maxBtn.interactable = canAdjustAmount;
+        _amountInput.interactable = canAdjustAmount;
         UpdateAmountAndPrice();
+    }
+    /// <summary>
+    /// 아이템 타입에 따른 최대 구매 가능 수량. RodItemData는 최대 1개(중복 보유 불가).
+    /// </summary>
+    private int GetMaxPurchaseAmount(ItemData itemData)
+    {
+        if (itemData is RodItemData) return 1;
+        return _tempMaxPurchaseAmount;
+    }
+
+    /// <summary>
+    /// RodItemData는 하나라도 보유하고 있으면 품절 처리한다.
+    /// </summary>
+    private bool CheckSoldOut(ItemData itemData)
+    {
+        if (itemData is not RodItemData) return false;
+        if (PlayerInventory.Instance == null) return false;
+        return PlayerInventory.Instance.GetTotalQuantity(itemData) > 0;
     }
 
     private void OnClickMinus()
     {
         if (_currentItemData == null) return;
-
         SetAmount(_currentAmount - 1);
     }
-
     private void OnClickPlus()
     {
         if (_currentItemData == null) return;
-
         SetAmount(_currentAmount + 1);
     }
-
     private void OnClickMax()
     {
         if (_currentItemData == null) return;
-
-        SetAmount(_tempMaxPurchaseAmount);
+        SetAmount(_currentMaxAmount);
     }
-
-    /// <summary>
-    /// AmountTxt(TMP_InputField)에 직접 숫자를 입력하고 포커스를 벗어났을 때(엔터 포함) 호출됨.
-    /// 1~99 범위로 clamp 처리.
-    /// </summary>
     private void OnAmountInputEndEdit(string inputText)
     {
         if (_currentItemData == null) return;
-
         if (!int.TryParse(inputText, out int parsedAmount))
         {
-            // 숫자가 아니거나 빈 값이면 기존 수량으로 되돌림
             parsedAmount = _currentAmount;
         }
-
         SetAmount(parsedAmount);
     }
-
     /// <summary>
-    /// 수량을 1~99 범위로 clamp한 뒤 텍스트/가격을 갱신.
+    /// 수량을 min~현재 아이템의 최대 구매 가능 수량 범위로 clamp한 뒤 텍스트/가격을 갱신.
     /// </summary>
     private void SetAmount(int amount)
     {
-        _currentAmount = Mathf.Clamp(amount, _minPurchaseAmount, _tempMaxPurchaseAmount);
+        _currentAmount = Mathf.Clamp(amount, _minPurchaseAmount, _currentMaxAmount);
         UpdateAmountAndPrice();
     }
 
     private void OnClickPurchase()
     {
         if (_currentItemData == null || _shopController == null) return;
-
+        if (_isCurrentItemSoldOut)
+        {
+            AlertManager.Instance?.Enqueue(AlertType.ShopSoldOut);
+            return;
+        }
         bool success = _shopController.TryPurchase(_currentItemData, _currentAmount);
-
         if (success)
         {
-            // 구매 후 수량은 다시 1로 초기화
             SetAmount(_minPurchaseAmount);
         }
     }
@@ -206,14 +210,19 @@ public class ShopDetailController : MonoBehaviour
     {
         if (_amountInput != null)
         {
-            // SetTextWithoutNotify: 값 갱신 시 onEndEdit/onValueChanged가 다시 호출되는 걸 방지
             _amountInput.SetTextWithoutNotify(_currentAmount.ToString());
         }
-
         if (_priceText != null)
         {
-            int totalPrice = _currentItemData.buyPrice * _currentAmount;
-            _priceText.text = totalPrice.ToString();
+            if (_isCurrentItemSoldOut)
+            {
+                _priceText.text = "품절";
+            }
+            else
+            {
+                int totalPrice = _currentItemData.buyPrice * _currentAmount;
+                _priceText.text = totalPrice.ToString() + "G";
+            }
         }
     }
 

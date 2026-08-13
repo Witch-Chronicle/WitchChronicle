@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15fa27efa3f5725419aca6ec65b66bd4, type: 3}
+  m_Name: enemy_fire_wizard
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
+  _enemyId: enemy_fire_wizard
+  _enemyName: "\uBD88\uC758 \uB9C8\uBC95\uC0AC"
+  _icon: {fileID: 21300000, guid: 262c303894817944bbe56c765c1af426, type: 3}
+  _isBoss: 0
+  _maxHp: 115
+  _attackPower: 12
+  _magicPower: 34
+  _defensePower: 8
+  _magicDefensePower: 20
+  _speed: 23
+  _weakElements: 0400000005000000
+  _resistElements: 0200000007000000
+  _nullElements: 
+  _absorbElements: 
+  _skillList:
+  - {fileID: 11400000, guid: b44f7bf3212ba76469aa2b4cebcd17e3, type: 2}
+  - {fileID: 11400000, guid: 32299147e6e42d44ab361789497a4d5f, type: 2}
+  - {fileID: 11400000, guid: 88fac484363ba9849a0c3d9ba34928c5, type: 2}
+  _aiProfileData: {fileID: 11400000, guid: a279232d314dc134d82e7fdde3b90f58, type: 2}
+  _expReward: 60
+  _goldReward: 300
+  _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
+  _prefab: {fileID: 8493481916742154775, guid: c8bacea06cb5e0a4ab6364fc46103ef5, type: 3}

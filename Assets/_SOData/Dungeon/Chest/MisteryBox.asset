@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40c1085a2fb84e943ae443d54ffc970b, type: 3}
+  m_Name: MisteryBox
+  m_EditorClassIdentifier: Assembly-CSharp::ChestRewardData
+  rewards:
+  - item: {fileID: 11400000, guid: ec0368ce66293a546a85ca401b68f8ac, type: 2}
+    chance: 38.2
+  - item: {fileID: 11400000, guid: e706221b3d12d7d4a987c2f03d4f67fd, type: 2}
+    chance: 18.7
+  - item: {fileID: 11400000, guid: 2ea39ecd71d59064c8cd3851e3d770d9, type: 2}
+    chance: 10.8
+  - item: {fileID: 11400000, guid: 04ea78128ae7a784da226c66c9c608fc, type: 2}
+    chance: 1.7

@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
+  m_Name: 02.WaterArrow_skill
+  m_EditorClassIdentifier: Assembly-CSharp::SkillData
+  _skillId: skill_water_002
+  _skillName: "\uC6CC\uD130 \uC560\uB85C\uC6B0"
+  _description: "\uC608\uB9AC\uD55C \uBB3C\uC758 \uD654\uC0B4\uC744 \uB9CC\uB4E4\uC5B4
+    \uC801\uC744 \uAD00\uD1B5\uD55C\uB2E4."
+  _tier: 3
+  _mpCost: 10
+  _elementType: 5
+  _skillType: 0
+  _damageType: 1
+  _power: 34
+  _targetType: 0
+  _statusEffectType: 0
+  _statusChance: 0
+  _cureStatusEffectType: 0
+  _buffData: {fileID: 0}
+  _presentationType: 0
+  _skillIcon: {fileID: 21300000, guid: 449da6b5155fee8488ecbdeb89f19d7d, type: 3}
+  _voiceClip: {fileID: 0}
+  _impactDelay: 0.3
+  _castSfx: {fileID: 8300000, guid: 05a0fc7c616a4824db63230e8712ab41, type: 3}
+  _hitSfx: {fileID: 8300000, guid: 3554d83a37753fe44924114bc71d22f8, type: 3}
+  _castVfxPrefab: {fileID: 69906001918393858, guid: c3210a76170022542bcb480a4674387e, type: 3}
+  _projectileVfxPrefab: {fileID: 1840672898717558257, guid: f46b349941a6b7540af5766e21391799, type: 3}
+  _hitVfxPrefab: {fileID: 0}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
+  _hitVfxOffset: {x: 0, y: 0, z: 0}
+  _castVfxScale: 0
+  _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
+  _constellationPathSequenceData: {fileID: 0}
+  _constellationPathAttackData: {fileID: 0}
+  _drawGuideJson: {fileID: 4900000, guid: e06f6795a9c44504b9f00d02839148a9, type: 3}
+  _drawExampleSprite: {fileID: 21300000, guid: 41eef3ac27961b2458bc7355fea06693, type: 3}

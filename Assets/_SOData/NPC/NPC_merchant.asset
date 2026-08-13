@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25f7fd47791a14f4f8b071b5055a8834, type: 3}
+  m_Name: NPC_merchant
+  m_EditorClassIdentifier: Assembly-CSharp::NPCData
+  _npcId: npc_merchant
+  _npcName: "\uC0C1\uC810 \uC8FC\uC778"
+  _description: "\uC0C1\uC810 \uC8FC\uC778 \uC785\uB2C8\uB2E4"
+  _prompt: "\uC0C1\uC810 \uC774\uC6A9"
+  _portrait: {fileID: -1198328070, guid: 7e7ea7377633f8042b855a2bf167471a, type: 3}
+  _prefab: {fileID: 0}
+  _dialogueJson: {fileID: 4900000, guid: c83658874a76da64a9b529f3454fd570, type: 3}
+  _defaultDialogueId: default
+  _startDialogueId: default
+  _runningDialogueId: running
+  _completeDialogueId: complete
+  _finishedDialogueId: reward
+  _questId: 
+  _recruitQuestId: 
+  _defaultNpcState: 0

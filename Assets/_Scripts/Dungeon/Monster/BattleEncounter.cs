@@ -18,6 +18,7 @@ public class BattleEncounter : MonoBehaviour
 
     private readonly List<DungeonMonster> _dungeonMonsters = new List<DungeonMonster>();
     private bool _isBattleStarted;
+    private bool _isBattleTransitionStarted;
 
     public IReadOnlyList<EnemyBattleData> AssignedEnemies => _assignedEnemies;
 
@@ -174,46 +175,131 @@ public class BattleEncounter : MonoBehaviour
     }
 
     /// <summary>
-    /// 전투 시작 이벤트 처리
+    /// 적 선공 전투 시작 처리
     /// </summary>
     public void HandleCombatStarted()
     {
         Debug.Log("2. BattleEncounter가 신호를 받음");
+
         if (_isBattleStarted)
         {
             return;
         }
 
         _isBattleStarted = true;
+        _isPlayerAdvantage = false;
+        _isEnemyAdvantage = true;
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySfx(SfxType.Encounter);
+        }
+
         StartBattleTransition();
 
-        Debug.Log("[BattleEncounter] HandleCombatStarted 호출");
+        Debug.Log("[BattleEncounter] 적 선공 전투 시작");
     }
 
     /// <summary>
-    /// 전투 씬 전환 처리
+    /// 플레이어 선공 전투 예약
+    /// </summary>
+    /// <returns>예약 성공 여부</returns>
+    public bool PreparePlayerAdvantageBattle()
+    {
+        if (_isBattleStarted)
+        {
+            return false;
+        }
+
+        _isBattleStarted = true;
+        _isPlayerAdvantage = true;
+        _isEnemyAdvantage = false;
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySfx(SfxType.Encounter);
+        }
+
+        Debug.Log("[BattleEncounter] 플레이어 선공 예약");
+
+        return true;
+    }
+
+    /// <summary>
+    /// 예약된 전투 진입 시작
+    /// </summary>
+    public void StartPreparedBattle()
+    {
+        if (_isBattleStarted == false ||
+            _isBattleTransitionStarted)
+        {
+            return;
+        }
+
+        StartBattleTransition();
+    }
+
+    /// <summary>
+    /// 전투 진입 연출 시작
     /// </summary>
     private void StartBattleTransition()
     {
-        Debug.Log("3. 전환 함수 진입 시작");
+        if (_isBattleTransitionStarted)
+        {
+            return;
+        }
+
+        _isBattleTransitionStarted = true;
+
+        Debug.Log("3. 전투 진입 연출 시작");
 
         if (_assignedEnemies.Count <= 0)
         {
-            Debug.LogWarning($"{name}에 조우 적 데이터 없음");
+            Debug.LogWarning(
+                $"{name}에 조우 적 데이터 없음");
+
+            _isBattleStarted = false;
             return;
         }
 
         if (BattleEncounterContext.Instance == null)
         {
-            Debug.LogError("BattleEncounterContext 없음");
+            Debug.LogError(
+                "BattleEncounterContext 없음");
+
+            _isBattleStarted = false;
             return;
         }
 
-        string returnSceneName = SceneManager.GetActiveScene().name;
-        Vector3 returnPosition = GetReturnPosition();
-        Quaternion returnRotation = GetReturnRotation();
+        if (BattleEntryTransitionController.Instance == null)
+        {
+            Debug.LogError(
+                "BattleEntryTransitionController 없음");
 
-        BattleEncounterContext.Instance.SetEncounter(this,
+            _isBattleStarted = false;
+            return;
+        }
+
+        if (SceneTransitionManager.Instance == null)
+        {
+            Debug.LogError(
+                "SceneTransitionManager 없음");
+
+            _isBattleStarted = false;
+            return;
+        }
+
+        string returnSceneName =
+            SceneManager.GetActiveScene().name;
+
+        Vector3 returnPosition =
+            GetReturnPosition();
+
+        Quaternion returnRotation =
+            GetReturnRotation();
+
+        BattleEncounterContext.Instance.SetEncounter(
+            this,
             _assignedEnemies,
             returnSceneName,
             returnPosition,
@@ -222,50 +308,45 @@ public class BattleEncounter : MonoBehaviour
             _isPlayerAdvantage,
             _isEnemyAdvantage);
 
-        Debug.Log($"[BattleEncounter] Load Battle Scene (Additive): {_battleSceneName}");
-
-        DestroyEncounter();
-
-        if (SceneTransitionManager.Instance != null)
+        if (CursorLocker.Instance != null)
         {
-            // 던전 필드의 파티 상태 UI도 전투 씬 진입 중엔 숨김
-            if (DungeonPartyQueueController.Instance != null)
-            {
-                DungeonPartyQueueController.Instance.gameObject.SetActive(false);
-            }
-
-            // 화면이 완전히 가려진 뒤(씬 로드 시작 직전)에 Party를 비활성화 -> 카메라가 먼저 사라지는 깜빡임 방지
-            SceneTransitionManager.Instance.LoadSceneAdditive(
-                _battleSceneName,
-                onLoaded: null,
-                onCovered: () =>
-                {
-                    if (Party.Instance != null)
-                    {
-                        Party.Instance.gameObject.SetActive(false);
-                    }
-
-
-                });
-
             CursorLocker.Instance.EnterUIMode();
         }
-        else
+
+        BattleEntryTransitionController.Instance.PlayEntry(
+            HandleEntryBlackoutReached);
+    }
+
+    /// <summary>
+    /// 전투 진입 검은 화면 도달 처리
+    /// </summary>
+    private void HandleEntryBlackoutReached()
+    {
+        if (SceneTransitionManager.Instance == null)
         {
-            // 던전 필드의 파티 상태 UI도 전투 씬 진입 중엔 숨김
-            if (DungeonPartyQueueController.Instance != null)
-            {
-                DungeonPartyQueueController.Instance.gameObject.SetActive(false);
-            }
+            Debug.LogError(
+                "SceneTransitionManager 없음");
 
-            if (Party.Instance != null)
-            {
-                Party.Instance.gameObject.SetActive(false);
-            }
-
-
-            SceneManager.LoadScene(_battleSceneName, LoadSceneMode.Additive);
+            _isBattleStarted = false;
+            return;
         }
+
+        if (DungeonPartyQueueController.Instance != null)
+        {
+            DungeonPartyQueueController.Instance
+                .HideContent();
+        }
+
+        if (Party.Instance != null)
+        {
+            Party.Instance.gameObject.SetActive(false);
+        }
+
+        SceneTransitionManager.Instance
+            .LoadSceneAdditiveWithoutTransition(
+                _battleSceneName,
+                onBeforeLoad: HandleBeforeBattleSceneLoad,
+                onLoaded: HandleBattleSceneLoaded);
     }
 
     /// <summary>
@@ -310,9 +391,29 @@ public class BattleEncounter : MonoBehaviour
         return Quaternion.identity;
     }
 
-    // 추가, 승리시 몬스터 파괴 용도
-    private void DestroyEncounter()
+    /// <summary>
+    /// 전투 씬 로드 직전 조우 비활성화
+    /// </summary>
+    private void HandleBeforeBattleSceneLoad()
     {
-        Destroy(gameObject);
+        gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// 전투 씬 로드 완료 처리
+    /// </summary>
+    private void HandleBattleSceneLoaded()
+    {
+        Debug.Log(
+            $"[BattleEncounter] Battle Scene Load Complete: " +
+            $"{_battleSceneName}");
+
+        if (BattleEntryTransitionController.Instance == null)
+        {
+            return;
+        }
+
+        BattleEntryTransitionController.Instance
+            .RevealFromBlack();
     }
 }

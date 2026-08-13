@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 
 /// <summary>
@@ -23,13 +24,16 @@ public class SkillGachaController : MonoBehaviour
 
     [Header("뽑기 (왼쪽)")]
     [SerializeField] private Button _drawButton;
-    [SerializeField] private Text _selectedNameText;
+    [SerializeField] private TMP_Text _selectedNameText;
     [SerializeField] private SkillGachaPresenter _presenter;
 
     private readonly List<OwnedSkillBook> _owned = new List<OwnedSkillBook>();
     private readonly List<Sprite> _iconPool = new List<Sprite>();
 
     private SkillBookItemData _selected;
+
+    /// <summary>CursorLocker의 열림 카운트를 중복으로 올리지 않기 위한 상태.</summary>
+    private bool _isOpen;
 
     private void Awake()
     {
@@ -65,12 +69,31 @@ public class SkillGachaController : MonoBehaviour
     /// <summary>가챠 창 열기 (NPC 상호작용 시 호출).</summary>
     public void Open()
     {
+        // 루트가 꺼져 있으면 자식만 켜봐야 안 보인다. 자기 자신부터 켠다.
+        // (이때 Awake가 처음 돌면서 _root를 꺼버리므로 _root는 반드시 그 다음에 켠다)
+        if (gameObject.activeSelf == false)
+        {
+            gameObject.SetActive(true);
+        }
+
         if (_root != null)
         {
             _root.SetActive(true);
         }
 
         _selected = null;
+
+        // 필드에서는 커서가 잠겨 있어 클릭이 안 되므로 UI 모드로 전환
+        if (_isOpen == false)
+        {
+            _isOpen = true;
+
+            if (CursorLocker.Instance != null)
+            {
+                CursorLocker.Instance.EnterUIMode();
+            }
+        }
+
         Refresh();
     }
 
@@ -80,6 +103,16 @@ public class SkillGachaController : MonoBehaviour
         if (_root != null)
         {
             _root.SetActive(false);
+        }
+
+        if (_isOpen)
+        {
+            _isOpen = false;
+
+            if (CursorLocker.Instance != null)
+            {
+                CursorLocker.Instance.ExitUIMode();
+            }
         }
     }
 

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15fa27efa3f5725419aca6ec65b66bd4, type: 3}
+  m_Name: enemy_wild_orc
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
+  _enemyId: enemy_wild_orc
+  _enemyName: "\uC624\uD06C"
+  _icon: {fileID: 21300000, guid: 0b98db283fb1dba4e81524dad918ee5f, type: 3}
+  _isBoss: 0
+  _maxHp: 135
+  _attackPower: 26
+  _magicPower: 15
+  _defensePower: 12
+  _magicDefensePower: 11
+  _speed: 23
+  _weakElements: 0300000007000000
+  _resistElements: 02000000
+  _nullElements: 
+  _absorbElements: 
+  _skillList:
+  - {fileID: 11400000, guid: 818c9fa287ab3c441ab38de55089e98e, type: 2}
+  - {fileID: 11400000, guid: d0f3efb799b66b94f8cf240aef2ef5de, type: 2}
+  _aiProfileData: {fileID: 11400000, guid: efa93b2032175ea4ba62702e8fea68e6, type: 2}
+  _expReward: 38
+  _goldReward: 155
+  _dropTable: {fileID: 11400000, guid: 4dd7a7a7bcc8dd041bd35980ecb60685, type: 2}
+  _prefab: {fileID: 8511647367374691266, guid: a9c37af2c2e296546b31a069465c3e77, type: 3}

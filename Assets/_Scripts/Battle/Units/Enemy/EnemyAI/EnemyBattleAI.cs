@@ -6,6 +6,7 @@ using UnityEngine;
 /// </summary>
 public class EnemyBattleAI
 {
+    private const float ConstellationSkillChance = 0.3f;
     private const float HealHpRatioThreshold = 0.4f;
     private const bool IsDebugLogEnabled = true;
 
@@ -13,29 +14,29 @@ public class EnemyBattleAI
     private readonly List<BattleUnit> _aliveOpponents = new List<BattleUnit>();
     private readonly List<EnemyAIActionCandidate> _actionCandidates = new List<EnemyAIActionCandidate>();
 
+    private readonly Dictionary<BattleUnit, EnemyAIHistory> _historyByActor = new Dictionary<BattleUnit, EnemyAIHistory>();
+
+    /// <summary>
+    /// 적 AI 이전 행동 기록
+    /// </summary>
+    private class EnemyAIHistory
+    {
+        public SkillData LastSkillData;
+        public BattleUnit LastTarget;
+        public bool LastWasBasicAttack;
+    }
+
     /// <summary>
     /// 적 행동 요청 생성
     /// </summary>
     /// <param name="actor">행동하는 적 유닛</param>
     /// <param name="battleUnits">전투에 참가된 전체 유닛</param>
     /// <returns>선택된 행동 요청</returns>
-    public BattleActionRequest CreateActionRequest(
-        BattleUnit actor,
-        IReadOnlyList<BattleUnit> battleUnits)
+    public BattleActionRequest CreateActionRequest(BattleUnit actor, IReadOnlyList<BattleUnit> battleUnits)
     {
-        if (actor == null || actor.IsAlive == false)
-        {
-            return null;
-        }
+        if (actor == null || actor.IsAlive == false) return null;
 
         CacheAliveUnits(actor, battleUnits);
-        BuildActionCandidates(actor);
-        ValidateActionCandidates();
-
-        if (_actionCandidates.Count <= 0)
-        {
-            return null;
-        }
 
         EnemyAIProfileData aiProfile = actor.AIProfileData;
 
@@ -45,18 +46,23 @@ public class EnemyBattleAI
             return CreateBasicAttackRequest(actor);
         }
 
+        BuildActionCandidates(actor);
+        ValidateActionCandidates(aiProfile);
+
+        if (_actionCandidates.Count <= 0) return null;
+
         ScoreActionCandidates(actor, aiProfile);
 
-        EnemyAIActionCandidate bestCandidate = SelectBestCandidate();
+        bool allowNormalSkills = ShouldUseNormalSkill(aiProfile);
+        EnemyAIActionCandidate selectedCandidate = SelectActionCandidate(aiProfile, allowNormalSkills);
 
-        LogActionCandidates(actor, bestCandidate);
+        LogActionCandidates(actor, selectedCandidate);
 
-        if (bestCandidate == null)
-        {
-            return CreateBasicAttackRequest(actor);
-        }
+        if (selectedCandidate == null) return CreateBasicAttackRequest(actor);
 
-        return bestCandidate.Request;
+        UpdateActionHistory(actor, selectedCandidate);
+
+        return selectedCandidate.Request;
     }
 
     /// <summary>
@@ -558,6 +564,8 @@ public class EnemyBattleAI
                 continue;
             }
 
+            if (ShouldAddSkillCandidate(skillData) == false) continue;
+
             AddSkillCandidatesByTargetType(actor, skillData);
         }
     }
@@ -916,6 +924,11 @@ public class EnemyBattleAI
                 "대상선호");
 
             AddCandidateScore(
+                candidate, 
+                GetRepeatPenalty(actor, candidate, aiProfile), 
+                "반복");
+
+            AddCandidateScore(
                 candidate,
                 GetRandomScore(aiProfile),
                 "랜덤");
@@ -939,7 +952,7 @@ public class EnemyBattleAI
 
         if (candidate.IsBasicAttack)
         {
-            return 5f;
+            return 10f * aiProfile.BasicAttackWeight;
         }
 
         if (candidate.SkillData == null)
@@ -947,11 +960,11 @@ public class EnemyBattleAI
             return 0f;
         }
 
-        //// 별자리 확인용
-        //if (candidate.SkillData.IsConstellationPathAttack)
-        //{
-        //    return 1000f;
-        //}
+        // 별자리 확인용
+        if (candidate.SkillData.IsConstellationPathAttack)
+        {
+            return 1000f;
+        }
 
         switch (candidate.SkillData.SkillType)
         {
@@ -980,25 +993,43 @@ public class EnemyBattleAI
     /// <param name="candidate">행동 후보</param>
     /// <param name="aiProfile">AI 성향 데이터</param>
     /// <returns>공격 행동 점수</returns>
-    private float GetDamageScore(
-        EnemyAIActionCandidate candidate,
-        EnemyAIProfileData aiProfile)
+    private float GetDamageScore(EnemyAIActionCandidate candidate, EnemyAIProfileData aiProfile)
     {
-        if (candidate == null || candidate.IsDamageAction == false)
-        {
-            return 0f;
-        }
+        if (candidate == null || candidate.IsDamageAction == false) return 0f;
 
-        float score = 0f;
+        float score = GetDamageImpactRatio(candidate) * 40f * aiProfile.DamageWeight;
 
-        score += candidate.ExpectedDamage * aiProfile.DamageWeight;
-
-        if (candidate.CanKillTarget)
-        {
-            score += 40f * aiProfile.KillWeight;
-        }
+        if (candidate.CanKillTarget) score += 20f * aiProfile.KillWeight;
 
         return score;
+    }
+
+    /// <summary>
+    /// 예상 피해 영향 비율 반환
+    /// </summary>
+    /// <param name="candidate">행동 후보</param>
+    /// <returns>피해 영향 비율</returns>
+    private float GetDamageImpactRatio(EnemyAIActionCandidate candidate)
+    {
+        if (candidate == null || candidate.ExpectedDamage <= 0) return 0f;
+
+        if (candidate.Target != null)
+        {
+            if (candidate.Target.MaxHp <= 0) return 0f;
+            return Mathf.Clamp01((float)candidate.ExpectedDamage / candidate.Target.MaxHp);
+        }
+
+        int totalMaxHp = 0;
+
+        for (int i = 0; i < _aliveOpponents.Count; i++)
+        {
+            if (_aliveOpponents[i] == null) continue;
+            totalMaxHp += _aliveOpponents[i].MaxHp;
+        }
+
+        if (totalMaxHp <= 0) return 0f;
+
+        return Mathf.Clamp01((float)candidate.ExpectedDamage / totalMaxHp);
     }
 
     /// <summary>
@@ -1008,32 +1039,60 @@ public class EnemyBattleAI
     /// <param name="candidate">행동 후보</param>
     /// <param name="aiProfile">AI 성향 데이터</param>
     /// <returns>회복 행동 점수</returns>
-    private float GetHealScore(
-        BattleUnit actor,
-        EnemyAIActionCandidate candidate,
-        EnemyAIProfileData aiProfile)
+    private float GetHealScore(BattleUnit actor, EnemyAIActionCandidate candidate, EnemyAIProfileData aiProfile)
     {
-        if (candidate == null || candidate.IsHealAction == false)
-        {
-            return 0f;
-        }
+        if (candidate == null || candidate.SkillData == null) return 0f;
+        if (candidate.SkillData.SkillType != SkillEffectType.Heal || candidate.ExpectedHeal <= 0) return 0f;
 
-        float score = 0f;
-
-        score += candidate.ExpectedHeal * aiProfile.HealWeight;
+        float score = GetHealImpactRatio(candidate) * 40f * aiProfile.HealWeight;
 
         if (candidate.Target != null)
         {
             float missingHpRatio = 1f - GetHpRatio(candidate.Target);
-            score += missingHpRatio * 50f * aiProfile.HealWeight;
+            score += missingHpRatio * 35f * aiProfile.HealWeight;
+
+            if (candidate.Target == actor && GetHpRatio(actor) <= aiProfile.SelfDefenseHpRatio) score += 30f * aiProfile.SelfSurvivalWeight;
+
+            return score;
         }
 
-        if (candidate.Target == actor && GetHpRatio(actor) <= aiProfile.SelfDefenseHpRatio)
+        BattleUnit lowestHpAlly = FindLowestHpRatioUnit(_aliveAllies);
+
+        if (lowestHpAlly != null)
         {
-            score += 50f * aiProfile.SelfSurvivalWeight;
+            float missingHpRatio = 1f - GetHpRatio(lowestHpAlly);
+            score += missingHpRatio * 30f * aiProfile.HealWeight;
         }
 
         return score;
+    }
+
+    /// <summary>
+    /// 예상 회복 영향 비율 반환
+    /// </summary>
+    /// <param name="candidate">행동 후보</param>
+    /// <returns>회복 영향 비율</returns>
+    private float GetHealImpactRatio(EnemyAIActionCandidate candidate)
+    {
+        if (candidate == null || candidate.ExpectedHeal <= 0) return 0f;
+
+        if (candidate.Target != null)
+        {
+            if (candidate.Target.MaxHp <= 0) return 0f;
+            return Mathf.Clamp01((float)candidate.ExpectedHeal / candidate.Target.MaxHp);
+        }
+
+        int totalMaxHp = 0;
+
+        for (int i = 0; i < _aliveAllies.Count; i++)
+        {
+            if (_aliveAllies[i] == null) continue;
+            totalMaxHp += _aliveAllies[i].MaxHp;
+        }
+
+        if (totalMaxHp <= 0) return 0f;
+
+        return Mathf.Clamp01((float)candidate.ExpectedHeal / totalMaxHp);
     }
 
     /// <summary>
@@ -1042,22 +1101,19 @@ public class EnemyBattleAI
     /// <param name="candidate">행동 후보</param>
     /// <param name="aiProfile">AI 성향 데이터</param>
     /// <returns>대상 선호 점수</returns>
-    private float GetTargetPreferenceScore(
-        EnemyAIActionCandidate candidate,
-        EnemyAIProfileData aiProfile)
+    private float GetTargetPreferenceScore(EnemyAIActionCandidate candidate, EnemyAIProfileData aiProfile)
     {
-        if (candidate == null || candidate.Target == null)
-        {
-            return 0f;
-        }
-
-        float score = 0f;
+        if (candidate == null || candidate.Target == null) return 0f;
+        if (_aliveOpponents.Contains(candidate.Target) == false) return 0f;
 
         float targetHpRatio = GetHpRatio(candidate.Target);
         float lowHpScore = 1f - targetHpRatio;
+        float threatScore = GetThreatScore(candidate.Target);
 
-        score += lowHpScore * 30f * aiProfile.LowHpTargetWeight;
-        score += GetThreatScore(candidate.Target) * aiProfile.HighThreatTargetWeight;
+        float score = 0f;
+
+        score += lowHpScore * 20f * aiProfile.LowHpTargetWeight;
+        score += threatScore * 20f * aiProfile.HighThreatTargetWeight;
         score += Random.Range(0f, 10f) * aiProfile.RandomTargetWeight;
 
         return score;
@@ -1067,18 +1123,37 @@ public class EnemyBattleAI
     /// 대상 위협도 점수 반환
     /// </summary>
     /// <param name="unit">대상 유닛</param>
-    /// <returns>위협도 점수</returns>
+    /// <returns>0~1 위협도</returns>
     private float GetThreatScore(BattleUnit unit)
     {
-        if (unit == null)
+        if (unit == null) return 0f;
+
+        float unitThreat = GetRawThreat(unit);
+        float highestThreat = 0f;
+
+        for (int i = 0; i < _aliveOpponents.Count; i++)
         {
-            return 0f;
+            BattleUnit opponent = _aliveOpponents[i];
+
+            if (opponent == null || opponent.IsAlive == false) continue;
+
+            highestThreat = Mathf.Max(highestThreat, GetRawThreat(opponent));
         }
 
-        float offensivePower = unit.AttackPower + unit.MagicPower;
-        float speedPower = unit.Speed * 0.5f;
+        if (highestThreat <= 0f) return 0f;
 
-        return offensivePower + speedPower;
+        return Mathf.Clamp01(unitThreat / highestThreat);
+    }
+
+    /// <summary>
+    /// 대상 원본 위협도 반환
+    /// </summary>
+    /// <param name="unit">대상 유닛</param>
+    /// <returns>원본 위협도</returns>
+    private float GetRawThreat(BattleUnit unit)
+    {
+        if (unit == null) return 0f;
+        return unit.AttackPower + unit.MagicPower + unit.Speed * 0.5f;
     }
 
     /// <summary>
@@ -1097,33 +1172,72 @@ public class EnemyBattleAI
     }
 
     /// <summary>
-    /// 최고 점수 행동 후보 선택
+    /// 행동 후보 선택
+    /// 최고점 인접 후보 중 가중 랜덤 선택
     /// </summary>
-    /// <returns>선택된 행동 후보</returns>
-    private EnemyAIActionCandidate SelectBestCandidate()
+    /// <param name="aiProfile">AI 성향 데이터</param>
+    /// <param name="allowNormalSkills">일반 스킬 허용 여부</param>
+    /// <returns>선택된 후보</returns>
+    private EnemyAIActionCandidate SelectActionCandidate(EnemyAIProfileData aiProfile, bool allowNormalSkills)
     {
-        EnemyAIActionCandidate bestCandidate = null;
         float bestScore = float.MinValue;
 
         for (int i = 0; i < _actionCandidates.Count; i++)
         {
             EnemyAIActionCandidate candidate = _actionCandidates[i];
 
-            if (candidate == null || candidate.Request == null || candidate.IsInvalid)
-            {
-                continue;
-            }
-
-            if (candidate.Score <= bestScore)
-            {
-                continue;
-            }
-
-            bestScore = candidate.Score;
-            bestCandidate = candidate;
+            if (IsSelectableCandidate(candidate, allowNormalSkills) == false) continue;
+            if (candidate.Score > bestScore) bestScore = candidate.Score;
         }
 
-        return bestCandidate;
+        if (bestScore == float.MinValue) return null;
+
+        float minimumScore = bestScore - aiProfile.SelectionScoreRange;
+        float totalWeight = 0f;
+
+        for (int i = 0; i < _actionCandidates.Count; i++)
+        {
+            EnemyAIActionCandidate candidate = _actionCandidates[i];
+
+            if (IsSelectableCandidate(candidate, allowNormalSkills) == false) continue;
+            if (candidate.Score < minimumScore) continue;
+
+            totalWeight += Mathf.Max(1f, candidate.Score - minimumScore + 1f);
+        }
+
+        if (totalWeight <= 0f) return null;
+
+        float randomValue = Random.Range(0f, totalWeight);
+
+        for (int i = 0; i < _actionCandidates.Count; i++)
+        {
+            EnemyAIActionCandidate candidate = _actionCandidates[i];
+
+            if (IsSelectableCandidate(candidate, allowNormalSkills) == false) continue;
+            if (candidate.Score < minimumScore) continue;
+
+            randomValue -= Mathf.Max(1f, candidate.Score - minimumScore + 1f);
+
+            if (randomValue <= 0f) return candidate;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 행동 후보 선택 가능 여부
+    /// </summary>
+    /// <param name="candidate">행동 후보</param>
+    /// <param name="allowNormalSkills">일반 스킬 허용 여부</param>
+    /// <returns>선택 가능 여부</returns>
+    private bool IsSelectableCandidate(EnemyAIActionCandidate candidate, bool allowNormalSkills)
+    {
+        if (candidate == null || candidate.Request == null || candidate.IsInvalid) return false;
+        if (candidate.IsBasicAttack) return true;
+        if (candidate.SkillData == null) return false;
+        if (candidate.SkillData.IsConstellationPathAttack) return true;
+
+        return allowNormalSkills;
     }
 
     /// <summary>
@@ -1290,18 +1404,16 @@ public class EnemyBattleAI
     /// <summary>
     /// 행동 후보 유효성 검사
     /// </summary>
-    private void ValidateActionCandidates()
+    /// <param name="aiProfile">AI 성향 데이터</param>
+    private void ValidateActionCandidates(EnemyAIProfileData aiProfile)
     {
         for (int i = 0; i < _actionCandidates.Count; i++)
         {
             EnemyAIActionCandidate candidate = _actionCandidates[i];
 
-            if (candidate == null)
-            {
-                continue;
-            }
+            if (candidate == null) continue;
 
-            ValidateHealCandidate(candidate);
+            ValidateHealCandidate(candidate, aiProfile);
             ValidateDamageCandidate(candidate);
         }
     }
@@ -1310,19 +1422,45 @@ public class EnemyBattleAI
     /// 회복 후보 유효성 검사
     /// </summary>
     /// <param name="candidate">행동 후보</param>
-    private void ValidateHealCandidate(EnemyAIActionCandidate candidate)
+    /// <param name="aiProfile">AI 성향 데이터</param>
+    private void ValidateHealCandidate(EnemyAIActionCandidate candidate, EnemyAIProfileData aiProfile)
     {
-        if (candidate == null || candidate.IsHealAction == false)
+        if (candidate == null || candidate.SkillData == null) return;
+        if (candidate.SkillData.SkillType != SkillEffectType.Heal) return;
+
+        if (candidate.ExpectedHeal <= 0)
         {
+            candidate.SetInvalid("회복량 없음");
             return;
         }
 
-        if (candidate.ExpectedHeal > 0)
+        if (candidate.SkillData.TargetType == TargetType.AllAllies)
         {
+            if (HasAllyBelowHpRatio(aiProfile.HealHpRatioThreshold) == false) candidate.SetInvalid("회복 필요 없음");
             return;
         }
 
-        candidate.SetInvalid("회복량 없음");
+        if (candidate.Target == null) return;
+
+        if (GetHpRatio(candidate.Target) > aiProfile.HealHpRatioThreshold) candidate.SetInvalid("회복 기준 HP 이상");
+    }
+
+    /// <summary>
+    /// 지정 HP 비율 이하 아군 존재 여부
+    /// </summary>
+    /// <param name="hpRatio">기준 HP 비율</param>
+    /// <returns>존재 여부</returns>
+    private bool HasAllyBelowHpRatio(float hpRatio)
+    {
+        for (int i = 0; i < _aliveAllies.Count; i++)
+        {
+            BattleUnit ally = _aliveAllies[i];
+
+            if (ally == null || ally.IsAlive == false) continue;
+            if (GetHpRatio(ally) <= hpRatio) return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -1331,23 +1469,20 @@ public class EnemyBattleAI
     /// <param name="candidate">행동 후보</param>
     private void ValidateDamageCandidate(EnemyAIActionCandidate candidate)
     {
-        if (candidate == null || candidate.IsDamageAction == false)
-        {
-            return;
-        }
+        if (candidate == null) return;
 
-        if (candidate.HasBadElementMatchup)
+        bool isDamageSkill = candidate.SkillData != null && candidate.SkillData.SkillType == SkillEffectType.Damage;
+        if (candidate.IsBasicAttack == false && isDamageSkill == false) return;
+
+        bool isAllEnemies = candidate.SkillData != null && candidate.SkillData.TargetType == TargetType.AllEnemies;
+
+        if (isAllEnemies == false && candidate.HasBadElementMatchup)
         {
             candidate.SetInvalid("무효 또는 흡수 상성");
             return;
         }
 
-        if (candidate.ExpectedDamage > 0)
-        {
-            return;
-        }
-
-        candidate.SetInvalid("피해량 없음");
+        if (candidate.ExpectedDamage <= 0) candidate.SetInvalid("피해량 없음");
     }
 
     /// <summary>
@@ -1372,6 +1507,50 @@ public class EnemyBattleAI
         }
 
         candidate.AddScore(score, reason);
+    }
+
+    /// <summary>
+    /// 반복 행동 패널티 반환
+    /// </summary>
+    /// <param name="actor">행동 유닛</param>
+    /// <param name="candidate">행동 후보</param>
+    /// <param name="aiProfile">AI 성향 데이터</param>
+    /// <returns>반복 패널티</returns>
+    private float GetRepeatPenalty(BattleUnit actor, EnemyAIActionCandidate candidate, EnemyAIProfileData aiProfile)
+    {
+        if (actor == null || candidate == null) return 0f;
+        if (_historyByActor.TryGetValue(actor, out EnemyAIHistory history) == false) return 0f;
+
+        float penalty = 0f;
+
+        bool sameBasicAttack = candidate.IsBasicAttack && history.LastWasBasicAttack;
+        bool sameSkill = candidate.IsBasicAttack == false && history.LastWasBasicAttack == false &&
+                         candidate.SkillData != null && candidate.SkillData == history.LastSkillData;
+
+        bool emergencyHeal = IsEmergencyHealCandidate(candidate, aiProfile);
+
+        if ((sameBasicAttack || sameSkill) && emergencyHeal == false) penalty -= aiProfile.RepeatActionPenalty;
+
+        if (candidate.IsDamageAction && candidate.Target != null && candidate.Target == history.LastTarget && candidate.CanKillTarget == false)
+            penalty -= aiProfile.RepeatTargetPenalty;
+
+        return penalty;
+    }
+
+    /// <summary>
+    /// 긴급 회복 후보 여부
+    /// </summary>
+    /// <param name="candidate">행동 후보</param>
+    /// <param name="aiProfile">AI 성향 데이터</param>
+    /// <returns>긴급 회복 여부</returns>
+    private bool IsEmergencyHealCandidate(EnemyAIActionCandidate candidate, EnemyAIProfileData aiProfile)
+    {
+        if (candidate == null || candidate.SkillData == null) return false;
+        if (candidate.SkillData.SkillType != SkillEffectType.Heal) return false;
+
+        if (candidate.SkillData.TargetType == TargetType.AllAllies) return HasAllyBelowHpRatio(aiProfile.EmergencyHealHpRatio);
+
+        return candidate.Target != null && GetHpRatio(candidate.Target) <= aiProfile.EmergencyHealHpRatio;
     }
 
     /// <summary>
@@ -1459,5 +1638,74 @@ public class EnemyBattleAI
             : "All";
 
         return $"{actionName} -> {targetName}";
+    }
+
+    /// <summary>
+    /// 스킬 행동 후보 등록 판정
+    /// 일반 스킬은 항상 후보 등록, 별자리 스킬만 별도 발동 확률 적용
+    /// </summary>
+    private bool ShouldAddSkillCandidate(SkillData skillData)
+    {
+        if (skillData == null) return false;
+        if (skillData.IsConstellationPathAttack) return Random.value <= ConstellationSkillChance;
+
+        return true;
+    }
+
+    /// <summary>
+    /// 일반 스킬 사용 허용 판정
+    /// </summary>
+    /// <param name="aiProfile">AI 성향 데이터</param>
+    /// <returns>사용 허용 여부</returns>
+    private bool ShouldUseNormalSkill(EnemyAIProfileData aiProfile)
+    {
+        if (HasEmergencyHealCandidate(aiProfile)) return true;
+        return Random.value <= aiProfile.SkillUseChance;
+    }
+
+    /// <summary>
+    /// 긴급 회복 후보 존재 여부
+    /// </summary>
+    /// <param name="aiProfile">AI 성향 데이터</param>
+    /// <returns>존재 여부</returns>
+    private bool HasEmergencyHealCandidate(EnemyAIProfileData aiProfile)
+    {
+        for (int i = 0; i < _actionCandidates.Count; i++)
+        {
+            EnemyAIActionCandidate candidate = _actionCandidates[i];
+
+            if (candidate == null || candidate.IsInvalid || candidate.SkillData == null) continue;
+            if (candidate.SkillData.SkillType != SkillEffectType.Heal) continue;
+
+            if (candidate.SkillData.TargetType == TargetType.AllAllies)
+            {
+                if (HasAllyBelowHpRatio(aiProfile.EmergencyHealHpRatio)) return true;
+                continue;
+            }
+
+            if (candidate.Target != null && GetHpRatio(candidate.Target) <= aiProfile.EmergencyHealHpRatio) return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 선택 행동 기록
+    /// </summary>
+    /// <param name="actor">행동 유닛</param>
+    /// <param name="candidate">선택된 행동 후보</param>
+    private void UpdateActionHistory(BattleUnit actor, EnemyAIActionCandidate candidate)
+    {
+        if (actor == null || candidate == null) return;
+
+        if (_historyByActor.TryGetValue(actor, out EnemyAIHistory history) == false)
+        {
+            history = new EnemyAIHistory();
+            _historyByActor.Add(actor, history);
+        }
+
+        history.LastWasBasicAttack = candidate.IsBasicAttack;
+        history.LastSkillData = candidate.SkillData;
+        history.LastTarget = candidate.IsDamageAction ? candidate.Target : null;
     }
 }

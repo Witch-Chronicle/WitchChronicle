@@ -1,105 +1,150 @@
+// FILE: Assets\_Scripts\Dungeon\DungeonMeshBuilder.cs
+
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// 던전 메쉬 청크 결합 및 변형을 담당하는 클래스.
+/// 던전 타일 데이터를 기반으로 Chunk Mesh를 생성하는 클래스.
 /// </summary>
 public class DungeonMeshBuilder
 {
-    private const int ChunkSize = 1000;
-    private const int VariationCount = 5;
-
-    private readonly Dictionary<Mesh, Mesh[]> _variationCache = new Dictionary<Mesh, Mesh[]>();
-    private static readonly int MainTexST = Shader.PropertyToID("_MainTex_ST");
-
     /// <summary>
-    /// 바닥 타일 데이터를 Chunk Mesh로 결합한다.
+    /// 바닥 타일 메쉬들을 하나의 Chunk Mesh로 결합한다.
+    /// (90도 무작위 회전 및 UV 오프셋 변형 적용)
     /// </summary>
-    public GameObject BuildFloorMesh(GameObject floorPrefab, HashSet<Vector2Int> positions, float tileSize, Transform parent)
+    public void BuildFloorMesh(GameObject floorPrefab, IEnumerable<Vector2Int> floorPositions, float tileSize, Transform parent)
     {
         if (floorPrefab == null)
         {
             Debug.LogWarning("[DungeonMeshBuilder] 바닥 프리팹이 없습니다.");
-            return null;
-        }
-
-        MeshFilter sourceMeshFilter = floorPrefab.GetComponent<MeshFilter>();
-        MeshRenderer sourceRenderer = floorPrefab.GetComponent<MeshRenderer>();
-
-        if (sourceMeshFilter == null || sourceRenderer == null)
-        {
-            Debug.LogWarning("[DungeonMeshBuilder] 바닥 프리팹에 MeshFilter 또는 MeshRenderer가 없습니다.");
-            return null;
-        }
-
-        GameObject root = new GameObject("Dungeon_Floor_Mesh");
-        root.transform.SetParent(parent);
-
-        List<Vector2Int> positionList = new List<Vector2Int>(positions);
-
-        for (int startIndex = 0; startIndex < positionList.Count; startIndex += ChunkSize)
-        {
-            List<CombineInstance> combines = new List<CombineInstance>();
-            int endIndex = Mathf.Min(startIndex + ChunkSize, positionList.Count);
-
-            for (int i = startIndex; i < endIndex; i++)
-            {
-                Vector2Int position = positionList[i];
-                combines.Add(CreateCombineInstance(
-                    sourceMeshFilter.sharedMesh,
-                    position,
-                    tileSize,
-                    0f,
-                    floorPrefab.transform.rotation,
-                    floorPrefab.transform.localScale,
-                    true
-                ));
-            }
-
-            BuildChunkMesh(
-                $"Floor_Chunk_{startIndex / ChunkSize}",
-                combines,
-                sourceRenderer.sharedMaterial,
-                root.transform,
-                true,
-                LayerMask.NameToLayer("Default")
-            );
-        }
-
-        return root;
-    }
-
-    /// <summary>
-    /// 벽 데이터를 Chunk Mesh로 결합한다.
-    /// </summary>
-    public void BuildWallMesh(GameObject wallPrefab, HashSet<Vector2Int> positions, float tileSize, float height, Transform parent)
-    {
-        if (wallPrefab == null)
-        {
             return;
         }
 
-        MeshFilter sourceMeshFilter = wallPrefab.GetComponent<MeshFilter>();
-        MeshRenderer sourceRenderer = wallPrefab.GetComponent<MeshRenderer>();
+        MeshFilter sourceMeshFilter = floorPrefab.GetComponentInChildren<MeshFilter>();
+        MeshRenderer sourceRenderer = floorPrefab.GetComponentInChildren<MeshRenderer>();
 
         if (sourceMeshFilter == null || sourceRenderer == null)
         {
+            Debug.LogWarning("[DungeonMeshBuilder] 바닥 프리팹(또는 자식)에 MeshFilter 또는 MeshRenderer가 없습니다.");
             return;
         }
+
+        Mesh originalMesh = sourceMeshFilter.sharedMesh;
+
+        // 💡 UV 오프셋이 무작위로 다르게 적용된 변형 메쉬 4개 미리 준비 (성능 최적화)
+        Mesh[] meshVariations = CreateMeshVariations(originalMesh, 4);
 
         List<CombineInstance> combines = new List<CombineInstance>();
 
-        foreach (Vector2Int position in positions)
+        foreach (var pos in floorPositions)
         {
-            for (float y = 0f; y < height; y += wallPrefab.transform.localScale.y)
+            // 💡 1. 90도 단위 무작위 Y축 회전 (0°, 90°, 180°, 270°) -> 바둑판 패턴 제거
+            int randomAngle = Random.Range(0, 4) * 90;
+            Quaternion randomRotation = Quaternion.Euler(0f, randomAngle, 0f);
+
+            // 💡 2. 준비된 변형 메쉬 중 하나를 무작위 선택 -> 무늬 오프셋 차별화
+            Mesh selectedMesh = meshVariations[Random.Range(0, meshVariations.Length)];
+
+            combines.Add(CreateCombineInstance(
+                selectedMesh,
+                pos, // Vector2Int -> Vector2 암시적 변환
+                tileSize,
+                0f,
+                randomRotation, // 무작위 회전 전달
+                floorPrefab.transform.localScale,
+                false
+            ));
+        }
+
+        BuildChunkMesh("Floor_Mesh", combines, sourceRenderer.sharedMaterial, parent, true, LayerMask.NameToLayer("Default"));
+    }
+
+    /// <summary>
+    /// 💡 원본 메쉬를 기반으로 UV 오프셋이 다르게 적용된 변형 메쉬들을 미리 생성합니다.
+    /// </summary>
+    private Mesh[] CreateMeshVariations(Mesh originalMesh, int count)
+    {
+        Mesh[] variations = new Mesh[count];
+
+        for (int i = 0; i < count; i++)
+        {
+            if (i == 0)
             {
+                variations[i] = originalMesh; // 첫 번째는 원본 그대로 사용
+                continue;
+            }
+
+            Mesh varMesh = Object.Instantiate(originalMesh);
+            Vector2[] uvs = varMesh.uv;
+
+            // 무작위 UV 오프셋 (텍스처 위치를 랜덤으로 이동)
+            float offsetX = Random.Range(0f, 1f);
+            float offsetY = Random.Range(0f, 1f);
+
+            for (int j = 0; j < uvs.Length; j++)
+            {
+                uvs[j].x += offsetX;
+                uvs[j].y += offsetY;
+            }
+
+            varMesh.uv = uvs;
+            variations[i] = varMesh;
+        }
+
+        return variations;
+    }
+
+    /// <summary>
+    /// 벽 타일 메쉬들을 하나의 Chunk Mesh로 결합한다.
+    /// 벽 프리팹의 피벗은 중앙(center pivot)이며,
+    /// wall.Position은 이미 (바닥 타일의 center-pivot 배치를 고려한) 정확한 경계 좌표(소수 가능)로 전달된다.
+    /// </summary>
+    public void BuildWallMesh(GameObject wallPrefab, List<WallData> wallDataList, float tileSize, float height, Transform parent)
+    {
+        if (wallPrefab == null)
+        {
+            Debug.LogWarning("[DungeonMeshBuilder] 벽 프리팹이 없습니다.");
+            return;
+        }
+
+        MeshFilter sourceMeshFilter = wallPrefab.GetComponentInChildren<MeshFilter>();
+        MeshRenderer sourceRenderer = wallPrefab.GetComponentInChildren<MeshRenderer>();
+
+        if (sourceMeshFilter == null || sourceRenderer == null)
+        {
+            Debug.LogWarning("[DungeonMeshBuilder] 벽 프리팹(또는 자식)에 MeshFilter 또는 MeshRenderer가 없습니다.");
+            return;
+        }
+
+        float meshLocalHeight = sourceMeshFilter.sharedMesh.bounds.size.y;
+        if (meshLocalHeight <= 0f)
+        {
+            meshLocalHeight = 1f;
+        }
+
+        float unitHeight = meshLocalHeight * wallPrefab.transform.localScale.y;
+        if (unitHeight <= 0f)
+        {
+            unitHeight = 1f;
+        }
+
+        const float epsilon = 0.001f;
+
+        List<CombineInstance> combines = new List<CombineInstance>();
+
+        foreach (var wall in wallDataList)
+        {
+            for (float y = 0f; y < height - epsilon; y += unitHeight)
+            {
+                float centerY = y + (unitHeight * 0.5f);
+
                 combines.Add(CreateCombineInstance(
                     sourceMeshFilter.sharedMesh,
-                    position,
+                    wall.Position,
                     tileSize,
-                    y,
-                    wallPrefab.transform.rotation,
+                    centerY,
+                    wall.Rotation,
                     wallPrefab.transform.localScale,
                     true
                 ));
@@ -110,160 +155,98 @@ public class DungeonMeshBuilder
     }
 
     /// <summary>
-    /// 천장 데이터를 Chunk Mesh로 결합한다.
+    /// 천장 타일 메쉬들을 하나의 Chunk Mesh로 결합한다.
     /// </summary>
-    public void BuildCeilingMesh(GameObject ceilingPrefab, HashSet<Vector2Int> positions, float tileSize, float height, Transform parent)
+    public void BuildCeilingMesh(GameObject ceilingPrefab, IEnumerable<Vector2Int> floorPositions, float tileSize, float height, Transform parent)
     {
         if (ceilingPrefab == null)
         {
+            Debug.LogWarning("[DungeonMeshBuilder] 천장 프리팹이 없습니다.");
             return;
         }
 
-        MeshFilter sourceMeshFilter = ceilingPrefab.GetComponent<MeshFilter>();
-        MeshRenderer sourceRenderer = ceilingPrefab.GetComponent<MeshRenderer>();
+        MeshFilter sourceMeshFilter = ceilingPrefab.GetComponentInChildren<MeshFilter>();
+        MeshRenderer sourceRenderer = ceilingPrefab.GetComponentInChildren<MeshRenderer>();
 
         if (sourceMeshFilter == null || sourceRenderer == null)
         {
+            Debug.LogWarning("[DungeonMeshBuilder] 천장 프리팹(또는 자식)에 MeshFilter 또는 MeshRenderer가 없습니다.");
             return;
         }
 
         List<CombineInstance> combines = new List<CombineInstance>();
 
-        foreach (Vector2Int position in positions)
+        foreach (var pos in floorPositions)
         {
             combines.Add(CreateCombineInstance(
                 sourceMeshFilter.sharedMesh,
-                position,
+                pos,
                 tileSize,
                 height,
-                ceilingPrefab.transform.rotation,
+                Quaternion.identity,
                 ceilingPrefab.transform.localScale,
-                true
+                false
             ));
         }
 
-        BuildChunkMesh("Ceiling_Mesh", combines, sourceRenderer.sharedMaterial, parent, false, LayerMask.NameToLayer("Minimap"));
+        BuildChunkMesh("Ceiling_Mesh", combines, sourceRenderer.sharedMaterial, parent, true, LayerMask.NameToLayer("Default"));
     }
 
     /// <summary>
-    /// 메쉬 결합용 CombineInstance를 생성하며, UV/Vertex Color 변형이 적용된 메쉬를 선택합니다.
+    /// 개별 메쉬 조합을 위한 CombineInstance를 생성한다.
     /// </summary>
-    private CombineInstance CreateCombineInstance(Mesh mesh, Vector2Int position, float tileSize, float height, Quaternion rotation, Vector3 scale, bool useVariation)
+    private CombineInstance CreateCombineInstance(Mesh sourceMesh, Vector2 gridPos, float tileSize, float yOffset, Quaternion rotation, Vector3 localScale, bool isWall)
     {
-        CombineInstance combine = new CombineInstance();
-        combine.mesh = useVariation ? GetVariationMesh(mesh) : mesh;
-        combine.transform = Matrix4x4.TRS(
-            new Vector3(position.x * tileSize, height, position.y * tileSize),
-            rotation,
-            scale
-        );
-        return combine;
+        Vector3 targetCenter = new Vector3(gridPos.x * tileSize, yOffset, gridPos.y * tileSize);
+
+        Vector3 scaledPivotOffset = Vector3.Scale(localScale, sourceMesh.bounds.center);
+        Vector3 rotatedPivotOffset = rotation * scaledPivotOffset;
+
+        Vector3 worldPos = targetCenter - rotatedPivotOffset;
+
+        Vector3 adjustedScale = localScale * 1.005f;
+
+        Matrix4x4 matrix = Matrix4x4.TRS(worldPos, rotation, adjustedScale);
+
+        CombineInstance ci = new CombineInstance();
+        ci.mesh = sourceMesh;
+        ci.transform = matrix;
+        return ci;
     }
 
     /// <summary>
-    /// 메쉬의 UV(Tiling/Offset)와 Vertex Color를 변형하여 캐싱된 메쉬를 반환합니다.
+    /// CombineInstance 리스트를 하나의 청크 메쉬로 병합한다.
     /// </summary>
-    private Mesh GetVariationMesh(Mesh original)
-    {
-        if (original == null)
-        {
-            return null;
-        }
-
-        if (!_variationCache.ContainsKey(original))
-        {
-            Mesh[] variants = new Mesh[VariationCount];
-
-            for (int i = 0; i < VariationCount; i++)
-            {
-                Mesh variant = Object.Instantiate(original);
-                variant.name = $"{original.name}_Var_{i}";
-
-                Vector2[] uvs = variant.uv;
-                if (uvs != null && uvs.Length > 0)
-                {
-                    float tileX = Random.Range(1.0f, 1.2f);
-                    float tileY = Random.Range(1.0f, 1.2f);
-                    Vector2 offset = new Vector2(Random.value, Random.value);
-
-                    for (int j = 0; j < uvs.Length; j++)
-                    {
-                        uvs[j].x = (uvs[j].x * tileX) + offset.x;
-                        uvs[j].y = (uvs[j].y * tileY) + offset.y;
-                    }
-                    variant.uv = uvs;
-                }
-
-                Color[] colors = new Color[variant.vertexCount];
-                float brightness = Random.Range(0.7f, 1.0f);
-                for (int k = 0; k < colors.Length; k++)
-                {
-                    colors[k] = new Color(brightness, brightness, brightness, 1f);
-                }
-                variant.colors = colors;
-
-                variants[i] = variant;
-            }
-            _variationCache[original] = variants;
-        }
-
-        Mesh[] cachedVariants = _variationCache[original];
-        return cachedVariants[Random.Range(0, cachedVariants.Length)];
-    }
-
-    /// <summary>
-    /// 생성된 변형 메쉬 캐시 메모리를 안전하게 해제한다. (던전 재생성 시 호출 권장)
-    /// </summary>
-    public void ClearCache()
-    {
-        foreach (var kvp in _variationCache)
-        {
-            if (kvp.Value != null)
-            {
-                foreach (Mesh variant in kvp.Value)
-                {
-                    if (variant != null)
-                    {
-                        Object.Destroy(variant);
-                    }
-                }
-            }
-        }
-        _variationCache.Clear();
-        Debug.Log("[DungeonMeshBuilder] 메쉬 변형 캐시 메모리를 안전하게 정리했습니다.");
-    }
-
-    /// <summary>
-    /// Combine 데이터를 하나의 Mesh Object로 생성하고, 개별 텍스처 변형 속성을 적용합니다.
-    /// </summary>
-    private void BuildChunkMesh(string name, List<CombineInstance> combines, Material material, Transform parent, bool addCollider, int layer)
+    private void BuildChunkMesh(string meshName, List<CombineInstance> combines, Material material, Transform parent, bool generateCollider, int layer)
     {
         if (combines.Count == 0)
         {
             return;
         }
 
-        Mesh mesh = new Mesh { indexFormat = IndexFormat.UInt32, name = name };
-        mesh.CombineMeshes(combines.ToArray());
-        mesh.RecalculateBounds();
-        mesh.RecalculateNormals();
+        GameObject chunkObj = new GameObject(meshName);
+        chunkObj.transform.SetParent(parent);
+        chunkObj.transform.localPosition = Vector3.zero;
+        chunkObj.transform.localRotation = Quaternion.identity;
+        chunkObj.transform.localScale = Vector3.one;
+        chunkObj.layer = layer;
 
-        GameObject chunkObject = new GameObject(name);
-        chunkObject.transform.SetParent(parent);
+        MeshFilter mf = chunkObj.AddComponent<MeshFilter>();
+        MeshRenderer mr = chunkObj.AddComponent<MeshRenderer>();
+        mr.sharedMaterial = material;
 
-        MeshFilter meshFilter = chunkObject.AddComponent<MeshFilter>();
-        MeshRenderer meshRenderer = chunkObject.AddComponent<MeshRenderer>();
+        Mesh combinedMesh = new Mesh();
+        combinedMesh.indexFormat = IndexFormat.UInt32;
 
-        meshFilter.sharedMesh = mesh;
-        meshRenderer.sharedMaterial = material;
-        chunkObject.layer = layer;
+        combinedMesh.CombineMeshes(combines.ToArray(), true, true);
+        mf.sharedMesh = combinedMesh;
 
-        if (addCollider)
+        if (generateCollider)
         {
-            MeshCollider meshCollider = chunkObject.AddComponent<MeshCollider>();
-            meshCollider.sharedMesh = mesh;
+            MeshCollider mc = chunkObj.AddComponent<MeshCollider>();
+            mc.sharedMesh = combinedMesh;
         }
 
-        Debug.Log($"[DungeonMeshBuilder] {name} 생성 완료 / Vertex : {mesh.vertexCount}");
+        Debug.Log($"[DungeonMeshBuilder] 청크 메쉬 생성 완료: {meshName} (버텍스 수: {combinedMesh.vertexCount})");
     }
 }

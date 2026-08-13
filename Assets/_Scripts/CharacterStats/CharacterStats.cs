@@ -314,32 +314,45 @@ public class CharacterStats : MonoBehaviour
     }
 
     /// <summary>
-    /// 레벨에 따른 자동 성장치를 최종 스탯에 합산
-    /// 임시
+    /// 레벨에 따른 자동 성장치 적용
     /// </summary>
     private void ApplyLevelGrowth()
     {
-        int levelBonus = _level - 1;
+        if (_growthConfig == null)
+        {
+            Debug.LogWarning("[CharacterStats] GrowthConfig가 연결되지 않아 레벨 성장치를 적용할 수 없습니다.");
+            return;
+        }
 
-        _finalStats.maxHP += levelBonus * 10;
-        _finalStats.maxMP += levelBonus * 3;
-        _finalStats.magicPower += levelBonus * 2;
-        _finalStats.defense += levelBonus * 1;
-        _finalStats.speed += levelBonus * 1;
+        int levelBonus = Mathf.Max(0, _level - 1);
+
+        _finalStats.maxHP += levelBonus * _growthConfig.HpPerLevel;
+        _finalStats.maxMP += levelBonus * _growthConfig.MpPerLevel;
+        _finalStats.magicPower += levelBonus * _growthConfig.SpellPowerPerLevel;
+        _finalStats.intelligence += levelBonus * _growthConfig.IntelligencePerLevel;
+        _finalStats.defense += levelBonus * _growthConfig.DefensePerLevel;
+        _finalStats.speed += levelBonus * _growthConfig.SpeedPerLevel;
+        _finalStats.luck += levelBonus * _growthConfig.LuckPerLevel;
     }
 
     /// <summary>
-    /// 직접 투자한 스탯포인트를 실제 스탯 증가량으로 변환
+    /// 투자한 스탯 포인트를 실제 스탯 증가량으로 변환
     /// </summary>
     private void ApplyAllocatedStats()
     {
-        _finalStats.maxHP += _allocatedStats.maxHP * 10;
-        _finalStats.maxMP += _allocatedStats.maxMP * 5;
-        _finalStats.magicPower += _allocatedStats.magicPower * 2;
-        _finalStats.intelligence += _allocatedStats.intelligence * 2;
-        _finalStats.defense += _allocatedStats.defense * 2;
-        _finalStats.speed += _allocatedStats.speed * 1;
-        _finalStats.luck += _allocatedStats.luck * 1;
+        if (_growthConfig == null)
+        {
+            Debug.LogWarning("[CharacterStats] GrowthConfig가 연결되지 않아 투자 스탯을 적용할 수 없습니다.");
+            return;
+        }
+
+        _finalStats.maxHP += _allocatedStats.maxHP * _growthConfig.HpPerPoint;
+        _finalStats.maxMP += _allocatedStats.maxMP * _growthConfig.MpPerPoint;
+        _finalStats.magicPower += _allocatedStats.magicPower * _growthConfig.SpellPowerPerPoint;
+        _finalStats.intelligence += _allocatedStats.intelligence * _growthConfig.IntelligencePerPoint;
+        _finalStats.defense += _allocatedStats.defense * _growthConfig.DefensePerPoint;
+        _finalStats.speed += _allocatedStats.speed * _growthConfig.SpeedPerPoint;
+        _finalStats.luck += _allocatedStats.luck * _growthConfig.LuckPerPoint;
     }
 
     /// <summary>
@@ -376,7 +389,7 @@ public class CharacterStats : MonoBehaviour
         int maxHp = _finalStats.maxHP;
         int maxMp = _finalStats.maxMP;
 
-        float attackPower = _finalStats.magicPower * 0.5f;
+        float attackPower = _finalStats.magicPower * 0.7f;
         float magicPower = _finalStats.magicPower;
 
         float defense = _finalStats.defense;
@@ -394,6 +407,8 @@ public class CharacterStats : MonoBehaviour
             magicDefense,
             speed,
             luck);
+
+        SaveManager.RequestSave();
     }
 
     /// <summary>
@@ -490,14 +505,68 @@ public class CharacterStats : MonoBehaviour
     /// </summary>
     private int CalculateSpellSlotCount()
     {
-        int intelligence = GetStat(StatType.Intelligence);
+        int finalIntelligence = GetStat(StatType.Intelligence);
+
+        int baseIntelligence = _baseStats != null
+            ? _baseStats.BaseStats.Get(StatType.Intelligence)
+            : 0;
+
+        int bonusIntelligence =
+            Mathf.Max(0, finalIntelligence - baseIntelligence);
 
         if (_intelligencePerAdditionalSlot <= 0)
         {
             return _baseSpellSlotCount;
         }
 
-        int slotCount = _baseSpellSlotCount + intelligence / _intelligencePerAdditionalSlot;
-        return Mathf.Min(_maxSpellSlotCount, slotCount);
+        int slotCount =
+            _baseSpellSlotCount +
+            bonusIntelligence / _intelligencePerAdditionalSlot;
+
+        return Mathf.Min(
+            _maxSpellSlotCount,
+            slotCount
+        );
+    }
+
+    /// <summary>
+    /// 세이브 데이터 로드 시 레벨, 경험치, 남은 스탯 포인트를 복원합니다.
+    /// </summary>
+    public void SetLevelAndExp(int level, int exp, int availableStatPoints)
+    {
+        _level = Mathf.Max(1, level);
+        _exp = Mathf.Max(0, exp);
+        _availableStatPoints = Mathf.Max(0, availableStatPoints);
+
+        RecalculateStats();
+    }
+
+    /// <summary>
+    /// 세이브 데이터 로드 시 투자했던 스탯 포인트와 남은 포인트를 직접 복원합니다.
+    /// </summary>
+    public void SetAllocatedStats(
+        int availablePoints,
+        int allocatedHp,
+        int allocatedMp,
+        int allocatedSpellPower,
+        int allocatedIntelligence,
+        int allocatedDefense,
+        int allocatedSpeed,
+        int allocatedLuck)
+    {
+        _availableStatPoints = Mathf.Max(0, availablePoints);
+
+        _allocatedStats = new StatBlock
+        {
+            maxHP = Mathf.Max(0, allocatedHp),
+            maxMP = Mathf.Max(0, allocatedMp),
+            magicPower = Mathf.Max(0, allocatedSpellPower),
+            intelligence = Mathf.Max(0, allocatedIntelligence),
+            defense = Mathf.Max(0, allocatedDefense),
+            speed = Mathf.Max(0, allocatedSpeed),
+            luck = Mathf.Max(0, allocatedLuck)
+        };
+
+        RecalculateStats();
     }
 }

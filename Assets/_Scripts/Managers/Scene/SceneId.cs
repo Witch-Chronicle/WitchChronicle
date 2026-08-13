@@ -4,8 +4,9 @@
 /// </summary>
 public enum SceneId
 {
+    Title,
     Main,
-    //DungeonScene2,
     Dungeon,
-    Battle
+    Battle,
+    Loading
 }

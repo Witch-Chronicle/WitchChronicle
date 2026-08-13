@@ -21,9 +21,31 @@ namespace WitchChronicle.IdleFarming
         [SerializeField] private PlotFloatingUI _floatingUIPrefab;
         [SerializeField] private RectTransform _hudCanvasRoot;
 
+        [Header("팝업 중 잠글 설정")]
+        [Tooltip("플레이어 태그 (Player Controller가 붙은 오브젝트)")]
+        [SerializeField] private string _playerTag = "Player";
+        [Tooltip("잠글 스크립트 이름 목록 (Ariel에 붙은 컴포넌트 이름들)")]
+        [SerializeField]
+        private List<string> _lockScriptNames = new List<string>
+        {
+            "PlayerController",
+            "FieldTargetingController",
+            "FieldAttackController"
+        };
+        [Tooltip("CharacterController도 잠글지")]
+        [SerializeField] private bool _lockCharacterController = true;
+        [Tooltip("Animator Speed 파라미터명 (없거나 다르면 조정)")]
+        [SerializeField] private string _animatorSpeedParam = "Speed";
+
         private readonly List<PlotSlot> _slots = new List<PlotSlot>();
         private readonly List<PlotFloatingUI> _floatingUIs = new List<PlotFloatingUI>();
         private int _openPanelCount = 0;
+
+        // 런타임에 찾은 플레이어 참조 (캐싱)
+        private GameObject _cachedPlayer;
+        private List<Behaviour> _cachedLockComponents = new List<Behaviour>();
+        private CharacterController _cachedCharacterController;
+        private Animator _cachedAnimator;
 
         public PlotConfig Config => _config;
         public int AllSeedsCount => _allSeeds.Count;
@@ -31,6 +53,12 @@ namespace WitchChronicle.IdleFarming
         public PlotUnlockPanel UnlockPanel => _unlockPanel;
         public PlotSeedSelectPanel SeedSelectPanel => _seedSelectPanel;
         public PlotHarvestPanel HarvestPanel => _harvestPanel;
+
+        /// <summary>
+        /// 지금 열려있는 Plot 관련 패널이 있는지 여부.
+        /// LifeUIManager 등 외부에서 상태 확인용으로 사용.
+        /// </summary>
+        public bool IsAnyPanelOpen => _openPanelCount > 0;
 
         private void Awake()
         {
@@ -40,13 +68,33 @@ namespace WitchChronicle.IdleFarming
                 return;
             }
             Instance = this;
+
+            CollectAllSeedAssets();
+        }
+
+        private void CollectAllSeedAssets()
+        {
+            SeedData[] loadedSeeds = Resources.LoadAll<SeedData>("");
+            foreach (var seed in loadedSeeds)
+            {
+                if (seed != null && !_allSeeds.Contains(seed))
+                {
+                    _allSeeds.Add(seed);
+                }
+            }
         }
 
         private void Start()
         {
             AutoRegisterPlots();
-            InitializeFresh();
+
+            // SaveManager에 복원된 데이터가 있다면 밭 슬롯들에 적용
+            if (SaveManager.Instance != null && SaveManager.Instance.CurrentSaveData != null)
+            {
+                LoadFarmSaveData(SaveManager.Instance.CurrentSaveData.FarmPlots);
+            }
         }
+
 
         // ====== 슬롯 등록 ======
 
@@ -90,6 +138,12 @@ namespace WitchChronicle.IdleFarming
             {
                 PlayerInventory.Instance.AddItem(seed.harvestItem, amount);
                 Debug.Log($"[PlotManager] 수확: {seed.harvestName} x{amount}");
+
+                // 퀘스트 연동 : 수확 성공 시 퀘스트 카운트 증가
+                if (QuestManager.Instance != null)
+                {
+                    QuestManager.Instance.AddProgress(QuestObjectiveType.HarvestCrop, seed.harvestItem.itemId.ToString(), amount);
+                }
             }
             else
             {
@@ -138,9 +192,6 @@ namespace WitchChronicle.IdleFarming
 
         // ====== 플레이어 존 진입/이탈 ======
 
-        /// <summary>
-        /// FarmZoneTrigger가 호출: 팜 존 전체의 FloatingUI 표시/숨김 일괄 처리
-        /// </summary>
         public void SetAllFloatingUIsPlayerNear(bool near)
         {
             for (int i = 0; i < _floatingUIs.Count; i++)
@@ -150,26 +201,132 @@ namespace WitchChronicle.IdleFarming
             }
         }
 
-        // ====== 커서 제어 ======
+        public void SetFloatingUINearBySlot(PlotSlot slot, bool near)
+        {
+            if (slot == null) return;
+
+            int index = _slots.IndexOf(slot);
+            if (index < 0 || index >= _floatingUIs.Count) return;
+
+            if (_floatingUIs[index] != null)
+                _floatingUIs[index].SetPlayerNear(near);
+        }
+
+        public void SetFloatingUINearByIndex(int plotIndex, bool near)
+        {
+            for (int i = 0; i < _slots.Count; i++)
+            {
+                if (_slots[i] != null && _slots[i].PlotIndex == plotIndex)
+                {
+                    if (i < _floatingUIs.Count && _floatingUIs[i] != null)
+                        _floatingUIs[i].SetPlayerNear(near);
+                    return;
+                }
+            }
+        }
+
+        // ====== 팝업 열림/닫힘: 커서 + 입력 잠금 ======
 
         public void NotifyPanelOpened()
         {
             _openPanelCount++;
+            Debug.Log($"[PlotManager] NotifyPanelOpened → count={_openPanelCount}");
+
             if (_openPanelCount == 1)
             {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
+                EnsurePlayerCached();
+                LockGameplayInput(true);
             }
         }
 
         public void NotifyPanelClosed()
         {
             _openPanelCount = Mathf.Max(0, _openPanelCount - 1);
+            Debug.Log($"[PlotManager] NotifyPanelClosed → count={_openPanelCount}");
+
             if (_openPanelCount == 0)
+            {
+                LockGameplayInput(false);
+            }
+        }
+
+        /// <summary>
+        /// 플레이어가 런타임에 생성되므로 팝업 열릴 때마다 캐시 유효성 확인 후 없으면 다시 찾음
+        /// </summary>
+        private void EnsurePlayerCached()
+        {
+            if (_cachedPlayer != null && _cachedLockComponents.Count > 0) return;
+
+            _cachedPlayer = GameObject.FindGameObjectWithTag(_playerTag);
+            if (_cachedPlayer == null)
+            {
+                Debug.LogWarning($"[PlotManager] '{_playerTag}' 태그를 가진 플레이어를 찾을 수 없음");
+                return;
+            }
+
+            _cachedLockComponents.Clear();
+
+            // 스크립트 이름으로 컴포넌트 찾기
+            var allComponents = _cachedPlayer.GetComponents<Behaviour>();
+            foreach (var comp in allComponents)
+            {
+                if (comp == null) continue;
+                string compName = comp.GetType().Name;
+                if (_lockScriptNames.Contains(compName))
+                {
+                    _cachedLockComponents.Add(comp);
+                    Debug.Log($"[PlotManager] 잠금 대상 등록: {compName}");
+                }
+            }
+
+            // CharacterController
+            if (_lockCharacterController)
+                _cachedCharacterController = _cachedPlayer.GetComponent<CharacterController>();
+
+            // Animator (자식 오브젝트에 있을 수도 있음)
+            _cachedAnimator = _cachedPlayer.GetComponentInChildren<Animator>();
+        }
+
+        private void LockGameplayInput(bool locked)
+        {
+            // 커서 처리
+            if (locked)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
+
+            // 플레이어 스크립트들 잠금
+            foreach (var comp in _cachedLockComponents)
+            {
+                if (comp != null)
+                    comp.enabled = !locked;
+            }
+
+            // CharacterController 잠금
+            if (_cachedCharacterController != null)
+                _cachedCharacterController.enabled = !locked;
+
+            // 팝업 열릴 때 이동 애니메이션 리셋
+            if (locked && _cachedAnimator != null && !string.IsNullOrEmpty(_animatorSpeedParam))
+            {
+                if (HasParameter(_cachedAnimator, _animatorSpeedParam))
+                    _cachedAnimator.SetFloat(_animatorSpeedParam, 0f);
+            }
+        }
+
+        private bool HasParameter(Animator animator, string paramName)
+        {
+            foreach (var param in animator.parameters)
+            {
+                if (param.name == paramName) return true;
+            }
+            return false;
         }
 
         // ====== 주기적 갱신 ======
@@ -179,5 +336,68 @@ namespace WitchChronicle.IdleFarming
             foreach (var slot in _slots)
                 slot.UpdateCycle();
         }
+
+        public List<PlotSaveData> GetFarmSaveData()
+        {
+            List<PlotSaveData> saveDataList = new List<PlotSaveData>();
+            foreach (var slot in _slots)
+            {
+                if (slot != null)
+                    saveDataList.Add(slot.ToSaveData());
+            }
+            return saveDataList;
+        }
+
+        public void LoadFarmSaveData(List<PlotSaveData> savedPlots)
+        {
+            if (savedPlots == null || savedPlots.Count == 0)
+            {
+                InitializeFresh();
+                return;
+            }
+
+            Dictionary<int, PlotSaveData> dataMap = new Dictionary<int, PlotSaveData>();
+            foreach (var p in savedPlots)
+            {
+                if (p != null) dataMap[p.plotIndex] = p;
+            }
+
+            foreach (var slot in _slots)
+            {
+                if (slot == null) continue;
+
+                if (dataMap.TryGetValue(slot.PlotIndex, out var saveData))
+                {
+                    SeedData seed = FindSeedByName(saveData.plantedSeedItemId);
+                    slot.Initialize(saveData, seed);
+                }
+                else
+                {
+                    var fresh = new PlotSaveData(slot.PlotIndex);
+                    fresh.state = slot.PlotIndex < _config.initialUnlockedCount ? PlotState.Empty : PlotState.Locked;
+                    fresh.SetCycleStartTime(System.DateTime.Now);
+                    slot.Initialize(fresh, null);
+                }
+            }
+
+            Debug.Log($"<color=green>[PlotManager] 농사 데이터 {savedPlots.Count}개 복원 완료!</color>");
+        }
+
+
+        /// <summary>
+        /// Esc 등으로 모든 Plot 팝업을 강제 종료할 때 사용.
+        /// 각 패널의 Close()를 그대로 호출해서, 패널 내부의 _isOpen 플래그와
+        /// _openPanelCount가 서로 어긋나지 않도록 한다.
+        /// (SetActive(false)로 직접 끄면 패널 내부 _isOpen이 true로 남아,
+        ///  다음 Open() 호출 시 NotifyPanelOpened()가 스킵되어 카운터가 영영 0에 머무는 문제가 있었음)
+        /// </summary>
+        public void ForceCloseAllPanels()
+        {
+            if (_unlockPanel != null) _unlockPanel.Close();
+            if (_seedSelectPanel != null) _seedSelectPanel.Close();
+            if (_harvestPanel != null) _harvestPanel.Close();
+        }
     }
+
+
 }

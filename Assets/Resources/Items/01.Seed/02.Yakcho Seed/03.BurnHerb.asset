@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef94edf72b1a05646ac4126bf4580b21, type: 3}
+  m_Name: 03.BurnHerb
+  m_EditorClassIdentifier: Assembly-CSharp::SeedData
+  seedName: "\uD654\uC0C1\uCD08 \uC528\uC557"
+  harvestName: "\uD654\uC0C1\uCD08"
+  category: 1
+  growthTime: 300
+  seedSprite: {fileID: 21300000, guid: cc5d004a468f6444e90fefba5b6a09ea, type: 3}
+  harvestSprite: {fileID: 21300000, guid: adaf3a7155167c14488dda44a47d6088, type: 3}
+  description: "\uD654\uC0C1\uCD08\uAC00 \uC5F4\uB9AC\uB294 \uB098\uBB34\uC758 \uC528\uC557.
+    \uD654\uC0C1 \uCE58\uB8CC \uD3EC\uC158\uC758 \uC8FC\uC7AC\uB8CC\uB85C \uC4F0\uC778\uB2E4."
+  harvestItem: {fileID: 11400000, guid: 3cacdb6444afd9a4ab44879bf9beea09, type: 2}
+  harvestAmount: 1
+  seedItem: {fileID: 11400000, guid: 20a0242c7a44bb947b0aaeaf355feb83, type: 2}
+  matureTreePrefab: {fileID: 6003235194538052095, guid: 4b5c74c63f0d5ea49b23a2e5907ce5e1, type: 3}

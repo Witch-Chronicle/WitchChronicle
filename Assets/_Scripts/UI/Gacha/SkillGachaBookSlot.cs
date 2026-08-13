@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 
 /// <summary>
@@ -9,8 +10,8 @@ using UnityEngine.UI;
 public class SkillGachaBookSlot : MonoBehaviour
 {
     [SerializeField] private Image _iconImage;
-    [SerializeField] private Text _nameText;
-    [SerializeField] private Text _countText;
+    [SerializeField] private TMP_Text _nameText;
+    [SerializeField] private TMP_Text _countText;
     [SerializeField] private Button _button;
 
     [Header("선택 표시")]

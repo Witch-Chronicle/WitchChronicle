@@ -15,13 +15,18 @@ public class NPCDatabase : ScriptableObject
 
         foreach (NPCData npc in _npcList)
         {
-            if (_npcDictionary.ContainsKey(npc.id))
+            if (_npcDictionary.ContainsKey(npc.NpcId))
             {
-                Debug.LogWarning($"Duplicate NPC ID : {npc.id}");
+                Debug.LogWarning($"Duplicate NPC ID : {npc.NpcId}");
+                continue;
+            }
+            
+            {
+                Debug.LogWarning($"Duplicate NPC ID : {npc.NpcId}");
                 continue;
             }
 
-            _npcDictionary.Add(npc.id, npc);
+            _npcDictionary.Add(npc.NpcId, npc);
         }
     }
 

@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4ab7eff2cacc2949a23aeeec999f603, type: 3}
+  m_Name: Test_ConstellationPathAttack
+  m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathAttackData
+  _attackId: test_constellation_attack
+  _attackPattern: 2
+  _slowDownStartDelay: 0.3
+  _motionType: 3
+  _launchInterval: 0.2
+  _travelDuration: 0.3
+  _arcLaunchAngle: 120
+  _arcControlDistanceMin: 2
+  _arcControlDistanceMax: 4
+  _arcSpread: 3
+  _meteorHeight: 8
+  _projectileVfxPrefab: {fileID: 1483057162671008, guid: 9b16e1dba05de164eae33bf71d43845a, type: 3}
+  _hitVfxPrefab: {fileID: 0}
+  _blockVfxPrefab: {fileID: 0}
+  _tickVfxPrefab: {fileID: 0}
+  _spawnOffset: {x: 0, y: 1, z: 0}
+  _targetOffset: {x: 0, y: 1, z: 0}
+  _projectileScale: 1.01
+  _timedVfxPrefab: {fileID: 1483057162671008, guid: 9b16e1dba05de164eae33bf71d43845a, type: 3}
+  _timedVfxSpawnType: 1
+  _timedVfxOffset: {x: 0, y: 0, z: 0}
+  _timedVfxHeight: 8
+  _timedVfxImpactDelay: 0.3
+  _timedVfxDuration: 1
+  _timedVfxScale: 1
+  _timedVfxFaceTarget: 0
+  _timedVfxFollowTarget: 0
+  _damageDeliveryType: 0
+  _tickCount: 10
+  _tickInterval: 0.05

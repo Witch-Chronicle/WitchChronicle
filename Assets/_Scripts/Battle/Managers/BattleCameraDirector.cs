@@ -12,20 +12,57 @@ public class BattleCameraDirector : MonoBehaviour
     [Header("References")]
     [SerializeField] private BattleManager _battleManager;
     [SerializeField] private BattleUIContext _battleUIContext;
+    [SerializeField] private CinemachineBrain _cinemachineBrain;
 
     [Header("Cinemachine Cameras")]
+    [SerializeField] private CinemachineCamera _battleEntryCamera;
     [SerializeField] private CinemachineCamera _playerBackCamera;
     [SerializeField] private CinemachineCamera _targetOverviewCamera;
     [SerializeField] private CinemachineCamera _skillLowAngleCamera;
     [SerializeField] private CinemachineCamera _skillDrawCamera;
     [SerializeField] private CinemachineCamera _singleTargetOverviewCamera;
     [SerializeField] private CinemachineCamera _groupTargetOverviewCamera;
+    [SerializeField] private CinemachineCamera _constellationDefenseCamera;
     [SerializeField] private CinemachineCamera _itemUseCamera;
-
 
     [Header("Priority")]
     [SerializeField] private int _activePriority = 30;
     [SerializeField] private int _inactivePriority = 0;
+
+    [Header("Cut Timing")]
+    [Tooltip("단일 대상 클로즈업 컷 이후 유지 시간")]
+    [SerializeField] private float _singleCutHoldDuration = 0.12f;
+    [Tooltip("플레이어 등 뒤 피격 컷 이후 유지 시간")]
+    [SerializeField] private float _backCutHoldDuration = 0.08f;
+    [Tooltip("광역 대상 컷 이후 유지 시간")]
+    [SerializeField] private float _groupCutHoldDuration = 0.1f;
+
+    [Header("Battle Entry View")]
+    [Tooltip("진입 연출 시작 시 플레이어 진영 뒤쪽 거리")]
+    [SerializeField] private float _entryStartBackDistance = 9f;
+    [Tooltip("진입 연출 종료 시 플레이어 진영 뒤쪽 거리")]
+    [SerializeField] private float _entryEndBackDistance = 6.5f;
+    [Tooltip("진입 연출 시작 카메라 높이")]
+    [SerializeField] private float _entryStartHeight = 3.4f;
+    [Tooltip("진입 연출 종료 카메라 높이")]
+    [SerializeField] private float _entryEndHeight = 2.5f;
+    [Tooltip("진입 카메라 좌우 오프셋")]
+    [SerializeField] private float _entrySideOffset = -0.6f;
+    [Tooltip("주시점에 적 진영이 반영되는 비율")]
+    [Range(0f, 1f)]
+    [SerializeField] private float _entryEnemyFocusWeight = 0.55f;
+    [Tooltip("진입 카메라 주시 높이")]
+    [SerializeField] private float _entryFocusHeight = 1.1f;
+    [Tooltip("진입 연출 시작 FOV")]
+    [SerializeField] private float _entryStartFov = 68f;
+    [Tooltip("진입 연출 종료 FOV")]
+    [SerializeField] private float _entryEndFov = 56f;
+    [Tooltip("진입 카메라 롤")]
+    [SerializeField] private float _entryRoll = 0f;
+    [Tooltip("진입 카메라 이동 시간")]
+    [SerializeField] private float _entryMoveDuration = 0.55f;
+    [Tooltip("Entry Camera 컷 후 이동 시작까지 대기 시간")]
+    [SerializeField] private float _entryMoveStartDelay = 0.08f;
 
     [Header("Player Back View")]
     [SerializeField] private float _backDistance = 4.5f;
@@ -94,8 +131,17 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private float _groupAllyFocusHeight = 1.0f;
     [SerializeField] private float _groupAllyFov = 55f;
     [SerializeField] private float _groupAllyRoll = 0f;
-
     [SerializeField] private float _groupWaitDuration = 0.35f;
+
+    [Header("Constellation Defense View")]
+    [SerializeField] private float _constellationBackDistance = 6f;
+    [SerializeField] private float _constellationSideOffset = 0.4f;
+    [SerializeField] private float _constellationHeight = 2.2f;
+    [Range(0f, 1f)][SerializeField] private float _constellationEnemyFocusWeight = 0.62f;
+    [SerializeField] private float _constellationFocusHeight = 1.1f;
+    [SerializeField] private float _constellationFov = 62f;
+    [SerializeField] private float _constellationRoll = 0f;
+    [SerializeField] private float _constellationWaitDuration = 0.08f;
 
     [Header("Item Use View (아이템 사용)")]
     [SerializeField] private float _itemUseDistance = 4.0f;
@@ -109,8 +155,12 @@ public class BattleCameraDirector : MonoBehaviour
     [SerializeField] private float _itemUseRoll = 0f;
     [SerializeField] private float _itemUseWaitDuration = 0.35f;
 
+    private Sequence _entrySequence;
+
     private Coroutine _waitRoutine;
     private CinemachineCamera _activeCamera;
+    private bool _forceNextCut;
+    private ICinemachineCamera _forcedCutTarget;
 
     /// <summary>
     /// 참조 자동 연결
@@ -126,6 +176,10 @@ public class BattleCameraDirector : MonoBehaviour
         {
             _battleUIContext = FindFirstObjectByType<BattleUIContext>();
         }
+        if (_cinemachineBrain == null)
+        {
+            _cinemachineBrain = FindFirstObjectByType<CinemachineBrain>();
+        }
     }
 
     /// <summary>
@@ -133,6 +187,10 @@ public class BattleCameraDirector : MonoBehaviour
     /// </summary>
     private void OnEnable()
     {
+        CinemachineCore.GetBlendOverride -= HandleBlendOverride;
+
+        CinemachineCore.GetBlendOverride += HandleBlendOverride;
+
         if (_battleUIContext == null)
         {
             return;
@@ -147,6 +205,13 @@ public class BattleCameraDirector : MonoBehaviour
     /// </summary>
     private void OnDisable()
     {
+        StopBattleEntryTween();
+        StopWaitRoutine();
+
+        CinemachineCore.GetBlendOverride -= HandleBlendOverride;
+
+        ClearCutRequest();
+
         if (_battleUIContext == null)
         {
             return;
@@ -181,7 +246,9 @@ public class BattleCameraDirector : MonoBehaviour
     /// <param name="winner">승리 팀</param>
     private void HandleBattleEnded(BattleTeamType winner)
     {
+        StopBattleEntryTween();
         StopWaitRoutine();
+        ClearCutRequest();
     }
 
     /// <summary>
@@ -219,6 +286,231 @@ public class BattleCameraDirector : MonoBehaviour
             _backWaitDuration,
             _backTweenDuration,
             onComplete);
+    }
+
+    /// <summary>
+    /// 플레이어 등 뒤 구도 컷 재생
+    /// </summary>
+    /// <param name="unit">기준 유닛</param>
+    /// <param name="onComplete">완료 콜백</param>
+    public void PlayPlayerBackViewCut(
+        BattleUnit unit,
+        Action onComplete = null)
+    {
+        if (TryGetActorTransform(unit, out Transform actorTransform) == false)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        Vector3 focusPosition =
+            actorTransform.position +
+            actorTransform.forward * _backLookForward +
+            Vector3.up * _backLookHeight;
+
+        Vector3 cameraPosition =
+            actorTransform.position -
+            actorTransform.forward * _backDistance +
+            actorTransform.right * _backSideOffset +
+            Vector3.up * _backHeight;
+
+        ApplyCameraPose(
+            _playerBackCamera,
+            cameraPosition,
+            focusPosition,
+            _backFov,
+            _backRoll);
+
+        ActivateCameraCut(
+            _playerBackCamera,
+            _backCutHoldDuration,
+            onComplete);
+    }
+
+    /// <summary>
+    /// 전투 시작 와이드 카메라 연출
+    /// </summary>
+    /// <param name="onComplete">완료 콜백</param>
+    public void PlayBattleEntryView(
+        Action onComplete = null)
+    {
+        if (_battleEntryCamera == null ||
+            TryGetFirstTeamActorTransform(
+                BattleTeamType.Player,
+                out Transform playerTransform) == false)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        StopBattleEntryTween();
+
+        Vector3 playerCenter =
+            GetTeamCenter(
+                BattleTeamType.Player,
+                playerTransform.position);
+
+        Vector3 enemyFallbackPosition =
+            playerCenter +
+            playerTransform.forward * 7f;
+
+        Vector3 enemyCenter =
+            GetTeamCenter(
+                BattleTeamType.Enemy,
+                enemyFallbackPosition);
+
+        Vector3 viewForward =
+            enemyCenter -
+            playerCenter;
+
+        viewForward.y = 0f;
+
+        if (viewForward.sqrMagnitude <= 0.0001f)
+        {
+            viewForward =
+                playerTransform.forward;
+
+            viewForward.y = 0f;
+        }
+
+        if (viewForward.sqrMagnitude <= 0.0001f)
+        {
+            viewForward =
+                Vector3.forward;
+        }
+
+        viewForward.Normalize();
+
+        Vector3 viewRight =
+            Vector3.Cross(
+                Vector3.up,
+                viewForward).normalized;
+
+        Vector3 focusPosition =
+            Vector3.Lerp(
+                playerCenter,
+                enemyCenter,
+                Mathf.Clamp01(
+                    _entryEnemyFocusWeight)) +
+            Vector3.up *
+            _entryFocusHeight;
+
+        Vector3 startPosition =
+            playerCenter -
+            viewForward *
+            _entryStartBackDistance +
+            viewRight *
+            _entrySideOffset +
+            Vector3.up *
+            _entryStartHeight;
+
+        Vector3 endPosition =
+            playerCenter -
+            viewForward *
+            _entryEndBackDistance +
+            viewRight *
+            _entrySideOffset +
+            Vector3.up *
+            _entryEndHeight;
+
+        ApplyCameraPose(
+            _battleEntryCamera,
+            startPosition,
+            focusPosition,
+            _entryStartFov,
+            _entryRoll);
+
+        ActivateCameraCut(
+            _battleEntryCamera,
+            0f,
+            null);
+
+        if (_entryMoveDuration <= 0f)
+        {
+            ApplyCameraPose(
+                _battleEntryCamera,
+                endPosition,
+                focusPosition,
+                _entryEndFov,
+                _entryRoll);
+
+            onComplete?.Invoke();
+            return;
+        }
+
+        Quaternion endRotation =
+            GetLookRotation(
+                endPosition,
+                focusPosition);
+
+        endRotation *=
+            Quaternion.Euler(
+                0f,
+                0f,
+                _entryRoll);
+
+        float currentFov =
+            _entryStartFov;
+
+        Transform cameraTransform =
+            _battleEntryCamera.transform;
+
+        _entrySequence =
+            DOTween.Sequence();
+
+        if (_entryMoveStartDelay > 0f)
+        {
+            _entrySequence.AppendInterval(
+                _entryMoveStartDelay);
+        }
+
+        _entrySequence.Append(
+            cameraTransform
+                .DOMove(
+                    endPosition,
+                    _entryMoveDuration)
+                .SetEase(
+                    Ease.InOutSine));
+
+        _entrySequence.Join(
+            cameraTransform
+                .DORotateQuaternion(
+                    endRotation,
+                    _entryMoveDuration)
+                .SetEase(
+                    Ease.InOutSine));
+
+        _entrySequence.Join(
+            DOTween.To(
+                    () => currentFov,
+                    value =>
+                    {
+                        currentFov =
+                            value;
+
+                        LensSettings lens =
+                            _battleEntryCamera.Lens;
+
+                        lens.FieldOfView =
+                            value;
+
+                        _battleEntryCamera.Lens =
+                            lens;
+                    },
+                    _entryEndFov,
+                    _entryMoveDuration)
+                .SetEase(
+                    Ease.InOutSine));
+
+        _entrySequence
+            .SetUpdate(true)
+            .OnComplete(() =>
+            {
+                _entrySequence =
+                    null;
+
+                onComplete?.Invoke();
+            });
     }
 
     /// <summary>
@@ -420,6 +712,44 @@ public class BattleCameraDirector : MonoBehaviour
     }
 
     /// <summary>
+    /// 단일 대상 정면 근접 구도 컷 재생
+    /// </summary>
+    /// <param name="target">바라볼 대상 유닛</param>
+    /// <param name="onComplete">완료 콜백</param>
+    public void PlaySingleTargetOverviewCut(
+        BattleUnit target,
+        Action onComplete = null)
+    {
+        if (TryGetActorTransform(target, out Transform targetTransform) == false)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        Vector3 focusPosition =
+            targetTransform.position +
+            Vector3.up * _singleLookHeight;
+
+        Vector3 cameraPosition =
+            targetTransform.position +
+            targetTransform.forward * _singleFrontDistance +
+            targetTransform.right * _singleSideOffset +
+            Vector3.up * _singleHeight;
+
+        ApplyCameraPose(
+            _singleTargetOverviewCamera,
+            cameraPosition,
+            focusPosition,
+            _singleFov,
+            _singleRoll);
+
+        ActivateCameraCut(
+            _singleTargetOverviewCamera,
+            _singleCutHoldDuration,
+            onComplete);
+    }
+
+    /// <summary>
     /// 그룹 대상(AllEnemies / SingleAlly / AllAllies 스킬) 구도 재생.
     /// targetTeam이 Enemy면 적 전체 중심 앞쪽에서 적들의 정면이 보이는 구도,
     /// targetTeam이 Player면 아군 전체 중심 뒤쪽에서 아군들의 뒷모습이 보이는 구도(PlayerBackView와 유사).
@@ -487,6 +817,77 @@ public class BattleCameraDirector : MonoBehaviour
         ActivateCamera(
             _groupTargetOverviewCamera,
             _groupWaitDuration,
+            onComplete);
+    }
+
+    /// <summary>
+    /// 그룹 대상 구도 컷 재생
+    /// </summary>
+    /// <param name="actor">행동 주체 유닛</param>
+    /// <param name="targetTeam">바라볼 대상 팀</param>
+    /// <param name="onComplete">완료 콜백</param>
+    public void PlayGroupTargetOverviewCut(
+        BattleUnit actor,
+        BattleTeamType targetTeam,
+        Action onComplete = null)
+    {
+        if (TryGetActorTransform(actor, out Transform actorTransform) == false)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        Vector3 groupCenter =
+            GetTeamCenter(
+                targetTeam,
+                actorTransform.position);
+
+        Vector3 cameraPosition;
+        Vector3 focusPosition;
+        float fov;
+        float roll;
+
+        if (targetTeam == BattleTeamType.Enemy)
+        {
+            cameraPosition =
+                groupCenter -
+                actorTransform.forward * _groupEnemyFrontDistance +
+                actorTransform.right * _groupEnemySideOffset +
+                Vector3.up * _groupEnemyHeight;
+
+            focusPosition =
+                groupCenter +
+                Vector3.up * _groupEnemyFocusHeight;
+
+            fov = _groupEnemyFov;
+            roll = _groupEnemyRoll;
+        }
+        else
+        {
+            cameraPosition =
+                groupCenter -
+                actorTransform.forward * _groupAllyBackDistance +
+                actorTransform.right * _groupAllySideOffset +
+                Vector3.up * _groupAllyHeight;
+
+            focusPosition =
+                groupCenter +
+                Vector3.up * _groupAllyFocusHeight;
+
+            fov = _groupAllyFov;
+            roll = _groupAllyRoll;
+        }
+
+        ApplyCameraPose(
+            _groupTargetOverviewCamera,
+            cameraPosition,
+            focusPosition,
+            fov,
+            roll);
+
+        ActivateCameraCut(
+            _groupTargetOverviewCamera,
+            _groupCutHoldDuration,
             onComplete);
     }
 
@@ -610,27 +1011,42 @@ public class BattleCameraDirector : MonoBehaviour
     }
 
     /// <summary>
-    /// 카메라 활성화
+    /// 대상 카메라 Priority 활성화
     /// </summary>
     /// <param name="targetCamera">활성화할 카메라</param>
-    /// <param name="waitDuration">완료 대기 시간</param>
-    /// <param name="onComplete">완료 콜백</param>
-    private void ActivateCamera(
-    CinemachineCamera targetCamera,
-    float waitDuration,
-    Action onComplete)
+    private void ApplyActiveCameraPriority(
+        CinemachineCamera targetCamera)
     {
+        SetCameraPriority(_battleEntryCamera, _inactivePriority);
         SetCameraPriority(_playerBackCamera, _inactivePriority);
         SetCameraPriority(_targetOverviewCamera, _inactivePriority);
         SetCameraPriority(_skillLowAngleCamera, _inactivePriority);
         SetCameraPriority(_skillDrawCamera, _inactivePriority);
         SetCameraPriority(_singleTargetOverviewCamera, _inactivePriority);
         SetCameraPriority(_groupTargetOverviewCamera, _inactivePriority);
+        SetCameraPriority(_constellationDefenseCamera, _inactivePriority);
         SetCameraPriority(_itemUseCamera, _inactivePriority);
 
         SetCameraPriority(targetCamera, _activePriority);
 
         _activeCamera = targetCamera;
+    }
+
+    /// <summary>
+    /// 카메라 블렌드 활성화
+    /// </summary>
+    /// <param name="targetCamera">활성화할 카메라</param>
+    /// <param name="waitDuration">완료 대기 시간</param>
+    /// <param name="onComplete">완료 콜백</param>
+    private void ActivateCamera(
+        CinemachineCamera targetCamera,
+        float waitDuration,
+        Action onComplete)
+    {
+        ClearCutRequest();
+
+        ApplyActiveCameraPriority(
+            targetCamera);
 
         StopWaitRoutine();
 
@@ -639,7 +1055,83 @@ public class BattleCameraDirector : MonoBehaviour
             return;
         }
 
-        _waitRoutine = StartCoroutine(WaitAndInvoke(waitDuration, onComplete));
+        _waitRoutine = StartCoroutine(
+            WaitAndInvoke(
+                waitDuration,
+                onComplete));
+    }
+
+    /// <summary>
+    /// 카메라 컷 활성화
+    /// </summary>
+    /// <param name="targetCamera">활성화할 카메라</param>
+    /// <param name="waitDuration">컷 이후 유지 시간</param>
+    /// <param name="onComplete">완료 콜백</param>
+    private void ActivateCameraCut(
+        CinemachineCamera targetCamera,
+        float waitDuration,
+        Action onComplete)
+    {
+        if (targetCamera == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        StopWaitRoutine();
+
+        _forceNextCut = true;
+        _forcedCutTarget = targetCamera;
+
+        ApplyActiveCameraPriority(
+            targetCamera);
+
+        if (onComplete == null)
+        {
+            return;
+        }
+
+        _waitRoutine = StartCoroutine(
+            WaitAndInvoke(
+                waitDuration,
+                onComplete));
+    }
+
+    /// <summary>
+    /// 요청된 카메라 전환 Cut 처리
+    /// </summary>
+    /// <param name="fromCamera">기존 카메라</param>
+    /// <param name="toCamera">전환 카메라</param>
+    /// <param name="defaultBlend">기본 블렌드</param>
+    /// <param name="owner">블렌드 요청 주체</param>
+    /// <returns>적용 블렌드</returns>
+    private CinemachineBlendDefinition HandleBlendOverride(
+        ICinemachineCamera fromCamera,
+        ICinemachineCamera toCamera,
+        CinemachineBlendDefinition defaultBlend,
+        UnityEngine.Object owner)
+    {
+        if (_forceNextCut == false ||
+            owner != _cinemachineBrain ||
+            toCamera != _forcedCutTarget)
+        {
+            return defaultBlend;
+        }
+
+        ClearCutRequest();
+
+        return new CinemachineBlendDefinition(
+            CinemachineBlendDefinition.Styles.Cut,
+            0f);
+    }
+
+    /// <summary>
+    /// Cut 요청 초기화
+    /// </summary>
+    private void ClearCutRequest()
+    {
+        _forceNextCut = false;
+        _forcedCutTarget = null;
     }
 
     /// <summary>
@@ -717,6 +1209,48 @@ public class BattleCameraDirector : MonoBehaviour
 
         actorTransform = actor.transform;
         return true;
+    }
+
+    /// <summary>
+    /// 특정 팀 첫 번째 생존 Actor Transform 검색
+    /// </summary>
+    /// <param name="teamType">검색 팀</param>
+    /// <param name="actorTransform">검색된 Transform</param>
+    /// <returns>검색 성공 여부</returns>
+    private bool TryGetFirstTeamActorTransform(
+        BattleTeamType teamType,
+        out Transform actorTransform)
+    {
+        actorTransform = null;
+
+        if (_battleManager == null ||
+            _battleManager.SpawnedActors == null)
+        {
+            return false;
+        }
+
+        for (int i = 0;
+             i < _battleManager.SpawnedActors.Count;
+             i++)
+        {
+            BattleActor actor =
+                _battleManager.SpawnedActors[i];
+
+            if (actor == null ||
+                actor.TeamType != teamType ||
+                actor.HasBattleUnit == false ||
+                actor.BattleUnit.IsAlive == false)
+            {
+                continue;
+            }
+
+            actorTransform =
+                actor.transform;
+
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -811,6 +1345,118 @@ public class BattleCameraDirector : MonoBehaviour
     }
 
     /// <summary>
+    /// 별자리 방어 전장 구도 재생
+    /// </summary>
+    /// <param name="attacker">적 공격 유닛</param>
+    /// <param name="target">공격 대상 플레이어</param>
+    /// <param name="onComplete">완료 콜백</param>
+    public void PlayConstellationDefenseView(
+        BattleUnit attacker,
+        BattleUnit target,
+        Action onComplete = null)
+    {
+        if (_constellationDefenseCamera == null ||
+            TryGetActorTransform(
+                attacker,
+                out Transform attackerTransform) == false)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        Transform targetTransform = null;
+
+        if (TryGetActorTransform(
+                target,
+                out targetTransform) == false)
+        {
+            TryGetFirstTeamActorTransform(
+                BattleTeamType.Player,
+                out targetTransform);
+        }
+
+        Vector3 playerFallbackPosition =
+            targetTransform != null
+                ? targetTransform.position
+                : attackerTransform.position -
+                  attackerTransform.forward * 6f;
+
+        Vector3 playerCenter =
+            GetTeamCenter(
+                BattleTeamType.Player,
+                playerFallbackPosition);
+
+        Vector3 attackerPosition =
+            attackerTransform.position;
+
+        Vector3 viewForward =
+            attackerPosition -
+            playerCenter;
+
+        viewForward.y = 0f;
+
+        if (viewForward.sqrMagnitude <= 0.0001f &&
+            targetTransform != null)
+        {
+            viewForward =
+                targetTransform.forward;
+
+            viewForward.y = 0f;
+        }
+
+        if (viewForward.sqrMagnitude <= 0.0001f)
+        {
+            viewForward =
+                -attackerTransform.forward;
+
+            viewForward.y = 0f;
+        }
+
+        if (viewForward.sqrMagnitude <= 0.0001f)
+        {
+            viewForward =
+                Vector3.forward;
+        }
+
+        viewForward.Normalize();
+
+        Vector3 viewRight =
+            Vector3.Cross(
+                Vector3.up,
+                viewForward).normalized;
+
+        Vector3 cameraPosition =
+            playerCenter -
+            viewForward *
+            _constellationBackDistance +
+            viewRight *
+            _constellationSideOffset +
+            Vector3.up *
+            _constellationHeight;
+
+        Vector3 focusPosition =
+            Vector3.Lerp(
+                playerCenter,
+                attackerPosition,
+                Mathf.Clamp01(
+                    _constellationEnemyFocusWeight)) +
+            Vector3.up *
+            _constellationFocusHeight;
+
+        ApplyCameraPose(
+            _constellationDefenseCamera,
+            cameraPosition,
+            focusPosition,
+            _constellationFov,
+            _constellationRoll);
+
+        ActivateCamera(
+            _constellationDefenseCamera,
+            _constellationWaitDuration,
+            onComplete);
+    }
+
+    /// <summary>
     /// 별자리 공격 사전 카메라 연출
     /// 공격자 강조 후 전투 부감 구도 전환.
     /// - attacker가 아군이면: SkillLowAngle(근접 로우앵글) -> TargetOverview 순서로 연출.
@@ -838,8 +1484,9 @@ public class BattleCameraDirector : MonoBehaviour
 
         if (attacker.TeamType == BattleTeamType.Enemy)
         {
-            PlayTargetOverview(
-                overviewUnit,
+            PlayConstellationDefenseView(
+                attacker,
+                target,
                 onComplete);
 
             return;
@@ -972,5 +1619,19 @@ public class BattleCameraDirector : MonoBehaviour
         return teamType == BattleTeamType.Player
             ? BattleTeamType.Enemy
             : BattleTeamType.Player;
+    }
+
+    /// <summary>
+    /// 전투 시작 카메라 Tween 정지
+    /// </summary>
+    private void StopBattleEntryTween()
+    {
+        if (_entrySequence == null)
+        {
+            return;
+        }
+
+        _entrySequence.Kill();
+        _entrySequence = null;
     }
 }

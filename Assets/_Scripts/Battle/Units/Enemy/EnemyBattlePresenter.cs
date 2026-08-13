@@ -8,7 +8,7 @@ using UnityEngine;
 /// 모델은 런타임에 _visualRoot 하위로 생성되므로 Animator를 지연 조회한다.
 /// 판정은 하지 않고 전투 이벤트에 반응만 한다.
 /// </summary>
-public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
+public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter, IConstellationPathAttackPresenter
 {
     [Header("몬스터 컨트롤러 공통 파라미터 이름")]
     [SerializeField] private string _attackTrigger1 = "TriggerAttack1";
@@ -19,18 +19,24 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
     [Header("사망")]
     [Tooltip("죽는 애니메이션 재생 후 사라지기까지 시간(초)")]
     [SerializeField] private float _deathHideDelay = 1.5f;
-
     [Tooltip("사라질 때 비활성화할 대상. 비우면 이 오브젝트(액터)")]
     [SerializeField] private GameObject _hideTarget;
-
-    [Range(0f, 1f)]
-    [SerializeField] private float _attackImpactNormalizedTime = 0.45f;
+    [SerializeField, Range(0f, 1f)] private float _attackImpactNormalizedTime = 0f;
 
     private Animator _animator;
+    private MonsterAnimationController _animationController;
 
     private Coroutine _animationRoutine;
 
     [SerializeField] private float _animationTimeout = 3f;
+
+    [Header("별자리 강공격")]
+    [Tooltip("위협 모션 Animator Trigger. 비워두면 위협 애니메이션 없이 즉시 완료")]
+    [SerializeField] private string _constellationThreatTrigger;
+    [Tooltip("실제 강공격에 사용할 공격 모션. 0 = Attack1, 1 = Attack2")]
+    [SerializeField, Range(0, 1)] private int _constellationAttackIndex = 1;
+    [Tooltip("별자리 강공격 애니메이션의 VFX 발사 시점")]
+    [SerializeField, Range(0f, 1f)] private float _constellationLaunchNormalizedTime = 0.5f;
 
     /// <summary>자식 모델의 Animator를 지연 조회(런타임 생성 대응).</summary>
     private Animator ResolvedAnimator
@@ -46,10 +52,25 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
         }
     }
 
+    /// <summary>자식 모델의 MonsterAnimationController를 지연 조회.</summary>
+    private MonsterAnimationController ResolvedAnimationController
+    {
+        get
+        {
+            if (_animationController == null)
+            {
+                _animationController = GetComponentInChildren<MonsterAnimationController>();
+            }
+
+            return _animationController;
+        }
+    }
+
     /// <summary>몬스터는 Idle이 기본 상태라 완료 대기만 초기화.</summary>
     public void ResetToIdle()
     {
         StopAnimationRoutine();
+        ResolvedAnimationController?.ResetToIdle();
     }
 
     public void PlayAttack(
@@ -61,10 +82,33 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
             index == 1 ||
             (index < 0 && UnityEngine.Random.value < 0.5f);
 
-        PlayTriggeredAnimation(
-            second ? _attackTrigger2 : _attackTrigger1,
-            onImpact,
-            onComplete);
+        int attackIndex = second ? 2 : 1;
+
+        if (ResolvedAnimationController != null)
+        {
+            Animator animator = ResolvedAnimator;
+            int previousStateHash = animator != null ? animator.GetCurrentAnimatorStateInfo(0).fullPathHash : 0;
+
+            StopAnimationRoutine();
+            ResolvedAnimationController.PlayAttack(attackIndex);
+
+            if (onImpact != null || onComplete != null)
+            {
+                _animationRoutine = StartCoroutine(
+                    WaitForTriggeredStateComplete(
+                        animator,
+                        previousStateHash,
+                        onImpact,
+                        onComplete));
+            }
+        }
+        else
+        {
+            PlayTriggeredAnimation(
+                second ? _attackTrigger2 : _attackTrigger1,
+                onImpact,
+                onComplete);
+        }
     }
 
     /// <summary>몬스터엔 전용 스킬 모션이 없어 두 번째 공격 모션으로 대체.</summary>
@@ -81,16 +125,46 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
 
     public void PlayHit(Action onComplete = null)
     {
-        PlayTriggeredAnimation(
-            _getHitTrigger,
-            null,
-            onComplete);
+        if (ResolvedAnimationController != null)
+        {
+            Animator animator = ResolvedAnimator;
+            int previousStateHash = animator != null ? animator.GetCurrentAnimatorStateInfo(0).fullPathHash : 0;
+
+            StopAnimationRoutine();
+            ResolvedAnimationController.PlayGetHit();
+
+            if (onComplete != null)
+            {
+                _animationRoutine = StartCoroutine(
+                    WaitForTriggeredStateComplete(
+                        animator,
+                        previousStateHash,
+                        null,
+                        onComplete));
+            }
+        }
+        else
+        {
+            PlayTriggeredAnimation(
+                _getHitTrigger,
+                null,
+                onComplete);
+        }
     }
 
     public void PlayDeath(Action onComplete = null)
     {
         StopAnimationRoutine();
-        SetTriggerSafe(_dieTrigger);
+
+        if (ResolvedAnimationController != null)
+        {
+            ResolvedAnimationController.PlayDie();
+        }
+        else
+        {
+            SetTriggerSafe(_dieTrigger);
+        }
+
         StartCoroutine(HideAfterDeath(onComplete));
     }
 
@@ -120,7 +194,8 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
     private void PlayTriggeredAnimation(
         string trigger,
         Action onImpact,
-        Action onComplete)
+        Action onComplete,
+        float impactNormalizedTime = -1f)
     {
         Animator animator = ResolvedAnimator;
 
@@ -147,7 +222,8 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
                     animator,
                     previousStateHash,
                     onImpact,
-                    onComplete));
+                    onComplete,
+                    impactNormalizedTime));
         }
     }
 
@@ -162,8 +238,14 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
         Animator animator,
         int previousStateHash,
         Action onImpact,
-        Action onComplete)
+        Action onComplete,
+        float impactNormalizedTime = -1f)
     {
+        float resolvedImpactNormalizedTime =
+            impactNormalizedTime >= 0f
+                ? impactNormalizedTime
+                : _attackImpactNormalizedTime;
+
         float elapsedTime = 0f;
         bool enteredState = false;
         bool isImpactInvoked = false;
@@ -205,7 +287,7 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
                 if (currentState.fullPathHash == actionStateHash)
                 {
                     if (isImpactInvoked == false &&
-                        currentState.normalizedTime >= _attackImpactNormalizedTime)
+                        currentState.normalizedTime >= resolvedImpactNormalizedTime)
                     {
                         isImpactInvoked = true;
                         onImpact?.Invoke();
@@ -262,5 +344,67 @@ public class EnemyBattlePresenter : MonoBehaviour, IBattlePresenter
         }
 
         animator.SetTrigger(trigger);
+    }
+
+    /// <summary>
+    /// 별자리 강공격 위협 모션 재생
+    /// </summary>
+    /// <param name="onComplete">위협 연출 완료 콜백</param>
+    public void PlayConstellationThreat(Action onComplete = null)
+    {
+        if (string.IsNullOrEmpty(_constellationThreatTrigger))
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        PlayTriggeredAnimation(
+            _constellationThreatTrigger,
+            null,
+            onComplete);
+    }
+
+    /// <summary>
+    /// 별자리 실제 공격 모션 재생
+    /// 별자리 전용 발사 시점에서 VFX 발사 콜백 전달
+    /// </summary>
+    /// <param name="onLaunch">공격 발사 시점 콜백</param>
+    /// <param name="onComplete">공격 연출 완료 콜백</param>
+    public void PlayConstellationAttack(
+        Action onLaunch = null,
+        Action onComplete = null)
+    {
+        bool second = _constellationAttackIndex == 1;
+        int attackIndex = second ? 2 : 1;
+
+        if (ResolvedAnimationController != null)
+        {
+            Animator animator = ResolvedAnimator;
+            int previousStateHash = animator != null
+                ? animator.GetCurrentAnimatorStateInfo(0).fullPathHash
+                : 0;
+
+            StopAnimationRoutine();
+            ResolvedAnimationController.PlayAttack(attackIndex);
+
+            if (onLaunch != null || onComplete != null)
+            {
+                _animationRoutine = StartCoroutine(
+                    WaitForTriggeredStateComplete(
+                        animator,
+                        previousStateHash,
+                        onLaunch,
+                        onComplete,
+                        _constellationLaunchNormalizedTime));
+            }
+
+            return;
+        }
+
+        PlayTriggeredAnimation(
+            second ? _attackTrigger2 : _attackTrigger1,
+            onLaunch,
+            onComplete,
+            _constellationLaunchNormalizedTime);
     }
 }

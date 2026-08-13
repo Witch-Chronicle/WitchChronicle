@@ -7,17 +7,18 @@ using UnityEngine;
 /// </summary>
 public class QuestItem : MonoBehaviour
 {
-    [SerializeField]
-    private TMP_Text _titleText;
+    [SerializeField] private TMP_Text _titleText;
+    [SerializeField] private TMP_Text _progressText;
+    [SerializeField] private TMP_Text _stateText;
 
+    [Header("Base / Complete 비주얼 전환")]
+    [SerializeField] private GameObject _baseObject;
+    [SerializeField] private GameObject _completeObject;
+    [SerializeField] private GameObject _completedImg;
 
-    [SerializeField]
-    private TMP_Text _progressText;
-
-
-    [SerializeField]
-    private TMP_Text _stateText;
-
+    [Header("StateTxt 색상")]
+    [SerializeField] private Color _normalStateColor = Color.white;
+    [SerializeField] private Color _completedStateColor = new Color32(255, 215, 0, 255); // 황금색
 
     private QuestRuntime _runtime;
 
@@ -44,30 +45,35 @@ public class QuestItem : MonoBehaviour
             return;
         }
 
-
         _titleText.text = _runtime.Data.title;
-
-
-        _stateText.text =
-            GetStateText(_runtime.State);
-
+        _stateText.text = GetStateText(_runtime.State);
 
         string text = "";
-
-
         for (int i = 0; i < _runtime.Data.objectives.Count; i++)
         {
-            QuestObjective objective =
-                _runtime.Data.objectives[i];
-
-
-            text +=
-                $"{GetObjectiveText(objective)} " +
-                $"{_runtime.Progress[i]}/{objective.requiredCount}\n";
+            QuestObjective objective = _runtime.Data.objectives[i];
+            text += $"{GetObjectiveText(objective)} " + $"{_runtime.Progress[i]}/{objective.requiredCount}\n";
         }
-
-
         _progressText.text = text;
+
+        UpdateCompletionVisual(_runtime.State);
+    }
+
+    /// <summary>
+    /// Running이면 Base 비주얼, Completed/Rewarded면 Complete 비주얼(+CompletedImg, StateTxt 황금색).
+    /// </summary>
+    private void UpdateCompletionVisual(QuestState state)
+    {
+        bool isCompleteVisual = state == QuestState.Completed || state == QuestState.Rewarded;
+
+        if (_baseObject != null) _baseObject.SetActive(!isCompleteVisual);
+        if (_completeObject != null) _completeObject.SetActive(isCompleteVisual);
+        if (_completedImg != null) _completedImg.SetActive(isCompleteVisual);
+
+        if (_stateText != null)
+        {
+            _stateText.color = isCompleteVisual ? _completedStateColor : _normalStateColor;
+        }
     }
 
 
@@ -83,7 +89,7 @@ public class QuestItem : MonoBehaviour
 
 
             case QuestState.Completed:
-                return "완료 - 보상 받기";
+                return "보상 받기";
 
 
             case QuestState.Rewarded:
@@ -104,26 +110,57 @@ public class QuestItem : MonoBehaviour
         switch (objective.type)
         {
             case QuestObjectiveType.KillMonster:
-                return $"{objective.targetID} 처치";
+                return $"{objective.targetName} 처치";
 
 
             case QuestObjectiveType.TalkNPC:
-                return $"{objective.targetID}와 대화";
+                return $"{objective.targetName}와 대화";
 
 
             case QuestObjectiveType.CollectItem:
-                return $"{objective.targetID} 획득";
+                return $"{objective.targetName} 획득";
 
 
             case QuestObjectiveType.ClearDungeon:
-                return $"{objective.targetID} 클리어";
+                return $"{objective.targetName} 클리어";
 
 
             case QuestObjectiveType.RecruitNPC:
-                return $"{objective.targetID} 합류";
+                return $"{objective.targetName} 합류";
+
+            // ===== 신규 사이드 퀘스트 문구 =====
+            case QuestObjectiveType.PlantSeed:
+                return $"{objective.targetName} 심기";
+
+            case QuestObjectiveType.HarvestCrop:
+                return $"{objective.targetName} 수확";
+
+
+            case QuestObjectiveType.CatchFish:
+                return $"{objective.targetName} 낚기";
+
+
+            case QuestObjectiveType.CookFood:
+                return $"{objective.targetName} 요리하기";
+
+
+            case QuestObjectiveType.BrewPotion:
+                return $"{objective.targetName} 제조하기";
+
+
+            case QuestObjectiveType.SellItem:
+                return $"{objective.targetName} 판매하기";
+
+
+            case QuestObjectiveType.SellEquipment:
+                return $"{objective.targetName} 판매하기";
+
+
+            case QuestObjectiveType.EnhanceItem:
+                return $"{objective.targetName} 강화하기";
         }
 
 
-        return objective.targetID;
+        return objective.targetName;
     }
 }

@@ -25,8 +25,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4420600837900382372}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -693.9419, y: -140.42302, z: 321.82822}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -63,12 +63,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ed8e9b109bac7184b8bdbdea9cb58b8a, type: 2}
   - {fileID: 11400000, guid: 58af23383d5b6b4449d14edf05acfb83, type: 2}
   - {fileID: 11400000, guid: 3fb1f39295067ea4d922faa15c250bec, type: 2}
-  ownedRods:
+  allRods:
   - {fileID: 11400000, guid: 4bd002b5a9eef784d86d456278e4f3c3, type: 2}
   - {fileID: 11400000, guid: 11a8f6e0aa9a1ae48b73a623fc1a2825, type: 2}
   - {fileID: 11400000, guid: 589ae584cbc40864480bffe0e8e5c61f, type: 2}
-  currentRod: {fileID: 11400000, guid: 4bd002b5a9eef784d86d456278e4f3c3, type: 2}
   castingDuration: 0.5
   minWaitTime: 3
   maxWaitTime: 8
   biteWindow: 1.5
+  animatorHook: {fileID: 0}

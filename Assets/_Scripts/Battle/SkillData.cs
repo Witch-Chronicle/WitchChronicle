@@ -61,9 +61,18 @@ public class SkillData : ScriptableObject
     [Tooltip("투사체/명중/광역 이펙트 크기 배율. 0이면 프리팹 원본 크기")]
     [SerializeField] private float _hitVfxScale = 0f;
 
+    [Tooltip("투사체가 대상까지 날아가는 시간(초). 0이면 SkillVfxPlayer의 전역 Projectile Travel Time 사용")]
+    [SerializeField] private float _projectileTravelTime = 0f;
+
+    [Tooltip("시전 이펙트가 나온 뒤 투사체가 발사되기까지 지연(초). 공격 모션의 던지는 순간에 맞춘다")]
+    [SerializeField] private float _projectileLaunchDelay = 0f;
+
     [Header("Presentation - Constellation Path Attack")]
-    [Tooltip("연결 시 사전 카메라 연출 후 " + "경로형 별자리 패리 실행")]
+    [Tooltip("별 배치, 연결 순서, 입력 제한 시간")]
     [SerializeField] private ConstellationPathSequenceData _constellationPathSequenceData;
+    [Tooltip("투사체 이동, 공격 분배, 데미지 적용 방식")]
+    [SerializeField] private ConstellationPathAttackData _constellationPathAttackData;
+
 
     [Header("Presentation - Draw Guide (마법진 그리기)")]
     [Tooltip("SkillDrawController가 사용할 궤적 가이드 JSON (fire_ball.json 등). " +
@@ -106,8 +115,11 @@ public class SkillData : ScriptableObject
     public Vector3 HitVfxOffset => _hitVfxOffset;
     public float CastVfxScale => _castVfxScale;
     public float HitVfxScale => _hitVfxScale;
+    public float ProjectileTravelTime => _projectileTravelTime;
+    public float ProjectileLaunchDelay => _projectileLaunchDelay;
 
     public ConstellationPathSequenceData ConstellationPathSequenceData => _constellationPathSequenceData;
+    public ConstellationPathAttackData ConstellationPathAttackData => _constellationPathAttackData;
     public bool IsConstellationPathAttack => _constellationPathSequenceData != null;
 
     public TextAsset DrawGuideJson => _drawGuideJson;

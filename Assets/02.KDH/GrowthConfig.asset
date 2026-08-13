@@ -12,8 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ffa4e46fc488dd40b5943c3c2da0765, type: 3}
   m_Name: GrowthConfig
   m_EditorClassIdentifier: Assembly-CSharp::GrowthConfig
-  MaxLevel: 18
+  MaxLevel: 30
   BaseBattles: 3
   BattlesPerLevel: 0.4
   BaseMonsterExp: 20
   MonsterExpGrowth: 0.1
+  HpPerLevel: 10
+  MpPerLevel: 3
+  SpellPowerPerLevel: 2
+  IntelligencePerLevel: 0
+  DefensePerLevel: 1
+  SpeedPerLevel: 1
+  LuckPerLevel: 0
+  HpPerPoint: 10
+  MpPerPoint: 5
+  SpellPowerPerPoint: 2
+  IntelligencePerPoint: 2
+  DefensePerPoint: 2
+  SpeedPerPoint: 1
+  LuckPerPoint: 1

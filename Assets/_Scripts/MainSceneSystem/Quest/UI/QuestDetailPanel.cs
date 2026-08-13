@@ -49,23 +49,15 @@ public class QuestDetailPanel : MonoBehaviour
     {
         _quest = quest;
 
-
         gameObject.SetActive(true);
 
+        _titleText.text = quest.title;
 
-        _titleText.text =
-            quest.title;
-
-
-        _descriptionText.text =
-            quest.description;
-
+        _descriptionText.text = quest.description;
 
         SetObjective(quest);
 
-
-        _rewardText.text =
-            GetRewardText(quest.reward);
+        _rewardText.text = GetRewardText(quest.reward);
     }
 
 
@@ -79,10 +71,8 @@ public class QuestDetailPanel : MonoBehaviour
 
         foreach (QuestObjective objective in quest.objectives)
         {
-            text +=
-                $"{objective.type} : {objective.requiredCount}\n";
+            text += $"{objective.type} : {objective.requiredCount}\n";
         }
-
 
         _objectiveText.text = text;
     }
@@ -126,9 +116,14 @@ public class QuestDetailPanel : MonoBehaviour
         }
 
 
-        if (reward.itemID != null)
+        if (reward.items != null)
         {
-            text += $"{reward.itemID.name} x {reward.itemCount}";
+            text += "아이템\n";
+
+            for (int i = 0; i < reward.items.Length; i++)
+            {
+                text += $"{reward.items[i].name} x {reward.itemCount}";
+            }
         }
 
 

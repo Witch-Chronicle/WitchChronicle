@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c3d2de96b1920f4db9c4a63fcc2e71b, type: 3}
+  m_Name: 15.Sturgeon_item_fish
+  m_EditorClassIdentifier: Assembly-CSharp::FishItemData
+  itemId: 7015
+  itemName: "\uCCA0\uAC11\uC0C1\uC5B4"
+  description: "\uAC15\uCCA0\uCC98\uB7FC \uB2E8\uB2E8\uD55C \uBE44\uB298\uC744 \uC9C0\uB2CC
+    \uACE0\uB300 \uC5B4\uC885. \uADF8 \uC0B4\uC740 \uC655\uAD81 \uB9CC\uCC2C\uC5D0\uB098
+    \uC624\uB97C \uC815\uB3C4\uB85C \uADC0\uD558\uB2E4."
+  itemType: 1
+  itemGrade: 4
+  icon: {fileID: 21300000, guid: da6d7628be461b440894351cdf580cba, type: 3}
+  mainCategory: 2
+  subCategory: 5
+  maxStack: 99
+  buyPrice: 0
+  sellPrice: 1000
+  canSell: 1
+  materialType: 2
+  grade: 2
+  spawnWeight: 10
+  tensionRange: 4
+  tensionShake: 4
+  playerPullSpeed: 4
+  reelDuration: 8
+  timeLimit: 30
+  minRodRank: 3

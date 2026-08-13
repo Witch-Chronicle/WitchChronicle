@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6498f13f35165ef49809baf01ee5d2f5, type: 3}
+  m_Name: rank_deco
+  m_EditorClassIdentifier: Assembly-CSharp::DecorationTable
+  _entries:
+  - targetRoomType: 0
+    placement: 0
+    prefabs:
+    - {fileID: 1030998979, guid: abc00000000016300241378820994709, type: 3}
+    - {fileID: 1030992687, guid: abc00000000008799884702711077847, type: 3}
+    - {fileID: 1030993026, guid: abc00000000000246054117289344760, type: 3}
+    minCount: 3
+    maxCount: 3

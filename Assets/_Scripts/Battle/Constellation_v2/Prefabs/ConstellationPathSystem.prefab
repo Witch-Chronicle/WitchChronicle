@@ -11,6 +11,9 @@ GameObject:
   - component: {fileID: 8793436453854344445}
   - component: {fileID: 2471645998591670320}
   - component: {fileID: 2283237506136837190}
+  - component: {fileID: 1717995220549712809}
+  - component: {fileID: 5444873107383061425}
+  - component: {fileID: 8758043375376699133}
   m_Layer: 0
   m_Name: ConstellationPathSystem
   m_TagString: Untagged
@@ -59,3 +62,47 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathBattleManager
   _pathController: {fileID: 0}
   _uiController: {fileID: 0}
+--- !u!114 &1717995220549712809
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3269252436149989816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 011312d5aa91fa94294c28b568c2bcc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathTimeController
+  _slowMotionScale: 0.15
+  _slowDownDuration: 0.3
+  _slowMotionHoldDuration: 0.08
+  _resumeDuration: 0.25
+--- !u!114 &5444873107383061425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3269252436149989816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01de429eb4fc3514c971d4643c98ac18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathAttackController
+  _pathBattleManager: {fileID: 0}
+  _timeController: {fileID: 0}
+--- !u!114 &8758043375376699133
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3269252436149989816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 778f9b5dcadf38740811344cf0da85ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConstellationPathVfxPlayer
+  _battleManager: {fileID: 0}
+  _vfxLifetime: 5

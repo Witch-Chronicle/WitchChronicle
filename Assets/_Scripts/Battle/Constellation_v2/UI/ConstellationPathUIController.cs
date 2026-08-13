@@ -552,19 +552,23 @@ public class ConstellationPathUIController :
     }
 
     /// <summary>
-    /// 효과음 재생
+    /// 효과음 재생. SoundManager를 통해 재생하여 전역 마스터/SFX 볼륨이 반영되도록 함.
     /// </summary>
     /// <param name="audioClip">재생 클립</param>
     private void PlayClip(
         AudioClip audioClip)
     {
-        if (_audioSource == null ||
-            audioClip == null)
+        if (audioClip == null)
         {
             return;
         }
 
-        _audioSource.PlayOneShot(
+        if (SoundManager.Instance == null)
+        {
+            return;
+        }
+
+        SoundManager.Instance.PlaySfxOneShot(
             audioClip);
     }
 

@@ -10,7 +10,7 @@ public class FishingUIManager : MonoBehaviour
     [SerializeField] private GameObject fishingPanel;
     [SerializeField] private GameObject resultPopup;
 
-    [Header("낚시 씬 이미지 (레거시, 3D 씬 사용 시 미연결)")]
+    [Header("낚시 씬 이미지 (레거시)")]
     [SerializeField] private Image fishingSceneImage;
     [SerializeField] private Sprite sceneIdle;
     [SerializeField] private Sprite sceneBite;
@@ -23,7 +23,7 @@ public class FishingUIManager : MonoBehaviour
     [SerializeField] private TMP_Text statusText;
     [SerializeField] private GameObject tensionGaugeGroup;
 
-    [Header("진행 게이지 (Bite/Reeling만)")]
+    [Header("진행 게이지")]
     [SerializeField] private GameObject progressGauge;
 
     [Header("메인 액션 버튼")]
@@ -31,15 +31,21 @@ public class FishingUIManager : MonoBehaviour
     [SerializeField] private TMP_Text actionButtonText;
     [SerializeField] private Image actionButtonImage;
 
-    [Header("액션 버튼 상태별 색상")]
-    [SerializeField] private Color colorReadyToCast = new Color(1f, 0.7f, 0.3f, 1f);
-    [SerializeField] private Color colorWaiting = new Color(0.7f, 0.7f, 0.7f, 1f);
-    [SerializeField] private Color colorReadyToReel = new Color(1f, 0.4f, 0.3f, 1f);
-    [SerializeField] private Color colorReeling = new Color(0.4f, 0.8f, 0.4f, 1f);
+    [Header("액션 버튼 상태별 투명도")]
+    [Range(0f, 1f)][SerializeField] private float _activeAlpha = 1f;
+    [Range(0f, 1f)][SerializeField] private float _inactiveAlpha = 0.4f;
 
     [Header("결과 팝업")]
     [SerializeField] private TMP_Text resultTitle;
     [SerializeField] private TMP_Text resultText;
+    [SerializeField] private Image resultFishIcon;
+    [SerializeField] private GameObject resultFishIconRoot;
+
+    [Header("낚싯대 없음 팝업")]
+    [SerializeField] private GameObject noRodPopup;
+    [SerializeField] private TMP_Text noRodPopupText;
+    [SerializeField] private Button noRodPopupCloseButton;
+    [SerializeField] private string noRodMessage = "낚싯대가 없습니다!\n상점에서 낚싯대를 먼저 구매해주세요.";
 
     [Header("텐션 미니게임 컨트롤러")]
     [SerializeField] private FishingReelController reelController;
@@ -50,27 +56,26 @@ public class FishingUIManager : MonoBehaviour
 
     public bool IsPanelOpen => _isPanelOpen;
 
-    // ─────────────────────────────────────────
-
     private void Awake()
     {
-        Debug.Log("[FishingUIManager] Awake 실행됨");
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
 
         if (fishingPanel != null) fishingPanel.SetActive(false);
         if (resultPopup != null) resultPopup.SetActive(false);
+        if (noRodPopup != null) noRodPopup.SetActive(false);
     }
 
     private void OnEnable()
     {
         if (actionButton != null)
             actionButton.onClick.AddListener(OnActionButtonClicked);
+        if (noRodPopupCloseButton != null)
+            noRodPopupCloseButton.onClick.AddListener(CloseNoRodPopup);
     }
 
     private void Start()
     {
-        Debug.Log("[FishingUIManager] Start 실행됨");
         if (FishingManager.Instance != null)
         {
             FishingManager.Instance.OnStateChanged += HandleStateChanged;
@@ -78,11 +83,6 @@ public class FishingUIManager : MonoBehaviour
             FishingManager.Instance.OnFishEscaped += HandleFishEscaped;
             FishingManager.Instance.OnFishingSessionStarted += HandleSessionStarted;
             FishingManager.Instance.OnFishingSessionEnded += HandleSessionEnded;
-            Debug.Log("[FishingUIManager] 이벤트 등록 성공");
-        }
-        else
-        {
-            Debug.LogError("[FishingUIManager] FishingManager.Instance가 null! 씬에 FishingManager 오브젝트 있는지 확인!");
         }
     }
 
@@ -98,6 +98,8 @@ public class FishingUIManager : MonoBehaviour
         }
         if (actionButton != null)
             actionButton.onClick.RemoveListener(OnActionButtonClicked);
+        if (noRodPopupCloseButton != null)
+            noRodPopupCloseButton.onClick.RemoveListener(CloseNoRodPopup);
     }
 
     private void OnDestroy()
@@ -119,30 +121,15 @@ public class FishingUIManager : MonoBehaviour
         }
     }
 
-    // ─────────────────────────────────────────
-    // 세션 진입/종료 (매니저 이벤트로 자동 호출)
-    // ─────────────────────────────────────────
-
-    private void HandleSessionStarted()
-    {
-        Debug.Log("[FishingUIManager] HandleSessionStarted 호출됨! fishingPanel is null? " + (fishingPanel == null));
-        OpenPanel();
-    }
-
+    private void HandleSessionStarted() => OpenPanel();
     private void HandleSessionEnded() => ClosePanel();
-
-    // ─────────────────────────────────────────
-    // 열기/닫기
-    // ─────────────────────────────────────────
 
     public void OpenPanel()
     {
-        Debug.Log("[FishingUIManager] OpenPanel 호출됨");
-        if (fishingPanel == null)
-        {
-            Debug.LogError("[FishingUIManager] fishingPanel이 null! 인스펙터 연결 확인");
-            return;
-        }
+        if (fishingPanel == null) return;
+        QuestListUI.Instance.Close();
+        MainHUDUIController.Instance.Close();
+
         fishingPanel.SetActive(true);
         _isPanelOpen = true;
 
@@ -155,16 +142,16 @@ public class FishingUIManager : MonoBehaviour
     public void ClosePanel()
     {
         if (fishingPanel == null) return;
+        QuestListUI.Instance.Open();
+        MainHUDUIController.Instance.Open();
+
         fishingPanel.SetActive(false);
         _isPanelOpen = false;
         _timerRunning = false;
 
+        if (noRodPopup != null) noRodPopup.SetActive(false);
         reelController?.StopMiniGame();
     }
-
-    // ─────────────────────────────────────────
-    // 상태 반영
-    // ─────────────────────────────────────────
 
     private void HandleStateChanged(FishingState state)
     {
@@ -175,7 +162,7 @@ public class FishingUIManager : MonoBehaviour
                 ShowStatus("낚시 준비");
                 HideTension();
                 HideProgressGauge();
-                SetActionButton("🪝\n줄 풀기", colorReadyToCast, true);
+                SetActionButton("\n줄 풀기", true);
                 if (resultPopup != null) resultPopup.SetActive(false);
                 break;
 
@@ -184,7 +171,7 @@ public class FishingUIManager : MonoBehaviour
                 ShowStatus("낚싯대를 던지는 중...");
                 HideTension();
                 HideProgressGauge();
-                SetActionButton("🎣\n줄 감기", colorWaiting, false);
+                SetActionButton("\n줄 감기", false);
                 break;
 
             case FishingState.Waiting:
@@ -192,7 +179,7 @@ public class FishingUIManager : MonoBehaviour
                 ShowStatus("기다리고 있어요...");
                 HideTension();
                 HideProgressGauge();
-                SetActionButton("🎣\n줄 감기", colorWaiting, false);
+                SetActionButton("\n줄 감기", false);
                 break;
 
             case FishingState.Bite:
@@ -200,7 +187,7 @@ public class FishingUIManager : MonoBehaviour
                 HideStatus();
                 ShowTension();
                 ShowProgressGauge();
-                SetActionButton("🎣\n줄 감기!", colorReadyToReel, true);
+                SetActionButton("\n줄 감기!", true);
                 break;
 
             case FishingState.Reeling:
@@ -208,7 +195,7 @@ public class FishingUIManager : MonoBehaviour
                 HideStatus();
                 ShowTension();
                 ShowProgressGauge();
-                SetActionButton("🎣\n홀드!", colorReeling, true);
+                SetActionButton("\n홀드!", true);
                 reelController?.StartMiniGame(
                     FishingManager.Instance?.HookedFish,
                     FishingManager.Instance?.CurrentRod
@@ -226,7 +213,8 @@ public class FishingUIManager : MonoBehaviour
     private void HandleFishCaught(FishItemData fish)
     {
         string name = fish != null ? fish.itemName : "물고기";
-        ShowResult("🎉 성공!", $"{name} 획득!");
+        Sprite icon = fish != null ? fish.icon : null;
+        ShowResult("성공!", $"{name} 획득!", icon);
     }
 
     private void HandleFishEscaped(FishingReelController.FailReason reason)
@@ -235,31 +223,29 @@ public class FishingUIManager : MonoBehaviour
         switch (reason)
         {
             case FishingReelController.FailReason.LineBreak:
-                message = "줄이 끊어졌다...";
-                break;
+                message = "줄이 끊어졌다..."; break;
             case FishingReelController.FailReason.Escape:
-                message = "물고기가 도망갔다...";
-                break;
+                message = "물고기가 도망갔다..."; break;
             case FishingReelController.FailReason.Timeout:
-                message = "너무 오래 걸렸다... 물고기가 지쳐 도망갔다.";
-                break;
+                message = "너무 오래 걸렸다... 물고기가 지쳐 도망갔다."; break;
             default:
-                message = "놓쳤어요...";
-                break;
+                message = "놓쳤어요..."; break;
         }
-        ShowResult("😢 실패", message);
+        ShowResult(" 실패", message, null);
     }
-
-    // ─────────────────────────────────────────
-    // 버튼
-    // ─────────────────────────────────────────
 
     private void OnActionButtonClicked()
     {
         if (FishingManager.Instance == null) return;
+
         switch (FishingManager.Instance.State)
         {
             case FishingState.Idle:
+                if (!FishingManager.Instance.HasAnyRod)
+                {
+                    ShowNoRodPopup();
+                    return;
+                }
                 FishingManager.Instance.StartFishing();
                 break;
             case FishingState.Bite:
@@ -274,9 +260,17 @@ public class FishingUIManager : MonoBehaviour
         FishingManager.Instance?.ReturnToIdle();
     }
 
-    // ─────────────────────────────────────────
-    // UI 헬퍼
-    // ─────────────────────────────────────────
+    private void ShowNoRodPopup()
+    {
+        if (noRodPopup == null) return;
+        if (noRodPopupText != null) noRodPopupText.text = noRodMessage;
+        noRodPopup.SetActive(true);
+    }
+
+    private void CloseNoRodPopup()
+    {
+        if (noRodPopup != null) noRodPopup.SetActive(false);
+    }
 
     private void SetScene(Sprite s)
     {
@@ -299,18 +293,34 @@ public class FishingUIManager : MonoBehaviour
     private void ShowProgressGauge() { if (progressGauge != null) progressGauge.SetActive(true); }
     private void HideProgressGauge() { if (progressGauge != null) progressGauge.SetActive(false); }
 
-    private void SetActionButton(string label, Color color, bool interactable)
+    private void SetActionButton(string label, bool interactable)
     {
         if (actionButtonText != null) actionButtonText.text = label;
-        if (actionButtonImage != null) actionButtonImage.color = color;
+        if (actionButtonImage != null)
+        {
+            float alpha = interactable ? _activeAlpha : _inactiveAlpha;
+            actionButtonImage.color = new Color(1f, 1f, 1f, alpha);
+        }
         if (actionButton != null) actionButton.interactable = interactable;
     }
 
-    private void ShowResult(string title, string body)
+    private void ShowResult(string title, string body, Sprite fishIcon)
     {
         if (resultPopup == null) return;
         resultPopup.SetActive(true);
         if (resultTitle != null) resultTitle.text = title;
         if (resultText != null) resultText.text = body;
+
+        bool hasIcon = fishIcon != null;
+        if (resultFishIconRoot != null) resultFishIconRoot.SetActive(hasIcon);
+        if (resultFishIcon != null)
+        {
+            resultFishIcon.gameObject.SetActive(hasIcon);
+            if (hasIcon)
+            {
+                resultFishIcon.sprite = fishIcon;
+                resultFishIcon.preserveAspect = true;
+            }
+        }
     }
 }

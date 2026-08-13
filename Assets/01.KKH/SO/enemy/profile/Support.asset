@@ -18,13 +18,20 @@ MonoBehaviour:
   _lowHpTargetWeight: 1
   _highThreatTargetWeight: 1
   _randomTargetWeight: 0.3
-  _damageWeight: 0.8
+  _basicAttackWeight: 0.5
+  _damageWeight: 0.5
   _killWeight: 0.5
   _weaknessWeight: 1
   _healWeight: 4
   _buffWeight: 4
   _debuffWeight: 2
   _statusEffectWeight: 2
-  _selfDefenseHpRatio: 0.65
-  _selfSurvivalWeight: 3
-  _randomActionWeight: 0.3
+  _selfDefenseHpRatio: 0.45
+  _selfSurvivalWeight: 2
+  _randomActionWeight: 0.2
+  _skillUseChance: 0.7
+  _healHpRatioThreshold: 0.7
+  _emergencyHealHpRatio: 0.3
+  _selectionScoreRange: 15
+  _repeatActionPenalty: 15
+  _repeatTargetPenalty: 10

@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c3d2de96b1920f4db9c4a63fcc2e71b, type: 3}
+  m_Name: 09.Salmon_item_fish
+  m_EditorClassIdentifier: Assembly-CSharp::FishItemData
+  itemId: 7009
+  itemName: "\uC5F0\uC5B4"
+  description: "\uBD89\uC740 \uC0B4\uACB0\uC774 \uC778\uC0C1\uC801\uC778 \uD68C\uADC0\uC131
+    \uBB3C\uACE0\uAE30. \uD68C\uB098 \uAD6C\uC774 \uC694\uB9AC\uC5D0 \uCD5C\uACE0\uC758
+    \uC7AC\uB8CC\uB2E4."
+  itemType: 1
+  itemGrade: 2
+  icon: {fileID: 21300000, guid: 9e3038b58e7667540b7dc3b62b708abd, type: 3}
+  mainCategory: 2
+  subCategory: 5
+  maxStack: 99
+  buyPrice: 0
+  sellPrice: 500
+  canSell: 1
+  materialType: 2
+  grade: 1
+  spawnWeight: 10
+  tensionRange: 1.5
+  tensionShake: 1.5
+  playerPullSpeed: 1.5
+  reelDuration: 8
+  timeLimit: 30
+  minRodRank: 2

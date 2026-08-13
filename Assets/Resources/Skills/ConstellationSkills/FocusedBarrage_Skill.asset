@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bd7a45cc3a88de48a6febbdf20d1102, type: 3}
+  m_Name: FocusedBarrage_Skill
+  m_EditorClassIdentifier: Assembly-CSharp::SkillData
+  _skillId: enemy_constellation_focusedBarrage
+  _skillName: "\uB9C8\uB825 \uC9D1\uC911\uD3EC\uD654"
+  _description: "\uD558\uB098\uC758 \uB300\uC0C1\uC5D0\uAC8C \uB9C8\uB825\uD0C4\uC744
+    \uC9D1\uC911 \uD3EC\uD654\uD55C\uB2E4"
+  _tier: 1
+  _mpCost: 0
+  _elementType: 5
+  _skillType: 0
+  _damageType: 1
+  _power: 10
+  _targetType: 0
+  _statusEffectType: 0
+  _statusChance: 0
+  _cureStatusEffectType: 0
+  _buffData: {fileID: 0}
+  _presentationType: 0
+  _skillIcon: {fileID: 0}
+  _voiceClip: {fileID: 0}
+  _impactDelay: 0
+  _castSfx: {fileID: 0}
+  _hitSfx: {fileID: 0}
+  _castVfxPrefab: {fileID: 1804384742432318, guid: d1909472a3f4bfc40a598eaa701eb430, type: 3}
+  _projectileVfxPrefab: {fileID: 0}
+  _hitVfxPrefab: {fileID: 0}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
+  _hitVfxOffset: {x: 0, y: 0, z: 0}
+  _castVfxScale: 0
+  _hitVfxScale: 0
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
+  _constellationPathSequenceData: {fileID: 11400000, guid: 9c72d1a3124b2de4c867ae436d5df7d6, type: 2}
+  _constellationPathAttackData: {fileID: 11400000, guid: d0bbac76fca8efa418c3948e516c0281, type: 2}
+  _drawGuideJson: {fileID: 0}
+  _drawExampleSprite: {fileID: 0}

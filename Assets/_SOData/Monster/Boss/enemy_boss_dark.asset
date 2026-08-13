@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15fa27efa3f5725419aca6ec65b66bd4, type: 3}
+  m_Name: enemy_boss_dark
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyBattleData
+  _enemyId: enemy_boss_dark
+  _enemyName: "\uB808\uBE44\uC544\uD0C4"
+  _icon: {fileID: 21300000, guid: c0d06f827457dda46a247c4d7db4a1d2, type: 3}
+  _isBoss: 1
+  _maxHp: 2000
+  _attackPower: 57
+  _magicPower: 65
+  _defensePower: 42
+  _magicDefensePower: 38
+  _speed: 36
+  _weakElements: 0300000005000000
+  _resistElements: 020000000400000007000000
+  _nullElements: 
+  _absorbElements: 
+  _skillList:
+  - {fileID: 11400000, guid: 1080def506701f54c857ae9a2b92b799, type: 2}
+  - {fileID: 11400000, guid: 2f847b1bc2834ef4ba0db5d9452a3c7a, type: 2}
+  - {fileID: 11400000, guid: 1db157ac52f4bdc46886b943adf21cf2, type: 2}
+  - {fileID: 11400000, guid: 7c4b6e745aead084ea059058ad53f3b7, type: 2}
+  - {fileID: 11400000, guid: 040f94996b100b54a8e8b843ee35cfc6, type: 2}
+  - {fileID: 11400000, guid: ef14fe325b827b94bb429563f810398b, type: 2}
+  - {fileID: 11400000, guid: ad82abcd46bdbc14084e701252525f5c, type: 2}
+  _aiProfileData: {fileID: 11400000, guid: 936d543f6091ae54f86b4027dc5bf994, type: 2}
+  _expReward: 1200
+  _goldReward: 8000
+  _dropTable: {fileID: 11400000, guid: 3262ea4cedfd2cb4bb75302015cf83c7, type: 2}
+  _prefab: {fileID: 7581544333513177157, guid: 0c67cf1a196c2974cafedc91e0ecfa28, type: 3}

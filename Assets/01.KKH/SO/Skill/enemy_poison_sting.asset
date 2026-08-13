@@ -16,6 +16,7 @@ MonoBehaviour:
   _skillName: "\uB3C5\uCE68"
   _description: "\uC801 \uD558\uB098\uC5D0\uAC8C \uD53C\uD574\uB97C \uC8FC\uACE0
     \uD655\uB960\uC801\uC73C\uB85C \uB3C5 \uC0C1\uD0DC\uC774\uC0C1"
+  _tier: 2
   _mpCost: 0
   _elementType: 1
   _skillType: 0
@@ -24,13 +25,24 @@ MonoBehaviour:
   _targetType: 0
   _statusEffectType: 1
   _statusChance: 0.4
+  _cureStatusEffectType: 0
+  _buffData: {fileID: 0}
   _presentationType: 0
+  _skillIcon: {fileID: 0}
+  _voiceClip: {fileID: 0}
   _impactDelay: 0.4
+  _castSfx: {fileID: 8300000, guid: 877c3c1c3d9ca754f94bd3365a622627, type: 3}
+  _hitSfx: {fileID: 8300000, guid: 20678c46e5ef3f54e8e7819fbdab0d64, type: 3}
   _castVfxPrefab: {fileID: 1969530967241986, guid: 967aaf1da8de7fb438e16445713fe55f, type: 3}
   _projectileVfxPrefab: {fileID: 1412052184533082, guid: 1b63b6d7ec1bcf649bdd88d01bfc932e, type: 3}
   _hitVfxPrefab: {fileID: 1364793100689986, guid: b0a13ceb55e1d134dbde6c0ea9710e7e, type: 3}
+  _castVfxOffset: {x: 0, y: 0, z: 0}
   _hitVfxOffset: {x: 0, y: 1, z: 0}
   _castVfxScale: 0
   _hitVfxScale: 0
-  _castSfx: {fileID: 8300000, guid: 877c3c1c3d9ca754f94bd3365a622627, type: 3}
-  _hitSfx: {fileID: 8300000, guid: 20678c46e5ef3f54e8e7819fbdab0d64, type: 3}
+  _projectileTravelTime: 0
+  _projectileLaunchDelay: 0
+  _constellationPathSequenceData: {fileID: 0}
+  _constellationPathAttackData: {fileID: 0}
+  _drawGuideJson: {fileID: 0}
+  _drawExampleSprite: {fileID: 0}

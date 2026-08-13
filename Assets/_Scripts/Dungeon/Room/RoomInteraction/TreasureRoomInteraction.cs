@@ -6,7 +6,7 @@ public class TreasureRoomInteraction : RoomInteraction
 {
     private IReadOnlyList<RoomContentTable.ChestEntry> _chests;
 
-    private float _spawnRadius = 2f;
+    private float _spawnRadius = 1.5f;
 
     private float _yOffset;
 
@@ -35,11 +35,11 @@ public class TreasureRoomInteraction : RoomInteraction
             return;
         }
 
-            Vector3 position = roomCenter + Random.insideUnitSphere * _spawnRadius;
+        Vector3 position = roomCenter + Random.insideUnitSphere * _spawnRadius;
 
-            position.y = _yOffset;
+        position.y = _yOffset;
 
-            Instantiate(chestInfo.prefab, position, Quaternion.identity);
+        Instantiate(chestInfo.prefab, position, Quaternion.identity);
     }
 
 

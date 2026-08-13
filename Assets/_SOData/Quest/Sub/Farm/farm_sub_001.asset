@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbe15cc1f7ebf744da8f3bb2c409ab19, type: 3}
+  m_Name: farm_sub_001
+  m_EditorClassIdentifier: Assembly-CSharp::QuestData
+  id: farm_001
+  title: "\uBC2D\uC5D0 \uC0DD\uBA85\uC744 \uBFCC\uB9AC\uB2E4"
+  description: "\uAC10\uC790 \uC528\uC557\uC744 \uBE44\uC5B4\uC788\uB294 \uBC2D\uC5D0
+    \uC2EC\uC5B4\uBCF4\uC790."
+  type: 1
+  objectives:
+  - type: 6
+    targetID: 1001
+    targetName: "\uAC10\uC790 \uC528\uC557"
+    requiredCount: 1
+  reward:
+    gold: 100
+    exp: 30
+    items: []
+    itemCount: 0
+    recruitNPC: 
+    nextStory: 0
+  nextQuest: {fileID: 11400000, guid: 3ec21534928f5e240aa1eb6cb964eeec, type: 2}
