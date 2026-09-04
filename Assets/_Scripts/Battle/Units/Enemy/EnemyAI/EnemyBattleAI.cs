@@ -6,7 +6,7 @@ using UnityEngine;
 /// </summary>
 public class EnemyBattleAI
 {
-    private const float ConstellationSkillChance = 0.3f;
+    private const float ConstellationSkillChance = 1f;
     private const float HealHpRatioThreshold = 0.4f;
     private const bool IsDebugLogEnabled = true;
 

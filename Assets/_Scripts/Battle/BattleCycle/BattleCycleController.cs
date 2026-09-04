@@ -39,12 +39,10 @@ public class BattleCycleController : MonoBehaviour
     [SerializeField] private float _reactionTimeout = 3f;
 
     private readonly List<BattleUnit> _battleUnits = new List<BattleUnit>();
-
     private readonly List<BattleUnit> _turnOrder = new List<BattleUnit>();
-
     private readonly List<BattleUnit> _skillTargets = new List<BattleUnit>();
-
     private readonly EnemyBattleAI _enemyBattleAI = new EnemyBattleAI();
+    private readonly BuffController _buffController = new BuffController();
 
     private Coroutine _battleRoutine;
     private BattleState _battleState = BattleState.None;
@@ -231,6 +229,7 @@ public class BattleCycleController : MonoBehaviour
 
         _turnOrder.Clear();
         _skillTargets.Clear();
+        _buffController.ClearAll();
 
         OnTurnOrderChanged?.Invoke();
     }
@@ -268,6 +267,7 @@ public class BattleCycleController : MonoBehaviour
             _roundCount++;
             _battleState = BattleState.RoundStart;
 
+            _buffController.BeginRound();
             BuildTurnOrder();
 
             OnRoundStarted?.Invoke(_roundCount);
@@ -302,8 +302,9 @@ public class BattleCycleController : MonoBehaviour
                 }
             }
 
-            _currentTurnOrderIndex = -1;
+            _buffController.ProcessRoundEnd();
 
+            _currentTurnOrderIndex = -1;
             OnTurnOrderChanged?.Invoke();
 
             yield return null;
@@ -414,8 +415,7 @@ public class BattleCycleController : MonoBehaviour
                     unit != null &&
                     unit.IsAlive &&
                     unit.TeamType == advantageTeam)
-                .OrderByDescending(unit =>
-                    unit.Speed));
+                .OrderByDescending(unit => GetEffectiveSpeed(unit)));
 
         _currentTurnOrderIndex = -1;
 
@@ -552,8 +552,7 @@ public class BattleCycleController : MonoBehaviour
                 .Where(unit =>
                     unit != null &&
                     unit.IsAlive)
-                .OrderByDescending(unit =>
-                    unit.Speed));
+                .OrderByDescending(unit => GetEffectiveSpeed(unit)));
 
         _currentTurnOrderIndex = -1;
 
@@ -635,19 +634,14 @@ public class BattleCycleController : MonoBehaviour
 
     /// <summary>
     /// 기본 공격 피해 계산
+    /// 플레이어는 버프 반영 후 물리/마법 중 높은 공격력 사용
     /// </summary>
     /// <param name="attacker">공격 유닛</param>
     /// <param name="target">방어 유닛</param>
     /// <returns>피해량</returns>
-    private int CalculateBasicAttackDamage(
-        BattleUnit attacker,
-        BattleUnit target)
+    private int CalculateBasicAttackDamage(BattleUnit attacker, BattleUnit target)
     {
-        if (attacker == null ||
-            target == null)
-        {
-            return 0;
-        }
+        if (attacker == null || target == null) return 0;
 
         float attackValue;
         float defenseValue;
@@ -655,24 +649,26 @@ public class BattleCycleController : MonoBehaviour
         // 플레이어만 물리/마법 중 높은 스탯 사용
         if (attacker.TeamType == BattleTeamType.Player)
         {
-            bool isMagical = attacker.MagicPower > attacker.AttackPower;
-            attackValue = isMagical ? attacker.MagicPower : attacker.AttackPower;
-            defenseValue = isMagical ? target.MagicDefensePower : target.DefensePower;
+            // 마공 버프/디버프를 반영한 값으로 비교
+            float magicAttackValue = attacker.MagicPower * _buffController.GetMagicAttackMultiplier(attacker);
+            bool isMagical = magicAttackValue > attacker.AttackPower;
+
+            attackValue = isMagical ? magicAttackValue : attacker.AttackPower;
+
+            // 마법 기본 공격에는 대상의 마방 버프/디버프 반영
+            defenseValue = isMagical
+                ? target.MagicDefensePower * _buffController.GetMagicDefenseMultiplier(target)
+                : target.DefensePower;
         }
         else
         {
-            // 적군은 EnemyBattleData에 설정된 AttackPower / DefensePower 그대로 사용
+            // 기존 적 기본 공격의 물리 공격 규칙 유지
             attackValue = attacker.AttackPower;
             defenseValue = target.DefensePower;
         }
 
-        float rawDamage =
-            attackValue -
-            defenseValue * 0.5f;
-
-        return Mathf.Max(
-            1,
-            Mathf.RoundToInt(rawDamage));
+        float rawDamage = attackValue - defenseValue * 0.5f;
+        return Mathf.Max(1, Mathf.RoundToInt(rawDamage));
     }
 
     /// <summary>
@@ -731,6 +727,7 @@ public class BattleCycleController : MonoBehaviour
         _currentTurnOrderIndex = -1;
 
         _skillTargets.Clear();
+        _buffController.ClearAll();
 
         OnTurnOrderChanged?.Invoke();
 
@@ -2044,6 +2041,11 @@ public class BattleCycleController : MonoBehaviour
                     skillData);
                 break;
 
+            case SkillEffectType.Buff:
+            case SkillEffectType.Debuff:
+                ApplyBuffSkill(target, skillData);
+                break;
+
             default:
                 Debug.Log(
                     $"[Battle] 아직 처리되지 않은 " +
@@ -2145,6 +2147,7 @@ public class BattleCycleController : MonoBehaviour
 
     /// <summary>
     /// 스킬 데미지 계산
+    /// 마법 피해 계산에 마공/마방 버프·디버프 반영
     /// </summary>
     /// <param name="actor">사용 유닛</param>
     /// <param name="target">대상 유닛</param>
@@ -2167,6 +2170,13 @@ public class BattleCycleController : MonoBehaviour
         {
             float attackValue = skillData.DamageType == DamageType.Magical ? actor.MagicPower : actor.AttackPower;
             float defenseValue = skillData.DamageType == DamageType.Magical ? target.MagicDefensePower : target.DefensePower;
+
+            // 원본 스탯을 변경하지 않고 피해 계산에만 배율 반영
+            if (skillData.DamageType == DamageType.Magical)
+            {
+                attackValue *= _buffController.GetMagicAttackMultiplier(actor);
+                defenseValue *= _buffController.GetMagicDefenseMultiplier(target);
+            }
 
             rawDamage = attackValue + skillData.Power - defenseValue * 0.5f;
         }
@@ -2734,5 +2744,31 @@ public class BattleCycleController : MonoBehaviour
         }
 
         return attackData.TickInterval;
+    }
+
+    /// <summary>
+    /// 기본 속도에 활성 버프 배율을 반영한 정렬용 속도 반환
+    /// </summary>
+    private float GetEffectiveSpeed(BattleUnit unit)
+    {
+        if (unit == null) return 0f;
+
+        return unit.Speed * _buffController.GetSpeedMultiplier(unit);
+    }
+
+    /// <summary>
+    /// 스킬에 지정된 버프를 전투 공용 관리자에 적용
+    /// </summary>
+    private void ApplyBuffSkill(BattleUnit target, SkillData skillData)
+    {
+        if (target == null || !target.IsAlive || skillData == null) return;
+
+        if (skillData.BuffData == null)
+        {
+            Debug.LogWarning($"[Battle] {skillData.SkillName}: BuffData 없음");
+            return;
+        }
+
+        _buffController.ApplyBuff(target, skillData.BuffData);
     }
 }

@@ -12,6 +12,9 @@ namespace Battle.Rules
         private readonly Dictionary<BattleUnit, List<ActiveBuff>> _buffs
             = new Dictionary<BattleUnit, List<ActiveBuff>>();
 
+        // 이번 라운드에 적용하거나 갱신한 버프
+        private readonly HashSet<ActiveBuff> _appliedThisRound = new HashSet<ActiveBuff>();
+
         /// <summary>
         /// 버프/디버프 적용
         /// - 같은 BuffData가 이미 있고 스택 불가 → 지속시간 갱신
@@ -34,14 +37,18 @@ namespace Battle.Rules
             {
                 if (buffData.CanStack)
                     existing.AddStack();
+
                 existing.RefreshDuration();
+                _appliedThisRound.Add(existing); // 갱신한 라운드의 지속시간 차감 제외
             }
             else
             {
-                list.Add(new ActiveBuff(buffData));
+                ActiveBuff newBuff = new ActiveBuff(buffData);
+                list.Add(newBuff);
+                _appliedThisRound.Add(newBuff);
             }
         }
-
+         
         /// <summary>
         /// 특정 버프 제거
         /// </summary>
@@ -121,6 +128,35 @@ namespace Battle.Rules
         public void ClearAll()
         {
             _buffs.Clear();
+            _appliedThisRound.Clear(); // 라운드 기록 초기화
+        }
+
+        /// <summary>
+        /// 일반 라운드 시작 시 적용/갱신 기록 초기화
+        /// </summary>
+        public void BeginRound()
+        {
+            _appliedThisRound.Clear();
+        }
+
+        /// <summary>
+        /// 일반 라운드 종료 시 버프 지속시간 감소
+        /// 이번 라운드에 적용하거나 갱신한 버프는 차감 제외
+        /// 기존 ProcessTurnEnd와 중복 호출 금지
+        /// </summary>
+        public void ProcessRoundEnd()
+        {
+            foreach (var kvp in _buffs)
+            {
+                var list = kvp.Value;
+                for (int i = list.Count - 1; i >= 0; i--)
+                {
+                    if (_appliedThisRound.Contains(list[i])) continue;
+
+                    if (list[i].DecreaseTurn())
+                        list.RemoveAt(i);
+                }
+            }
         }
     }
 }

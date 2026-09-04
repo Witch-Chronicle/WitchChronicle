@@ -258,28 +258,38 @@ public class ConstellationPathBattleManager :
     {
         if (_pathController == null)
         {
-            Debug.LogWarning(
-                "[ConstellationPath] PathController 참조 없음",
-                this);
-
+            Debug.LogWarning("[ConstellationPath] PathController 참조 없음", this);
             return false;
         }
 
         if (_uiController == null)
         {
+            Debug.LogWarning("[ConstellationPath] UIController 참조 없음", this);
+            return false;
+        }
+
+        if (!_pathController.isActiveAndEnabled)
+        {
             Debug.LogWarning(
-                "[ConstellationPath] UIController 참조 없음",
-                this);
+                $"[ConstellationPath] PathController 비활성화 / " +
+                $"Object: {_pathController.gameObject.name} / " +
+                $"activeSelf: {_pathController.gameObject.activeSelf} / " +
+                $"activeInHierarchy: {_pathController.gameObject.activeInHierarchy} / " +
+                $"enabled: {_pathController.enabled}",
+                _pathController);
 
             return false;
         }
 
-        if (!_pathController.isActiveAndEnabled ||
-            !_uiController.isActiveAndEnabled)
+        if (!_uiController.isActiveAndEnabled)
         {
             Debug.LogWarning(
-                "[ConstellationPath] 컨트롤러 비활성화 상태",
-                this);
+                $"[ConstellationPath] UIController 비활성화 / " +
+                $"Object: {_uiController.gameObject.name} / " +
+                $"activeSelf: {_uiController.gameObject.activeSelf} / " +
+                $"activeInHierarchy: {_uiController.gameObject.activeInHierarchy} / " +
+                $"enabled: {_uiController.enabled}",
+                _uiController);
 
             return false;
         }

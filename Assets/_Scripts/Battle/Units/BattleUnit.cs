@@ -412,7 +412,7 @@ public class BattleUnit
 
             result.Add(skillList[i]);
         }
-
+        
         return result;
     }
 
